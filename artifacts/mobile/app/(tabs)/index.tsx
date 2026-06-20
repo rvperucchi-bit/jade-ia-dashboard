@@ -67,6 +67,23 @@ function ModuleBtn({
     }
   }, [active]);
 
+  // Subtle icon breath — very slow opacity pulse on the icon itself
+  const iconBreath = useRef(new Animated.Value(1)).current;
+
+  useEffect(() => {
+    if (active) {
+      Animated.loop(
+        Animated.sequence([
+          Animated.timing(iconBreath, { toValue: 0.55, duration: 1800, easing: Easing.inOut(Easing.sin), useNativeDriver: true }),
+          Animated.timing(iconBreath, { toValue: 1.0,  duration: 1800, easing: Easing.inOut(Easing.sin), useNativeDriver: true }),
+        ])
+      ).start();
+    } else {
+      iconBreath.stopAnimation();
+      iconBreath.setValue(1);
+    }
+  }, [active]);
+
   return (
     // overflow:visible so the glow ring isn't clipped by the touchable bounds
     <TouchableOpacity
@@ -91,7 +108,10 @@ function ModuleBtn({
           },
         ]}
       >
-        {children}
+        {/* Icon breathes gently when module is active */}
+        <Animated.View style={{ opacity: iconBreath }}>
+          {children}
+        </Animated.View>
       </View>
     </TouchableOpacity>
   );

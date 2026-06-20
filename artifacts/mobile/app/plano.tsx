@@ -212,8 +212,14 @@ export default function PlanoScreen() {
           ))}
         </View>
 
-        <TouchableOpacity style={S.cancelBtn} activeOpacity={0.7}>
-          <Text style={S.cancelText}>Cancelar assinatura</Text>
+        <TouchableOpacity
+          style={S.upgradeHero}
+          activeOpacity={0.85}
+          onPress={() => {}}
+        >
+          <Feather name="zap" size={16} color="#fff" />
+          <Text style={S.upgradeHeroText}>Fazer upgrade agora</Text>
+          <Feather name="arrow-right" size={16} color="#fff" />
         </TouchableOpacity>
       </ScrollView>
     </View>
@@ -419,6 +425,24 @@ const S = StyleSheet.create({
     color: C.primary,
   },
 
-  cancelBtn: { alignItems: "center", paddingVertical: 12 },
-  cancelText: { fontSize: 14, fontFamily: "SpaceGrotesk_400Regular", color: C.muted },
+  upgradeHero: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+    backgroundColor: C.primary,
+    borderRadius: 14,
+    height: 52,
+    marginBottom: 28,
+    shadowColor: C.primary,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.4,
+    shadowRadius: 18,
+    elevation: 10,
+  },
+  upgradeHeroText: {
+    fontSize: 16,
+    fontFamily: "SpaceGrotesk_700Bold",
+    color: "#fff",
+  },
 });
