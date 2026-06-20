@@ -2,6 +2,7 @@ import { Feather } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import React from "react";
 import {
+  Alert,
   ScrollView,
   StyleSheet,
   Text,
@@ -215,7 +216,11 @@ export default function PlanoScreen() {
         <TouchableOpacity
           style={S.upgradeHero}
           activeOpacity={0.85}
-          onPress={() => {}}
+          onPress={() => Alert.alert(
+            "Falar com a equipe JADE",
+            "Entre em contato para fazer upgrade:\n\ncomercial@jadeia.com.br\n\nNosso time responde em até 2 horas úteis.",
+            [{ text: "OK", style: "default" }]
+          )}
         >
           <Feather name="zap" size={16} color="#fff" />
           <Text style={S.upgradeHeroText}>Fazer upgrade agora</Text>

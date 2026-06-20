@@ -210,6 +210,33 @@
   ],
   "activity_events": [
     {
+      "id": "34cd97b51fdaa5ca",
+      "type": "message",
+      "text": "JADE respondeu a uma mensagem",
+      "icon": "robot",
+      "color": "#FF0080",
+      "metadata": {},
+      "created_at": "2026-06-20T19:56:11.575Z"
+    },
+    {
+      "id": "9e3e9bd1cdaa530a",
+      "type": "message",
+      "text": "JADE respondeu a uma mensagem",
+      "icon": "robot",
+      "color": "#FF0080",
+      "metadata": {},
+      "created_at": "2026-06-20T19:55:11.915Z"
+    },
+    {
+      "id": "40dd9e060e3ff2f2",
+      "type": "message",
+      "text": "JADE respondeu a uma mensagem",
+      "icon": "robot",
+      "color": "#FF0080",
+      "metadata": {},
+      "created_at": "2026-06-20T19:54:55.687Z"
+    },
+    {
       "id": "09f4a439172c253c",
       "type": "message",
       "text": "JADE respondeu a uma mensagem",

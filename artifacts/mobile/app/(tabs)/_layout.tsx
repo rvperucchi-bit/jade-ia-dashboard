@@ -65,26 +65,8 @@ export default function TabLayout() {
         name="jade"
         options={{
           title: "JADE",
-          tabBarShowLabel: false,
-          tabBarIcon: ({ focused }) => (
-            <View
-              style={{
-                width: 48,
-                height: 48,
-                borderRadius: 24,
-                backgroundColor: focused ? colors.primary : colors.surface,
-                alignItems: "center",
-                justifyContent: "center",
-                borderWidth: focused ? 0 : 1,
-                borderColor: colors.border,
-              }}
-            >
-              <MaterialCommunityIcons
-                name="robot"
-                size={24}
-                color={focused ? "#fff" : colors.mutedForeground}
-              />
-            </View>
+          tabBarIcon: ({ color }) => (
+            <MaterialCommunityIcons name="robot" size={22} color={color} />
           ),
         }}
       />

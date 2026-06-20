@@ -86,11 +86,16 @@ export default function BriefingScreen() {
     setLoading(true);
     setResult(null);
     try {
-      const empresaRes = await fetch(`${API_BASE}/api/empresa`);
-      const { config } = await empresaRes.json();
-      const empresaCtx = config
-        ? `Empresa que está vendendo: ${config.nome}. Produto: ${config.produto}. Segmento: ${config.segmento}.`
-        : "";
+      let empresaCtx = "";
+      try {
+        const empresaRes = await fetch(`${API_BASE}/api/empresa`);
+        if (empresaRes.ok) {
+          const { config } = await empresaRes.json();
+          if (config?.nome) {
+            empresaCtx = `Empresa que está vendendo: ${config.nome}. Produto: ${config.produto || "não informado"}. Segmento: ${config.segmento || "B2B"}.`;
+          }
+        }
+      } catch {}
 
       const prompt = `Gere um briefing pré-reunião completo e estruturado. ${empresaCtx}
 

@@ -225,10 +225,196 @@ const TECNICAS: Technique[] = [
   },
 ];
 
-type MainTab = "gerar" | "posts" | "trafego" | "biblioteca" | "historico";
+type MainTab = "gerar" | "posts" | "trafego" | "historico";
 
 function formatDate(iso: string): string {
   return new Date(iso).toLocaleDateString("pt-BR", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" });
+}
+
+// ─── Media Planner ────────────────────────────────────────────────────────────
+function MediaPlanner({
+  colors, campaigns, addCampaign, addActivityEvent,
+}: {
+  colors: any;
+  campaigns: MarketingCampaign[];
+  addCampaign: (c: MarketingCampaign) => void;
+  addActivityEvent: (e: any) => Promise<void>;
+}) {
+  const [orcamento, setOrcamento] = useState("");
+  const [objetivo, setObjetivo]   = useState("leads");
+  const [periodo, setPeriodo]     = useState("30");
+  const [segmento, setSegmento]   = useState("");
+  const [loading, setLoading]     = useState(false);
+  const [result, setResult]       = useState("");
+  const [copied, setCopied]       = useState(false);
+  const [showPecas, setShowPecas] = useState(false);
+
+  const OBJETIVOS = [
+    { id: "leads",      label: "Gerar Leads",           emoji: "🎯", color: "#FF0080" },
+    { id: "venda",      label: "Vender Produto",         emoji: "💰", color: "#00D68F" },
+    { id: "seguidores", label: "Aumentar Seguidores",   emoji: "👥", color: "#6C63FF" },
+    { id: "awareness",  label: "Awareness de Marca",    emoji: "📢", color: "#FFB300" },
+  ];
+
+  const PERIODOS = [
+    { id: "15", label: "15 dias" },
+    { id: "30", label: "30 dias" },
+    { id: "60", label: "60 dias" },
+  ];
+
+  const gerarEstrategia = async () => {
+    if (!orcamento.trim()) return;
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    setLoading(true);
+    setResult("");
+    const obj = OBJETIVOS.find((o) => o.id === objetivo)!;
+    const prompt = `Você é especialista em mídia paga brasileira. Crie uma estratégia completa de tráfego pago:\n- Orçamento: R$ ${orcamento}/mês\n- Objetivo: ${obj.label}\n- Período: ${periodo} dias\n- Segmento: ${segmento || "geral"}\n\nEstruture exatamente assim:\n\n## DISTRIBUIÇÃO DO ORÇAMENTO\nPara cada plataforma relevante (Meta Ads, Google Ads, TikTok Ads), informe: valor em R$ e % do total. Use valores baseados no orçamento de R$ ${orcamento}.\n\n## ESTRATÉGIA POR PLATAFORMA\nPara cada plataforma: público-alvo, formato de anúncio, investimento diário, meta de resultado esperada.\n\n## CRONOGRAMA ${periodo} DIAS\nO que fazer em cada semana.\n\n## COPIES PRONTAS\nForneça 3 textos de anúncio prontos para usar (separe por ---).\n\n## KPIs PARA ACOMPANHAR\n4-5 métricas para monitorar diariamente.\n\nSeja específico com valores em R$ e metas numéricas.`;
+    try {
+      const res = await fetch(`${API_BASE}/api/jade/chat`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ messages: [{ role: "user", content: prompt }] }),
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+      setResult(data.message?.trim() ?? "Estratégia gerada!");
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    } catch {
+      setResult("Não foi possível gerar a estratégia. Verifique sua conexão e tente novamente.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const copy = async (text: string) => {
+    await Clipboard.setStringAsync(text);
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2500);
+  };
+
+  return (
+    <View style={mp.container}>
+      <View style={[mp.header, { backgroundColor: colors.card, borderColor: "#FF008030" }]}>
+        <Feather name="trending-up" size={20} color="#FF0080" />
+        <View>
+          <Text style={[mp.headerTitle, { color: colors.text }]}>Media Planner IA</Text>
+          <Text style={[mp.headerSub, { color: colors.mutedForeground }]}>Estratégia completa de mídia paga</Text>
+        </View>
+      </View>
+
+      <View style={mp.field}>
+        <Text style={[mp.label, { color: colors.mutedForeground }]}>ORÇAMENTO DO MÊS (R$) *</Text>
+        <View style={[mp.inputWrap, { backgroundColor: colors.card, borderColor: orcamento ? "#FF008060" : colors.border }]}>
+          <Text style={[mp.currency, { color: colors.mutedForeground }]}>R$</Text>
+          <TextInput
+            style={[mp.input, { color: colors.text }]}
+            placeholder="Ex: 500"
+            placeholderTextColor={colors.mutedForeground}
+            value={orcamento}
+            onChangeText={setOrcamento}
+            keyboardType="numeric"
+            returnKeyType="done"
+          />
+        </View>
+      </View>
+
+      <View style={mp.field}>
+        <Text style={[mp.label, { color: colors.mutedForeground }]}>OBJETIVO DA CAMPANHA</Text>
+        <View style={mp.objetivosGrid}>
+          {OBJETIVOS.map((obj) => (
+            <TouchableOpacity
+              key={obj.id}
+              style={[mp.objCard, { backgroundColor: colors.card, borderColor: objetivo === obj.id ? obj.color : colors.border, borderWidth: objetivo === obj.id ? 2 : 1 }]}
+              onPress={() => { Haptics.selectionAsync(); setObjetivo(obj.id); }}
+              activeOpacity={0.8}
+            >
+              <Text style={mp.objEmoji}>{obj.emoji}</Text>
+              <Text style={[mp.objLabel, { color: objetivo === obj.id ? obj.color : colors.text }]}>{obj.label}</Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+      </View>
+
+      <View style={mp.field}>
+        <Text style={[mp.label, { color: colors.mutedForeground }]}>PERÍODO</Text>
+        <View style={mp.periodoRow}>
+          {PERIODOS.map((p) => (
+            <TouchableOpacity
+              key={p.id}
+              style={[mp.periodoBtn, { backgroundColor: periodo === p.id ? "#FF0080" : colors.card, borderColor: periodo === p.id ? "#FF0080" : colors.border }]}
+              onPress={() => setPeriodo(p.id)}
+              activeOpacity={0.8}
+            >
+              <Text style={[mp.periodoBtnText, { color: periodo === p.id ? "#fff" : colors.text }]}>{p.label}</Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+      </View>
+
+      <View style={mp.field}>
+        <Text style={[mp.label, { color: colors.mutedForeground }]}>SEGMENTO / NEGÓCIO (opcional)</Text>
+        <View style={[mp.inputWrap, { backgroundColor: colors.card, borderColor: colors.border }]}>
+          <TextInput
+            style={[mp.input, { color: colors.text }]}
+            placeholder="Ex: Restaurante, SaaS, Academia..."
+            placeholderTextColor={colors.mutedForeground}
+            value={segmento}
+            onChangeText={setSegmento}
+            returnKeyType="done"
+          />
+        </View>
+      </View>
+
+      <TouchableOpacity
+        style={[mp.gerarBtn, (!orcamento.trim() || loading) && { opacity: 0.6 }]}
+        onPress={gerarEstrategia}
+        disabled={!orcamento.trim() || loading}
+        activeOpacity={0.85}
+      >
+        {loading
+          ? <><ActivityIndicator color="#fff" size="small" /><Text style={mp.gerarBtnText}>JADE planejando...</Text></>
+          : <><Feather name="zap" size={18} color="#fff" /><Text style={mp.gerarBtnText}>Criar Estratégia de Mídia</Text></>
+        }
+      </TouchableOpacity>
+
+      {!!result && !loading && (
+        <View style={[mp.resultBox, { backgroundColor: colors.card, borderColor: colors.border }]}>
+          <View style={mp.resultHeader}>
+            <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+              <View style={[mp.dot, { backgroundColor: "#00D68F" }]} />
+              <Text style={[mp.resultLabel, { color: "#00D68F" }]}>Estratégia criada pela JADE</Text>
+            </View>
+            <TouchableOpacity onPress={() => copy(result)} activeOpacity={0.8} style={mp.copyBtn}>
+              <Feather name={copied ? "check" : "copy"} size={16} color={copied ? "#00D68F" : colors.mutedForeground} />
+              <Text style={[mp.copyText, { color: copied ? "#00D68F" : colors.mutedForeground }]}>{copied ? "Copiado!" : "Copiar"}</Text>
+            </TouchableOpacity>
+          </View>
+          <Text style={[mp.resultText, { color: colors.text }]}>{result}</Text>
+          <TouchableOpacity style={[mp.regenBtn, { borderColor: colors.border }]} onPress={gerarEstrategia} activeOpacity={0.8}>
+            <Feather name="refresh-cw" size={14} color="#FF0080" />
+            <Text style={[mp.regenText, { color: "#FF0080" }]}>Refinar Estratégia</Text>
+          </TouchableOpacity>
+        </View>
+      )}
+
+      <TouchableOpacity
+        style={[mp.pecasToggle, { borderColor: colors.border }]}
+        onPress={() => setShowPecas((v) => !v)}
+        activeOpacity={0.8}
+      >
+        <Text style={[mp.pecasLabel, { color: colors.mutedForeground }]}>Gerar peças avulsas</Text>
+        <Feather name={showPecas ? "chevron-up" : "chevron-down"} size={16} color={colors.mutedForeground} />
+      </TouchableOpacity>
+
+      {showPecas && (
+        <ContentGenerator
+          types={TRAFEGO_TYPES} colors={colors}
+          campaigns={campaigns} addCampaign={addCampaign} addActivityEvent={addActivityEvent}
+        />
+      )}
+    </View>
+  );
 }
 
 // ─── Shared: Content Generator ────────────────────────────────────────────────
@@ -441,7 +627,6 @@ export default function MarketingScreen() {
     { id: "gerar",     label: "Gerar",     icon: "zap" },
     { id: "posts",     label: "Posts",     icon: "grid" },
     { id: "trafego",   label: "Tráfego",   icon: "trending-up" },
-    { id: "biblioteca",label: "Biblioteca",icon: "book-open" },
     { id: "historico", label: "Histórico", icon: "clock" },
   ];
 
@@ -511,37 +696,12 @@ export default function MarketingScreen() {
           />
         )}
 
-        {/* ─── Tráfego Pago ─── */}
+        {/* ─── Tráfego Pago → Media Planner ─── */}
         {tab === "trafego" && !activeCampaign && (
-          <>
-            <View style={[sty.trafegoHeader, { backgroundColor: colors.card, borderBottomColor: colors.border }]}>
-              <Feather name="trending-up" size={20} color="#FF0080" />
-              <View>
-                <Text style={[sty.trafegoTitle, { color: colors.text }]}>Tráfego Pago</Text>
-                <Text style={[sty.trafegoSub, { color: colors.mutedForeground }]}>Copies e estratégias para anúncios</Text>
-              </View>
-            </View>
-            <ContentGenerator
-              types={TRAFEGO_TYPES} colors={colors}
-              campaigns={campaigns} addCampaign={addCampaign} addActivityEvent={addActivityEvent}
-            />
-          </>
-        )}
-
-        {/* ─── Biblioteca ─── */}
-        {tab === "biblioteca" && !activeCampaign && (
-          <View style={sty.libContainer}>
-            <View style={[sty.libHeader, { backgroundColor: colors.card + "CC", borderColor: colors.border }]}>
-              <Feather name="book-open" size={18} color="#FF0080" />
-              <View>
-                <Text style={[sty.libTitle, { color: colors.text }]}>Biblioteca de Técnicas</Text>
-                <Text style={[sty.libSub, { color: colors.mutedForeground }]}>Clique em uma técnica para expandir</Text>
-              </View>
-            </View>
-            {TECNICAS.map((t) => (
-              <TechCard key={t.id} t={t} colors={colors} />
-            ))}
-          </View>
+          <MediaPlanner
+            colors={colors}
+            campaigns={campaigns} addCampaign={addCampaign} addActivityEvent={addActivityEvent}
+          />
         )}
 
         {/* ─── Histórico ─── */}
@@ -690,6 +850,38 @@ const gen = StyleSheet.create({
   campPreview: { fontSize: 12, fontFamily: "SpaceGrotesk_400Regular", marginTop: 3 },
   campDate: { fontSize: 11, fontFamily: "SpaceGrotesk_400Regular", marginTop: 3 },
   campDetailHeader: { padding: 16, borderRadius: 14, borderWidth: 1, gap: 4 },
+});
+
+const mp = StyleSheet.create({
+  container: { padding: 16, gap: 14 },
+  header: { flexDirection: "row", alignItems: "center", gap: 12, padding: 16, borderRadius: 14, borderWidth: 1 },
+  headerTitle: { fontSize: 16, fontFamily: "SpaceGrotesk_700Bold" },
+  headerSub: { fontSize: 12, fontFamily: "SpaceGrotesk_400Regular", marginTop: 2 },
+  field: { gap: 8 },
+  label: { fontSize: 11, fontFamily: "SpaceGrotesk_700Bold", letterSpacing: 1 },
+  inputWrap: { flexDirection: "row", alignItems: "center", borderRadius: 12, borderWidth: 1, paddingHorizontal: 14, height: 50 },
+  currency: { fontSize: 15, fontFamily: "SpaceGrotesk_500Medium", marginRight: 6 },
+  input: { flex: 1, fontSize: 15, fontFamily: "SpaceGrotesk_400Regular" },
+  objetivosGrid: { flexDirection: "row", flexWrap: "wrap", gap: 10 },
+  objCard: { width: "47%", flexGrow: 1, borderRadius: 14, padding: 14, gap: 6, alignItems: "flex-start" },
+  objEmoji: { fontSize: 22 },
+  objLabel: { fontSize: 13, fontFamily: "SpaceGrotesk_600SemiBold" },
+  periodoRow: { flexDirection: "row", gap: 10 },
+  periodoBtn: { flex: 1, paddingVertical: 12, borderRadius: 12, borderWidth: 1, alignItems: "center", justifyContent: "center" },
+  periodoBtnText: { fontSize: 14, fontFamily: "SpaceGrotesk_600SemiBold" },
+  gerarBtn: { backgroundColor: "#FF0080", flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 10, height: 54, borderRadius: 14, shadowColor: "#FF0080", shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.35, shadowRadius: 14, elevation: 8 },
+  gerarBtnText: { fontSize: 16, fontFamily: "SpaceGrotesk_700Bold", color: "#fff" },
+  resultBox: { borderRadius: 14, borderWidth: 1, padding: 16, gap: 14 },
+  resultHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
+  dot: { width: 7, height: 7, borderRadius: 4 },
+  resultLabel: { fontSize: 12, fontFamily: "SpaceGrotesk_600SemiBold" },
+  copyBtn: { flexDirection: "row", alignItems: "center", gap: 6, padding: 6 },
+  copyText: { fontSize: 13, fontFamily: "SpaceGrotesk_500Medium" },
+  resultText: { fontSize: 14, fontFamily: "SpaceGrotesk_400Regular", lineHeight: 22 },
+  regenBtn: { flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8, paddingVertical: 10, borderRadius: 10, borderWidth: 1 },
+  regenText: { fontSize: 13, fontFamily: "SpaceGrotesk_600SemiBold" },
+  pecasToggle: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingVertical: 14, paddingHorizontal: 4, borderTopWidth: StyleSheet.hairlineWidth, marginTop: 4 },
+  pecasLabel: { fontSize: 14, fontFamily: "SpaceGrotesk_500Medium" },
 });
 
 const lib = StyleSheet.create({

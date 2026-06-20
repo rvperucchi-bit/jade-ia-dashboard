@@ -114,7 +114,7 @@ export default function LoginScreen() {
             style={{ width: LOGO_W, height: LOGO_H }}
             resizeMode="contain"
           />
-          <Text style={S.tagline}>SUA PARCEIRA DE TRABALHO.</Text>
+          <Text style={S.tagline}>SUA PARCEIRA DE NEGÓCIOS.</Text>
         </Animated.View>
 
         {/* ── Form ── */}
