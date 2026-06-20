@@ -1,8 +1,11 @@
 import { Feather } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import React from "react";
+import React, { useState } from "react";
 import {
+  ActivityIndicator,
   Alert,
+  Linking,
+  Platform,
   ScrollView,
   StyleSheet,
   Text,
@@ -12,21 +15,26 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 const C = {
-  bg: "#0A0A0F",
-  card: "#111118",
-  border: "#1E1E2E",
-  text: "#FFFFFF",
-  muted: "#7777AA",
-  sub: "#AAAACC",
+  bg:      "#0A0A0F",
+  card:    "#111118",
+  border:  "#1E1E2E",
+  text:    "#FFFFFF",
+  muted:   "#7777AA",
+  sub:     "#AAAACC",
   primary: "#FF0080",
   surface: "#16161F",
   success: "#00D68F",
   warning: "#FFB300",
 };
 
-const USED = 620;
+const API_BASE =
+  Platform.OS === "web"
+    ? ""
+    : `https://${process.env.EXPO_PUBLIC_DOMAIN ?? ""}`;
+
+const USED  = 620;
 const LIMIT = 1000;
-const PCT = USED / LIMIT;
+const PCT   = USED / LIMIT;
 
 interface Plan {
   id: string;
@@ -39,7 +47,7 @@ interface Plan {
   features: string[];
   credits: string;
   users: string;
-  showUpgrade?: boolean;
+  canUpgrade?: boolean;
 }
 
 const PLANS: Plan[] = [
@@ -56,7 +64,7 @@ const PLANS: Plan[] = [
     ],
     credits: "300 créditos/mês",
     users: "1 usuário",
-    showUpgrade: true,
+    canUpgrade: true,
   },
   {
     id: "pro",
@@ -92,17 +100,23 @@ const PLANS: Plan[] = [
     ],
     credits: "Créditos ilimitados",
     users: "15 usuários",
+    canUpgrade: true,
   },
 ];
 
-function PlanCard({ plan }: { plan: Plan }) {
+function PlanCard({
+  plan,
+  loadingPlano,
+  onUpgrade,
+}: {
+  plan: Plan;
+  loadingPlano: string | null;
+  onUpgrade: (plano: string) => void;
+}) {
+  const isLoading = loadingPlano === plan.id;
+
   return (
-    <View
-      style={[
-        S.planCard,
-        plan.highlight && S.planCardHighlight,
-      ]}
-    >
+    <View style={[S.planCard, plan.highlight && S.planCardHighlight]}>
       {plan.tag && (
         <View style={S.currentBadge}>
           <Text style={S.currentBadgeText}>{plan.tag}</Text>
@@ -145,10 +159,23 @@ function PlanCard({ plan }: { plan: Plan }) {
         </View>
       </View>
 
-      {plan.showUpgrade && (
-        <TouchableOpacity style={S.upgradeBtn} activeOpacity={0.85}>
-          <Text style={S.upgradeBtnText}>Fazer upgrade</Text>
-          <Feather name="arrow-right" size={14} color={C.primary} />
+      {plan.canUpgrade && (
+        <TouchableOpacity
+          style={[S.upgradeBtn, isLoading && { opacity: 0.7 }]}
+          activeOpacity={0.85}
+          onPress={() => onUpgrade(plan.id)}
+          disabled={!!loadingPlano}
+        >
+          {isLoading ? (
+            <ActivityIndicator size="small" color={C.primary} />
+          ) : (
+            <>
+              <Text style={S.upgradeBtnText}>
+                {plan.id === "start" ? "Fazer downgrade" : "Fazer upgrade"}
+              </Text>
+              <Feather name="arrow-right" size={14} color={C.primary} />
+            </>
+          )}
         </TouchableOpacity>
       )}
     </View>
@@ -156,8 +183,46 @@ function PlanCard({ plan }: { plan: Plan }) {
 }
 
 export default function PlanoScreen() {
-  const router = useRouter();
-  const insets = useSafeAreaInsets();
+  const router  = useRouter();
+  const insets  = useSafeAreaInsets();
+  const [loadingPlano, setLoadingPlano] = useState<string | null>(null);
+
+  const fazerUpgrade = async (plano: string) => {
+    setLoadingPlano(plano);
+    try {
+      const res = await fetch(`${API_BASE}/api/stripe/create-checkout`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          plano,
+          email: "contato@jadeia.com.br",
+        }),
+      });
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error((err as any).error ?? "Erro desconhecido");
+      }
+
+      const data = await res.json() as { url?: string; sessionId?: string };
+
+      if (data.url) {
+        const supported = await Linking.canOpenURL(data.url);
+        if (supported) {
+          await Linking.openURL(data.url);
+        } else {
+          Alert.alert("Erro", "Não foi possível abrir o checkout. Tente novamente.");
+        }
+      } else {
+        Alert.alert("Erro", "Link de checkout não retornado. Tente novamente.");
+      }
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Erro ao iniciar o checkout.";
+      Alert.alert("Erro", msg + "\n\nTente novamente ou entre em contato: comercial@jadeia.com.br");
+    } finally {
+      setLoadingPlano(null);
+    }
+  };
 
   return (
     <View style={[S.root, { paddingTop: insets.top }]}>
@@ -177,7 +242,9 @@ export default function PlanoScreen() {
         <View style={S.activePlan}>
           <View style={S.activePlanLeft}>
             <Text style={S.activePlanBadge}>✦ PLANO PRO ATIVO</Text>
-            <Text style={S.activePlanPrice}>R$247<Text style={S.activePlanSub}>/mês</Text></Text>
+            <Text style={S.activePlanPrice}>
+              R$247<Text style={S.activePlanSub}>/mês</Text>
+            </Text>
             <Text style={S.activePlanRenewal}>Próxima renovação: 20 de julho de 2026</Text>
           </View>
           <View style={S.activeChip}>
@@ -209,22 +276,31 @@ export default function PlanoScreen() {
         <View style={S.section}>
           <Text style={S.sectionTitle}>PLANOS DISPONÍVEIS</Text>
           {PLANS.map((plan) => (
-            <PlanCard key={plan.id} plan={plan} />
+            <PlanCard
+              key={plan.id}
+              plan={plan}
+              loadingPlano={loadingPlano}
+              onUpgrade={fazerUpgrade}
+            />
           ))}
         </View>
 
+        {/* CTA hero */}
         <TouchableOpacity
-          style={S.upgradeHero}
+          style={[S.upgradeHero, !!loadingPlano && { opacity: 0.7 }]}
           activeOpacity={0.85}
-          onPress={() => Alert.alert(
-            "Falar com a equipe JADE",
-            "Entre em contato para fazer upgrade:\n\ncomercial@jadeia.com.br\n\nNosso time responde em até 2 horas úteis.",
-            [{ text: "OK", style: "default" }]
-          )}
+          disabled={!!loadingPlano}
+          onPress={() => fazerUpgrade("enterprise")}
         >
-          <Feather name="zap" size={16} color="#fff" />
-          <Text style={S.upgradeHeroText}>Fazer upgrade agora</Text>
-          <Feather name="arrow-right" size={16} color="#fff" />
+          {loadingPlano === "enterprise" ? (
+            <ActivityIndicator color="#fff" />
+          ) : (
+            <>
+              <Feather name="zap" size={16} color="#fff" />
+              <Text style={S.upgradeHeroText}>Fazer upgrade agora</Text>
+              <Feather name="arrow-right" size={16} color="#fff" />
+            </>
+          )}
         </TouchableOpacity>
       </ScrollView>
     </View>
@@ -232,7 +308,7 @@ export default function PlanoScreen() {
 }
 
 const S = StyleSheet.create({
-  root: { flex: 1, backgroundColor: C.bg },
+  root:   { flex: 1, backgroundColor: C.bg },
   header: {
     flexDirection: "row",
     alignItems: "center",
@@ -242,9 +318,9 @@ const S = StyleSheet.create({
     borderBottomWidth: StyleSheet.hairlineWidth,
     borderBottomColor: C.border,
   },
-  backBtn: { width: 40, height: 40, alignItems: "center", justifyContent: "center" },
+  backBtn:     { width: 40, height: 40, alignItems: "center", justifyContent: "center" },
   headerTitle: { fontSize: 17, fontFamily: "SpaceGrotesk_700Bold", color: C.text },
-  scroll: { paddingHorizontal: 20, paddingTop: 24 },
+  scroll:      { paddingHorizontal: 20, paddingTop: 24 },
 
   activePlan: {
     flexDirection: "row",
@@ -257,77 +333,26 @@ const S = StyleSheet.create({
     padding: 20,
     marginBottom: 28,
   },
-  activePlanLeft: { gap: 4 },
-  activePlanBadge: {
-    fontSize: 11,
-    fontFamily: "SpaceGrotesk_700Bold",
-    color: C.primary,
-    letterSpacing: 1,
-  },
-  activePlanPrice: {
-    fontSize: 36,
-    fontFamily: "SpaceGrotesk_700Bold",
-    color: C.text,
-    marginTop: 4,
-  },
-  activePlanSub: {
-    fontSize: 16,
-    fontFamily: "SpaceGrotesk_400Regular",
-    color: C.muted,
-  },
-  activePlanRenewal: {
-    fontSize: 13,
-    fontFamily: "SpaceGrotesk_400Regular",
-    color: C.muted,
-    marginTop: 4,
-  },
-  activeChip: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-    backgroundColor: C.success + "22",
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    borderRadius: 20,
-  },
-  activeDot: { width: 7, height: 7, borderRadius: 4, backgroundColor: C.success },
-  activeText: { fontSize: 12, fontFamily: "SpaceGrotesk_600SemiBold", color: C.success },
+  activePlanLeft:    { gap: 4 },
+  activePlanBadge:   { fontSize: 11, fontFamily: "SpaceGrotesk_700Bold", color: C.primary, letterSpacing: 1 },
+  activePlanPrice:   { fontSize: 36, fontFamily: "SpaceGrotesk_700Bold", color: C.text, marginTop: 4 },
+  activePlanSub:     { fontSize: 16, fontFamily: "SpaceGrotesk_400Regular", color: C.muted },
+  activePlanRenewal: { fontSize: 13, fontFamily: "SpaceGrotesk_400Regular", color: C.muted, marginTop: 4 },
+  activeChip:        { flexDirection: "row", alignItems: "center", gap: 6, backgroundColor: C.success + "22", paddingHorizontal: 10, paddingVertical: 5, borderRadius: 20 },
+  activeDot:         { width: 7, height: 7, borderRadius: 4, backgroundColor: C.success },
+  activeText:        { fontSize: 12, fontFamily: "SpaceGrotesk_600SemiBold", color: C.success },
 
-  section: { marginBottom: 24 },
-  sectionTitle: {
-    fontSize: 11,
-    fontFamily: "SpaceGrotesk_600SemiBold",
-    color: C.muted,
-    letterSpacing: 1,
-    marginBottom: 14,
-  },
+  section:      { marginBottom: 24 },
+  sectionTitle: { fontSize: 11, fontFamily: "SpaceGrotesk_600SemiBold", color: C.muted, letterSpacing: 1, marginBottom: 14 },
 
-  creditsCard: {
-    backgroundColor: C.card,
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: C.border,
-  },
-  creditsRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    padding: 16,
-    paddingBottom: 10,
-  },
+  creditsCard: { backgroundColor: C.card, borderRadius: 16, borderWidth: 1, borderColor: C.border },
+  creditsRow:  { flexDirection: "row", justifyContent: "space-between", alignItems: "center", padding: 16, paddingBottom: 10 },
   creditsLabel: { fontSize: 14, fontFamily: "SpaceGrotesk_500Medium", color: C.text },
   creditsValue: { fontSize: 14, fontFamily: "SpaceGrotesk_700Bold", color: C.primary },
-  barTrack: { height: 8, backgroundColor: C.surface, marginHorizontal: 16, borderRadius: 4 },
-  barFill: { height: 8, backgroundColor: C.primary, borderRadius: 4 },
-  creditsHint: {
-    fontSize: 12,
-    fontFamily: "SpaceGrotesk_400Regular",
-    color: C.muted,
-    padding: 12,
-    paddingTop: 8,
-  },
+  barTrack:     { height: 8, backgroundColor: C.surface, marginHorizontal: 16, borderRadius: 4 },
+  barFill:      { height: 8, backgroundColor: C.primary, borderRadius: 4 },
+  creditsHint:  { fontSize: 12, fontFamily: "SpaceGrotesk_400Regular", color: C.muted, padding: 12, paddingTop: 8 },
 
-  // ── Plan cards ──
   planCard: {
     backgroundColor: C.card,
     borderRadius: 18,
@@ -335,83 +360,28 @@ const S = StyleSheet.create({
     borderColor: C.border,
     padding: 20,
     marginBottom: 14,
-    gap: 0,
     position: "relative",
   },
-  planCardHighlight: {
-    borderColor: C.primary + "88",
-    backgroundColor: C.primary + "08",
-  },
-  currentBadge: {
-    position: "absolute",
-    top: -1,
-    right: 20,
-    backgroundColor: C.primary,
-    paddingHorizontal: 12,
-    paddingVertical: 5,
-    borderBottomLeftRadius: 10,
-    borderBottomRightRadius: 10,
-  },
-  currentBadgeText: {
-    fontSize: 10,
-    fontFamily: "SpaceGrotesk_700Bold",
-    color: "#fff",
-    letterSpacing: 1,
-  },
-  planCardHeader: { marginBottom: 16 },
-  planName: {
-    fontSize: 22,
-    fontFamily: "SpaceGrotesk_700Bold",
-    color: C.sub,
-    marginBottom: 4,
-  },
+  planCardHighlight: { borderColor: C.primary + "88", backgroundColor: C.primary + "08" },
+  currentBadge:      { position: "absolute", top: -1, right: 20, backgroundColor: C.primary, paddingHorizontal: 12, paddingVertical: 5, borderBottomLeftRadius: 10, borderBottomRightRadius: 10 },
+  currentBadgeText:  { fontSize: 10, fontFamily: "SpaceGrotesk_700Bold", color: "#fff", letterSpacing: 1 },
+  planCardHeader:    { marginBottom: 16 },
+  planName:          { fontSize: 22, fontFamily: "SpaceGrotesk_700Bold", color: C.sub, marginBottom: 4 },
   planNameHighlight: { color: C.text },
-  planPriceRow: { flexDirection: "row", alignItems: "flex-end", gap: 2 },
-  planPrice: { fontSize: 32, fontFamily: "SpaceGrotesk_700Bold", color: C.text },
-  planPeriod: {
-    fontSize: 15,
-    fontFamily: "SpaceGrotesk_400Regular",
-    color: C.muted,
-    marginBottom: 5,
-  },
+  planPriceRow:      { flexDirection: "row", alignItems: "flex-end", gap: 2 },
+  planPrice:         { fontSize: 32, fontFamily: "SpaceGrotesk_700Bold", color: C.text },
+  planPeriod:        { fontSize: 15, fontFamily: "SpaceGrotesk_400Regular", color: C.muted, marginBottom: 5 },
 
-  divider: {
-    height: StyleSheet.hairlineWidth,
-    backgroundColor: C.border,
-    marginBottom: 16,
-  },
+  divider:          { height: StyleSheet.hairlineWidth, backgroundColor: C.border, marginBottom: 16 },
   dividerHighlight: { backgroundColor: C.primary + "44" },
 
   featureList: { gap: 10, marginBottom: 16 },
-  featureRow: { flexDirection: "row", alignItems: "flex-start", gap: 10 },
-  featureText: {
-    flex: 1,
-    fontSize: 14,
-    fontFamily: "SpaceGrotesk_400Regular",
-    color: C.sub,
-    lineHeight: 20,
-  },
+  featureRow:  { flexDirection: "row", alignItems: "flex-start", gap: 10 },
+  featureText: { flex: 1, fontSize: 14, fontFamily: "SpaceGrotesk_400Regular", color: C.sub, lineHeight: 20 },
 
-  planMeta: {
-    flexDirection: "row",
-    gap: 10,
-    flexWrap: "wrap",
-    marginBottom: 4,
-  },
-  metaChip: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 5,
-    backgroundColor: C.surface,
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    borderRadius: 20,
-  },
-  metaText: {
-    fontSize: 12,
-    fontFamily: "SpaceGrotesk_500Medium",
-    color: C.muted,
-  },
+  planMeta: { flexDirection: "row", gap: 10, flexWrap: "wrap", marginBottom: 4 },
+  metaChip: { flexDirection: "row", alignItems: "center", gap: 5, backgroundColor: C.surface, paddingHorizontal: 10, paddingVertical: 5, borderRadius: 20 },
+  metaText: { fontSize: 12, fontFamily: "SpaceGrotesk_500Medium", color: C.muted },
 
   upgradeBtn: {
     flexDirection: "row",
@@ -424,11 +394,7 @@ const S = StyleSheet.create({
     height: 44,
     marginTop: 14,
   },
-  upgradeBtnText: {
-    fontSize: 14,
-    fontFamily: "SpaceGrotesk_700Bold",
-    color: C.primary,
-  },
+  upgradeBtnText: { fontSize: 14, fontFamily: "SpaceGrotesk_700Bold", color: C.primary },
 
   upgradeHero: {
     flexDirection: "row",
@@ -445,9 +411,5 @@ const S = StyleSheet.create({
     shadowRadius: 18,
     elevation: 10,
   },
-  upgradeHeroText: {
-    fontSize: 16,
-    fontFamily: "SpaceGrotesk_700Bold",
-    color: "#fff",
-  },
+  upgradeHeroText: { fontSize: 16, fontFamily: "SpaceGrotesk_700Bold", color: "#fff" },
 });

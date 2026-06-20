@@ -16,6 +16,7 @@ import feedbackRouter from "./feedback.js";
 import dashboardRouter from "./dashboard.js";
 import planejamentoRouter from "./planejamento.js";
 import notificacoesRouter from "./notificacoes.js";
+import stripeRouter from "./stripe.js";
 
 const router: IRouter = Router();
 
@@ -36,5 +37,6 @@ router.use("/feedback", feedbackRouter);
 router.use("/dashboard", dashboardRouter);
 router.use("/planejamento", planejamentoRouter);
 router.use("/notificacoes", notificacoesRouter);
+router.use("/stripe", stripeRouter);
 
 export default router;

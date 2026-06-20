@@ -151,6 +151,10 @@ function RootLayoutNav() {
         name="whatsapp-config"
         options={{ headerShown: false, presentation: "card", animation: "slide_from_right" }}
       />
+      <Stack.Screen
+        name="sucesso"
+        options={{ headerShown: false, presentation: "card", animation: "fade" }}
+      />
     </Stack>
   );
 }
