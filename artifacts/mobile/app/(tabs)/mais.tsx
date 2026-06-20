@@ -6,12 +6,15 @@ import {
   ScrollView,
   TouchableOpacity,
   Platform,
+  Alert,
 } from "react-native";
 import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useRouter } from "expo-router";
 import * as Haptics from "expo-haptics";
 
 import { useColors } from "@/hooks/useColors";
+import { useAuth } from "@/context/AuthContext";
 
 interface MenuItem {
   icon: string;
@@ -20,40 +23,8 @@ interface MenuItem {
   sub?: string;
   badge?: string;
   danger?: boolean;
+  onPress?: () => void;
 }
-
-const MENU_SECTIONS: { title: string; items: MenuItem[] }[] = [
-  {
-    title: "Conta",
-    items: [
-      { icon: "user", iconLib: "feather", label: "Meu Perfil", sub: "Rafael Mendes" },
-      { icon: "star", iconLib: "feather", label: "Meu Plano", sub: "Pro · R$199/mês", badge: "PRO" },
-    ],
-  },
-  {
-    title: "Configurações",
-    items: [
-      { icon: "bell", iconLib: "feather", label: "Notificações", sub: "Ativas" },
-      { icon: "robot", iconLib: "mci", label: "Treinamento da JADE", sub: "3 scripts ativos" },
-      { icon: "link", iconLib: "feather", label: "Integrações", sub: "WhatsApp, Instagram" },
-      { icon: "shield", iconLib: "feather", label: "Privacidade e Dados" },
-    ],
-  },
-  {
-    title: "Suporte",
-    items: [
-      { icon: "help-circle", iconLib: "feather", label: "Central de Ajuda" },
-      { icon: "message-square", iconLib: "feather", label: "Falar com Suporte" },
-      { icon: "star", iconLib: "feather", label: "Avaliar o App" },
-    ],
-  },
-  {
-    title: "",
-    items: [
-      { icon: "log-out", iconLib: "feather", label: "Sair da Conta", danger: true },
-    ],
-  },
-];
 
 function Icon({ name, lib, color }: { name: string; lib: "feather" | "mci"; color: string }) {
   if (lib === "mci") {
@@ -65,13 +36,66 @@ function Icon({ name, lib, color }: { name: string; lib: "feather" | "mci"; colo
 export default function MaisScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
+  const router = useRouter();
+  const { logout } = useAuth();
 
   const topPad = Platform.OS === "web" ? 67 : insets.top;
   const bottomPad = Platform.OS === "web" ? 84 : insets.bottom + 60;
 
+  const handleLogout = () => {
+    Alert.alert(
+      "Sair da conta",
+      "Tem certeza que deseja sair?",
+      [
+        { text: "Cancelar", style: "cancel" },
+        {
+          text: "Sair",
+          style: "destructive",
+          onPress: async () => {
+            await logout();
+            router.replace("/login");
+          },
+        },
+      ]
+    );
+  };
+
   const handlePress = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
   };
+
+  const MENU_SECTIONS: { title: string; items: MenuItem[] }[] = [
+    {
+      title: "Conta",
+      items: [
+        { icon: "user", iconLib: "feather", label: "Meu Perfil", sub: "Rodrigo" },
+        { icon: "star", iconLib: "feather", label: "Meu Plano", sub: "Pro · R$199/mês", badge: "PRO" },
+      ],
+    },
+    {
+      title: "Configurações",
+      items: [
+        { icon: "bell", iconLib: "feather", label: "Notificações", sub: "Ativas" },
+        { icon: "robot", iconLib: "mci", label: "Treinamento da JADE", sub: "3 scripts ativos" },
+        { icon: "link", iconLib: "feather", label: "Integrações", sub: "WhatsApp, Instagram" },
+        { icon: "shield", iconLib: "feather", label: "Privacidade e Dados" },
+      ],
+    },
+    {
+      title: "Suporte",
+      items: [
+        { icon: "help-circle", iconLib: "feather", label: "Central de Ajuda" },
+        { icon: "message-square", iconLib: "feather", label: "Falar com Suporte" },
+        { icon: "star", iconLib: "feather", label: "Avaliar o App" },
+      ],
+    },
+    {
+      title: "",
+      items: [
+        { icon: "log-out", iconLib: "feather", label: "Sair da Conta", danger: true, onPress: handleLogout },
+      ],
+    },
+  ];
 
   return (
     <ScrollView
@@ -87,11 +111,11 @@ export default function MaisScreen() {
       {/* Profile Card */}
       <View style={[styles.profileCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
         <View style={[styles.profileAvatar, { backgroundColor: colors.primary }]}>
-          <Text style={styles.profileInitials}>RM</Text>
+          <Text style={styles.profileInitials}>R</Text>
         </View>
         <View style={{ flex: 1 }}>
-          <Text style={[styles.profileName, { color: colors.text }]}>Rafael Mendes</Text>
-          <Text style={[styles.profileRole, { color: colors.mutedForeground }]}>Gerente Comercial</Text>
+          <Text style={[styles.profileName, { color: colors.text }]}>Rodrigo</Text>
+          <Text style={[styles.profileRole, { color: colors.mutedForeground }]}>Fundador · JÁ Delivery</Text>
           <View style={[styles.proBadge, { backgroundColor: colors.primary + "22" }]}>
             <Text style={[styles.proBadgeText, { color: colors.primary }]}>✦ Plano Pro</Text>
           </View>
@@ -135,7 +159,7 @@ export default function MaisScreen() {
               <React.Fragment key={ii}>
                 <TouchableOpacity
                   style={styles.menuItem}
-                  onPress={handlePress}
+                  onPress={item.onPress ?? handlePress}
                   activeOpacity={0.7}
                 >
                   <View

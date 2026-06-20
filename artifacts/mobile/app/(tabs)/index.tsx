@@ -86,7 +86,7 @@ export default function RadarScreen() {
       <View style={[styles.header, { paddingTop: topPad + 16 }]}>
         <View>
           <Text style={[styles.greeting, { color: colors.mutedForeground }]}>Bom dia,</Text>
-          <Text style={[styles.name, { color: colors.text }]}>Rafael Mendes 👋</Text>
+          <Text style={[styles.name, { color: colors.text }]}>Rodrigo 👋</Text>
         </View>
         <View style={styles.headerActions}>
           {unread > 0 && (
@@ -102,7 +102,7 @@ export default function RadarScreen() {
             </TouchableOpacity>
           )}
           <View style={[styles.avatar, { backgroundColor: colors.primary }]}>
-            <Text style={styles.avatarText}>RM</Text>
+            <Text style={styles.avatarText}>R</Text>
           </View>
         </View>
       </View>
@@ -186,7 +186,7 @@ export default function RadarScreen() {
                 <View
                   style={[
                     styles.pipelineBarFill,
-                    { backgroundColor: col.color, flex: col.count / leads.length || 0 },
+                    { backgroundColor: col.color, flex: col.count / (leads.length || 1) },
                   ]}
                 />
               </View>
