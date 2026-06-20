@@ -66,7 +66,7 @@ export default function MaisScreen() {
 
   const tap = () => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
 
-  const isEnterprise = false;
+  const isEnterprise = true;
 
   const handleGestaoPress = () => {
     tap();

@@ -210,6 +210,15 @@
   ],
   "activity_events": [
     {
+      "id": "09f4a439172c253c",
+      "type": "message",
+      "text": "JADE respondeu a uma mensagem",
+      "icon": "robot",
+      "color": "#FF0080",
+      "metadata": {},
+      "created_at": "2026-06-20T19:49:33.807Z"
+    },
+    {
       "id": "5ad6aeff0f8d9fec",
       "type": "message",
       "text": "JADE respondeu a uma mensagem",
