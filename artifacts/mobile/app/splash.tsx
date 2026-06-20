@@ -9,40 +9,29 @@ import {
   View,
 } from "react-native";
 
-const jadeIcon = require("../assets/images/jade-icon.png");
-const jadeWordmark = require("../assets/images/jade-wordmark-orig.png");
+const jadeLogo = require("../assets/images/jade-logo.png");
 
 const { width: SCREEN_W } = Dimensions.get("window");
-const ICON_SIZE = Math.min(SCREEN_W * 0.68, 280);
+const LOGO_W = Math.min(SCREEN_W * 0.78, 360);
 
 export default function SplashScreen() {
   const router = useRouter();
   const fadeAnim = useRef(new Animated.Value(0)).current;
-  const scaleAnim = useRef(new Animated.Value(0.82)).current;
-  const wordmarkAnim = useRef(new Animated.Value(0)).current;
+  const scaleAnim = useRef(new Animated.Value(0.86)).current;
   const dotAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
-    Animated.sequence([
-      Animated.parallel([
-        Animated.timing(fadeAnim, {
-          toValue: 1,
-          duration: 750,
-          easing: Easing.out(Easing.cubic),
-          useNativeDriver: true,
-        }),
-        Animated.timing(scaleAnim, {
-          toValue: 1,
-          duration: 750,
-          easing: Easing.out(Easing.back(1.12)),
-          useNativeDriver: true,
-        }),
-      ]),
-      Animated.timing(wordmarkAnim, {
+    Animated.parallel([
+      Animated.timing(fadeAnim, {
         toValue: 1,
-        duration: 450,
-        delay: 80,
+        duration: 800,
         easing: Easing.out(Easing.cubic),
+        useNativeDriver: true,
+      }),
+      Animated.timing(scaleAnim, {
+        toValue: 1,
+        duration: 800,
+        easing: Easing.out(Easing.back(1.1)),
         useNativeDriver: true,
       }),
     ]).start();
@@ -63,41 +52,12 @@ export default function SplashScreen() {
 
   return (
     <View style={styles.container}>
-      {/* Icon: circular crop to show the neon circle prominently */}
       <Animated.View
-        style={[
-          styles.iconContainer,
-          { width: ICON_SIZE, height: ICON_SIZE },
-          { opacity: fadeAnim, transform: [{ scale: scaleAnim }] },
-        ]}
+        style={{ opacity: fadeAnim, transform: [{ scale: scaleAnim }] }}
       >
         <Image
-          source={jadeIcon}
-          style={{ width: ICON_SIZE, height: ICON_SIZE * 1.5, marginTop: -ICON_SIZE * 0.22 }}
-          resizeMode="cover"
-        />
-      </Animated.View>
-
-      {/* Wordmark */}
-      <Animated.View
-        style={[
-          styles.wordmarkContainer,
-          {
-            opacity: wordmarkAnim,
-            transform: [
-              {
-                translateY: wordmarkAnim.interpolate({
-                  inputRange: [0, 1],
-                  outputRange: [14, 0],
-                }),
-              },
-            ],
-          },
-        ]}
-      >
-        <Image
-          source={jadeWordmark}
-          style={styles.wordmarkImage}
+          source={jadeLogo}
+          style={{ width: LOGO_W, height: LOGO_W * (683 / 1024) }}
           resizeMode="contain"
         />
       </Animated.View>
@@ -127,27 +87,14 @@ export default function SplashScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#0A0A0F",
+    backgroundColor: "#000000",
     alignItems: "center",
     justifyContent: "center",
-  },
-  iconContainer: {
-    borderRadius: 9999,
-    overflow: "hidden",
-    alignItems: "center",
-  },
-  wordmarkContainer: {
-    alignItems: "center",
-    marginTop: 20,
-  },
-  wordmarkImage: {
-    width: SCREEN_W * 0.72,
-    height: (SCREEN_W * 0.72) * (178 / 1024),
   },
   dotsRow: {
     flexDirection: "row",
     gap: 8,
-    marginTop: 52,
+    marginTop: 44,
   },
   dot: {
     width: 6,
