@@ -51,41 +51,34 @@ function ModuleBtn({
   children: React.ReactNode;
   colors: ReturnType<typeof useColors>;
 }) {
-  const glowScale   = useRef(new Animated.Value(1)).current;
   const glowOpacity = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     if (active) {
       Animated.loop(
-        Animated.parallel([
-          Animated.sequence([
-            Animated.timing(glowScale,   { toValue: 1.18, duration: 900, easing: Easing.inOut(Easing.sin), useNativeDriver: true }),
-            Animated.timing(glowScale,   { toValue: 1.0,  duration: 900, easing: Easing.inOut(Easing.sin), useNativeDriver: true }),
-          ]),
-          Animated.sequence([
-            Animated.timing(glowOpacity, { toValue: 0.45, duration: 900, useNativeDriver: true }),
-            Animated.timing(glowOpacity, { toValue: 0.0,  duration: 900, useNativeDriver: true }),
-          ]),
+        Animated.sequence([
+          Animated.timing(glowOpacity, { toValue: 0.28, duration: 1200, easing: Easing.inOut(Easing.sin), useNativeDriver: true }),
+          Animated.timing(glowOpacity, { toValue: 0.0,  duration: 1200, easing: Easing.inOut(Easing.sin), useNativeDriver: true }),
         ])
       ).start();
     } else {
-      glowScale.stopAnimation();
       glowOpacity.stopAnimation();
-      glowScale.setValue(1);
       glowOpacity.setValue(0);
     }
   }, [active]);
 
   return (
-    <TouchableOpacity onPress={onPress} activeOpacity={0.75} style={[M.wrap, { width: WRAP_SIZE, height: WRAP_SIZE }]}>
-      {/* Subtle pink energy halo — only when active */}
+    // overflow:visible so the glow ring isn't clipped by the touchable bounds
+    <TouchableOpacity
+      onPress={onPress}
+      activeOpacity={0.75}
+      style={[M.wrap, { width: WRAP_SIZE, height: WRAP_SIZE, overflow: "visible" }]}
+    >
+      {/* Glow: transparent ring with pink shadow — purely circular, no square fill */}
       <Animated.View
         style={[
           M.glowRing,
-          {
-            opacity: glowOpacity,
-            transform: [{ scale: glowScale }],
-          },
+          { opacity: glowOpacity },
         ]}
       />
       {/* Button — identical style active or not */}
@@ -94,7 +87,7 @@ function ModuleBtn({
           M.btn,
           {
             backgroundColor: colors.surface,
-            borderColor: active ? colors.primary + "99" : colors.border,
+            borderColor: active ? colors.primary + "80" : colors.border,
           },
         ]}
       >
@@ -117,16 +110,17 @@ const M = StyleSheet.create({
   },
   glowRing: {
     position: "absolute",
-    width: GLOW_SIZE,
-    height: GLOW_SIZE,
-    borderRadius: GLOW_SIZE / 2,
-    backgroundColor: "#FF0080",
-    // soft radial glow effect via shadow
+    width: BTN_SIZE,
+    height: BTN_SIZE,
+    borderRadius: BTN_SIZE / 2,
+    backgroundColor: "transparent",
+    borderWidth: 2,
+    borderColor: "#FF0080",
     shadowColor: "#FF0080",
     shadowOffset: { width: 0, height: 0 },
     shadowOpacity: 1,
-    shadowRadius: 18,
-    elevation: 12,
+    shadowRadius: 16,
+    elevation: 10,
   },
 });
 
@@ -212,7 +206,7 @@ export default function RadarScreen() {
       showsVerticalScrollIndicator={false}
     >
       {/* ── Header ── */}
-      <View style={[S.header, { paddingTop: topPad + 4 }]}>
+      <View style={[S.header, { paddingTop: topPad - 6 }]}>
         <View>
           <Text style={[S.greeting, { color: colors.mutedForeground }]}>Bom dia,</Text>
           <Text style={[S.name, { color: colors.text }]}>Rodrigo 👋</Text>
