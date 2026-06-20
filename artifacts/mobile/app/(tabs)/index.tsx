@@ -1,6 +1,6 @@
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { useCallback, useRef, useState, useEffect } from "react";
 import {
-  Alert,
+  Modal,
   Animated,
   Easing,
   Platform,
@@ -40,42 +40,53 @@ const BTN_SIZE  = 65;
 const WRAP_SIZE = 79;
 
 function ModuleBtn({
-  active, onPress, children, colors,
+  active, locked, onPress, onLockedPress, children, colors,
 }: {
   active: boolean;
+  locked?: boolean;
   onPress: () => void;
+  onLockedPress?: () => void;
   children: React.ReactNode;
   colors: ReturnType<typeof useColors>;
 }) {
   const glowOpacity = useRef(new Animated.Value(0)).current;
-  const iconBreath  = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
-    if (active) {
+    if (active && !locked) {
       Animated.loop(Animated.sequence([
-        Animated.timing(glowOpacity, { toValue: 0.28, duration: 1200, easing: Easing.inOut(Easing.sin), useNativeDriver: true }),
-        Animated.timing(glowOpacity, { toValue: 0.0,  duration: 1200, easing: Easing.inOut(Easing.sin), useNativeDriver: true }),
-      ])).start();
-      Animated.loop(Animated.sequence([
-        Animated.timing(iconBreath, { toValue: 0.55, duration: 1800, easing: Easing.inOut(Easing.sin), useNativeDriver: true }),
-        Animated.timing(iconBreath, { toValue: 1.0,  duration: 1800, easing: Easing.inOut(Easing.sin), useNativeDriver: true }),
+        Animated.timing(glowOpacity, { toValue: 0.55, duration: 1400, easing: Easing.inOut(Easing.sin), useNativeDriver: true }),
+        Animated.timing(glowOpacity, { toValue: 0.0,  duration: 1400, easing: Easing.inOut(Easing.sin), useNativeDriver: true }),
       ])).start();
     } else {
-      glowOpacity.stopAnimation(); glowOpacity.setValue(0);
-      iconBreath.stopAnimation();  iconBreath.setValue(1);
+      glowOpacity.stopAnimation();
+      glowOpacity.setValue(0);
     }
-  }, [active]);
+  }, [active, locked]);
 
   return (
-    <TouchableOpacity onPress={onPress} activeOpacity={0.75}
-      style={[M.wrap, { width: WRAP_SIZE, height: WRAP_SIZE, overflow: "visible" }]}>
-      <Animated.View style={[M.glowRing, { opacity: glowOpacity }]} />
+    <TouchableOpacity
+      onPress={locked ? onLockedPress : onPress}
+      activeOpacity={0.75}
+      style={[M.wrap, { width: WRAP_SIZE, height: WRAP_SIZE, overflow: "visible" }]}
+    >
+      {/* Subtle 2mm energy glow — only when active */}
+      {active && !locked && (
+        <Animated.View style={[M.glowRing, { opacity: glowOpacity }]} />
+      )}
+
       <View style={[M.btn, {
         backgroundColor: colors.surface,
-        borderColor: active ? colors.primary + "80" : colors.border,
+        borderColor: active && !locked ? colors.primary + "80" : colors.border,
+        opacity: locked ? 0.4 : 1,
       }]}>
-        <Animated.View style={{ opacity: iconBreath }}>{children}</Animated.View>
+        {children}
       </View>
+
+      {locked && (
+        <View style={M.lockOverlay}>
+          <Feather name="lock" size={12} color="#AAAACC" />
+        </View>
+      )}
     </TouchableOpacity>
   );
 }
@@ -87,10 +98,29 @@ const M = StyleSheet.create({
     alignItems: "center", justifyContent: "center", borderWidth: 1.5, position: "absolute",
   },
   glowRing: {
-    position: "absolute", width: BTN_SIZE, height: BTN_SIZE, borderRadius: BTN_SIZE / 2,
-    backgroundColor: "transparent", borderWidth: 2, borderColor: "#FF0080",
-    shadowColor: "#FF0080", shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 1, shadowRadius: 16, elevation: 10,
+    position: "absolute",
+    width: BTN_SIZE + 4,
+    height: BTN_SIZE + 4,
+    borderRadius: (BTN_SIZE + 4) / 2,
+    backgroundColor: "transparent",
+    shadowColor: "#FF0080",
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 1,
+    shadowRadius: 8,
+    elevation: 8,
+  },
+  lockOverlay: {
+    position: "absolute",
+    top: 4,
+    right: 4,
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    backgroundColor: "#1E1E2E",
+    alignItems: "center",
+    justifyContent: "center",
+    borderWidth: 1,
+    borderColor: "#2E2E3E",
   },
 });
 
@@ -134,11 +164,13 @@ function timeAgo(isoString: string): string {
 
 // ─── Module definitions ───────────────────────────────────────────────────────
 const MODULE_DEFS = [
-  { name: "scanner",   label: "Scanner Radar", onMsg: "JADE está buscando novos estabelecimentos próximos.",       offMsg: "Scanner pausado. Prospecção automática desativada." },
-  { name: "jade",      label: "JADE IA",        onMsg: "JADE ativa e respondendo leads automaticamente.",           offMsg: "JADE pausada. Respostas automáticas desativadas." },
-  { name: "leads",     label: "CRM",            onMsg: "Sincronização automática de leads ativada.",                offMsg: "CRM em modo manual." },
-  { name: "whatsapp",  label: "WhatsApp",       onMsg: "WhatsApp configurado — envio ativado quando pronto.",       offMsg: "WhatsApp pausado." },
-  { name: "marketing", label: "Marketing",      onMsg: "Campanhas de marketing automático ativadas.",               offMsg: "Marketing automático pausado." },
+  { name: "scanner",    label: "Scanner",  locked: false, plan: "",          onMsg: "JADE está buscando novos estabelecimentos próximos.",     offMsg: "Scanner pausado. Prospecção automática desativada." },
+  { name: "jade",       label: "JADE IA",  locked: false, plan: "",          onMsg: "JADE ativa e respondendo leads automaticamente.",          offMsg: "JADE pausada. Respostas automáticas desativadas." },
+  { name: "leads",      label: "CRM",      locked: false, plan: "",          onMsg: "Sincronização automática de leads ativada.",               offMsg: "CRM em modo manual." },
+  { name: "whatsapp",   label: "WhatsApp", locked: false, plan: "",          onMsg: "WhatsApp configurado — envio ativado quando pronto.",      offMsg: "WhatsApp pausado." },
+  { name: "marketing",  label: "Mkt",      locked: false, plan: "",          onMsg: "Campanhas de marketing automático ativadas.",              offMsg: "Marketing automático pausado." },
+  { name: "gestao",     label: "Gestão",   locked: true,  plan: "Commander", onMsg: "", offMsg: "" },
+  { name: "relatorios", label: "Relatórios", locked: true, plan: "Commander", onMsg: "", offMsg: "" },
 ];
 
 // ─── Screen ───────────────────────────────────────────────────────────────────
@@ -147,7 +179,9 @@ export default function RadarScreen() {
   const insets  = useSafeAreaInsets();
   const router  = useRouter();
   const { leads, conversations, moduleStates, activityEvents, toggleModule, refreshDashboard } = useApp();
-  const [refreshing, setRefreshing] = useState(false);
+  const [refreshing, setRefreshing]     = useState(false);
+  const [lockModal, setLockModal]       = useState(false);
+  const [lockedModuleName, setLockedModuleName] = useState("");
 
   const topPad    = Platform.OS === "web" ? 67  : insets.top;
   const bottomPad = Platform.OS === "web" ? 84  : insets.bottom + 60;
@@ -167,10 +201,10 @@ export default function RadarScreen() {
   }
 
   const METRICS = [
-    { label: "Leads Ativos",   value: String(novoLeads),              change: `${totalLeads} total`,  positive: true,  icon: "users",          iconColor: "#6C63FF" },
-    { label: "Conv. c/ não lidas", value: String(conversasAtivas),   change: `${conversations.length} total`, positive: conversasAtivas > 0, icon: "message-circle", iconColor: "#FF0080" },
-    { label: "Tx. Conversão",  value: `${txConversao}%`,             change: `${fechadoLeads.length} fechados`, positive: txConversao > 20, icon: "trending-up",    iconColor: "#00D68F" },
-    { label: "Receita Fechada", value: formatCurrency(receitaMes),   change: `${fechadoLeads.length} contratos`, positive: true, icon: "dollar-sign",    iconColor: "#FFB300" },
+    { label: "Leads Ativos",        value: String(novoLeads),             change: `${totalLeads} total`,           positive: true,               icon: "users",          iconColor: "#6C63FF" },
+    { label: "Conv. c/ não lidas",  value: String(conversasAtivas),       change: `${conversations.length} total`, positive: conversasAtivas > 0, icon: "message-circle", iconColor: "#FF0080" },
+    { label: "Tx. Conversão",       value: `${txConversao}%`,             change: `${fechadoLeads.length} fechados`, positive: txConversao > 20, icon: "trending-up",    iconColor: "#00D68F" },
+    { label: "Receita Fechada",     value: formatCurrency(receitaMes),    change: `${fechadoLeads.length} contratos`, positive: true,            icon: "dollar-sign",    iconColor: "#FFB300" },
   ] as const;
 
   // ── Active modules list ────────────────────────────────────────────────────
@@ -184,17 +218,18 @@ export default function RadarScreen() {
   // ── Toggle handler ────────────────────────────────────────────────────────
   const handleToggle = async (name: string) => {
     const def = MODULE_DEFS.find((d) => d.name === name);
-    if (!def) return;
+    if (!def || def.locked) return;
     const current = moduleStates[name];
     const newActive = !current?.is_active;
-
     await toggleModule(name);
+    if (newActive) {
+      // brief feedback without Alert for smoother UX
+    }
+  };
 
-    Alert.alert(
-      newActive ? `${def.label} ativado` : `${def.label} pausado`,
-      newActive ? def.onMsg : def.offMsg,
-      [{ text: "OK" }],
-    );
+  const handleLockedPress = (name: string) => {
+    setLockedModuleName(name);
+    setLockModal(true);
   };
 
   // ── Pull to refresh ────────────────────────────────────────────────────────
@@ -204,167 +239,222 @@ export default function RadarScreen() {
     setRefreshing(false);
   }, [refreshDashboard]);
 
+  // ── Enterprise lock modal ─────────────────────────────────────────────────
+  const lockedDef = MODULE_DEFS.find((d) => d.name === lockedModuleName);
+
   return (
-    <ScrollView
-      style={[S.root, { backgroundColor: colors.background }]}
-      contentContainerStyle={{ paddingBottom: bottomPad }}
-      showsVerticalScrollIndicator={false}
-      refreshControl={
-        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} />
-      }
-    >
-      {/* ── Header ── */}
-      <View style={[S.header, { paddingTop: topPad - 6 }]}>
-        <View>
-          <Text style={[S.greeting, { color: colors.mutedForeground }]}>Bom dia,</Text>
-          <Text style={[S.name, { color: colors.text }]}>Rodrigo 👋</Text>
-        </View>
-        <View style={S.headerRight}>
-          {unread > 0 && (
-            <TouchableOpacity style={[S.headerBtn, { backgroundColor: colors.surface }]}
-              onPress={() => router.push("/notificacoes" as any)} activeOpacity={0.8}>
-              <Feather name="bell" size={20} color={colors.text} />
-              <View style={[S.notifDot, { backgroundColor: colors.primary }]}>
-                <Text style={S.notifDotText}>{unread}</Text>
-              </View>
+    <>
+      <ScrollView
+        style={[S.root, { backgroundColor: colors.background }]}
+        contentContainerStyle={{ paddingBottom: bottomPad }}
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} />
+        }
+      >
+        {/* ── Header ── */}
+        <View style={[S.header, { paddingTop: topPad }]}>
+          <View>
+            <Text style={[S.greeting, { color: colors.mutedForeground }]}>Bom dia,</Text>
+            <Text style={[S.name, { color: colors.text }]}>Rodrigo 👋</Text>
+          </View>
+          <View style={S.headerRight}>
+            {unread > 0 && (
+              <TouchableOpacity
+                style={[S.headerBtn, { backgroundColor: colors.surface }]}
+                onPress={() => router.push("/notificacoes" as any)}
+                activeOpacity={0.8}
+              >
+                <Feather name="bell" size={20} color={colors.text} />
+                <View style={[S.notifDot, { backgroundColor: colors.primary }]}>
+                  <Text style={S.notifDotText}>{unread}</Text>
+                </View>
+              </TouchableOpacity>
+            )}
+            <TouchableOpacity
+              style={[S.avatarBtn, { backgroundColor: colors.primary }]}
+              onPress={() => router.push("/perfil" as any)}
+              activeOpacity={0.85}
+            >
+              <Text style={S.avatarText}>R</Text>
             </TouchableOpacity>
-          )}
-          <TouchableOpacity style={[S.avatarBtn, { backgroundColor: colors.primary }]}
-            onPress={() => router.push("/perfil" as any)} activeOpacity={0.85}>
-            <Text style={S.avatarText}>R</Text>
-          </TouchableOpacity>
+          </View>
         </View>
-      </View>
 
-      {/* ── Module buttons ── */}
-      <ScrollView horizontal showsHorizontalScrollIndicator={false}
-        contentContainerStyle={S.modulesRow} style={S.modulesScroll}>
-        {MODULE_DEFS.map((def) => {
-          const mod = moduleStates[def.name];
-          const active = mod?.is_active ?? false;
-          return (
-            <View key={def.name} style={{ alignItems: "center", gap: 6 }}>
-              <ModuleBtn active={active} onPress={() => handleToggle(def.name)} colors={colors}>
-                {def.name === "scanner"   && <CrosshairIcon size={27} color={colors.primary} />}
-                {def.name === "jade"      && <MaterialCommunityIcons name="robot" size={27} color={colors.primary} />}
-                {def.name === "leads"     && <Feather name="users" size={25} color={colors.primary} />}
-                {def.name === "whatsapp"  && <Feather name="message-circle" size={25} color={colors.primary} />}
-                {def.name === "marketing" && <Feather name="zap" size={25} color={colors.primary} />}
-              </ModuleBtn>
-              <Text style={[S.moduleLabel, { color: active ? colors.primary : colors.mutedForeground, marginTop: WRAP_SIZE / 2 }]}>
-                {def.name === "scanner" ? "Scanner" : def.name === "jade" ? "JADE" : def.name === "leads" ? "CRM" : def.name === "whatsapp" ? "WhatsApp" : "Mkt"}
-              </Text>
-            </View>
-          );
-        })}
-      </ScrollView>
-
-      <Text style={[S.activeLabel, { color: colors.mutedForeground }]}>
-        {activeModuleNames.length > 0 ? (
-          <>
-            <Text style={{ color: colors.primary }}>●{"  "}</Text>
-            {activeModuleNames.join(" · ") + " ativos"}
-          </>
-        ) : (
-          <Text style={{ color: colors.mutedForeground }}>Nenhum módulo ativo</Text>
-        )}
-      </Text>
-
-      {/* ── Metric Cards ── */}
-      <View style={S.metricsGrid}>
-        {METRICS.map((m, i) => (
-          <View key={i} style={[S.metricCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
-            <View style={S.metricHeader}>
-              <View style={[S.metricIcon, { backgroundColor: m.iconColor + "22" }]}>
-                <Feather name={m.icon as any} size={16} color={m.iconColor} />
-              </View>
-              <View style={[S.metricChange, { backgroundColor: m.positive ? "#00D68F22" : "#FF3B5C22" }]}>
-                <Feather name={m.positive ? "trending-up" : "trending-down"} size={10}
-                  color={m.positive ? colors.success : colors.destructive} />
-                <Text style={[S.metricChangeText, { color: m.positive ? colors.success : colors.destructive }]}>
-                  {m.change}
+        {/* ── Module buttons ── */}
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={S.modulesRow}
+          style={S.modulesScroll}
+        >
+          {MODULE_DEFS.map((def) => {
+            const mod = moduleStates[def.name];
+            const active = def.locked ? false : (mod?.is_active ?? false);
+            return (
+              <View key={def.name} style={{ alignItems: "center", gap: 6 }}>
+                <ModuleBtn
+                  active={active}
+                  locked={def.locked}
+                  onPress={() => handleToggle(def.name)}
+                  onLockedPress={() => handleLockedPress(def.name)}
+                  colors={colors}
+                >
+                  {def.name === "scanner"    && <CrosshairIcon size={27} color={def.locked ? "#5555AA" : colors.primary} />}
+                  {def.name === "jade"       && <MaterialCommunityIcons name="robot" size={27} color={def.locked ? "#5555AA" : colors.primary} />}
+                  {def.name === "leads"      && <Feather name="users" size={25} color={def.locked ? "#5555AA" : colors.primary} />}
+                  {def.name === "whatsapp"   && <Feather name="message-circle" size={25} color={def.locked ? "#5555AA" : colors.primary} />}
+                  {def.name === "marketing"  && <Feather name="zap" size={25} color={def.locked ? "#5555AA" : colors.primary} />}
+                  {def.name === "gestao"     && <Feather name="briefcase" size={25} color="#5555AA" />}
+                  {def.name === "relatorios" && <Feather name="bar-chart-2" size={25} color="#5555AA" />}
+                </ModuleBtn>
+                <Text style={[S.moduleLabel, {
+                  color: def.locked ? "#5555AA" : (active ? colors.primary : colors.mutedForeground),
+                  marginTop: WRAP_SIZE / 2,
+                }]}>
+                  {def.label}
                 </Text>
               </View>
-            </View>
-            <Text style={[S.metricValue, { color: colors.text }]}>{m.value}</Text>
-            <Text style={[S.metricLabel, { color: colors.mutedForeground }]}>{m.label}</Text>
-          </View>
-        ))}
-      </View>
+            );
+          })}
+        </ScrollView>
 
-      {/* ── Pipeline Summary ── */}
-      <View style={S.section}>
-        <View style={S.sectionHeader}>
-          <Text style={[S.sectionTitle, { color: colors.text }]}>Pipeline</Text>
-          <TouchableOpacity onPress={() => router.push("/leads" as any)}>
-            <Text style={[S.sectionLink, { color: colors.primary }]}>Ver tudo</Text>
-          </TouchableOpacity>
-        </View>
-        <View style={[S.pipelineCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
-          {[
-            { label: "Novo",        count: leads.filter((l) => l.column === "novo").length,        color: "#6C63FF" },
-            { label: "Qualificado", count: leads.filter((l) => l.column === "qualificado").length, color: "#FFB300" },
-            { label: "Proposta",    count: leads.filter((l) => l.column === "proposta").length,    color: "#FF0080" },
-            { label: "Fechado",     count: leads.filter((l) => l.column === "fechado").length,     color: "#00D68F" },
-          ].map((col, i) => (
-            <View key={i} style={S.pipelineCol}>
-              <View style={[S.pipelineDot, { backgroundColor: col.color }]} />
-              <Text style={[S.pipelineCount, { color: colors.text }]}>{col.count}</Text>
-              <Text style={[S.pipelineLabel, { color: colors.mutedForeground }]}>{col.label}</Text>
-              <View style={[S.pipelineBar, { backgroundColor: col.color + "33" }]}>
-                <View style={[S.pipelineBarFill, {
-                  backgroundColor: col.color,
-                  flex: col.count / (leads.length || 1),
-                }]} />
+        <Text style={[S.activeLabel, { color: colors.mutedForeground }]}>
+          {activeModuleNames.length > 0 ? (
+            <>
+              <Text style={{ color: colors.primary }}>●{"  "}</Text>
+              {activeModuleNames.join(" · ") + " ativos"}
+            </>
+          ) : (
+            <Text style={{ color: colors.mutedForeground }}>Nenhum módulo ativo</Text>
+          )}
+        </Text>
+
+        {/* ── Metric Cards ── */}
+        <View style={S.metricsGrid}>
+          {METRICS.map((m, i) => (
+            <View key={i} style={[S.metricCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+              <View style={S.metricHeader}>
+                <View style={[S.metricIcon, { backgroundColor: m.iconColor + "22" }]}>
+                  <Feather name={m.icon as any} size={16} color={m.iconColor} />
+                </View>
+                <View style={[S.metricChange, { backgroundColor: m.positive ? "#00D68F22" : "#FF3B5C22" }]}>
+                  <Feather
+                    name={m.positive ? "trending-up" : "trending-down"}
+                    size={10}
+                    color={m.positive ? colors.success : colors.destructive}
+                  />
+                  <Text style={[S.metricChangeText, { color: m.positive ? colors.success : colors.destructive }]}>
+                    {m.change}
+                  </Text>
+                </View>
               </View>
+              <Text style={[S.metricValue, { color: colors.text }]}>{m.value}</Text>
+              <Text style={[S.metricLabel, { color: colors.mutedForeground }]}>{m.label}</Text>
             </View>
           ))}
         </View>
-      </View>
 
-      {/* ── Activity Feed ── */}
-      <View style={S.section}>
-        <View style={S.sectionHeader}>
-          <Text style={[S.sectionTitle, { color: colors.text }]}>Atividade Recente</Text>
-          <TouchableOpacity onPress={onRefresh} activeOpacity={0.7}>
-            <Feather name="refresh-cw" size={15} color={colors.mutedForeground} />
-          </TouchableOpacity>
-        </View>
-        <View style={[S.activityCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
-          {activityEvents.slice(0, 8).map((item, i, arr) => {
-            const color = activityColor(item.type, colors);
-            return (
-              <React.Fragment key={item.id}>
-                <View style={S.activityItem}>
-                  <View style={[S.activityIconWrap, { backgroundColor: color + "22" }]}>
-                    <ActivityIcon type={item.type} color={color} />
-                  </View>
-                  <View style={{ flex: 1 }}>
-                    <Text style={[S.activityText, { color: colors.text }]} numberOfLines={2}>
-                      {item.text}
-                    </Text>
-                    <Text style={[S.activityTime, { color: colors.mutedForeground }]}>
-                      {timeAgo(item.created_at)}
-                    </Text>
-                  </View>
+        {/* ── Pipeline Summary ── */}
+        <View style={S.section}>
+          <View style={S.sectionHeader}>
+            <Text style={[S.sectionTitle, { color: colors.text }]}>Pipeline</Text>
+            <TouchableOpacity onPress={() => router.push("/leads" as any)}>
+              <Text style={[S.sectionLink, { color: colors.primary }]}>Ver tudo</Text>
+            </TouchableOpacity>
+          </View>
+          <View style={[S.pipelineCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+            {[
+              { label: "Novo",        count: leads.filter((l) => l.column === "novo").length,        color: "#6C63FF" },
+              { label: "Qualificado", count: leads.filter((l) => l.column === "qualificado").length, color: "#FFB300" },
+              { label: "Proposta",    count: leads.filter((l) => l.column === "proposta").length,    color: "#FF0080" },
+              { label: "Fechado",     count: leads.filter((l) => l.column === "fechado").length,     color: "#00D68F" },
+            ].map((col, i) => (
+              <View key={i} style={S.pipelineCol}>
+                <View style={[S.pipelineDot, { backgroundColor: col.color }]} />
+                <Text style={[S.pipelineCount, { color: colors.text }]}>{col.count}</Text>
+                <Text style={[S.pipelineLabel, { color: colors.mutedForeground }]}>{col.label}</Text>
+                <View style={[S.pipelineBar, { backgroundColor: col.color + "33" }]}>
+                  <View style={[S.pipelineBarFill, {
+                    backgroundColor: col.color,
+                    flex: col.count / (leads.length || 1),
+                  }]} />
                 </View>
-                {i < arr.length - 1 && (
-                  <View style={[S.activityDivider, { backgroundColor: colors.border }]} />
-                )}
-              </React.Fragment>
-            );
-          })}
-          {activityEvents.length === 0 && (
-            <View style={{ padding: 20, alignItems: "center" }}>
-              <Feather name="activity" size={24} color={colors.mutedForeground} />
-              <Text style={[{ color: colors.mutedForeground, fontSize: 13, marginTop: 8, fontFamily: "SpaceGrotesk_400Regular" }]}>
-                Nenhuma atividade ainda
-              </Text>
-            </View>
-          )}
+              </View>
+            ))}
+          </View>
         </View>
-      </View>
-    </ScrollView>
+
+        {/* ── Activity Feed ── */}
+        <View style={S.section}>
+          <View style={S.sectionHeader}>
+            <Text style={[S.sectionTitle, { color: colors.text }]}>Atividade Recente</Text>
+            <TouchableOpacity onPress={onRefresh} activeOpacity={0.7}>
+              <Feather name="refresh-cw" size={15} color={colors.mutedForeground} />
+            </TouchableOpacity>
+          </View>
+          <View style={[S.activityCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+            {activityEvents.slice(0, 8).map((item, i, arr) => {
+              const color = activityColor(item.type, colors);
+              return (
+                <React.Fragment key={item.id}>
+                  <View style={S.activityItem}>
+                    <View style={[S.activityIconWrap, { backgroundColor: color + "22" }]}>
+                      <ActivityIcon type={item.type} color={color} />
+                    </View>
+                    <View style={{ flex: 1 }}>
+                      <Text style={[S.activityText, { color: colors.text }]} numberOfLines={2}>
+                        {item.text}
+                      </Text>
+                      <Text style={[S.activityTime, { color: colors.mutedForeground }]}>
+                        {timeAgo(item.created_at)}
+                      </Text>
+                    </View>
+                  </View>
+                  {i < arr.length - 1 && (
+                    <View style={[S.activityDivider, { backgroundColor: colors.border }]} />
+                  )}
+                </React.Fragment>
+              );
+            })}
+            {activityEvents.length === 0 && (
+              <View style={{ padding: 20, alignItems: "center" }}>
+                <Feather name="activity" size={24} color={colors.mutedForeground} />
+                <Text style={[{ color: colors.mutedForeground, fontSize: 13, marginTop: 8, fontFamily: "SpaceGrotesk_400Regular" }]}>
+                  Nenhuma atividade ainda
+                </Text>
+              </View>
+            )}
+          </View>
+        </View>
+      </ScrollView>
+
+      {/* ── Enterprise Lock Modal ── */}
+      <Modal visible={lockModal} transparent animationType="fade" onRequestClose={() => setLockModal(false)}>
+        <TouchableOpacity style={S.modalOverlay} activeOpacity={1} onPress={() => setLockModal(false)}>
+          <View style={S.modalBox} onStartShouldSetResponder={() => true}>
+            <View style={S.modalIconWrap}>
+              <Feather name="lock" size={30} color={colors.primary} />
+            </View>
+            <Text style={S.modalTitle}>Módulo {lockedDef?.plan ?? "Commander"}</Text>
+            <Text style={S.modalBody}>
+              O módulo <Text style={{ color: colors.primary, fontFamily: "SpaceGrotesk_600SemiBold" }}>{lockedDef?.label}</Text> é exclusivo do Plano Commander.{"\n\n"}Faça upgrade para desbloquear todo o potencial da JADE.
+            </Text>
+            <TouchableOpacity
+              style={S.modalPrimaryBtn}
+              activeOpacity={0.85}
+              onPress={() => { setLockModal(false); router.push("/plano" as any); }}
+            >
+              <Feather name="zap" size={16} color="#fff" />
+              <Text style={S.modalPrimaryText}>Ver Planos</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={S.modalSecondaryBtn} onPress={() => setLockModal(false)} activeOpacity={0.7}>
+              <Text style={S.modalSecondaryText}>Agora não</Text>
+            </TouchableOpacity>
+          </View>
+        </TouchableOpacity>
+      </Modal>
+    </>
   );
 }
 
@@ -372,7 +462,7 @@ const S = StyleSheet.create({
   root: { flex: 1 },
   header: {
     flexDirection: "row", alignItems: "center", justifyContent: "space-between",
-    paddingHorizontal: 20, paddingBottom: 16,
+    paddingHorizontal: 20, paddingBottom: 12,
   },
   greeting: { fontSize: 14, fontFamily: "SpaceGrotesk_400Regular" },
   name:     { fontSize: 24, fontFamily: "SpaceGrotesk_700Bold", marginTop: 2 },
@@ -411,4 +501,48 @@ const S = StyleSheet.create({
   activityText:     { fontSize: 13, fontFamily: "SpaceGrotesk_400Regular", lineHeight: 19, flex: 1 },
   activityTime:     { fontSize: 12, fontFamily: "SpaceGrotesk_400Regular", marginTop: 3 },
   activityDivider:  { height: StyleSheet.hairlineWidth, marginLeft: 58 },
+
+  // ── Modal ──
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.75)",
+    alignItems: "center",
+    justifyContent: "center",
+    padding: 24,
+  },
+  modalBox: {
+    backgroundColor: "#111118",
+    borderRadius: 24,
+    padding: 28,
+    alignItems: "center",
+    width: "100%",
+    borderWidth: 1,
+    borderColor: "#1E1E2E",
+    gap: 12,
+  },
+  modalIconWrap: {
+    width: 64, height: 64, borderRadius: 32,
+    backgroundColor: "#FF008018",
+    alignItems: "center", justifyContent: "center",
+    borderWidth: 1, borderColor: "#FF008044",
+    marginBottom: 4,
+  },
+  modalTitle: {
+    fontSize: 20, fontFamily: "SpaceGrotesk_700Bold", color: "#FFFFFF",
+    textAlign: "center",
+  },
+  modalBody: {
+    fontSize: 14, fontFamily: "SpaceGrotesk_400Regular", color: "#AAAACC",
+    textAlign: "center", lineHeight: 22, marginBottom: 8,
+  },
+  modalPrimaryBtn: {
+    flexDirection: "row", alignItems: "center", justifyContent: "center",
+    gap: 8, backgroundColor: "#FF0080", borderRadius: 14,
+    height: 50, width: "100%",
+    shadowColor: "#FF0080", shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.35, shadowRadius: 12, elevation: 8,
+  },
+  modalPrimaryText: { fontSize: 16, fontFamily: "SpaceGrotesk_700Bold", color: "#fff" },
+  modalSecondaryBtn: { paddingVertical: 10 },
+  modalSecondaryText: { fontSize: 14, fontFamily: "SpaceGrotesk_500Medium", color: "#7777AA" },
 });

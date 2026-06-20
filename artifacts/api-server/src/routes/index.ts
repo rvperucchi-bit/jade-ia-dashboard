@@ -7,6 +7,7 @@ import modulesRouter from "./modules.js";
 import analyticsRouter from "./analytics.js";
 import marketingRouter from "./marketing.js";
 import activityRouter from "./activity.js";
+import empresaRouter from "./empresa.js";
 
 const router: IRouter = Router();
 
@@ -18,5 +19,6 @@ router.use("/modules", modulesRouter);
 router.use("/analytics", analyticsRouter);
 router.use("/marketing", marketingRouter);
 router.use("/activity", activityRouter);
+router.use("/empresa", empresaRouter);
 
 export default router;

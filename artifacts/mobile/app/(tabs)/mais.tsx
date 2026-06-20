@@ -37,7 +37,7 @@ export default function MaisScreen() {
   const router = useRouter();
   const { logout } = useAuth();
 
-  const topPad = Platform.OS === "web" ? 67 : insets.top;
+  const topPad    = Platform.OS === "web" ? 67 : insets.top;
   const bottomPad = Platform.OS === "web" ? 84 : insets.bottom + 60;
 
   const handleLogout = () => {
@@ -59,16 +59,20 @@ export default function MaisScreen() {
     );
   };
 
-  const handlePress = () => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-  };
+  const tap = () => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
 
   const MENU_SECTIONS: { title: string; items: MenuItem[] }[] = [
     {
       title: "Conta",
       items: [
-        { icon: "user", iconLib: "feather", label: "Meu Perfil", sub: "Rodrigo", onPress: () => router.push("/perfil" as any) },
-        { icon: "star", iconLib: "feather", label: "Meu Plano", sub: "Pro · R$247/mês", badge: "PRO", onPress: () => router.push("/plano" as any) },
+        {
+          icon: "user", iconLib: "feather", label: "Meu Perfil", sub: "Rodrigo",
+          onPress: () => router.push("/perfil" as any),
+        },
+        {
+          icon: "star", iconLib: "feather", label: "Meu Plano", sub: "Pro · R$247/mês", badge: "PRO",
+          onPress: () => router.push("/plano" as any),
+        },
       ],
     },
     {
@@ -81,7 +85,7 @@ export default function MaisScreen() {
         },
         {
           icon: "zap", iconLib: "feather", label: "Marketing IA",
-          sub: "Posts, Stories, WhatsApp...",
+          sub: "Posts, Stories, Tráfego pago...",
           onPress: () => router.push("/marketing" as any),
         },
       ],
@@ -89,6 +93,11 @@ export default function MaisScreen() {
     {
       title: "Configurações",
       items: [
+        {
+          icon: "briefcase", iconLib: "feather", label: "Minha Empresa",
+          sub: "Configurar empresa e treinar JADE",
+          onPress: () => router.push("/empresa" as any),
+        },
         {
           icon: "bell", iconLib: "feather", label: "Notificações", sub: "3 não lidas",
           onPress: () => router.push("/notificacoes" as any),
@@ -138,7 +147,7 @@ export default function MaisScreen() {
       contentContainerStyle={{ paddingBottom: bottomPad }}
       showsVerticalScrollIndicator={false}
     >
-      <View style={[styles.header, { paddingTop: topPad + 16 }]}>
+      <View style={[styles.header, { paddingTop: topPad + 4 }]}>
         <Text style={[styles.title, { color: colors.text }]}>Mais</Text>
       </View>
 
@@ -155,7 +164,7 @@ export default function MaisScreen() {
         </View>
         <TouchableOpacity
           style={[styles.editBtn, { backgroundColor: colors.surface }]}
-          onPress={handlePress}
+          onPress={() => router.push("/perfil" as any)}
           activeOpacity={0.8}
         >
           <Feather name="edit-2" size={16} color={colors.primary} />
@@ -187,7 +196,7 @@ export default function MaisScreen() {
               <React.Fragment key={ii}>
                 <TouchableOpacity
                   style={styles.menuItem}
-                  onPress={item.onPress ?? handlePress}
+                  onPress={() => { tap(); item.onPress?.(); }}
                   activeOpacity={0.7}
                 >
                   <View style={[styles.menuIcon, { backgroundColor: item.danger ? colors.destructive + "22" : colors.surface }]}>
@@ -226,7 +235,7 @@ export default function MaisScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  header: { paddingHorizontal: 20, paddingBottom: 16 },
+  header: { paddingHorizontal: 20, paddingBottom: 12 },
   title: { fontSize: 26, fontFamily: "SpaceGrotesk_700Bold" },
   profileCard: {
     flexDirection: "row", alignItems: "center",

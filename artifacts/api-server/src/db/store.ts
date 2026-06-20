@@ -65,6 +65,15 @@ export interface ScannerHistory {
   created_at: string;
 }
 
+export interface CompanyConfig {
+  nome: string;
+  produto: string;
+  segmento: string;
+  tom: string;
+  planos: string;
+  updated_at: string;
+}
+
 interface StoreData {
   modules: Record<string, ModuleState>;
   module_logs: ModuleLog[];
@@ -72,6 +81,7 @@ interface StoreData {
   marketing_campaigns: MarketingCampaign[];
   jade_sessions: JadeSession[];
   scanner_history: ScannerHistory[];
+  company_config?: CompanyConfig;
 }
 
 const DEFAULT_MODULES: Record<string, ModuleState> = {
@@ -259,6 +269,20 @@ export function deleteJadeSession(id: string): boolean {
   data.jade_sessions = data.jade_sessions.filter((s) => s.id !== id);
   save(data);
   return data.jade_sessions.length < before;
+}
+
+// ─── Company Config ───────────────────────────────────────────────────────────
+
+export function getCompanyConfig(): CompanyConfig | null {
+  return load().company_config ?? null;
+}
+
+export function setCompanyConfig(config: Omit<CompanyConfig, "updated_at">): CompanyConfig {
+  const data = load();
+  const entry: CompanyConfig = { ...config, updated_at: now() };
+  data.company_config = entry;
+  save(data);
+  return entry;
 }
 
 // ─── Scanner History ──────────────────────────────────────────────────────────

@@ -3,6 +3,7 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 import {
   createJadeSession, getJadeSessions, getJadeSession,
   appendJadeMessage, deleteJadeSession, addActivityEvent,
+  getCompanyConfig,
 } from '../db/store.js';
 
 const router = Router();
@@ -167,9 +168,24 @@ router.post('/chat', async (req: Request, res: Response) => {
     }
 
     const genAI = new GoogleGenerativeAI(apiKey);
+
+    // Build dynamic system prompt — append company config if configured
+    const companyConfig = getCompanyConfig();
+    let systemPrompt = JADE_SYSTEM_PROMPT;
+    if (companyConfig) {
+      const TOM_MAP: Record<string, string> = {
+        formal: "Formal e corporativo",
+        consultivo: "Consultivo e estratégico",
+        descontraido: "Descontraído e próximo",
+        agressivo: "Agressivo (foco em fechamento rápido)",
+        empatico: "Empático e acolhedor",
+      };
+      systemPrompt += `\n\n## CONFIGURAÇÃO PERSONALIZADA DA EMPRESA\n\nEmpresa: ${companyConfig.nome}\nProduto/Serviço principal: ${companyConfig.produto}\nSegmento: ${companyConfig.segmento}\nTom preferido: ${TOM_MAP[companyConfig.tom] ?? companyConfig.tom}${companyConfig.planos ? `\n\nPlanos e produtos:\n${companyConfig.planos}` : ""}\n\nUse essas informações para personalizar todas as suas respostas, argumentos de venda e materiais criados.`;
+    }
+
     const model = genAI.getGenerativeModel({
       model: 'gemini-2.5-flash',
-      systemInstruction: JADE_SYSTEM_PROMPT,
+      systemInstruction: systemPrompt,
     });
 
     // Build history, then drop any leading 'model' turns —
