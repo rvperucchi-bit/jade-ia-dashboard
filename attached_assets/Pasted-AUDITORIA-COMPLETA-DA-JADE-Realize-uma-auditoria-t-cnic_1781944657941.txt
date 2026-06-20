@@ -1,0 +1,252 @@
+AUDITORIA COMPLETA DA JADE
+
+Realize uma auditoria técnica completa de toda a aplicação JADE.
+
+NÃO faça alterações ainda.
+
+Primeiro gere um relatório detalhado informando tudo o que está funcionando, tudo o que está parcialmente funcionando, tudo o que está quebrado e tudo o que ainda não foi implementado.
+
+Analise TODAS as áreas do sistema.
+
+━━━━━━━━━━━━━━━━━━━━━━
+
+1. DASHBOARD / HUB
+    ━━━━━━━━━━━━━━━━━━━━━━
+
+Verificar:
+
+• Carregamento da tela
+• Performance
+• Responsividade mobile
+• Dados reais ou mockados
+• Atualização em tempo real
+• Contadores e indicadores
+• Pipeline
+• Atividades recentes
+• Navegação inferior
+• Notificações
+• Avatar do usuário
+
+Informar quais dados vêm do banco e quais são apenas demonstração.
+
+━━━━━━━━━━━━━━━━━━━━━━
+2. MÓDULOS JADE
+━━━━━━━━━━━━━━━━━━━━━━
+
+Auditar todos os módulos existentes.
+
+Scanner
+Radar
+Seller
+Farmer
+Commander
+Marketing
+Conversas
+Leads
+
+Para cada módulo informar:
+
+• Existe?
+• Está acessível?
+• Está conectado ao banco?
+• Está funcional?
+• Está apenas visual?
+• Possui automações reais?
+• Possui logs?
+• Possui histórico?
+• Possui erros?
+
+━━━━━━━━━━━━━━━━━━━━━━
+3. BOTÕES DE ATIVAÇÃO
+━━━━━━━━━━━━━━━━━━━━━━
+
+Verificar detalhadamente os botões de ativação e desativação.
+
+Quando o usuário ativa um módulo:
+
+• O status muda?
+• É salvo no banco?
+• Permanece ativo após atualizar a página?
+• Permanece ativo após novo login?
+• Executa processos reais?
+• Gera logs?
+• Atualiza indicadores?
+
+Quando o usuário desativa:
+
+• Interrompe processos?
+• Interrompe automações?
+• Atualiza status?
+• Atualiza banco de dados?
+
+Listar qualquer falha encontrada.
+
+━━━━━━━━━━━━━━━━━━━━━━
+4. AUTOMAÇÕES
+━━━━━━━━━━━━━━━━━━━━━━
+
+Validar se existem automações reais.
+
+Radar
+
+• Busca leads automaticamente?
+• Com qual frequência?
+• Onde salva?
+• Possui fila?
+• Possui histórico?
+
+Seller
+
+• Envia mensagens?
+• Possui fila?
+• Possui limites?
+• Possui logs?
+• Possui métricas?
+
+Farmer
+
+• Faz follow-up?
+• Agenda tarefas?
+• Reativa contatos?
+• Gera histórico?
+
+Commander
+
+• Monitora os demais módulos?
+• Recebe eventos?
+• Recebe alertas?
+• Possui dashboard executivo?
+
+━━━━━━━━━━━━━━━━━━━━━━
+5. BANCO DE DADOS
+━━━━━━━━━━━━━━━━━━━━━━
+
+Auditar completamente.
+
+Verificar:
+
+• Estrutura atual
+• Tabelas existentes
+• Relacionamentos
+• Índices
+• Dados órfãos
+• Dados duplicados
+• Campos não utilizados
+• Campos faltantes
+
+Apresentar sugestões de melhoria.
+
+━━━━━━━━━━━━━━━━━━━━━━
+6. APIs E BACKEND
+━━━━━━━━━━━━━━━━━━━━━━
+
+Auditar:
+
+• Rotas existentes
+• Endpoints não utilizados
+• Endpoints quebrados
+• Erros de autenticação
+• Erros de permissão
+• Tratamento de exceções
+• Logs de erro
+
+Informar gargalos encontrados.
+
+━━━━━━━━━━━━━━━━━━━━━━
+7. IA JADE
+━━━━━━━━━━━━━━━━━━━━━━
+
+Auditar:
+
+• Chat da Jade
+• Memória
+• Histórico
+• Contexto
+• Integração com módulos
+• Ações executáveis
+• Ferramentas disponíveis
+• Permissões
+
+Informar limitações atuais.
+
+━━━━━━━━━━━━━━━━━━━━━━
+8. MARKETING
+━━━━━━━━━━━━━━━━━━━━━━
+
+Verificar:
+
+• Funcionalidades existentes
+• Campanhas
+• Relatórios
+• Métricas
+• Agendamentos
+• Segmentações
+
+Listar funcionalidades faltantes.
+
+━━━━━━━━━━━━━━━━━━━━━━
+9. UX E DESIGN
+━━━━━━━━━━━━━━━━━━━━━━
+
+Auditar:
+
+• Contraste
+• Legibilidade
+• Hierarquia visual
+• Espaçamento
+• Responsividade
+• Navegação
+• Fluxos do usuário
+
+Apontar melhorias prioritárias.
+
+━━━━━━━━━━━━━━━━━━━━━━
+10. SEGURANÇA
+━━━━━━━━━━━━━━━━━━━━━━
+
+Verificar:
+
+• Autenticação
+• Sessões
+• Tokens
+• Permissões
+• Controle de acesso
+• Proteção de rotas
+• Exposição de dados sensíveis
+
+Informar riscos encontrados.
+
+━━━━━━━━━━━━━━━━━━━━━━
+11. PERFORMANCE
+━━━━━━━━━━━━━━━━━━━━━━
+
+Medir:
+
+• Tempo de carregamento
+• Consultas lentas
+• Requisições excessivas
+• Componentes pesados
+• Consumo de memória
+
+Apresentar otimizações.
+
+━━━━━━━━━━━━━━━━━━━━━━
+12. RELATÓRIO FINAL
+━━━━━━━━━━━━━━━━━━━━━━
+
+Gerar um relatório executivo contendo:
+
+1. O que está funcionando corretamente
+2. O que está parcialmente implementado
+3. O que está quebrado
+4. O que ainda não existe
+5. Prioridade ALTA
+6. Prioridade MÉDIA
+7. Prioridade BAIXA
+8. Próximos passos recomendados
+
+IMPORTANTE:
+
+Não corrigir nada automaticamente.
+
+Primeiro entregar a auditoria completa com 100% de transparência sobre o estado atual do projeto.
