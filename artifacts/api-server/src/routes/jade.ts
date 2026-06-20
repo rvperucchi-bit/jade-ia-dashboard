@@ -9,7 +9,7 @@ import {
 const router = Router();
 
 const JADE_SYSTEM_PROMPT = `
-# JADE IA — System Prompt v7.0
+# JADE IA — System Prompt v8.0
 # Plataforma JADE IA — Agente de Vendas Inteligente
 
 ## REGRA OBRIGATÓRIA DE COMUNICAÇÃO
@@ -17,6 +17,10 @@ const JADE_SYSTEM_PROMPT = `
 No chat conversacional: máximo 2 frases por mensagem. Escreva como um humano no WhatsApp — natural, direto, sem enrolação. Nunca use bullet points ou listas em respostas conversacionais. Se tiver mais conteúdo, envie mensagens curtas em sequência.
 
 Exceção: quando o usuário pedir explicitamente um laudo, briefing, roteiro, relatório ou estratégia estruturada — aí pode e deve usar formatação completa com seções.
+
+## DETECTOR DE MOMENTO DE COMPRA
+
+ATENÇÃO: Quando o lead usar palavras como "quanto custa", "qual o preço", "como funciona o contrato", "quando começa", "formas de pagamento", "posso testar", "tem desconto", "quero fechar", "aceito a proposta", "como contratar", "como assinar", "pode me mandar a proposta" — mude IMEDIATAMENTE para modo de fechamento. Apresente o próximo passo de forma direta e clara. Não continue qualificando quem já quer comprar. Cada segundo perdido qualificando um lead quente é receita perdida.
 
 ## IDENTIDADE
 
@@ -129,23 +133,49 @@ FASE 3 — APRESENTAÇÃO: Solução conectada diretamente às dores identificad
 FASE 4 — OBJEÇÕES: Acolha, valide, redirecione com prova social ou dado concreto.
 FASE 5 — FECHAMENTO: Leia os sinais. Avance com proposta clara e próximo passo definido.
 
-JADE IA v7.0 — "Sua parceira de trabalho."
+JADE IA v8.0 — "Sua parceira de trabalho."
 `;
 
-// POST /jade/chat  (existing + now saves to session)
+const BUYING_SIGNALS = [
+  'quanto custa', 'qual o preço', 'qual o preco', 'como funciona o contrato',
+  'quando começa', 'quando comeca', 'formas de pagamento', 'posso testar',
+  'tem desconto', 'vou comprar', 'quero fechar', 'aceito a proposta',
+  'pode me mandar', 'como contratar', 'como assinar', 'manda a proposta',
+  'qual o valor', 'qual o investimento', 'como adquirir',
+];
+
+function detectBuyingSignal(text: string): boolean {
+  const lower = text.toLowerCase();
+  return BUYING_SIGNALS.some((s) => lower.includes(s));
+}
+
+// POST /jade/chat
 router.post('/chat', async (req: Request, res: Response) => {
   try {
-    const { messages, session_id } = req.body as {
+    // Support both { messages: Array } and { message: string } formats
+    const body = req.body as {
       messages?: Array<{ role: string; content: string }>;
+      message?: string;
       session_id?: string;
     };
 
-    if (!messages || !Array.isArray(messages)) {
-      return res.status(400).json({ error: 'messages array is required' });
+    let messagesArray: Array<{ role: string; content: string }>;
+
+    if (body.message && typeof body.message === 'string') {
+      messagesArray = [{ role: 'user', content: body.message }];
+    } else if (body.messages && Array.isArray(body.messages)) {
+      messagesArray = body.messages;
+    } else {
+      return res.status(400).json({ error: 'messages array or message string is required' });
+    }
+
+    if (messagesArray.length === 0) {
+      return res.status(400).json({ error: 'messages cannot be empty' });
     }
 
     const apiKey = process.env.GEMINI_API_KEY;
     if (!apiKey) {
+      req.log.error('GEMINI_API_KEY not configured');
       return res.status(500).json({ error: 'GEMINI_API_KEY not configured' });
     }
 
@@ -162,7 +192,19 @@ router.post('/chat', async (req: Request, res: Response) => {
         agressivo: "Agressivo (foco em fechamento rápido)",
         empatico: "Empático e acolhedor",
       };
-      systemPrompt += `\n\n## CONFIGURAÇÃO PERSONALIZADA DA EMPRESA\n\nEmpresa: ${companyConfig.nome}\nProduto/Serviço principal: ${companyConfig.produto}\nSegmento: ${companyConfig.segmento}\nTom preferido: ${TOM_MAP[companyConfig.tom] ?? companyConfig.tom}${companyConfig.planos ? `\n\nPlanos e produtos:\n${companyConfig.planos}` : ""}\n\nUse essas informações para personalizar todas as suas respostas, argumentos de venda e materiais criados.`;
+      const MODO_MAP: Record<string, string> = {
+        fechamento: "Direto ao Fechamento — produto simples, decide na hora. Vá direto para a venda.",
+        consultivo_presencial: "Agendar + Fechar Presencial — venda consultiva, ticket alto. Agende reuniões.",
+        nutricao: "Nutrição + Relacionamento — ciclo longo. Nutra o lead até estar pronto para comprar.",
+      };
+      systemPrompt += `\n\n## CONFIGURAÇÃO PERSONALIZADA DA EMPRESA\n\nEmpresa: ${companyConfig.nome}\nProduto/Serviço principal: ${companyConfig.produto}\nSegmento: ${companyConfig.segmento}\nTom preferido: ${TOM_MAP[companyConfig.tom] ?? companyConfig.tom}`;
+      if ((companyConfig as any).modoOperacao) {
+        systemPrompt += `\nModo de operação: ${MODO_MAP[(companyConfig as any).modoOperacao] ?? (companyConfig as any).modoOperacao}`;
+      }
+      if (companyConfig.planos) {
+        systemPrompt += `\n\nPlanos e produtos:\n${companyConfig.planos}`;
+      }
+      systemPrompt += `\n\nUse essas informações para personalizar todas as suas respostas, argumentos de venda e materiais criados.`;
     }
 
     const model = genAI.getGenerativeModel({
@@ -172,23 +214,28 @@ router.post('/chat', async (req: Request, res: Response) => {
 
     // Build history, then drop any leading 'model' turns —
     // Gemini requires the first history entry to have role 'user'
-    const rawHistory = messages.slice(0, -1).map((msg) => ({
+    const rawHistory = messagesArray.slice(0, -1).map((msg) => ({
       role: (msg.role === 'user' ? 'user' : 'model') as 'user' | 'model',
       parts: [{ text: msg.content }],
     }));
     const firstUserIdx = rawHistory.findIndex((h) => h.role === 'user');
     const history = firstUserIdx >= 0 ? rawHistory.slice(firstUserIdx) : [];
 
-    const lastMessage = messages[messages.length - 1];
+    const lastMessage = messagesArray[messagesArray.length - 1];
     const chat = model.startChat({ history });
     const result = await chat.sendMessage(lastMessage!.content);
     const response = await result.response;
     const text = response.text();
 
+    req.log.info({ chars: text.length, session_id: body.session_id }, 'JADE responded');
+
+    // Detect buying signals in the last user message
+    const handoff = detectBuyingSignal(lastMessage!.content);
+
     // Persist to session if session_id provided
-    if (session_id) {
-      appendJadeMessage(session_id, 'user', lastMessage!.content);
-      appendJadeMessage(session_id, 'model', text);
+    if (body.session_id) {
+      appendJadeMessage(body.session_id, 'user', lastMessage!.content);
+      appendJadeMessage(body.session_id, 'model', text);
     }
 
     addActivityEvent({
@@ -196,13 +243,71 @@ router.post('/chat', async (req: Request, res: Response) => {
       text: 'JADE respondeu a uma mensagem',
       icon: 'robot',
       color: '#FF0080',
-      metadata: { session_id },
+      metadata: { session_id: body.session_id },
     });
 
-    return res.json({ message: text, session_id });
+    return res.json({
+      message: text,
+      session_id: body.session_id,
+      handoff,
+      ...(handoff ? { motivo: 'Sinal de compra detectado na mensagem' } : {}),
+    });
 
   } catch (error) {
+    req.log.error({ error }, 'Error in /jade/chat');
     return res.status(500).json({ error: 'Internal server error', detail: String(error) });
+  }
+});
+
+// POST /jade/prospectar — Autonomous prospecting
+router.post('/prospectar', async (req: Request, res: Response) => {
+  try {
+    const { cidade = 'São Paulo', tipo = 'comércio', existingIds = [] } = req.body as {
+      cidade?: string;
+      tipo?: string;
+      existingIds?: string[];
+    };
+
+    const apiKey = process.env.GEMINI_API_KEY;
+    if (!apiKey) {
+      return res.status(500).json({ error: 'GEMINI_API_KEY not configured', leads: [] });
+    }
+
+    const genAI = new GoogleGenerativeAI(apiKey);
+    const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
+
+    const prompt = `Você é especialista em prospecção B2B. Gere exatamente 3 leads fictícios mas realistas de estabelecimentos comerciais em ${cidade} do segmento "${tipo}".
+
+Retorne SOMENTE este JSON válido, sem markdown, sem explicações:
+{"leads":[{"id":"p_${Date.now()}_1","name":"[nome do contato]","company":"[nome do negócio]","value":[número entre 8000 e 45000],"phone":"+55 11 9${Math.floor(Math.random()*9000+1000)}-${Math.floor(Math.random()*9000+1000)}","column":"novo","tag":"${tipo}","tagColor":"#6C63FF","time":"agora","initials":"[2 letras]","avatarColor":"#6C63FF","score":[entre 65 e 95],"mensagemAbordagem":"[mensagem WhatsApp personalizada, max 3 linhas, sem ser genérica, menciona o negócio deles]","dorPrincipal":"[principal dor do segmento]"},{"id":"p_${Date.now()}_2","name":"[outro nome]","company":"[outro negócio]","value":[número],"phone":"+55 11 9${Math.floor(Math.random()*9000+1000)}-${Math.floor(Math.random()*9000+1000)}","column":"novo","tag":"${tipo}","tagColor":"#FF0080","time":"agora","initials":"[2 letras]","avatarColor":"#FF0080","score":[entre 65 e 90],"mensagemAbordagem":"[mensagem personalizada]","dorPrincipal":"[dor]"},{"id":"p_${Date.now()}_3","name":"[outro nome]","company":"[outro negócio]","value":[número],"phone":"+55 11 9${Math.floor(Math.random()*9000+1000)}-${Math.floor(Math.random()*9000+1000)}","column":"novo","tag":"${tipo}","tagColor":"#00D68F","time":"agora","initials":"[2 letras]","avatarColor":"#00D68F","score":[entre 60 e 85],"mensagemAbordagem":"[mensagem personalizada]","dorPrincipal":"[dor]"}]}`;
+
+    const result = await model.generateContent(prompt);
+    const responseText = result.response.text().trim();
+
+    const jsonMatch = responseText.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) {
+      return res.json({ leads: [], count: 0 });
+    }
+
+    const data = JSON.parse(jsonMatch[0]) as { leads: any[] };
+    const newLeads = (data.leads ?? []).filter((l: any) => !existingIds.includes(l.id));
+
+    if (newLeads.length > 0) {
+      addActivityEvent({
+        type: 'scan',
+        text: `JADE encontrou ${newLeads.length} novo${newLeads.length > 1 ? 's' : ''} lead${newLeads.length > 1 ? 's' : ''} via radar em ${cidade}`,
+        icon: 'crosshair',
+        color: '#6C63FF',
+        metadata: { count: newLeads.length, cidade },
+      });
+    }
+
+    req.log.info({ count: newLeads.length, cidade, tipo }, 'JADE prospectar completed');
+    return res.json({ leads: newLeads, count: newLeads.length });
+
+  } catch (error) {
+    req.log.error({ error }, 'Error in /jade/prospectar');
+    return res.json({ leads: [], count: 0 });
   }
 });
 
@@ -236,7 +341,7 @@ router.post('/autonomo', (req: Request, res: Response) => {
 
 // GET /jade/health
 router.get('/health', (_req: Request, res: Response) => {
-  res.json({ status: 'ok', agent: 'JADE IA v6.2' });
+  res.json({ status: 'ok', agent: 'JADE IA v8.0' });
 });
 
 // GET /jade/sessions

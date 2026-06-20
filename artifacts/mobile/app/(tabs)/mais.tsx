@@ -66,15 +66,11 @@ export default function MaisScreen() {
 
   const tap = () => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
 
-  const isEnterprise = true;
+  const isEnterprise = false;
 
   const handleGestaoPress = () => {
     tap();
-    if (isEnterprise) {
-      router.push("/gestao" as any);
-    } else {
-      setUpgradeModal(true);
-    }
+    router.push("/gestao" as any);
   };
 
   const MENU_SECTIONS: { title: string; items: MenuItem[] }[] = [
@@ -229,6 +225,28 @@ export default function MaisScreen() {
           </View>
         ))}
       </View>
+
+      {/* ── Upgrade Banner PRO → Enterprise ── */}
+      {!isEnterprise && (
+        <TouchableOpacity
+          style={[styles.upgradeBanner, { backgroundColor: ENTERPRISE_PURPLE + "12", borderColor: ENTERPRISE_PURPLE + "44" }]}
+          onPress={() => router.push("/plano" as any)}
+          activeOpacity={0.88}
+        >
+          <View style={[styles.upgradeCrownWrap, { backgroundColor: ENTERPRISE_PURPLE + "22" }]}>
+            <MaterialCommunityIcons name="crown" size={22} color={ENTERPRISE_PURPLE} />
+          </View>
+          <View style={{ flex: 1 }}>
+            <Text style={[styles.upgradeBannerTitle, { color: ENTERPRISE_PURPLE }]}>Gerencie seu time inteiro</Text>
+            <Text style={[styles.upgradeBannerSub, { color: colors.mutedForeground }]}>
+              Humor do Time · Roleplay · Relatório de Gestão · Notificações
+            </Text>
+          </View>
+          <View style={[styles.upgradeCta, { backgroundColor: ENTERPRISE_PURPLE }]}>
+            <Text style={styles.upgradeCtaText}>Ver →</Text>
+          </View>
+        </TouchableOpacity>
+      )}
 
       {/* ── GESTÃO ENTERPRISE card ── */}
       <View style={styles.section}>
@@ -397,4 +415,13 @@ const styles = StyleSheet.create({
   upgradeBtn: { alignSelf: "stretch", height: 52, borderRadius: 14, alignItems: "center", justifyContent: "center" },
   upgradeBtnText: { color: "#fff", fontSize: 16, fontFamily: "SpaceGrotesk_700Bold" },
   cancelText: { fontSize: 14, fontFamily: "SpaceGrotesk_400Regular", marginTop: 4 },
+  upgradeBanner: {
+    flexDirection: "row", alignItems: "center", gap: 14,
+    marginHorizontal: 16, marginBottom: 18, borderRadius: 16, borderWidth: 1.5, padding: 14,
+  },
+  upgradeCrownWrap: { width: 44, height: 44, borderRadius: 12, alignItems: "center", justifyContent: "center" },
+  upgradeBannerTitle: { fontSize: 14, fontFamily: "SpaceGrotesk_700Bold" },
+  upgradeBannerSub: { fontSize: 12, fontFamily: "SpaceGrotesk_400Regular", marginTop: 3, lineHeight: 18 },
+  upgradeCta: { paddingHorizontal: 10, paddingVertical: 6, borderRadius: 10 },
+  upgradeCtaText: { color: "#fff", fontSize: 13, fontFamily: "SpaceGrotesk_700Bold" },
 });

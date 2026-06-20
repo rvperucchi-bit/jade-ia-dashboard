@@ -1,5 +1,6 @@
 import React, { useCallback, useRef, useState, useEffect } from "react";
 import {
+  Alert,
   Modal,
   Animated,
   Easing,
@@ -11,12 +12,18 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+
 import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 
 import { useColors } from "@/hooks/useColors";
 import { useApp, type ActivityEvent } from "@/context/AppContext";
+
+const API_BASE =
+  Platform.OS === "web"
+    ? ""
+    : `https://${process.env.EXPO_PUBLIC_DOMAIN ?? ""}`;
 
 // ─── Crosshair icon ───────────────────────────────────────────────────────────
 function CrosshairIcon({ size, color }: { size: number; color: string }) {
@@ -177,10 +184,63 @@ export default function RadarScreen() {
   const colors  = useColors();
   const insets  = useSafeAreaInsets();
   const router  = useRouter();
-  const { leads, conversations, moduleStates, activityEvents, toggleModule, refreshDashboard } = useApp();
-  const [refreshing, setRefreshing]     = useState(false);
-  const [lockModal, setLockModal]       = useState(false);
+  const { leads, conversations, moduleStates, activityEvents, toggleModule, refreshDashboard, addLead } = useApp();
+  const [refreshing, setRefreshing]         = useState(false);
+  const [lockModal, setLockModal]           = useState(false);
   const [lockedModuleName, setLockedModuleName] = useState("");
+
+  // ── Scanner autonomous mode ────────────────────────────────────────────────
+  const [scannerCount, setScannerCount]   = useState(0);
+  const [scannerRunning, setScannerRunning] = useState(false);
+  const scannerIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const existingLeadIds    = useRef<string[]>([]);
+
+  // Keep the ref in sync with real leads list
+  useEffect(() => {
+    existingLeadIds.current = leads.map((l) => l.id);
+  }, [leads]);
+
+  const scannerActive = !(MODULE_DEFS.find((d) => d.name === "scanner")?.locked ?? false)
+    && (moduleStates.scanner?.is_active ?? false);
+
+  useEffect(() => {
+    if (scannerActive) {
+      setScannerRunning(true);
+      setScannerCount(0);
+
+      const doProspectar = async () => {
+        try {
+          const res = await fetch(`${API_BASE}/api/jade/prospectar`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ existingIds: existingLeadIds.current }),
+          });
+          if (!res.ok) return;
+          const data = (await res.json()) as { leads: any[]; count: number };
+          if (data.leads && data.leads.length > 0) {
+            for (const lead of data.leads) {
+              addLead(lead);
+              existingLeadIds.current = [...existingLeadIds.current, lead.id];
+            }
+            setScannerCount((prev) => prev + data.count);
+          }
+        } catch { /* network error — silently ignore */ }
+      };
+
+      doProspectar(); // first call immediately
+      scannerIntervalRef.current = setInterval(doProspectar, 60000);
+
+      return () => {
+        if (scannerIntervalRef.current) clearInterval(scannerIntervalRef.current);
+        setScannerRunning(false);
+      };
+    } else {
+      if (scannerIntervalRef.current) clearInterval(scannerIntervalRef.current);
+      setScannerRunning(false);
+      setScannerCount(0);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [scannerActive]);
 
   const topPad    = Platform.OS === "web" ? 67  : insets.top;
   const bottomPad = Platform.OS === "web" ? 84  : insets.bottom + 60;
@@ -205,6 +265,18 @@ export default function RadarScreen() {
     { label: "Tx. Conversão",       value: `${txConversao}%`,             change: `${fechadoLeads.length} fechados`, positive: txConversao > 20, icon: "trending-up",    iconColor: "#00D68F" },
     { label: "Receita Fechada",     value: formatCurrency(receitaMes),    change: `${fechadoLeads.length} contratos`, positive: true,            icon: "dollar-sign",    iconColor: "#FFB300" },
   ] as const;
+
+  // ── Leads esquecidos em Proposta (Item 8) ─────────────────────────────────
+  function parseDaysInProposta(time: string): number {
+    const d = time.match(/^(\d+)d/);
+    if (d) return parseInt(d[1]!, 10);
+    const s = time.match(/^(\d+)sem/);
+    if (s) return parseInt(s[1]!, 10) * 7;
+    return 0;
+  }
+  const leadsEsquecidos = leads.filter(
+    (l) => l.column === "proposta" && parseDaysInProposta(l.time) >= 5
+  );
 
   // ── Active modules list ────────────────────────────────────────────────────
   const activeModuleNames = Object.values(moduleStates)
@@ -329,6 +401,45 @@ export default function RadarScreen() {
             <Text style={{ color: colors.mutedForeground }}>Nenhum módulo ativo</Text>
           )}
         </Text>
+
+        {/* ── Scanner Autonomous Banner ── */}
+        {scannerActive && scannerRunning && (
+          <View style={[S.scannerBanner, { backgroundColor: colors.card, borderColor: colors.primary + "50" }]}>
+            <View style={[S.scannerPulse, { backgroundColor: colors.primary }]} />
+            <View style={{ flex: 1 }}>
+              <Text style={[S.scannerBannerTitle, { color: colors.text }]}>JADE prospectando...</Text>
+              <Text style={[S.scannerBannerSub, { color: colors.mutedForeground }]}>
+                {scannerCount > 0
+                  ? `${scannerCount} novo${scannerCount > 1 ? "s" : ""} lead${scannerCount > 1 ? "s" : ""} encontrado${scannerCount > 1 ? "s" : ""}`
+                  : "Buscando leads na sua região"
+                }
+              </Text>
+            </View>
+            <View style={[S.scannerPill, { backgroundColor: colors.primary + "20" }]}>
+              <Text style={[S.scannerPillText, { color: colors.primary }]}>Radar ON</Text>
+            </View>
+          </View>
+        )}
+
+        {/* ── Alerta: Leads esquecidos ── */}
+        {leadsEsquecidos.length > 0 && (
+          <TouchableOpacity
+            style={[S.alertCard, { backgroundColor: "#FF6B3514", borderColor: "#FF6B3540" }]}
+            onPress={() => router.push("/leads" as any)}
+            activeOpacity={0.85}
+          >
+            <Feather name="alert-triangle" size={16} color="#FF6B35" />
+            <View style={{ flex: 1 }}>
+              <Text style={[S.alertTitle, { color: "#FF6B35" }]}>
+                {leadsEsquecidos.length} lead{leadsEsquecidos.length > 1 ? "s" : ""} parado{leadsEsquecidos.length > 1 ? "s" : ""} em Proposta
+              </Text>
+              <Text style={[S.alertSub, { color: colors.mutedForeground }]} numberOfLines={1}>
+                {leadsEsquecidos.map((l) => l.name).join(", ")} · sem atualização há 5+ dias
+              </Text>
+            </View>
+            <Feather name="chevron-right" size={15} color="#FF6B35" />
+          </TouchableOpacity>
+        )}
 
         {/* ── Metric Cards ── */}
         <View style={S.metricsGrid}>
@@ -501,6 +612,27 @@ const S = StyleSheet.create({
   activityText:     { fontSize: 13, fontFamily: "SpaceGrotesk_400Regular", lineHeight: 19, flex: 1 },
   activityTime:     { fontSize: 12, fontFamily: "SpaceGrotesk_400Regular", marginTop: 3 },
   activityDivider:  { height: StyleSheet.hairlineWidth, marginLeft: 58 },
+
+  // ── Scanner banner ──
+  scannerBanner: {
+    flexDirection: "row", alignItems: "center", gap: 12,
+    marginHorizontal: 16, marginBottom: 12, padding: 14,
+    borderRadius: 14, borderWidth: 1,
+  },
+  scannerPulse: { width: 8, height: 8, borderRadius: 4 },
+  scannerBannerTitle: { fontSize: 13, fontFamily: "SpaceGrotesk_700Bold" },
+  scannerBannerSub:   { fontSize: 12, fontFamily: "SpaceGrotesk_400Regular", marginTop: 2 },
+  scannerPill: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: 10 },
+  scannerPillText: { fontSize: 11, fontFamily: "SpaceGrotesk_700Bold" },
+
+  // ── Lead alert ──
+  alertCard: {
+    flexDirection: "row", alignItems: "center", gap: 12,
+    marginHorizontal: 16, marginBottom: 12, padding: 14,
+    borderRadius: 14, borderWidth: 1,
+  },
+  alertTitle: { fontSize: 13, fontFamily: "SpaceGrotesk_700Bold" },
+  alertSub:   { fontSize: 12, fontFamily: "SpaceGrotesk_400Regular", marginTop: 2 },
 
   // ── Modal ──
   modalOverlay: {

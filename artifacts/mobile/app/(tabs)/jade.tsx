@@ -93,11 +93,13 @@ export default function JADEScreen() {
   const TAB_BAR_H = Platform.OS === "web" ? 84 : 60;
   const bottomPad = TAB_BAR_H + (Platform.OS === "web" ? 0 : insets.bottom);
 
-  const [messages,   setMessages]   = useState<AIMessage[]>(WELCOME_MSGS());
-  const [input,      setInput]      = useState("");
-  const [loading,    setLoading]    = useState(false);
-  const [showChips,  setShowChips]  = useState(true);
-  const [sessionId,  setSessionId]  = useState<string | null>(null);
+  const [messages,      setMessages]      = useState<AIMessage[]>(WELCOME_MSGS());
+  const [input,         setInput]         = useState("");
+  const [loading,       setLoading]       = useState(false);
+  const [showChips,     setShowChips]     = useState(true);
+  const [sessionId,     setSessionId]     = useState<string | null>(null);
+  const [handoffAlert,  setHandoffAlert]  = useState(false);
+  const handoffTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const sessionCreating = useRef(false);
 
   // Create a session on first real message
@@ -158,11 +160,18 @@ export default function JADEScreen() {
 
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
 
-      const data = (await response.json()) as { message?: string; response?: string; error?: string };
+      const data = (await response.json()) as { message?: string; response?: string; error?: string; handoff?: boolean };
       const replyText = data.message?.trim() || data.response?.trim() || "Desculpe, não consegui processar sua mensagem. Tente novamente.";
 
       setMessages((prev) => [{ id: (Date.now() + 1).toString(), text: replyText, sender: "jade", time: nowTime() }, ...prev]);
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+
+      if (data.handoff) {
+        if (handoffTimer.current) clearTimeout(handoffTimer.current);
+        setHandoffAlert(true);
+        handoffTimer.current = setTimeout(() => setHandoffAlert(false), 9000);
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+      }
 
       await addActivityEvent({
         type: "message",
@@ -242,6 +251,22 @@ export default function JADEScreen() {
         ListFooterComponent={<View style={{ height: 8 }} />}
       />
 
+      {/* 🔥 Handoff alert banner */}
+      {handoffAlert && (
+        <TouchableOpacity
+          style={styles.handoffBanner}
+          onPress={() => { setHandoffAlert(false); router.push("/leads" as any); }}
+          activeOpacity={0.9}
+        >
+          <Text style={styles.handoffEmoji}>🔥</Text>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.handoffTitle}>Lead Quente Detectado!</Text>
+            <Text style={styles.handoffSub}>Sinal de compra — entre agora e feche o negócio</Text>
+          </View>
+          <Feather name="arrow-right" size={18} color="#fff" />
+        </TouchableOpacity>
+      )}
+
       {/* Shortcut chips */}
       {showChips && (
         <View style={styles.chipsContainer}>
@@ -316,4 +341,11 @@ const styles = StyleSheet.create({
   inputWrap: { flex: 1, flexDirection: "row", alignItems: "flex-end", borderRadius: 20, borderWidth: 1, paddingHorizontal: 16, paddingVertical: 10, gap: 8 },
   input: { flex: 1, fontSize: 15, maxHeight: 100, lineHeight: 22 },
   sendBtn: { width: 44, height: 44, borderRadius: 22, alignItems: "center", justifyContent: "center" },
+  handoffBanner: {
+    flexDirection: "row", alignItems: "center", gap: 12,
+    backgroundColor: "#FF0080", paddingHorizontal: 16, paddingVertical: 12,
+  },
+  handoffEmoji: { fontSize: 22 },
+  handoffTitle: { color: "#fff", fontSize: 14, fontFamily: "SpaceGrotesk_700Bold" },
+  handoffSub:   { color: "rgba(255,255,255,0.85)", fontSize: 12, fontFamily: "SpaceGrotesk_400Regular", marginTop: 1 },
 });

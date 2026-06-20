@@ -70,8 +70,23 @@ interface EmpresaConfig {
   nome: string;
   segmento: string;
   tom: string;
+  modoOperacao: string;
   produtos: Produto[];
 }
+
+interface ModoCard {
+  id: string;
+  label: string;
+  emoji: string;
+  desc: string;
+  color: string;
+}
+
+const MODOS: ModoCard[] = [
+  { id: "fechamento",            label: "Direto ao Fechamento",        emoji: "🎯", desc: "Produto simples, decide na hora. JADE vai direto pra venda.",        color: "#FF0080" },
+  { id: "consultivo_presencial", label: "Agendar + Fechar Presencial", emoji: "📅", desc: "Venda consultiva, ticket alto. JADE agenda reuniões.",              color: "#6C63FF" },
+  { id: "nutricao",              label: "Nutrição + Relacionamento",   emoji: "🌱", desc: "Ciclo longo. JADE nutre o lead até ele estar pronto.",              color: "#00D68F" },
+];
 
 function novoProduto(): Produto {
   return { id: Date.now().toString(), nome: "", valor: "", temCampanha: false, descricaoCampanha: "" };
@@ -81,6 +96,7 @@ const DEFAULT: EmpresaConfig = {
   nome: "",
   segmento: "Alimentação",
   tom: "consultivo",
+  modoOperacao: "fechamento",
   produtos: [novoProduto()],
 };
 
@@ -144,6 +160,7 @@ export default function EmpresaScreen() {
     const payload = {
       ...config,
       produto: config.produtos[0]?.nome ?? "",
+      modoOperacao: config.modoOperacao,
       planos: config.produtos.map((p) =>
         `• ${p.nome}${p.valor ? ` — R$${p.valor}` : ""}${p.temCampanha && p.descricaoCampanha ? ` (Campanha: ${p.descricaoCampanha})` : ""}`
       ).join("\n"),
@@ -269,7 +286,34 @@ export default function EmpresaScreen() {
           })}
         </View>
 
-        {/* ── Seção 3: Produtos ── */}
+        {/* ── Seção 3: Modo de Operação da JADE ── */}
+        <Text style={[S.sectionLabel, { marginTop: 8 }]}>MODO DE OPERAÇÃO DA JADE</Text>
+        <Text style={S.sectionSub}>Como a JADE deve conduzir as abordagens e fechar negócios</Text>
+
+        <View style={S.tomsGrid}>
+          {MODOS.map((modo) => {
+            const selected = config.modoOperacao === modo.id;
+            return (
+              <TouchableOpacity
+                key={modo.id}
+                style={[S.tomCard, selected && { borderColor: modo.color, backgroundColor: modo.color + "10" }]}
+                onPress={() => { Haptics.selectionAsync(); setConfig((prev) => ({ ...prev, modoOperacao: modo.id })); }}
+                activeOpacity={0.8}
+              >
+                <Text style={S.tomEmoji}>{modo.emoji}</Text>
+                <Text style={[S.tomLabel, selected && { color: modo.color }]}>{modo.label}</Text>
+                <Text style={S.tomDesc}>{modo.desc}</Text>
+                {selected && (
+                  <View style={[S.tomCheck, { backgroundColor: modo.color }]}>
+                    <Feather name="check" size={10} color="#fff" />
+                  </View>
+                )}
+              </TouchableOpacity>
+            );
+          })}
+        </View>
+
+        {/* ── Seção 4: Produtos ── */}
         <Text style={[S.sectionLabel, { marginTop: 8 }]}>PRODUTOS E SERVIÇOS</Text>
         <Text style={S.sectionSub}>A JADE usará esses dados nos argumentos de venda e nas propostas</Text>
 
