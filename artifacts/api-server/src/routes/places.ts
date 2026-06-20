@@ -24,9 +24,9 @@ router.post('/search', async (req: Request, res: Response) => {
       return res.status(400).json({ error: 'tipo is required' });
     }
 
-    const apiKey = process.env.GOOGLE_MAPS_API_KEY;
+    const apiKey = process.env.GOOGLE_MAPS_PLATFORM_KEY ?? process.env.GOOGLE_MAPS_API_KEY;
     if (!apiKey) {
-      return res.status(503).json({ error: 'GOOGLE_MAPS_API_KEY not configured' });
+      return res.status(503).json({ error: 'Google Maps API key not configured' });
     }
 
     const queryParts = [tipo, bairro, cidade].filter(Boolean).join(' ');
