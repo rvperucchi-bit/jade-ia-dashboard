@@ -72,6 +72,7 @@ export default function CarteiraScreen() {
   const [clientes, setClientes] = useState<Cliente[]>(SEED);
   const [visitaModal, setVisitaModal] = useState<Cliente | null>(null);
   const [visitaObs, setVisitaObs] = useState("");
+  const [registrando, setRegistrando] = useState(false);
   const [analise, setAnalise] = useState("");
   const [loadingAnalise, setLoadingAnalise] = useState(false);
 
@@ -79,15 +80,26 @@ export default function CarteiraScreen() {
   const emRisco = clientes.filter((c) => c.status === "em_risco").length;
   const semVisita30 = clientes.filter((c) => c.diasSemContato > 30).length;
 
-  const registrarVisita = (cliente: Cliente) => {
-    const updated = clientes.map((c) =>
-      c.id === cliente.id
-        ? { ...c, diasSemContato: 0, ultimaInteracao: new Date().toLocaleDateString("pt-BR"), status: "em_dia" as ClienteStatus, observacao: visitaObs }
-        : c
+  const registrarVisita = async (cliente: Cliente) => {
+    setRegistrando(true);
+    const obs = visitaObs.trim();
+    try {
+      await fetch(`${API_BASE}/api/carteira/${cliente.id}/visita`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ observacao: obs, tipo: "encantamento", data: new Date().toISOString() }),
+      });
+    } catch {}
+    setClientes((prev) =>
+      prev.map((c) =>
+        c.id === cliente.id
+          ? { ...c, diasSemContato: 0, ultimaInteracao: new Date().toLocaleDateString("pt-BR"), status: "em_dia" as ClienteStatus, observacao: obs || c.observacao }
+          : c
+      )
     );
-    setClientes(updated);
     setVisitaModal(null);
     setVisitaObs("");
+    setRegistrando(false);
     Alert.alert("✅ Visita registrada!", "Contador zerado. A JADE vai sugerir a próxima pauta em breve.");
   };
 
@@ -253,12 +265,15 @@ export default function CarteiraScreen() {
               />
             </View>
             <TouchableOpacity
-              style={[S.saveBtn, { backgroundColor: ENTERPRISE_PURPLE }]}
+              style={[S.saveBtn, { backgroundColor: ENTERPRISE_PURPLE }, registrando && { opacity: 0.7 }]}
               onPress={() => visitaModal && registrarVisita(visitaModal)}
+              disabled={registrando}
               activeOpacity={0.85}
             >
-              <Feather name="check" size={16} color="#fff" />
-              <Text style={S.saveBtnText}>Registrar Visita</Text>
+              {registrando
+                ? <ActivityIndicator color="#fff" size="small" />
+                : <><Feather name="check" size={16} color="#fff" /><Text style={S.saveBtnText}>Registrar Visita</Text></>
+              }
             </TouchableOpacity>
           </View>
         </View>

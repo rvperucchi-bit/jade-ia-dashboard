@@ -100,18 +100,22 @@ export default function MeuTimeScreen() {
       avatarColor: AVATAR_COLORS[vendedores.length % AVATAR_COLORS.length],
       ultimaAtividade: "Agora",
     };
-    const novos = [...vendedores, novo];
-    setVendedores(novos);
     try {
-      await fetch(`${API_BASE}/api/time`, {
+      const res = await fetch(`${API_BASE}/api/time`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ vendedor: novo }),
       });
-    } catch {}
-    setForm({ nome: "", email: "", segmento: "", metaMensal: "", metaLeads: "" });
-    setShowModal(false);
-    setSaving(false);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      setVendedores((prev) => [...prev, novo]);
+      setForm({ nome: "", email: "", segmento: "", metaMensal: "", metaLeads: "" });
+      setShowModal(false);
+      Alert.alert("✅ Sucesso!", `${novo.nome} foi adicionado ao time.`);
+    } catch {
+      Alert.alert("Erro ao salvar", "Não foi possível cadastrar o vendedor. Verifique sua conexão e tente novamente.");
+    } finally {
+      setSaving(false);
+    }
   };
 
   const barColor = (p: number) => p >= 80 ? "#00D68F" : p >= 50 ? "#FFB300" : "#FF3B5C";

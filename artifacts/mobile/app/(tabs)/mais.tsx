@@ -106,6 +106,21 @@ export default function MaisScreen() {
           sub: "Posts, Stories, Tráfego pago...",
           onPress: () => router.push("/marketing" as any),
         },
+        {
+          icon: "navigation", iconLib: "feather", label: "Criar Rota",
+          sub: "Planejamento inteligente de visitas", badge: "PRO",
+          onPress: () => router.push("/criarrota" as any),
+        },
+        {
+          icon: "shield", iconLib: "feather", label: "Ajuda com Objeções",
+          sub: "Estratégias prontas para qualquer objeção", badge: "PRO",
+          onPress: () => router.push("/objecoes" as any),
+        },
+        {
+          icon: "calendar", iconLib: "feather", label: "Planejamento do Dia",
+          sub: "Organize e confirme sua agenda diária", badge: "PRO",
+          onPress: () => router.push("/planejamento" as any),
+        },
       ],
     },
     {

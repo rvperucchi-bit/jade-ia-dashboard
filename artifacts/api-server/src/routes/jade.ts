@@ -200,6 +200,34 @@ router.post('/chat', async (req: Request, res: Response) => {
   }
 });
 
+// ── JADE status & autonomous mode ──────────────────────────────────────────
+let jadeStatus = { ativo: false, updatedAt: new Date().toISOString() };
+let jadeAutonomo = { ativo: false, logs: [] as { texto: string; hora: string }[] };
+
+router.get('/status', (_req: Request, res: Response) => {
+  res.json(jadeStatus);
+});
+
+router.post('/status', (req: Request, res: Response) => {
+  const { ativo } = req.body as { ativo: boolean };
+  jadeStatus = { ativo: !!ativo, updatedAt: new Date().toISOString() };
+  if (ativo) {
+    addActivityEvent({ type: 'message', text: 'JADE ativada no modo autônomo', icon: 'robot', color: '#00D68F' });
+  }
+  res.json(jadeStatus);
+});
+
+router.get('/autonomo', (_req: Request, res: Response) => {
+  res.json(jadeAutonomo);
+});
+
+router.post('/autonomo', (req: Request, res: Response) => {
+  const { ativo } = req.body as { ativo: boolean };
+  jadeAutonomo.ativo = !!ativo;
+  if (!ativo) jadeAutonomo.logs = [];
+  res.json(jadeAutonomo);
+});
+
 // GET /jade/health
 router.get('/health', (_req: Request, res: Response) => {
   res.json({ status: 'ok', agent: 'JADE IA v6.2' });

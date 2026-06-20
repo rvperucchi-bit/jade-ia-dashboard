@@ -13,6 +13,9 @@ import timeRouter from "./time.js";
 import carteiraRouter from "./carteira.js";
 import metasRouter from "./metas.js";
 import feedbackRouter from "./feedback.js";
+import dashboardRouter from "./dashboard.js";
+import planejamentoRouter from "./planejamento.js";
+import notificacoesRouter from "./notificacoes.js";
 
 const router: IRouter = Router();
 
@@ -30,5 +33,8 @@ router.use("/time", timeRouter);
 router.use("/carteira", carteiraRouter);
 router.use("/metas", metasRouter);
 router.use("/feedback", feedbackRouter);
+router.use("/dashboard", dashboardRouter);
+router.use("/planejamento", planejamentoRouter);
+router.use("/notificacoes", notificacoesRouter);
 
 export default router;
