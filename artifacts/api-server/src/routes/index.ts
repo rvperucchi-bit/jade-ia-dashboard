@@ -5,6 +5,6 @@ import jadeRouter from "./jade";
 const router: IRouter = Router();
 
 router.use(healthRouter);
-router.use(jadeRouter);
+router.use("/jade", jadeRouter);
 
 export default router;
