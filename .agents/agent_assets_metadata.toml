@@ -11,3 +11,9 @@ id = "i1OQyUpchFNliMzBQ_NW3"
 uri = "file://auditoria-jade-ia.pdf"
 type = "pdf"
 title = "Auditoria Técnica Completa — JADE IA"
+
+[[outputs]]
+id = "9_Jjqy9lubmfoY4jtPLmA"
+uri = "file://JADE_IA_Atualizacoes.pdf"
+type = "pdf"
+title = "JADE IA — Release Notes · Sprint Junho 2026"
