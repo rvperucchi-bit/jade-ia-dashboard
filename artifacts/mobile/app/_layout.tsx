@@ -42,6 +42,7 @@ function RootLayoutNav() {
       <Stack.Screen name="index" />
       <Stack.Screen name="splash" />
       <Stack.Screen name="login" options={{ animation: "fade" }} />
+      <Stack.Screen name="cadastro" options={{ headerShown: false, animation: "slide_from_right" }} />
       <Stack.Screen name="(tabs)" options={{ animation: "fade" }} />
       <Stack.Screen
         name="conversa/[id]"
@@ -53,6 +54,14 @@ function RootLayoutNav() {
       />
       <Stack.Screen
         name="marketing"
+        options={{ headerShown: false, presentation: "card", animation: "slide_from_right" }}
+      />
+      <Stack.Screen
+        name="perfil"
+        options={{ headerShown: false, presentation: "card", animation: "slide_from_right" }}
+      />
+      <Stack.Screen
+        name="plano"
         options={{ headerShown: false, presentation: "card", animation: "slide_from_right" }}
       />
     </Stack>

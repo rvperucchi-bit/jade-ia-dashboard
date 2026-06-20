@@ -19,12 +19,9 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useAuth } from "@/context/AuthContext";
 
 const jadeWordmark = require("../assets/images/jade-wordmark-orig.png");
-
-const { width: SCREEN_W, height: SCREEN_H } = Dimensions.get("window");
-
-// Wordmark: original is landscape ~1024×434 px
-const WORDMARK_W = SCREEN_W * 0.74;
-const WORDMARK_H = WORDMARK_W * (434 / 1024);
+const { width: SW, height: SH } = Dimensions.get("window");
+const WM_W = SW * 0.78;
+const WM_H = WM_W * (434 / 1024);
 
 export default function LoginScreen() {
   const { login } = useAuth();
@@ -33,67 +30,52 @@ export default function LoginScreen() {
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
+  const [showPw, setShowPw] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
   const handleLogin = async () => {
-    if (!email.trim() || !password) {
-      setError("Preencha e-mail e senha.");
-      return;
-    }
+    if (!email.trim() || !password) { setError("Preencha e-mail e senha."); return; }
     setError("");
     setLoading(true);
     const ok = await login(email.trim(), password);
     setLoading(false);
-    if (ok) {
-      router.replace("/(tabs)");
-    } else {
-      setError("E-mail ou senha incorretos.");
-    }
+    if (ok) router.replace("/(tabs)");
+    else setError("E-mail ou senha incorretos.");
   };
 
   return (
     <KeyboardAvoidingView
-      style={[styles.root, { paddingTop: insets.top, paddingBottom: insets.bottom }]}
+      style={[S.root, { paddingTop: insets.top, paddingBottom: insets.bottom }]}
       behavior={Platform.OS === "ios" ? "padding" : "height"}
     >
       <ScrollView
-        contentContainerStyle={styles.scroll}
+        contentContainerStyle={S.scroll}
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
-        {/* ── Logo section ── */}
-        <View style={styles.logoSection}>
-          {/* Pink glow behind the logo */}
-          <View style={styles.glowOuter} pointerEvents="none" />
-          <View style={styles.glowInner} pointerEvents="none" />
-
-          {/* JADE wordmark */}
-          <Image
-            source={jadeWordmark}
-            style={{ width: WORDMARK_W, height: WORDMARK_H }}
-            resizeMode="contain"
-          />
-
-          <Text style={styles.tagline}>SUA PARCEIRA DE TRABALHO.</Text>
+        {/* ── Logo ── */}
+        <View style={[S.logoWrap, { minHeight: SH * 0.38 }]}>
+          <View style={S.glowA} pointerEvents="none" />
+          <View style={S.glowB} pointerEvents="none" />
+          <Image source={jadeWordmark} style={{ width: WM_W, height: WM_H }} resizeMode="contain" />
+          <Text style={S.tagline}>SUA PARCEIRA DE TRABALHO.</Text>
         </View>
 
-        {/* ── Form section ── */}
-        <View style={styles.form}>
-          <Text style={styles.formTitle}>Entrar</Text>
+        {/* ── Formulário ── */}
+        <View style={S.form}>
+          <Text style={S.formTitle}>Entrar</Text>
 
-          {/* E-mail */}
-          <View style={styles.inputGroup}>
-            <Text style={styles.inputLabel}>E-mail</Text>
-            <View style={styles.inputWrap}>
-              <Feather name="mail" size={18} color="#555570" style={styles.inputIcon} />
+          <View style={S.fieldGroup}>
+            <Text style={S.label}>E-mail</Text>
+            <View style={S.inputRow}>
+              <Feather name="mail" size={18} color="#555" style={S.inputIcon} />
               <TextInput
-                style={styles.input}
+                style={S.input}
                 value={email}
                 onChangeText={setEmail}
                 placeholder="rodrigo@jadeia.com.br"
-                placeholderTextColor="#3D3D56"
+                placeholderTextColor="#444"
                 keyboardType="email-address"
                 autoCapitalize="none"
                 autoCorrect={false}
@@ -101,61 +83,46 @@ export default function LoginScreen() {
             </View>
           </View>
 
-          {/* Senha */}
-          <View style={styles.inputGroup}>
-            <Text style={styles.inputLabel}>Senha</Text>
-            <View style={styles.inputWrap}>
-              <Feather name="lock" size={18} color="#555570" style={styles.inputIcon} />
+          <View style={S.fieldGroup}>
+            <Text style={S.label}>Senha</Text>
+            <View style={S.inputRow}>
+              <Feather name="lock" size={18} color="#555" style={S.inputIcon} />
               <TextInput
-                style={styles.input}
+                style={S.input}
                 value={password}
                 onChangeText={setPassword}
                 placeholder="••••••••"
-                placeholderTextColor="#3D3D56"
-                secureTextEntry={!showPassword}
+                placeholderTextColor="#444"
+                secureTextEntry={!showPw}
                 autoCapitalize="none"
               />
-              <TouchableOpacity
-                onPress={() => setShowPassword((v) => !v)}
-                style={styles.eyeBtn}
-                activeOpacity={0.7}
-              >
-                <Feather
-                  name={showPassword ? "eye-off" : "eye"}
-                  size={18}
-                  color="#555570"
-                />
+              <TouchableOpacity onPress={() => setShowPw((v) => !v)} activeOpacity={0.7} style={S.eyeBtn}>
+                <Feather name={showPw ? "eye-off" : "eye"} size={18} color="#555" />
               </TouchableOpacity>
             </View>
           </View>
 
-          {!!error && <Text style={styles.errorText}>{error}</Text>}
+          {!!error && <Text style={S.errorText}>{error}</Text>}
 
-          {/* Botão Entrar */}
           <TouchableOpacity
-            style={[styles.loginBtn, loading && { opacity: 0.6 }]}
+            style={[S.btn, loading && { opacity: 0.65 }]}
             onPress={handleLogin}
             activeOpacity={0.85}
             disabled={loading}
           >
-            {loading ? (
-              <ActivityIndicator color="#fff" />
-            ) : (
-              <Text style={styles.loginBtnText}>Entrar</Text>
-            )}
+            {loading ? <ActivityIndicator color="#fff" /> : <Text style={S.btnText}>Entrar</Text>}
           </TouchableOpacity>
 
-          {/* Esqueci senha */}
-          <TouchableOpacity style={styles.forgotBtn} activeOpacity={0.7}>
-            <Text style={styles.forgotText}>Esqueci minha senha</Text>
+          <TouchableOpacity style={S.forgotBtn} activeOpacity={0.7}>
+            <Text style={S.forgotText}>Esqueci minha senha</Text>
           </TouchableOpacity>
         </View>
 
-        {/* ── Footer ── */}
-        <View style={styles.footer}>
-          <Text style={styles.footerText}>Não tem uma conta?</Text>
-          <TouchableOpacity activeOpacity={0.7}>
-            <Text style={styles.footerLink}> Criar conta</Text>
+        {/* ── Rodapé ── */}
+        <View style={S.footer}>
+          <Text style={S.footerText}>Não tem uma conta?</Text>
+          <TouchableOpacity activeOpacity={0.7} onPress={() => router.push("/cadastro" as any)}>
+            <Text style={S.footerLink}> Criar conta</Text>
           </TouchableOpacity>
         </View>
       </ScrollView>
@@ -163,143 +130,111 @@ export default function LoginScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  root: {
-    flex: 1,
-    backgroundColor: "#0A0A0F",
-  },
-  scroll: {
-    flexGrow: 1,
-    paddingHorizontal: 28,
-    paddingBottom: 32,
-  },
+const S = StyleSheet.create({
+  root: { flex: 1, backgroundColor: "#000000" },
+  scroll: { flexGrow: 1, paddingHorizontal: 28, paddingBottom: 36 },
 
-  // ── Logo ──
-  logoSection: {
+  logoWrap: {
     alignItems: "center",
     justifyContent: "center",
-    paddingTop: SCREEN_H * 0.08,
-    paddingBottom: SCREEN_H * 0.04,
+    paddingTop: 24,
+    paddingBottom: 28,
     position: "relative",
   },
-  glowOuter: {
+  glowA: {
     position: "absolute",
-    width: 340,
-    height: 260,
-    borderRadius: 170,
-    backgroundColor: "#FF0080",
-    opacity: 0.07,
-    top: SCREEN_H * 0.04,
+    width: 380,
+    height: 300,
+    borderRadius: 190,
+    backgroundColor: "#FF0A7A",
+    opacity: 0.09,
+    top: 0,
     alignSelf: "center",
   },
-  glowInner: {
+  glowB: {
     position: "absolute",
-    width: 220,
-    height: 160,
-    borderRadius: 110,
-    backgroundColor: "#FF0080",
-    opacity: 0.10,
-    top: SCREEN_H * 0.065,
+    width: 240,
+    height: 180,
+    borderRadius: 120,
+    backgroundColor: "#FF0A7A",
+    opacity: 0.13,
+    top: 30,
     alignSelf: "center",
   },
   tagline: {
+    marginTop: 12,
     fontSize: 11,
+    color: "#888",
+    letterSpacing: 2.2,
     fontFamily: "SpaceGrotesk_400Regular",
-    color: "#FFFFFF55",
-    letterSpacing: 2.5,
-    marginTop: 10,
-    textTransform: "uppercase",
   },
 
-  // ── Form ──
-  form: {
-    gap: 14,
-  },
+  form: { gap: 16 },
   formTitle: {
     fontSize: 28,
     fontFamily: "SpaceGrotesk_700Bold",
-    color: "#FFFFFF",
-    marginBottom: 2,
+    color: "#fff",
+    marginBottom: 4,
   },
-  inputGroup: {
-    gap: 6,
-  },
-  inputLabel: {
-    fontSize: 13,
-    fontFamily: "SpaceGrotesk_500Medium",
-    color: "#9999BB",
-  },
-  inputWrap: {
+  fieldGroup: { gap: 6 },
+  label: { fontSize: 14, fontFamily: "SpaceGrotesk_500Medium", color: "#fff" },
+  inputRow: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#12121E",
-    borderWidth: 1,
-    borderColor: "#222235",
+    backgroundColor: "#1A1A1A",
     borderRadius: 12,
+    height: 52,
     paddingHorizontal: 14,
-    height: 54,
+    gap: 10,
   },
-  inputIcon: {
-    marginRight: 10,
-  },
+  inputIcon: {},
   input: {
     flex: 1,
     fontSize: 15,
     fontFamily: "SpaceGrotesk_400Regular",
-    color: "#FFFFFF",
+    color: "#fff",
   },
-  eyeBtn: {
-    padding: 4,
-  },
+  eyeBtn: { padding: 4 },
   errorText: {
     fontSize: 13,
     fontFamily: "SpaceGrotesk_400Regular",
     color: "#FF3B5C",
     textAlign: "center",
   },
-  loginBtn: {
-    backgroundColor: "#FF0080",
-    height: 56,
-    borderRadius: 14,
+  btn: {
+    backgroundColor: "#FF0A7A",
+    height: 52,
+    borderRadius: 12,
     alignItems: "center",
     justifyContent: "center",
-    marginTop: 6,
-    shadowColor: "#FF0080",
+    marginTop: 4,
+    shadowColor: "#FF0A7A",
     shadowOffset: { width: 0, height: 6 },
     shadowOpacity: 0.45,
-    shadowRadius: 18,
+    shadowRadius: 20,
     elevation: 10,
   },
-  loginBtnText: {
-    fontSize: 16,
-    fontFamily: "SpaceGrotesk_700Bold",
-    color: "#FFFFFF",
-  },
-  forgotBtn: {
-    alignItems: "center",
-    paddingVertical: 6,
-  },
+  btnText: { fontSize: 16, fontFamily: "SpaceGrotesk_700Bold", color: "#fff" },
+  forgotBtn: { alignItems: "center", paddingVertical: 6 },
   forgotText: {
     fontSize: 14,
     fontFamily: "SpaceGrotesk_400Regular",
-    color: "#FF0080",
+    color: "#FF0A7A",
   },
-
-  // ── Footer ──
   footer: {
     flexDirection: "row",
     justifyContent: "center",
     alignItems: "center",
-    marginTop: 24,
+    marginTop: 28,
   },
   footerText: {
     fontSize: 14,
     fontFamily: "SpaceGrotesk_400Regular",
-    color: "#9999BB",
+    color: "#888",
   },
   footerLink: {
     fontSize: 14,
     fontFamily: "SpaceGrotesk_600SemiBold",
-    color: "#FF0080",
+    color: "#FF0A7A",
   },
 });

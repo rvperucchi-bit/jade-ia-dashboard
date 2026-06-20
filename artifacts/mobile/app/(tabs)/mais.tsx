@@ -67,8 +67,8 @@ export default function MaisScreen() {
     {
       title: "Conta",
       items: [
-        { icon: "user", iconLib: "feather", label: "Meu Perfil", sub: "Rodrigo" },
-        { icon: "star", iconLib: "feather", label: "Meu Plano", sub: "Pro · R$199/mês", badge: "PRO" },
+        { icon: "user", iconLib: "feather", label: "Meu Perfil", sub: "Rodrigo", onPress: () => router.push("/perfil" as any) },
+        { icon: "star", iconLib: "feather", label: "Meu Plano", sub: "Pro · R$247/mês", badge: "PRO", onPress: () => router.push("/plano" as any) },
       ],
     },
     {
@@ -89,18 +89,39 @@ export default function MaisScreen() {
     {
       title: "Configurações",
       items: [
-        { icon: "bell", iconLib: "feather", label: "Notificações", sub: "Ativas" },
-        { icon: "robot", iconLib: "mci", label: "Treinamento da JADE", sub: "3 scripts ativos" },
-        { icon: "link", iconLib: "feather", label: "Integrações", sub: "WhatsApp, Instagram" },
-        { icon: "shield", iconLib: "feather", label: "Privacidade e Dados" },
+        {
+          icon: "bell", iconLib: "feather", label: "Notificações", sub: "Ativas",
+          onPress: () => Alert.alert("Notificações", "Todas as notificações estão ativas."),
+        },
+        {
+          icon: "robot", iconLib: "mci", label: "Treinamento da JADE", sub: "3 scripts ativos",
+          onPress: () => Alert.alert("Em breve", "Personalização da JADE estará disponível em breve."),
+        },
+        {
+          icon: "link", iconLib: "feather", label: "Integrações", sub: "WhatsApp, Instagram",
+          onPress: () => Alert.alert("Integrações", "WhatsApp Business e Instagram em configuração."),
+        },
+        {
+          icon: "shield", iconLib: "feather", label: "Privacidade e Dados",
+          onPress: () => Alert.alert("Privacidade", "Seus dados são protegidos conforme a LGPD."),
+        },
       ],
     },
     {
       title: "Suporte",
       items: [
-        { icon: "help-circle", iconLib: "feather", label: "Central de Ajuda" },
-        { icon: "message-square", iconLib: "feather", label: "Falar com Suporte" },
-        { icon: "star", iconLib: "feather", label: "Avaliar o App" },
+        {
+          icon: "help-circle", iconLib: "feather", label: "Central de Ajuda",
+          onPress: () => Alert.alert("Central de Ajuda", "Acesse jadeia.com.br/ajuda para suporte completo."),
+        },
+        {
+          icon: "message-square", iconLib: "feather", label: "Falar com Suporte",
+          onPress: () => Alert.alert("Suporte", "Entre em contato pelo WhatsApp: (48) 99999-0000"),
+        },
+        {
+          icon: "star", iconLib: "feather", label: "Avaliar o App",
+          onPress: () => Alert.alert("Obrigado!", "Sua avaliação nos ajuda a melhorar a JADE."),
+        },
       ],
     },
     {

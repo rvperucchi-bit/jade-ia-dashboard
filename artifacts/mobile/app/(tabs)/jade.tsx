@@ -89,7 +89,8 @@ export default function JADEScreen() {
   const router = useRouter();
 
   const topPad = Platform.OS === "web" ? 67 : insets.top;
-  const bottomPad = Platform.OS === "web" ? 34 : insets.bottom;
+  const TAB_BAR_H = Platform.OS === "web" ? 84 : 60;
+  const bottomPad = TAB_BAR_H + (Platform.OS === "web" ? 0 : insets.bottom);
 
   const [messages, setMessages] = useState<AIMessage[]>([
     {
