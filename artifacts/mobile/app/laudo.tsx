@@ -46,7 +46,7 @@ export default function LaudoScreen() {
     setResult("");
     try {
       const tipoObj = TIPOS.find((t) => t.id === tipo)!;
-      const prompt = `Gere um laudo executivo de marketing profissional e detalhado.
+      const prompt = `Responda de forma direta e objetiva em no máximo 300 palavras.\n\nGere um laudo executivo de marketing profissional e detalhado.
 
 Negócio analisado: ${negocio}
 Tipo de análise: ${tipoObj.label}

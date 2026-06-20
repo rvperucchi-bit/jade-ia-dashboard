@@ -13,10 +13,10 @@
       "module_name": "jade",
       "is_active": false,
       "status": "paused",
-      "last_started_at": "2026-06-20T19:22:37.625Z",
-      "last_stopped_at": "2026-06-20T21:02:52.278Z",
+      "last_started_at": "2026-06-20T21:27:26.302Z",
+      "last_stopped_at": "2026-06-20T21:27:28.156Z",
       "last_run_at": null,
-      "updated_at": "2026-06-20T21:02:52.278Z"
+      "updated_at": "2026-06-20T21:27:28.156Z"
     },
     "leads": {
       "module_name": "leads",
@@ -47,6 +47,26 @@
     }
   },
   "module_logs": [
+    {
+      "id": "ca4e5ff012e45c00",
+      "module_name": "jade",
+      "action": "deactivated",
+      "message": "JADE IA desativado",
+      "metadata": {
+        "active": false
+      },
+      "created_at": "2026-06-20T21:27:28.157Z"
+    },
+    {
+      "id": "64d115e258fd677c",
+      "module_name": "jade",
+      "action": "activated",
+      "message": "JADE IA ativado",
+      "metadata": {
+        "active": true
+      },
+      "created_at": "2026-06-20T21:27:26.303Z"
+    },
     {
       "id": "0070e3d79001cf6b",
       "module_name": "scanner",
@@ -259,6 +279,273 @@
     }
   ],
   "activity_events": [
+    {
+      "id": "b7f9335f9a04f87d",
+      "type": "lead",
+      "text": "Novo lead adicionado: Carla Almeida (Livraria Caminhos da Leitura)",
+      "icon": "user-plus",
+      "color": "#6C63FF",
+      "created_at": "2026-06-20T21:32:26.746Z"
+    },
+    {
+      "id": "3f6c497b23a6da8f",
+      "type": "lead",
+      "text": "Novo lead adicionado: Roberto Santos (Padaria Pão & Prosa)",
+      "icon": "user-plus",
+      "color": "#6C63FF",
+      "created_at": "2026-06-20T21:32:26.103Z"
+    },
+    {
+      "id": "07939a8a7b89cb69",
+      "type": "lead",
+      "text": "Novo lead adicionado: Ana Paula Costa (Boutique Essência Chic)",
+      "icon": "user-plus",
+      "color": "#6C63FF",
+      "created_at": "2026-06-20T21:32:26.102Z"
+    },
+    {
+      "id": "ac21a1fe22aa9b3e",
+      "type": "scan",
+      "text": "JADE encontrou 3 novos leads via radar em São Paulo",
+      "icon": "crosshair",
+      "color": "#6C63FF",
+      "metadata": {
+        "count": 3,
+        "cidade": "São Paulo"
+      },
+      "created_at": "2026-06-20T21:32:25.759Z"
+    },
+    {
+      "id": "7ab12971f17f3eeb",
+      "type": "message",
+      "text": "JADE respondeu a uma mensagem",
+      "icon": "robot",
+      "color": "#FF0080",
+      "metadata": {},
+      "created_at": "2026-06-20T21:32:18.186Z"
+    },
+    {
+      "id": "bd4db9c52b03024a",
+      "type": "lead",
+      "text": "Novo lead adicionado: Ana Silva (Empório do Pão Artesanal)",
+      "icon": "user-plus",
+      "color": "#6C63FF",
+      "created_at": "2026-06-20T21:31:29.522Z"
+    },
+    {
+      "id": "65295a860b8550c2",
+      "type": "lead",
+      "text": "Novo lead adicionado: Patricia Santos (Moda & Estilo Boutique)",
+      "icon": "user-plus",
+      "color": "#6C63FF",
+      "created_at": "2026-06-20T21:31:29.519Z"
+    },
+    {
+      "id": "6260fb19d2a74a17",
+      "type": "lead",
+      "text": "Novo lead adicionado: Carlos Mendes (Livraria Leitura Feliz)",
+      "icon": "user-plus",
+      "color": "#6C63FF",
+      "created_at": "2026-06-20T21:31:28.880Z"
+    },
+    {
+      "id": "ec6541718e18695d",
+      "type": "scan",
+      "text": "JADE encontrou 3 novos leads via radar em São Paulo",
+      "icon": "crosshair",
+      "color": "#6C63FF",
+      "metadata": {
+        "count": 3,
+        "cidade": "São Paulo"
+      },
+      "created_at": "2026-06-20T21:31:28.485Z"
+    },
+    {
+      "id": "a309c25701eddea6",
+      "type": "lead",
+      "text": "Novo lead adicionado: Ana Paula Mello (Emporium Gourmet São Paulo)",
+      "icon": "user-plus",
+      "color": "#6C63FF",
+      "created_at": "2026-06-20T21:30:27.353Z"
+    },
+    {
+      "id": "46d08ea5084bea41",
+      "type": "lead",
+      "text": "Novo lead adicionado: Carla Mendes (Moda e Estilo Boutique)",
+      "icon": "user-plus",
+      "color": "#6C63FF",
+      "created_at": "2026-06-20T21:30:27.346Z"
+    },
+    {
+      "id": "9853db7d004dbf1d",
+      "type": "lead",
+      "text": "Novo lead adicionado: Ricardo Silva (Livraria Cultura Pop)",
+      "icon": "user-plus",
+      "color": "#6C63FF",
+      "created_at": "2026-06-20T21:30:26.733Z"
+    },
+    {
+      "id": "7ee1253f706f76b7",
+      "type": "scan",
+      "text": "JADE encontrou 3 novos leads via radar em São Paulo",
+      "icon": "crosshair",
+      "color": "#6C63FF",
+      "metadata": {
+        "count": 3,
+        "cidade": "São Paulo"
+      },
+      "created_at": "2026-06-20T21:30:26.353Z"
+    },
+    {
+      "id": "33ab9cb0473e6c6c",
+      "type": "message",
+      "text": "JADE respondeu a uma mensagem",
+      "icon": "robot",
+      "color": "#FF0080",
+      "metadata": {},
+      "created_at": "2026-06-20T21:30:06.089Z"
+    },
+    {
+      "id": "31e5cf46e0f66bcb",
+      "type": "lead",
+      "text": "Novo lead adicionado: Camila Oliveira (Padaria Pão da Vila)",
+      "icon": "user-plus",
+      "color": "#6C63FF",
+      "created_at": "2026-06-20T21:29:28.907Z"
+    },
+    {
+      "id": "9c87e02049c68846",
+      "type": "lead",
+      "text": "Novo lead adicionado: Ana Paula Silva (Livraria Saber & Café)",
+      "icon": "user-plus",
+      "color": "#6C63FF",
+      "created_at": "2026-06-20T21:29:28.872Z"
+    },
+    {
+      "id": "d4ec248b99a48f4a",
+      "type": "lead",
+      "text": "Novo lead adicionado: Ricardo Almeida (Boutique Elegance Moda Masculina)",
+      "icon": "user-plus",
+      "color": "#6C63FF",
+      "created_at": "2026-06-20T21:29:28.253Z"
+    },
+    {
+      "id": "4ddc941c7342f90e",
+      "type": "scan",
+      "text": "JADE encontrou 3 novos leads via radar em São Paulo",
+      "icon": "crosshair",
+      "color": "#6C63FF",
+      "metadata": {
+        "count": 3,
+        "cidade": "São Paulo"
+      },
+      "created_at": "2026-06-20T21:29:27.863Z"
+    },
+    {
+      "id": "27d07fb8c180b122",
+      "type": "message",
+      "text": "JADE respondeu a uma mensagem",
+      "icon": "robot",
+      "color": "#FF0080",
+      "metadata": {},
+      "created_at": "2026-06-20T21:28:37.812Z"
+    },
+    {
+      "id": "61132e18f46f9a0c",
+      "type": "lead",
+      "text": "Novo lead adicionado: Roberto Costa (Boutique Estilo Urbano)",
+      "icon": "user-plus",
+      "color": "#6C63FF",
+      "created_at": "2026-06-20T21:28:28.284Z"
+    },
+    {
+      "id": "7161bfd39db8ea48",
+      "type": "lead",
+      "text": "Novo lead adicionado: Patrícia Silveira (Mimos & Detalhes Presentes)",
+      "icon": "user-plus",
+      "color": "#6C63FF",
+      "created_at": "2026-06-20T21:28:28.280Z"
+    },
+    {
+      "id": "dbfa2e6e89f2be57",
+      "type": "lead",
+      "text": "Novo lead adicionado: Ana Paula Mendes (Empório Sabor Natural)",
+      "icon": "user-plus",
+      "color": "#6C63FF",
+      "created_at": "2026-06-20T21:28:27.637Z"
+    },
+    {
+      "id": "6993783722282a5f",
+      "type": "scan",
+      "text": "JADE encontrou 3 novos leads via radar em São Paulo",
+      "icon": "crosshair",
+      "color": "#6C63FF",
+      "metadata": {
+        "count": 3,
+        "cidade": "São Paulo"
+      },
+      "created_at": "2026-06-20T21:28:27.306Z"
+    },
+    {
+      "id": "b58372353477f113",
+      "type": "module",
+      "text": "JADE IA desativado",
+      "icon": "robot",
+      "color": "#FF0080",
+      "metadata": {
+        "module": "jade",
+        "active": false
+      },
+      "created_at": "2026-06-20T21:27:28.158Z"
+    },
+    {
+      "id": "ec7ea4e635a83e79",
+      "type": "lead",
+      "text": "Novo lead adicionado: Ricardo Mendes (Elegância Urbana Boutique)",
+      "icon": "user-plus",
+      "color": "#6C63FF",
+      "created_at": "2026-06-20T21:27:27.120Z"
+    },
+    {
+      "id": "6823e17c45c52f14",
+      "type": "lead",
+      "text": "Novo lead adicionado: Juliana Santos (Beleza Essencial)",
+      "icon": "user-plus",
+      "color": "#6C63FF",
+      "created_at": "2026-06-20T21:27:27.118Z"
+    },
+    {
+      "id": "a5257b42e84234d3",
+      "type": "lead",
+      "text": "Novo lead adicionado: Ana Silva (Mercado Fresco e Cia.)",
+      "icon": "user-plus",
+      "color": "#6C63FF",
+      "created_at": "2026-06-20T21:27:26.455Z"
+    },
+    {
+      "id": "d3a48783e7a141c8",
+      "type": "module",
+      "text": "JADE IA ativado",
+      "icon": "robot",
+      "color": "#FF0080",
+      "metadata": {
+        "module": "jade",
+        "active": true
+      },
+      "created_at": "2026-06-20T21:27:26.304Z"
+    },
+    {
+      "id": "f2ec8736b132f6be",
+      "type": "scan",
+      "text": "JADE encontrou 3 novos leads via radar em São Paulo",
+      "icon": "crosshair",
+      "color": "#6C63FF",
+      "metadata": {
+        "count": 3,
+        "cidade": "São Paulo"
+      },
+      "created_at": "2026-06-20T21:27:26.127Z"
+    },
     {
       "id": "e45864ed4c35dfcc",
       "type": "scan",

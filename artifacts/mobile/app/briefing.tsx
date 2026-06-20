@@ -98,7 +98,7 @@ export default function BriefingScreen() {
         }
       } catch {}
 
-      const prompt = `Gere um briefing pré-reunião completo e estruturado. ${empresaCtx}
+      const prompt = `Responda de forma direta e objetiva em no máximo 300 palavras.\n\nGere um briefing pré-reunião completo e estruturado. ${empresaCtx}
 
 Dados do Lead:
 - Nome/Empresa: ${lead}
