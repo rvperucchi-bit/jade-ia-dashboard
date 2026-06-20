@@ -7,6 +7,7 @@ import {
   Image,
   KeyboardAvoidingView,
   Platform,
+  ScrollView,
   StyleSheet,
   Text,
   TextInput,
@@ -17,11 +18,13 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { useAuth } from "@/context/AuthContext";
 
-const jadeIcon = require("../assets/images/jade-icon.png");
 const jadeWordmark = require("../assets/images/jade-wordmark-orig.png");
 
-const { width: SCREEN_W } = Dimensions.get("window");
-const ICON_SIZE = Math.min(SCREEN_W * 0.46, 190);
+const { width: SCREEN_W, height: SCREEN_H } = Dimensions.get("window");
+
+// Wordmark: original is landscape ~1024×434 px
+const WORDMARK_W = SCREEN_W * 0.74;
+const WORDMARK_H = WORDMARK_W * (434 / 1024);
 
 export default function LoginScreen() {
   const { login } = useAuth();
@@ -52,34 +55,35 @@ export default function LoginScreen() {
 
   return (
     <KeyboardAvoidingView
-      style={[styles.container, { paddingTop: insets.top, paddingBottom: insets.bottom }]}
+      style={[styles.root, { paddingTop: insets.top, paddingBottom: insets.bottom }]}
       behavior={Platform.OS === "ios" ? "padding" : "height"}
     >
-      <View style={styles.inner}>
-        {/* Brand section */}
+      <ScrollView
+        contentContainerStyle={styles.scroll}
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
+      >
+        {/* ── Logo section ── */}
         <View style={styles.logoSection}>
-          {/* Icon — circular crop to show neon circle */}
-          <View style={[styles.iconClip, { width: ICON_SIZE, height: ICON_SIZE }]}>
-            <Image
-              source={jadeIcon}
-              style={{ width: ICON_SIZE, height: ICON_SIZE * 1.5, marginTop: -ICON_SIZE * 0.22 }}
-              resizeMode="cover"
-            />
-          </View>
+          {/* Pink glow behind the logo */}
+          <View style={styles.glowOuter} pointerEvents="none" />
+          <View style={styles.glowInner} pointerEvents="none" />
 
-          {/* Wordmark */}
+          {/* JADE wordmark */}
           <Image
             source={jadeWordmark}
-            style={styles.wordmarkImage}
+            style={{ width: WORDMARK_W, height: WORDMARK_H }}
             resizeMode="contain"
           />
-          <Text style={styles.tagline}>Sua parceira de trabalho.</Text>
+
+          <Text style={styles.tagline}>SUA PARCEIRA DE TRABALHO.</Text>
         </View>
 
-        {/* Form */}
+        {/* ── Form section ── */}
         <View style={styles.form}>
           <Text style={styles.formTitle}>Entrar</Text>
 
+          {/* E-mail */}
           <View style={styles.inputGroup}>
             <Text style={styles.inputLabel}>E-mail</Text>
             <View style={styles.inputWrap}>
@@ -89,7 +93,7 @@ export default function LoginScreen() {
                 value={email}
                 onChangeText={setEmail}
                 placeholder="rodrigo@jadeia.com.br"
-                placeholderTextColor="#444460"
+                placeholderTextColor="#3D3D56"
                 keyboardType="email-address"
                 autoCapitalize="none"
                 autoCorrect={false}
@@ -97,6 +101,7 @@ export default function LoginScreen() {
             </View>
           </View>
 
+          {/* Senha */}
           <View style={styles.inputGroup}>
             <Text style={styles.inputLabel}>Senha</Text>
             <View style={styles.inputWrap}>
@@ -106,7 +111,7 @@ export default function LoginScreen() {
                 value={password}
                 onChangeText={setPassword}
                 placeholder="••••••••"
-                placeholderTextColor="#444460"
+                placeholderTextColor="#3D3D56"
                 secureTextEntry={!showPassword}
                 autoCapitalize="none"
               />
@@ -126,8 +131,9 @@ export default function LoginScreen() {
 
           {!!error && <Text style={styles.errorText}>{error}</Text>}
 
+          {/* Botão Entrar */}
           <TouchableOpacity
-            style={[styles.loginBtn, loading && styles.loginBtnDisabled]}
+            style={[styles.loginBtn, loading && { opacity: 0.6 }]}
             onPress={handleLogin}
             activeOpacity={0.85}
             disabled={loading}
@@ -139,64 +145,81 @@ export default function LoginScreen() {
             )}
           </TouchableOpacity>
 
+          {/* Esqueci senha */}
           <TouchableOpacity style={styles.forgotBtn} activeOpacity={0.7}>
             <Text style={styles.forgotText}>Esqueci minha senha</Text>
           </TouchableOpacity>
         </View>
 
+        {/* ── Footer ── */}
         <View style={styles.footer}>
           <Text style={styles.footerText}>Não tem uma conta?</Text>
           <TouchableOpacity activeOpacity={0.7}>
             <Text style={styles.footerLink}> Criar conta</Text>
           </TouchableOpacity>
         </View>
-      </View>
+      </ScrollView>
     </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  root: {
     flex: 1,
     backgroundColor: "#0A0A0F",
   },
-  inner: {
-    flex: 1,
+  scroll: {
+    flexGrow: 1,
     paddingHorizontal: 28,
-    justifyContent: "space-between",
-    paddingTop: 16,
     paddingBottom: 32,
   },
+
+  // ── Logo ──
   logoSection: {
     alignItems: "center",
-    gap: 2,
-    marginTop: 12,
+    justifyContent: "center",
+    paddingTop: SCREEN_H * 0.08,
+    paddingBottom: SCREEN_H * 0.04,
+    position: "relative",
   },
-  iconClip: {
-    borderRadius: 9999,
-    overflow: "hidden",
-    alignItems: "center",
+  glowOuter: {
+    position: "absolute",
+    width: 340,
+    height: 260,
+    borderRadius: 170,
+    backgroundColor: "#FF0080",
+    opacity: 0.07,
+    top: SCREEN_H * 0.04,
+    alignSelf: "center",
   },
-  wordmarkImage: {
-    width: SCREEN_W * 0.64,
-    height: (SCREEN_W * 0.64) * (178 / 1024),
-    marginTop: 10,
+  glowInner: {
+    position: "absolute",
+    width: 220,
+    height: 160,
+    borderRadius: 110,
+    backgroundColor: "#FF0080",
+    opacity: 0.10,
+    top: SCREEN_H * 0.065,
+    alignSelf: "center",
   },
   tagline: {
-    fontSize: 13,
+    fontSize: 11,
     fontFamily: "SpaceGrotesk_400Regular",
-    color: "#FFFFFF44",
-    marginTop: 4,
+    color: "#FFFFFF55",
+    letterSpacing: 2.5,
+    marginTop: 10,
+    textTransform: "uppercase",
   },
+
+  // ── Form ──
   form: {
-    gap: 16,
-    marginTop: 8,
+    gap: 14,
   },
   formTitle: {
-    fontSize: 26,
+    fontSize: 28,
     fontFamily: "SpaceGrotesk_700Bold",
     color: "#FFFFFF",
-    marginBottom: 4,
+    marginBottom: 2,
   },
   inputGroup: {
     gap: 6,
@@ -204,17 +227,17 @@ const styles = StyleSheet.create({
   inputLabel: {
     fontSize: 13,
     fontFamily: "SpaceGrotesk_500Medium",
-    color: "#AAAACC",
+    color: "#9999BB",
   },
   inputWrap: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#13131F",
+    backgroundColor: "#12121E",
     borderWidth: 1,
-    borderColor: "#252535",
+    borderColor: "#222235",
     borderRadius: 12,
     paddingHorizontal: 14,
-    height: 52,
+    height: 54,
   },
   inputIcon: {
     marginRight: 10,
@@ -236,19 +259,16 @@ const styles = StyleSheet.create({
   },
   loginBtn: {
     backgroundColor: "#FF0080",
-    height: 54,
+    height: 56,
     borderRadius: 14,
     alignItems: "center",
     justifyContent: "center",
-    marginTop: 4,
+    marginTop: 6,
     shadowColor: "#FF0080",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.35,
-    shadowRadius: 12,
-    elevation: 8,
-  },
-  loginBtnDisabled: {
-    opacity: 0.6,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.45,
+    shadowRadius: 18,
+    elevation: 10,
   },
   loginBtnText: {
     fontSize: 16,
@@ -257,22 +277,25 @@ const styles = StyleSheet.create({
   },
   forgotBtn: {
     alignItems: "center",
-    paddingVertical: 4,
+    paddingVertical: 6,
   },
   forgotText: {
     fontSize: 14,
     fontFamily: "SpaceGrotesk_400Regular",
     color: "#FF0080",
   },
+
+  // ── Footer ──
   footer: {
     flexDirection: "row",
     justifyContent: "center",
     alignItems: "center",
+    marginTop: 24,
   },
   footerText: {
     fontSize: 14,
     fontFamily: "SpaceGrotesk_400Regular",
-    color: "#AAAACC",
+    color: "#9999BB",
   },
   footerLink: {
     fontSize: 14,
