@@ -2,9 +2,11 @@ import { Feather } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import * as Location from "expo-location";
 import { useRouter } from "expo-router";
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
+  Animated,
+  Easing,
   Linking,
   Platform,
   ScrollView,
@@ -64,7 +66,24 @@ export default function ScannerScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const { addLead } = useApp();
+  const { addLead, moduleStates, toggleModule } = useApp();
+  const scannerActive = moduleStates.scanner?.is_active ?? false;
+
+  const pulseAnim = useRef(new Animated.Value(1)).current;
+  useEffect(() => {
+    if (scannerActive) {
+      const loop = Animated.loop(
+        Animated.sequence([
+          Animated.timing(pulseAnim, { toValue: 0.55, duration: 900, easing: Easing.inOut(Easing.ease), useNativeDriver: true }),
+          Animated.timing(pulseAnim, { toValue: 1,    duration: 900, easing: Easing.inOut(Easing.ease), useNativeDriver: true }),
+        ])
+      );
+      loop.start();
+      return () => loop.stop();
+    } else {
+      pulseAnim.setValue(1);
+    }
+  }, [scannerActive]);
 
   const [bairro, setBairro]           = useState("");
   const [cidade, setCidade]           = useState("Criciúma");
@@ -194,6 +213,7 @@ export default function ScannerScreen() {
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       {/* Header */}
       <View style={[styles.header, { paddingTop: topPad, borderBottomColor: colors.border }]}>
+
         <TouchableOpacity
           style={[styles.backBtn, { backgroundColor: colors.surface }]}
           onPress={() => router.back()}
@@ -210,6 +230,29 @@ export default function ScannerScreen() {
           </Text>
         </View>
       </View>
+
+      {/* ── Scanner status banner ── */}
+      {scannerActive ? (
+        <Animated.View style={[styles.scannerBanner, styles.scannerBannerActive, { opacity: pulseAnim }]}>
+          <View style={styles.scannerDot} />
+          <Text style={styles.scannerBannerText}>
+            JADE prospectando ativamente
+            {searched && results.length > 0 ? ` — ${results.length} encontrado${results.length !== 1 ? "s" : ""} agora` : " — busque abaixo"}
+          </Text>
+        </Animated.View>
+      ) : (
+        <View style={[styles.scannerBanner, styles.scannerBannerPaused]}>
+          <Feather name="pause-circle" size={14} color="#FFB300" />
+          <Text style={styles.scannerBannerPausedText}>Scanner pausado — ative no Radar para prospecção automática</Text>
+          <TouchableOpacity
+            onPress={() => { toggleModule("scanner"); Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium); }}
+            activeOpacity={0.8}
+            style={styles.ativarBtn}
+          >
+            <Text style={styles.ativarBtnText}>Ativar</Text>
+          </TouchableOpacity>
+        </View>
+      )}
 
       <ScrollView showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
         {/* ── Location button ── */}
@@ -433,6 +476,14 @@ const styles = StyleSheet.create({
     shadowColor: "#FF0080", shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 10, elevation: 6,
   },
   searchBtnText: { fontSize: 16, fontFamily: "SpaceGrotesk_700Bold", color: "#fff" },
+  scannerBanner: { flexDirection: "row", alignItems: "center", gap: 8, paddingHorizontal: 16, paddingVertical: 10, marginHorizontal: 0 },
+  scannerBannerActive: { backgroundColor: "#00D68F18", borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: "#00D68F33" },
+  scannerBannerPaused: { backgroundColor: "#FFB30012", borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: "#FFB30030" },
+  scannerDot: { width: 8, height: 8, borderRadius: 4, backgroundColor: "#00D68F" },
+  scannerBannerText:       { flex: 1, fontSize: 12, fontFamily: "SpaceGrotesk_500Medium", color: "#00D68F" },
+  scannerBannerPausedText: { flex: 1, fontSize: 12, fontFamily: "SpaceGrotesk_400Regular", color: "#FFB300" },
+  ativarBtn: { backgroundColor: "#FFB30022", borderRadius: 8, paddingHorizontal: 10, paddingVertical: 4, borderWidth: 1, borderColor: "#FFB30044" },
+  ativarBtnText: { fontSize: 11, fontFamily: "SpaceGrotesk_700Bold", color: "#FFB300" },
   errorBox: { flexDirection: "row", alignItems: "center", gap: 10, marginHorizontal: 20, padding: 14, borderRadius: 12, borderWidth: 1 },
   errorText: { flex: 1, fontSize: 13, fontFamily: "SpaceGrotesk_400Regular", color: "#FF3B5C" },
   resultsSection: { paddingHorizontal: 16, gap: 12 },

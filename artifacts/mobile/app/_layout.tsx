@@ -155,6 +155,10 @@ function RootLayoutNav() {
         name="sucesso"
         options={{ headerShown: false, presentation: "card", animation: "fade" }}
       />
+      <Stack.Screen
+        name="analise"
+        options={{ headerShown: false, presentation: "card", animation: "slide_from_right" }}
+      />
     </Stack>
   );
 }

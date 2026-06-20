@@ -63,6 +63,7 @@ export default function GestaoScreen() {
     { icon: "users",         iconLib: "feather", title: "Roleplay",        sub: "Treino de vendas com IA",      route: "/roleplay",         color: "#AB47BC",        accent: "#AB47BC18" },
     { icon: "bell",          iconLib: "feather", title: "Notificar Time",  sub: "Enviar broadcast ao time",     color: ENTERPRISE_PURPLE,   accent: "#8400FF18", modalAction: "notificar" },
     { icon: "heart",         iconLib: "feather", title: "Humor do Time",   sub: "Check-in diário dos executivos", route: "/feedbackexecutivo", color: "#FF6B35",        accent: "#FF6B3518" },
+    { icon: "activity",      iconLib: "feather", title: "Análise & KPIs",  sub: "Gaps e performance do time",     route: "/analise",          color: "#4ECDC4",        accent: "#4ECDC418" },
   ];
 
   const abrirNotifModal = () => {

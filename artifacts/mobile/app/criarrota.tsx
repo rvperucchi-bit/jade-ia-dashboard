@@ -2,7 +2,7 @@ import { Feather } from "@expo/vector-icons";
 import * as Clipboard from "expo-clipboard";
 import * as Haptics from "expo-haptics";
 import { useRouter } from "expo-router";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -18,6 +18,7 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useColors } from "@/hooks/useColors";
+import { useApp } from "@/context/AppContext";
 
 const API_BASE =
   Platform.OS === "web"
@@ -39,12 +40,61 @@ export default function CriarRotaScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const router = useRouter();
+  const { leads } = useApp();
   const topPad = Platform.OS === "web" ? 67 : insets.top;
 
   const [paradas, setParadas] = useState<Parada[]>([novaPar()]);
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState("");
   const [copied, setCopied] = useState(false);
+  const [carregandoAgenda, setCarregandoAgenda] = useState(true);
+  const [autoCarregado, setAutoCarregado] = useState(false);
+
+  useEffect(() => {
+    carregarAgendamentos();
+  }, []);
+
+  const carregarAgendamentos = async () => {
+    setCarregandoAgenda(true);
+    try {
+      const paradasAuto: Parada[] = [];
+
+      // Load today's planning items
+      const res = await fetch(`${API_BASE}/api/planejamento/u1/hoje`);
+      if (res.ok) {
+        const data = await res.json() as { plano?: { itens?: Array<{ tipo: string; titulo: string; horario?: string }> } };
+        const itens = data.plano?.itens ?? [];
+        for (const item of itens) {
+          if (item.tipo === "compromisso" || item.tipo === "lead_quente") {
+            paradasAuto.push({
+              id: `agenda-${Date.now()}-${Math.random()}`,
+              cliente: item.horario ? `[${item.horario}] ${item.titulo}` : item.titulo,
+              endereco: "",
+              agendado: item.tipo === "compromisso",
+            });
+          }
+        }
+      }
+
+      // Add hot leads from pipeline
+      const hotLeads = leads.filter((l) => l.column === "proposta" || l.column === "qualificado");
+      for (const lead of hotLeads.slice(0, 4)) {
+        paradasAuto.push({
+          id: `lead-${lead.id}`,
+          cliente: lead.name + (lead.company ? ` (${lead.company})` : ""),
+          endereco: "",
+          agendado: false,
+        });
+      }
+
+      if (paradasAuto.length > 0) {
+        setParadas(paradasAuto);
+        setAutoCarregado(true);
+      }
+    } catch { /* use default empty state */ } finally {
+      setCarregandoAgenda(false);
+    }
+  };
 
   const update = (id: string, key: keyof Parada, val: string | boolean) =>
     setParadas((prev) => prev.map((p) => (p.id === id ? { ...p, [key]: val } : p)));
@@ -136,12 +186,28 @@ export default function CriarRotaScreen() {
       </View>
 
       <ScrollView showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled" contentContainerStyle={[S.scroll, { paddingBottom: insets.bottom + 100 }]}>
-        <View style={[S.infoBanner, { backgroundColor: colors.card, borderColor: colors.border }]}>
-          <Feather name="map-pin" size={18} color="#FF0080" />
-          <Text style={[S.infoText, { color: colors.mutedForeground }]}>
-            Adicione seus compromissos do dia. A JADE otimiza a ordem, sugere horários e identifica leads quentes no caminho.
-          </Text>
-        </View>
+        {carregandoAgenda ? (
+          <View style={[S.infoBanner, { backgroundColor: colors.card, borderColor: colors.border }]}>
+            <ActivityIndicator size="small" color="#FF0080" />
+            <Text style={[S.infoText, { color: colors.mutedForeground }]}>
+              Carregando agendamentos do dia...
+            </Text>
+          </View>
+        ) : autoCarregado ? (
+          <View style={[S.infoBanner, { backgroundColor: "#00D68F10", borderColor: "#00D68F30" }]}>
+            <Feather name="check-circle" size={18} color="#00D68F" />
+            <Text style={[S.infoText, { color: "#00D68F" }]}>
+              Rota pré-carregada com seus agendamentos e leads quentes do dia. Remova paradas se necessário.
+            </Text>
+          </View>
+        ) : (
+          <View style={[S.infoBanner, { backgroundColor: colors.card, borderColor: colors.border }]}>
+            <Feather name="map-pin" size={18} color="#FF0080" />
+            <Text style={[S.infoText, { color: colors.mutedForeground }]}>
+              Adicione seus compromissos do dia. A JADE otimiza a ordem, sugere horários e identifica leads quentes no caminho.
+            </Text>
+          </View>
+        )}
 
         <Text style={[S.sectionLabel, { color: colors.mutedForeground }]}>PARADAS DO DIA</Text>
 

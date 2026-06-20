@@ -66,8 +66,8 @@ router.post('/create-checkout', async (req: Request, res: Response) => {
         },
         quantity: 1,
       }],
-      success_url: `https://jadeia.com.br/sucesso?session_id={CHECKOUT_SESSION_ID}&plano=${plano}`,
-      cancel_url:  'https://jadeia.com.br/planos',
+      success_url: `https://jade-ia-dashboard.replit.app/sucesso?session_id={CHECKOUT_SESSION_ID}&plano=${plano}`,
+      cancel_url:  'https://jade-ia-dashboard.replit.app/planos',
     });
 
     req.log.info({ plano, sessionId: session.id }, 'Stripe checkout session created');

@@ -376,6 +376,22 @@ export default function RadarScreen() {
               </View>
             );
           })}
+
+          {/* ── Rota shortcut ── */}
+          <View style={{ alignItems: "center", gap: 6 }}>
+            <TouchableOpacity
+              style={[M.wrap, { width: WRAP_SIZE, height: WRAP_SIZE, overflow: "visible" }]}
+              onPress={() => router.push("/criarrota" as any)}
+              activeOpacity={0.75}
+            >
+              <View style={[M.btn, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+                <Feather name="navigation" size={25} color={colors.primary} />
+              </View>
+            </TouchableOpacity>
+            <Text style={[S.moduleLabel, { color: colors.mutedForeground, marginTop: WRAP_SIZE / 2 }]}>
+              Rota
+            </Text>
+          </View>
         </ScrollView>
 
         <Text style={[S.activeLabel, { color: colors.mutedForeground }]}>

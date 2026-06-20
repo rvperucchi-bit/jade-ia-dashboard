@@ -57,8 +57,10 @@
   },
   "dependencies": {
     "@expo-google-fonts/space-grotesk": "^0.4.1",
+    "expo-calendar": "~15.0.8",
     "expo-clipboard": "^8.0.8",
     "expo-file-system": "^56.0.8",
+    "expo-notifications": "~0.32.17",
     "expo-print": "^56.0.4",
     "expo-sharing": "^56.0.18",
     "expo-sqlite": "^16.0.10"

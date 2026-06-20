@@ -1,5 +1,6 @@
 import { Feather } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
+import * as WebBrowser from "expo-web-browser";
 import React, { useState } from "react";
 import {
   ActivityIndicator,
@@ -207,11 +208,15 @@ export default function PlanoScreen() {
       const data = await res.json() as { url?: string; sessionId?: string };
 
       if (data.url) {
-        const supported = await Linking.canOpenURL(data.url);
-        if (supported) {
+        if (Platform.OS === "web") {
           await Linking.openURL(data.url);
         } else {
-          Alert.alert("Erro", "Não foi possível abrir o checkout. Tente novamente.");
+          await WebBrowser.openBrowserAsync(data.url, {
+            toolbarColor: "#0B0814",
+            controlsColor: "#FF0080",
+            showTitle: false,
+            enableBarCollapsing: true,
+          });
         }
       } else {
         Alert.alert("Erro", "Link de checkout não retornado. Tente novamente.");

@@ -1,5 +1,7 @@
 import { Feather } from "@expo/vector-icons";
+import * as Calendar from "expo-calendar";
 import * as Haptics from "expo-haptics";
+import * as Notifications from "expo-notifications";
 import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
@@ -96,7 +98,66 @@ export default function PlanejamentoScreen() {
 
   useEffect(() => {
     carregarPlano();
+    agendarNotificacaoMatinal();
   }, []);
+
+  const agendarNotificacaoMatinal = async () => {
+    if (Platform.OS === "web") return;
+    try {
+      const { status } = await Notifications.requestPermissionsAsync();
+      if (status !== "granted") return;
+      await Notifications.cancelScheduledNotificationAsync("jade-morning").catch(() => {});
+      await Notifications.scheduleNotificationAsync({
+        identifier: "jade-morning",
+        content: {
+          title: "Bom dia, Rodrigo! ☀️",
+          body: "Seu planejamento do dia está pronto. Confirma?",
+        },
+        trigger: { hour: 8, minute: 0, repeats: true } as any,
+      });
+    } catch { /* not available in all environments */ }
+  };
+
+  const adicionarNaAgenda = async () => {
+    if (Platform.OS === "web") {
+      Alert.alert("Agenda não disponível", "A integração com Google Agenda funciona apenas no app mobile.");
+      return;
+    }
+    try {
+      const { status } = await Calendar.requestCalendarPermissionsAsync();
+      if (status !== "granted") {
+        Alert.alert("Permissão negada", "Ative o acesso à agenda nas configurações do celular.");
+        return;
+      }
+      const calendars = await Calendar.getCalendarsAsync(Calendar.EntityTypes.EVENT);
+      const editableCal = calendars.find((c) => c.allowsModifications);
+      if (!editableCal || !plano) return;
+
+      const compromissos = plano.itens.filter((it) => it.tipo === "compromisso");
+      if (compromissos.length === 0) {
+        Alert.alert("Sem compromissos", "Não há compromissos com horário para adicionar na agenda.");
+        return;
+      }
+      for (const item of compromissos) {
+        const today = new Date();
+        const [hh = "9", mm = "0"] = (item.horario ?? "09:00").split(":");
+        const start = new Date(today.getFullYear(), today.getMonth(), today.getDate(), parseInt(hh), parseInt(mm));
+        const end   = new Date(start.getTime() + 60 * 60 * 1000);
+        await Calendar.createEventAsync(editableCal.id, {
+          title:     `JADE IA: ${item.titulo}`,
+          startDate: start,
+          endDate:   end,
+          notes:     item.descricao ?? "",
+        });
+      }
+      Alert.alert(
+        "✅ Adicionado na agenda",
+        `${compromissos.length} compromisso${compromissos.length !== 1 ? "s" : ""} sincronizado${compromissos.length !== 1 ? "s" : ""}.`
+      );
+    } catch {
+      Alert.alert("Erro", "Não foi possível acessar a agenda. Verifique as permissões do app.");
+    }
+  };
 
   const carregarPlano = async () => {
     setLoading(true);
@@ -137,12 +198,26 @@ export default function PlanejamentoScreen() {
         const data = await res.json();
         setPlano(data.plano);
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-        Alert.alert("✅ Dia confirmado!", "Seu planejamento foi salvo. Bora vender!");
+        Alert.alert(
+          "✅ Dia confirmado!",
+          "Bora vender! Quer adicionar os compromissos de hoje na sua agenda?",
+          [
+            { text: "Não, obrigado", style: "cancel" },
+            { text: "📅 Sim, adicionar", onPress: adicionarNaAgenda },
+          ]
+        );
       }
     } catch {
       setPlano((p) => p ? { ...p, confirmado: true, confirmadoEm: new Date().toISOString() } : p);
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      Alert.alert("✅ Dia confirmado!", "Planejamento salvo localmente. Bora vender!");
+      Alert.alert(
+        "✅ Dia confirmado!",
+        "Bora vender! Quer adicionar os compromissos de hoje na sua agenda?",
+        [
+          { text: "Não, obrigado", style: "cancel" },
+          { text: "📅 Sim, adicionar", onPress: adicionarNaAgenda },
+        ]
+      );
     } finally {
       setConfirmando(false);
     }
