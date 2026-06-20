@@ -116,12 +116,17 @@ export default function RoteiroScreen() {
     setLoading(true);
     setResult("");
     try {
-      const empresaRes = await fetch(`${API_BASE}/api/empresa`);
-      const { config } = await empresaRes.json();
-
-      const contexto = config
-        ? `Empresa: ${config.nome}. Produto/serviço: ${config.produto}. Segmento: ${config.segmento}.`
-        : "Empresa não configurada. Use contexto genérico de vendas B2B.";
+      let contexto = "Empresa não configurada. Use contexto genérico de vendas B2B.";
+      try {
+        const empresaRes = await fetch(`${API_BASE}/api/empresa`);
+        if (empresaRes.ok) {
+          const empresaData = await empresaRes.json();
+          const cfg = empresaData.config;
+          if (cfg?.nome) {
+            contexto = `Empresa: ${cfg.nome}. Produto/serviço: ${cfg.produto || "não informado"}. Segmento: ${cfg.segmento || "B2B"}. Planos: ${cfg.planos || "ver catálogo"}.`;
+          }
+        }
+      } catch {}
 
       const res = await fetch(`${API_BASE}/api/jade/chat`, {
         method: "POST",
@@ -130,15 +135,17 @@ export default function RoteiroScreen() {
           messages: [
             {
               role: "user",
-              content: `Crie um roteiro de vendas completo e personalizado para: ${contexto}\n\nO roteiro deve cobrir as 5 etapas: Abertura, Qualificação (SPIN), Apresentação, Objeções e Fechamento. Para cada etapa, forneça scripts prontos para usar adaptados ao produto/serviço e segmento acima. Use linguagem brasileira natural, direta e adaptada ao contexto B2B.`,
+              content: `Você é a JADE, especialista em vendas. Gere um roteiro de vendas completo e personalizado.\n\nContexto: ${contexto}\n\nO roteiro deve cobrir as 5 etapas: Abertura, Qualificação (SPIN), Apresentação, Objeções e Fechamento. Para cada etapa forneça: script pronto para usar, adaptado ao produto/serviço e segmento. Use linguagem brasileira natural e direta.`,
             },
           ],
         }),
       });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
-      setResult(data.message ?? "");
-    } catch {
-      setResult("Erro ao gerar roteiro. Verifique sua conexão.");
+      const texto = data.message?.trim();
+      setResult(texto || "Roteiro gerado! Verifique o conteúdo acima.");
+    } catch (err) {
+      setResult("Não foi possível gerar o roteiro. Verifique sua conexão e tente novamente.");
     } finally {
       setLoading(false);
     }

@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   Platform,
   Alert,
+  Modal,
 } from "react-native";
 import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -16,12 +17,15 @@ import * as Haptics from "expo-haptics";
 import { useColors } from "@/hooks/useColors";
 import { useAuth } from "@/context/AuthContext";
 
+const ENTERPRISE_PURPLE = "#8400FF";
+
 interface MenuItem {
   icon: string;
   iconLib: "feather" | "mci";
   label: string;
   sub?: string;
   badge?: string;
+  badgeColor?: string;
   danger?: boolean;
   onPress?: () => void;
 }
@@ -36,6 +40,7 @@ export default function MaisScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { logout } = useAuth();
+  const [upgradeModal, setUpgradeModal] = React.useState(false);
 
   const topPad    = Platform.OS === "web" ? 67 : insets.top;
   const bottomPad = Platform.OS === "web" ? 84 : insets.bottom + 60;
@@ -60,6 +65,17 @@ export default function MaisScreen() {
   };
 
   const tap = () => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+
+  const isEnterprise = false;
+
+  const handleGestaoPress = () => {
+    tap();
+    if (isEnterprise) {
+      router.push("/gestao" as any);
+    } else {
+      setUpgradeModal(true);
+    }
+  };
 
   const MENU_SECTIONS: { title: string; items: MenuItem[] }[] = [
     {
@@ -108,12 +124,13 @@ export default function MaisScreen() {
         {
           icon: "users", iconLib: "feather", label: "Roleplay de Vendas",
           sub: "Treine com a JADE como cliente", badge: "Enterprise",
+          badgeColor: ENTERPRISE_PURPLE,
           onPress: () => router.push("/roleplay" as any),
         },
         {
           icon: "book-open", iconLib: "feather", label: "Biblioteca de Técnicas",
           sub: "SPIN, AIDA, Gatilhos e mais",
-          onPress: () => router.push("/marketing" as any),
+          onPress: () => router.push("/biblioteca" as any),
         },
       ],
     },
@@ -198,6 +215,34 @@ export default function MaisScreen() {
         ))}
       </View>
 
+      {/* ── GESTÃO ENTERPRISE card ── */}
+      <View style={styles.section}>
+        <Text style={[styles.sectionTitle, { color: colors.mutedForeground }]}>GESTÃO ENTERPRISE</Text>
+        <TouchableOpacity
+          style={[styles.enterpriseCard, { borderColor: ENTERPRISE_PURPLE + "50" }]}
+          onPress={handleGestaoPress}
+          activeOpacity={0.85}
+        >
+          <View style={styles.enterpriseGradient}>
+            <View style={[styles.enterpriseIcon, { backgroundColor: ENTERPRISE_PURPLE + "30" }]}>
+              <MaterialCommunityIcons name="crown" size={26} color={ENTERPRISE_PURPLE} />
+            </View>
+            <View style={{ flex: 1 }}>
+              <View style={styles.enterpriseTitleRow}>
+                <Text style={styles.enterpriseLabel}>Gestão Comercial</Text>
+                <View style={styles.enterpriseBadge}>
+                  <Text style={styles.enterpriseBadgeText}>Enterprise</Text>
+                </View>
+              </View>
+              <Text style={styles.enterpriseSub}>
+                Time, metas, carteira, feedback e relatórios
+              </Text>
+            </View>
+            <Feather name={isEnterprise ? "arrow-right" : "lock"} size={18} color={ENTERPRISE_PURPLE} />
+          </View>
+        </TouchableOpacity>
+      </View>
+
       {MENU_SECTIONS.map((section, si) => (
         <View key={si} style={styles.section}>
           {section.title ? (
@@ -225,7 +270,7 @@ export default function MaisScreen() {
                     )}
                   </View>
                   {item.badge && (
-                    <View style={[styles.menuBadge, { backgroundColor: colors.primary }]}>
+                    <View style={[styles.menuBadge, { backgroundColor: item.badgeColor ?? colors.primary }]}>
                       <Text style={styles.menuBadgeText}>{item.badge}</Text>
                     </View>
                   )}
@@ -243,6 +288,42 @@ export default function MaisScreen() {
       ))}
 
       <Text style={[styles.version, { color: colors.mutedForeground }]}>JADE IA v1.0.0</Text>
+
+      {/* ── Upgrade modal ── */}
+      <Modal visible={upgradeModal} transparent animationType="fade" onRequestClose={() => setUpgradeModal(false)}>
+        <TouchableOpacity style={styles.modalOverlay} activeOpacity={1} onPress={() => setUpgradeModal(false)}>
+          <View style={[styles.modalBox, { backgroundColor: colors.card }]}>
+            <View style={[styles.modalIcon, { backgroundColor: ENTERPRISE_PURPLE + "22" }]}>
+              <MaterialCommunityIcons name="crown" size={36} color={ENTERPRISE_PURPLE} />
+            </View>
+            <Text style={[styles.modalTitle, { color: colors.text }]}>Gestão Enterprise</Text>
+            <Text style={[styles.modalSub, { color: colors.mutedForeground }]}>
+              Gerencie seu time de vendas completo com IA — metas, carteira de clientes, feedback empático e relatórios para diretoria.
+            </Text>
+            <View style={[styles.modalFeatures, { borderColor: ENTERPRISE_PURPLE + "30" }]}>
+              {[
+                "👥 Cadastro e ranking do time",
+                "🎯 Metas e pipeline consolidado",
+                "🌾 Carteira farmer/hunter",
+                "💜 Feedback empático da JADE",
+                "📋 Relatórios para diretoria",
+              ].map((f, i) => (
+                <Text key={i} style={[styles.modalFeature, { color: colors.mutedForeground }]}>{f}</Text>
+              ))}
+            </View>
+            <TouchableOpacity
+              style={[styles.upgradeBtn, { backgroundColor: ENTERPRISE_PURPLE }]}
+              onPress={() => { setUpgradeModal(false); router.push("/plano" as any); }}
+              activeOpacity={0.85}
+            >
+              <Text style={styles.upgradeBtnText}>Fazer Upgrade para Enterprise</Text>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => setUpgradeModal(false)} activeOpacity={0.7}>
+              <Text style={[styles.cancelText, { color: colors.mutedForeground }]}>Agora não</Text>
+            </TouchableOpacity>
+          </View>
+        </TouchableOpacity>
+      </Modal>
     </ScrollView>
   );
 }
@@ -269,6 +350,19 @@ const styles = StyleSheet.create({
   statLabel: { fontSize: 12, fontFamily: "SpaceGrotesk_400Regular", marginTop: 2 },
   section: { marginBottom: 16 },
   sectionTitle: { fontSize: 11, fontFamily: "SpaceGrotesk_600SemiBold", letterSpacing: 1, marginHorizontal: 20, marginBottom: 8 },
+  enterpriseCard: {
+    marginHorizontal: 16, borderRadius: 16, borderWidth: 1.5, overflow: "hidden",
+  },
+  enterpriseGradient: {
+    flexDirection: "row", alignItems: "center", gap: 14,
+    padding: 16, backgroundColor: ENTERPRISE_PURPLE + "14",
+  },
+  enterpriseIcon: { width: 50, height: 50, borderRadius: 14, alignItems: "center", justifyContent: "center" },
+  enterpriseTitleRow: { flexDirection: "row", alignItems: "center", gap: 8, flexWrap: "wrap" },
+  enterpriseLabel: { fontSize: 16, fontFamily: "SpaceGrotesk_700Bold", color: "#FFFFFF" },
+  enterpriseBadge: { paddingHorizontal: 8, paddingVertical: 3, borderRadius: 8, backgroundColor: ENTERPRISE_PURPLE + "30" },
+  enterpriseBadgeText: { fontSize: 11, fontFamily: "SpaceGrotesk_700Bold", color: ENTERPRISE_PURPLE },
+  enterpriseSub: { fontSize: 12, fontFamily: "SpaceGrotesk_400Regular", marginTop: 3, color: "#AAAACC" },
   sectionBox: { marginHorizontal: 16, borderRadius: 14, borderWidth: 1, overflow: "hidden" },
   menuItem: { flexDirection: "row", alignItems: "center", gap: 12, paddingHorizontal: 14, paddingVertical: 13 },
   menuIcon: { width: 36, height: 36, borderRadius: 10, alignItems: "center", justifyContent: "center" },
@@ -278,4 +372,14 @@ const styles = StyleSheet.create({
   menuBadgeText: { color: "#fff", fontSize: 11, fontFamily: "SpaceGrotesk_700Bold" },
   divider: { height: StyleSheet.hairlineWidth, marginLeft: 62 },
   version: { textAlign: "center", fontSize: 12, fontFamily: "SpaceGrotesk_400Regular", marginVertical: 20 },
+  modalOverlay: { flex: 1, backgroundColor: "rgba(0,0,0,0.75)", justifyContent: "flex-end" },
+  modalBox: { borderTopLeftRadius: 28, borderTopRightRadius: 28, padding: 28, gap: 16, paddingBottom: 44, alignItems: "center" },
+  modalIcon: { width: 72, height: 72, borderRadius: 20, alignItems: "center", justifyContent: "center" },
+  modalTitle: { fontSize: 22, fontFamily: "SpaceGrotesk_700Bold", textAlign: "center" },
+  modalSub: { fontSize: 14, fontFamily: "SpaceGrotesk_400Regular", textAlign: "center", lineHeight: 21 },
+  modalFeatures: { alignSelf: "stretch", borderRadius: 14, borderWidth: 1, padding: 16, gap: 8 },
+  modalFeature: { fontSize: 13, fontFamily: "SpaceGrotesk_400Regular", lineHeight: 20 },
+  upgradeBtn: { alignSelf: "stretch", height: 52, borderRadius: 14, alignItems: "center", justifyContent: "center" },
+  upgradeBtnText: { color: "#fff", fontSize: 16, fontFamily: "SpaceGrotesk_700Bold" },
+  cancelText: { fontSize: 14, fontFamily: "SpaceGrotesk_400Regular", marginTop: 4 },
 });

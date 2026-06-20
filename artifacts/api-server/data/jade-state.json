@@ -4,19 +4,19 @@
       "module_name": "scanner",
       "is_active": true,
       "status": "running",
-      "last_started_at": "2026-06-20T18:33:21.871Z",
-      "last_stopped_at": "2026-06-20T18:33:13.376Z",
+      "last_started_at": "2026-06-20T19:20:41.609Z",
+      "last_stopped_at": "2026-06-20T19:20:40.201Z",
       "last_run_at": null,
-      "updated_at": "2026-06-20T18:33:21.871Z"
+      "updated_at": "2026-06-20T19:20:41.609Z"
     },
     "jade": {
       "module_name": "jade",
-      "is_active": false,
-      "status": "paused",
-      "last_started_at": "2026-06-20T18:31:42.083Z",
+      "is_active": true,
+      "status": "running",
+      "last_started_at": "2026-06-20T19:22:37.625Z",
       "last_stopped_at": "2026-06-20T18:31:43.452Z",
       "last_run_at": null,
-      "updated_at": "2026-06-20T18:31:43.452Z"
+      "updated_at": "2026-06-20T19:22:37.625Z"
     },
     "leads": {
       "module_name": "leads",
@@ -47,6 +47,36 @@
     }
   },
   "module_logs": [
+    {
+      "id": "b4cb0196ccfdf36d",
+      "module_name": "jade",
+      "action": "activated",
+      "message": "JADE IA ativado",
+      "metadata": {
+        "active": true
+      },
+      "created_at": "2026-06-20T19:22:37.627Z"
+    },
+    {
+      "id": "a42e69de260b2a3d",
+      "module_name": "scanner",
+      "action": "activated",
+      "message": "Scanner Radar ativado",
+      "metadata": {
+        "active": true
+      },
+      "created_at": "2026-06-20T19:20:41.610Z"
+    },
+    {
+      "id": "125d8dc66e378ebb",
+      "module_name": "scanner",
+      "action": "deactivated",
+      "message": "Scanner Radar desativado",
+      "metadata": {
+        "active": false
+      },
+      "created_at": "2026-06-20T19:20:40.202Z"
+    },
     {
       "id": "8b1aef5fc769e1ab",
       "module_name": "scanner",
@@ -179,6 +209,51 @@
     }
   ],
   "activity_events": [
+    {
+      "id": "5ad6aeff0f8d9fec",
+      "type": "message",
+      "text": "JADE respondeu a uma mensagem",
+      "icon": "robot",
+      "color": "#FF0080",
+      "metadata": {},
+      "created_at": "2026-06-20T19:24:02.197Z"
+    },
+    {
+      "id": "0385269312d9b4d5",
+      "type": "module",
+      "text": "JADE IA ativado",
+      "icon": "robot",
+      "color": "#FF0080",
+      "metadata": {
+        "module": "jade",
+        "active": true
+      },
+      "created_at": "2026-06-20T19:22:37.628Z"
+    },
+    {
+      "id": "e9efe8fb4707b287",
+      "type": "module",
+      "text": "Scanner Radar ativado",
+      "icon": "crosshair",
+      "color": "#6C63FF",
+      "metadata": {
+        "module": "scanner",
+        "active": true
+      },
+      "created_at": "2026-06-20T19:20:41.610Z"
+    },
+    {
+      "id": "64ea82d31bf815a9",
+      "type": "module",
+      "text": "Scanner Radar desativado",
+      "icon": "crosshair",
+      "color": "#6C63FF",
+      "metadata": {
+        "module": "scanner",
+        "active": false
+      },
+      "created_at": "2026-06-20T19:20:40.211Z"
+    },
     {
       "id": "3ab40d79d5d125ab",
       "type": "module",
@@ -349,11 +424,11 @@
   "jade_sessions": [],
   "scanner_history": [],
   "company_config": {
-    "nome": "JÁ Delivery",
+    "nome": "Ja delivery",
     "produto": "Plataforma de delivery",
     "segmento": "Alimentação",
     "tom": "consultivo",
-    "planos": "Starter R$19,90",
-    "updated_at": "2026-06-20T18:29:12.516Z"
+    "planos": "",
+    "updated_at": "2026-06-20T19:25:20.613Z"
   }
 }

@@ -9,6 +9,10 @@ import marketingRouter from "./marketing.js";
 import activityRouter from "./activity.js";
 import empresaRouter from "./empresa.js";
 import relatoriosRouter from "./relatorios.js";
+import timeRouter from "./time.js";
+import carteiraRouter from "./carteira.js";
+import metasRouter from "./metas.js";
+import feedbackRouter from "./feedback.js";
 
 const router: IRouter = Router();
 
@@ -22,5 +26,9 @@ router.use("/marketing", marketingRouter);
 router.use("/activity", activityRouter);
 router.use("/empresa", empresaRouter);
 router.use("/relatorios", relatoriosRouter);
+router.use("/time", timeRouter);
+router.use("/carteira", carteiraRouter);
+router.use("/metas", metasRouter);
+router.use("/feedback", feedbackRouter);
 
 export default router;

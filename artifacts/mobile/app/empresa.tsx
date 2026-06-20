@@ -9,6 +9,7 @@ import {
   Platform,
   ScrollView,
   StyleSheet,
+  Switch,
   Text,
   TextInput,
   TouchableOpacity,
@@ -16,7 +17,7 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-const CACHE_KEY = "@jade_ia:empresa";
+const CACHE_KEY = "@jade_ia:empresa_v2";
 
 const API_BASE =
   Platform.OS === "web"
@@ -50,27 +51,37 @@ interface TomCard {
 }
 
 const TOMS: TomCard[] = [
-  { id: "formal",      label: "Formal",       emoji: "👔", desc: "Linguagem corporativa e técnica",         color: "#4ECDC4" },
-  { id: "consultivo",  label: "Consultivo",   emoji: "🎯", desc: "Consultora estratégica e parceira",       color: "#6C63FF" },
-  { id: "descontraido",label: "Descontraído", emoji: "😊", desc: "Próximo, leve e autêntico",               color: "#00D68F" },
-  { id: "agressivo",   label: "Vendas",       emoji: "🔥", desc: "Direto ao ponto, foco em fechamento",    color: "#FF0080" },
-  { id: "empatico",    label: "Empático",     emoji: "💜", desc: "Acolhedor, escuta ativa e humanizado",   color: "#8400FF" },
+  { id: "formal",       label: "Formal",       emoji: "👔", desc: "Linguagem corporativa e técnica",      color: "#4ECDC4" },
+  { id: "consultivo",   label: "Consultivo",   emoji: "🎯", desc: "Consultora estratégica e parceira",    color: "#6C63FF" },
+  { id: "descontraido", label: "Descontraído", emoji: "😊", desc: "Próximo, leve e autêntico",            color: "#00D68F" },
+  { id: "agressivo",    label: "Vendas",       emoji: "🔥", desc: "Direto ao ponto, foco em fechamento", color: "#FF0080" },
+  { id: "empatico",     label: "Empático",     emoji: "💜", desc: "Acolhedor, escuta ativa e humanizado", color: "#8400FF" },
 ];
+
+interface Produto {
+  id: string;
+  nome: string;
+  valor: string;
+  temCampanha: boolean;
+  descricaoCampanha: string;
+}
 
 interface EmpresaConfig {
   nome: string;
-  produto: string;
   segmento: string;
   tom: string;
-  planos: string;
+  produtos: Produto[];
+}
+
+function novoProduto(): Produto {
+  return { id: Date.now().toString(), nome: "", valor: "", temCampanha: false, descricaoCampanha: "" };
 }
 
 const DEFAULT: EmpresaConfig = {
   nome: "",
-  produto: "",
   segmento: "Alimentação",
   tom: "consultivo",
-  planos: "",
+  produtos: [novoProduto()],
 };
 
 export default function EmpresaScreen() {
@@ -86,34 +97,66 @@ export default function EmpresaScreen() {
   useEffect(() => {
     AsyncStorage.getItem(CACHE_KEY).then((raw) => {
       if (raw) {
-        try { setConfig({ ...DEFAULT, ...JSON.parse(raw) }); } catch {}
+        try {
+          const parsed = JSON.parse(raw);
+          setConfig({ ...DEFAULT, ...parsed, produtos: parsed.produtos?.length ? parsed.produtos : DEFAULT.produtos });
+        } catch {}
       }
     });
   }, []);
 
-  const update = (key: keyof EmpresaConfig) => (val: string) =>
+  const updateField = (key: keyof Omit<EmpresaConfig, "produtos">) => (val: string) =>
     setConfig((prev) => ({ ...prev, [key]: val }));
 
+  const updateProduto = (id: string, key: keyof Produto, val: string | boolean) =>
+    setConfig((prev) => ({
+      ...prev,
+      produtos: prev.produtos.map((p) => (p.id === id ? { ...p, [key]: val } : p)),
+    }));
+
+  const addProduto = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    setConfig((prev) => ({ ...prev, produtos: [...prev.produtos, novoProduto()] }));
+  };
+
+  const removeProduto = (id: string) => {
+    if (config.produtos.length <= 1) {
+      Alert.alert("Mínimo 1 produto", "Você precisa ter ao menos um produto cadastrado.");
+      return;
+    }
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    setConfig((prev) => ({ ...prev, produtos: prev.produtos.filter((p) => p.id !== id) }));
+  };
+
   const handleSave = async () => {
-    if (!config.nome.trim() || !config.produto.trim()) {
-      Alert.alert("Campos obrigatórios", "Preencha o nome da empresa e o produto/serviço principal.");
+    if (!config.nome.trim()) {
+      Alert.alert("Campos obrigatórios", "Preencha o nome da empresa.");
+      return;
+    }
+    if (config.produtos.some((p) => !p.nome.trim())) {
+      Alert.alert("Produto incompleto", "Preencha o nome de todos os produtos.");
       return;
     }
 
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     setSaving(true);
 
+    const payload = {
+      ...config,
+      produto: config.produtos[0]?.nome ?? "",
+      planos: config.produtos.map((p) =>
+        `• ${p.nome}${p.valor ? ` — R$${p.valor}` : ""}${p.temCampanha && p.descricaoCampanha ? ` (Campanha: ${p.descricaoCampanha})` : ""}`
+      ).join("\n"),
+    };
+
     try {
       await AsyncStorage.setItem(CACHE_KEY, JSON.stringify(config));
-
       const res = await fetch(`${API_BASE}/api/empresa`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(config),
+        body: JSON.stringify(payload),
       });
-
       if (!res.ok) throw new Error("API error");
-
       setSaved(true);
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       setTimeout(() => setSaved(false), 3000);
@@ -129,7 +172,6 @@ export default function EmpresaScreen() {
 
   return (
     <View style={[S.root, { backgroundColor: C.bg }]}>
-      {/* Header */}
       <View style={[S.header, { paddingTop: topPad }]}>
         <TouchableOpacity style={S.backBtn} onPress={() => router.back()} activeOpacity={0.8}>
           <Feather name="arrow-left" size={22} color={C.text} />
@@ -145,7 +187,6 @@ export default function EmpresaScreen() {
         keyboardShouldPersistTaps="handled"
         contentContainerStyle={[S.scroll, { paddingBottom: insets.bottom + 100 }]}
       >
-        {/* Info banner */}
         <View style={S.infoBanner}>
           <View style={S.infoBannerIcon}>
             <Feather name="cpu" size={18} color={C.primary} />
@@ -167,28 +208,12 @@ export default function EmpresaScreen() {
               placeholder="Ex: JÁ Delivery"
               placeholderTextColor={C.muted}
               value={config.nome}
-              onChangeText={update("nome")}
+              onChangeText={updateField("nome")}
               returnKeyType="next"
             />
           </View>
         </View>
 
-        <View style={S.fieldGroup}>
-          <Text style={S.label}>Produto / Serviço principal *</Text>
-          <View style={[S.inputWrap, { borderColor: config.produto ? C.primary + "60" : C.border }]}>
-            <Feather name="package" size={16} color={C.muted} style={S.inputIcon} />
-            <TextInput
-              style={S.input}
-              placeholder="Ex: Plataforma de delivery local"
-              placeholderTextColor={C.muted}
-              value={config.produto}
-              onChangeText={update("produto")}
-              returnKeyType="next"
-            />
-          </View>
-        </View>
-
-        {/* Segmento picker */}
         <View style={S.fieldGroup}>
           <Text style={S.label}>Segmento</Text>
           <TouchableOpacity
@@ -206,12 +231,10 @@ export default function EmpresaScreen() {
                 <TouchableOpacity
                   key={seg}
                   style={[S.pickerItem, seg === config.segmento && S.pickerItemActive]}
-                  onPress={() => { update("segmento")(seg); setShowSegPicker(false); }}
+                  onPress={() => { updateField("segmento")(seg); setShowSegPicker(false); }}
                   activeOpacity={0.8}
                 >
-                  <Text style={[S.pickerText, { color: seg === config.segmento ? C.primary : C.text }]}>
-                    {seg}
-                  </Text>
+                  <Text style={[S.pickerText, { color: seg === config.segmento ? C.primary : C.text }]}>{seg}</Text>
                   {seg === config.segmento && <Feather name="check" size={14} color={C.primary} />}
                 </TouchableOpacity>
               ))}
@@ -230,7 +253,7 @@ export default function EmpresaScreen() {
               <TouchableOpacity
                 key={tom.id}
                 style={[S.tomCard, selected && { borderColor: tom.color, backgroundColor: tom.color + "10" }]}
-                onPress={() => { Haptics.selectionAsync(); update("tom")(tom.id); }}
+                onPress={() => { Haptics.selectionAsync(); updateField("tom")(tom.id); }}
                 activeOpacity={0.8}
               >
                 <Text style={S.tomEmoji}>{tom.emoji}</Text>
@@ -246,22 +269,98 @@ export default function EmpresaScreen() {
           })}
         </View>
 
-        {/* ── Seção 3: Planos/Produtos ── */}
-        <Text style={[S.sectionLabel, { marginTop: 8 }]}>PLANOS E PRODUTOS</Text>
-        <Text style={S.sectionSub}>Liste os planos, preços e diferenciais — a JADE usará nos argumentos de venda</Text>
+        {/* ── Seção 3: Produtos ── */}
+        <Text style={[S.sectionLabel, { marginTop: 8 }]}>PRODUTOS E SERVIÇOS</Text>
+        <Text style={S.sectionSub}>A JADE usará esses dados nos argumentos de venda e nas propostas</Text>
 
-        <View style={[S.textareaWrap, { borderColor: config.planos ? C.primary + "60" : C.border }]}>
-          <TextInput
-            style={S.textarea}
-            placeholder={`Ex:\n• Starter: R$19,90/mês — entrega básica\n• Full: 11,99% — frota própria\n• Diferencial: pagamento em 1 dia útil`}
-            placeholderTextColor={C.muted}
-            value={config.planos}
-            onChangeText={update("planos")}
-            multiline
-            numberOfLines={5}
-            textAlignVertical="top"
-          />
-        </View>
+        {config.produtos.map((produto, idx) => (
+          <View key={produto.id} style={[S.produtoCard, { borderColor: produto.nome ? C.primary + "40" : C.border }]}>
+            <View style={S.produtoHeader}>
+              <View style={[S.produtoNum, { backgroundColor: C.primary + "20" }]}>
+                <Text style={[S.produtoNumText, { color: C.primary }]}>{idx + 1}</Text>
+              </View>
+              <Text style={[S.produtoTitle, { color: C.text }]}>
+                {produto.nome.trim() || `Produto ${idx + 1}`}
+              </Text>
+              <TouchableOpacity
+                style={[S.removeBtn, { backgroundColor: "#FF3B5C18" }]}
+                onPress={() => removeProduto(produto.id)}
+                activeOpacity={0.7}
+              >
+                <Feather name="trash-2" size={16} color="#FF3B5C" />
+              </TouchableOpacity>
+            </View>
+
+            <View style={S.produtoFields}>
+              <View style={S.fieldGroup}>
+                <Text style={S.label}>Nome do produto *</Text>
+                <View style={[S.inputWrap, { borderColor: produto.nome ? C.primary + "60" : C.border }]}>
+                  <Feather name="package" size={16} color={C.muted} style={S.inputIcon} />
+                  <TextInput
+                    style={S.input}
+                    placeholder="Ex: Plano Premium"
+                    placeholderTextColor={C.muted}
+                    value={produto.nome}
+                    onChangeText={(v) => updateProduto(produto.id, "nome", v)}
+                    returnKeyType="next"
+                  />
+                </View>
+              </View>
+
+              <View style={S.fieldGroup}>
+                <Text style={S.label}>Valor (R$)</Text>
+                <View style={[S.inputWrap, { borderColor: produto.valor ? C.primary + "60" : C.border }]}>
+                  <Text style={[S.currencySymbol, { color: C.muted }]}>R$</Text>
+                  <TextInput
+                    style={S.input}
+                    placeholder="Ex: 297,00 ou 11,99%"
+                    placeholderTextColor={C.muted}
+                    value={produto.valor}
+                    onChangeText={(v) => updateProduto(produto.id, "valor", v)}
+                    keyboardType="default"
+                    returnKeyType="next"
+                  />
+                </View>
+              </View>
+
+              <View style={S.campanhaRow}>
+                <View style={{ flex: 1 }}>
+                  <Text style={[S.campanhaLabel, { color: C.text }]}>Tem campanha de desconto?</Text>
+                  <Text style={[S.campanhaSub, { color: C.muted }]}>A JADE vai mencionar na abordagem</Text>
+                </View>
+                <Switch
+                  value={produto.temCampanha}
+                  onValueChange={(v) => updateProduto(produto.id, "temCampanha", v)}
+                  trackColor={{ false: C.border, true: C.primary + "80" }}
+                  thumbColor={produto.temCampanha ? C.primary : C.surface}
+                />
+              </View>
+
+              {produto.temCampanha && (
+                <View style={S.fieldGroup}>
+                  <Text style={S.label}>Descrição da campanha</Text>
+                  <View style={[S.inputWrap, { borderColor: C.primary + "60", height: "auto" as any, minHeight: 50, paddingVertical: 12 }]}>
+                    <Feather name="tag" size={16} color={C.muted} style={[S.inputIcon, { alignSelf: "flex-start", marginTop: 2 }]} />
+                    <TextInput
+                      style={[S.input, { height: "auto" as any, minHeight: 30 }]}
+                      placeholder="Ex: 30% off no primeiro mês, válido até dia 30"
+                      placeholderTextColor={C.muted}
+                      value={produto.descricaoCampanha}
+                      onChangeText={(v) => updateProduto(produto.id, "descricaoCampanha", v)}
+                      multiline
+                      textAlignVertical="top"
+                    />
+                  </View>
+                </View>
+              )}
+            </View>
+          </View>
+        ))}
+
+        <TouchableOpacity style={[S.addProdutoBtn, { borderColor: C.primary + "40" }]} onPress={addProduto} activeOpacity={0.8}>
+          <Feather name="plus-circle" size={18} color={C.primary} />
+          <Text style={[S.addProdutoBtnText, { color: C.primary }]}>+ Adicionar Produto</Text>
+        </TouchableOpacity>
 
         {/* ── Save button ── */}
         <TouchableOpacity
@@ -273,15 +372,9 @@ export default function EmpresaScreen() {
           {saving ? (
             <ActivityIndicator color="#fff" size="small" />
           ) : saved ? (
-            <>
-              <Feather name="check" size={18} color="#fff" />
-              <Text style={S.saveBtnText}>JADE treinada com sucesso!</Text>
-            </>
+            <><Feather name="check" size={18} color="#fff" /><Text style={S.saveBtnText}>JADE treinada com sucesso!</Text></>
           ) : (
-            <>
-              <Feather name="cpu" size={18} color="#fff" />
-              <Text style={S.saveBtnText}>Salvar e Treinar JADE</Text>
-            </>
+            <><Feather name="cpu" size={18} color="#fff" /><Text style={S.saveBtnText}>Salvar e Treinar JADE</Text></>
           )}
         </TouchableOpacity>
 
@@ -318,84 +411,47 @@ const S = StyleSheet.create({
     backgroundColor: C.primary + "10", borderWidth: 1, borderColor: C.primary + "30",
     borderRadius: 14, padding: 14, marginBottom: 8,
   },
-  infoBannerIcon: {
-    width: 34, height: 34, borderRadius: 10,
-    backgroundColor: C.primary + "18", alignItems: "center", justifyContent: "center",
-  },
-  infoBannerText: {
-    flex: 1, fontSize: 13, fontFamily: "SpaceGrotesk_400Regular",
-    color: C.sub, lineHeight: 20,
-  },
+  infoBannerIcon: { width: 34, height: 34, borderRadius: 10, backgroundColor: C.primary + "18", alignItems: "center", justifyContent: "center" },
+  infoBannerText: { flex: 1, fontSize: 13, fontFamily: "SpaceGrotesk_400Regular", color: C.sub, lineHeight: 20 },
 
-  sectionLabel: {
-    fontSize: 11, fontFamily: "SpaceGrotesk_700Bold", color: C.muted,
-    letterSpacing: 1.2, marginBottom: 4,
-  },
-  sectionSub: {
-    fontSize: 12, fontFamily: "SpaceGrotesk_400Regular", color: C.muted,
-    marginBottom: 12, lineHeight: 18,
-  },
+  sectionLabel: { fontSize: 11, fontFamily: "SpaceGrotesk_700Bold", color: C.muted, letterSpacing: 1.2, marginBottom: 4 },
+  sectionSub: { fontSize: 12, fontFamily: "SpaceGrotesk_400Regular", color: C.muted, marginBottom: 12, lineHeight: 18 },
 
   fieldGroup: { gap: 6, marginBottom: 4 },
   label: { fontSize: 12, fontFamily: "SpaceGrotesk_500Medium", color: C.muted, textTransform: "uppercase", letterSpacing: 0.5 },
-  inputWrap: {
-    flexDirection: "row", alignItems: "center",
-    backgroundColor: C.card, borderRadius: 12, borderWidth: 1,
-    paddingHorizontal: 14, height: 50,
-  },
+  inputWrap: { flexDirection: "row", alignItems: "center", backgroundColor: C.card, borderRadius: 12, borderWidth: 1, paddingHorizontal: 14, height: 50 },
   inputIcon: { marginRight: 10 },
+  currencySymbol: { fontSize: 15, fontFamily: "SpaceGrotesk_500Medium", marginRight: 6 },
   input: { flex: 1, fontSize: 15, fontFamily: "SpaceGrotesk_400Regular", color: C.text },
 
-  picker: {
-    backgroundColor: C.card, borderRadius: 12, borderWidth: 1,
-    borderColor: C.border, marginTop: 4, overflow: "hidden",
-  },
-  pickerItem: {
-    flexDirection: "row", alignItems: "center", justifyContent: "space-between",
-    paddingHorizontal: 16, paddingVertical: 12,
-  },
+  picker: { backgroundColor: C.card, borderRadius: 12, borderWidth: 1, borderColor: C.border, marginTop: 4, overflow: "hidden" },
+  pickerItem: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: 16, paddingVertical: 12 },
   pickerItemActive: { backgroundColor: C.primary + "10" },
   pickerText: { fontSize: 15, fontFamily: "SpaceGrotesk_500Medium" },
 
   tomsGrid: { flexDirection: "row", flexWrap: "wrap", gap: 10, marginBottom: 4 },
-  tomCard: {
-    width: "47%", flexGrow: 1,
-    backgroundColor: C.card, borderRadius: 14, borderWidth: 1.5,
-    borderColor: C.border, padding: 14, gap: 4, position: "relative",
-  },
+  tomCard: { width: "47%", flexGrow: 1, backgroundColor: C.card, borderRadius: 14, borderWidth: 1.5, borderColor: C.border, padding: 14, gap: 4, position: "relative" },
   tomEmoji: { fontSize: 24, marginBottom: 4 },
   tomLabel: { fontSize: 14, fontFamily: "SpaceGrotesk_700Bold", color: C.text },
   tomDesc: { fontSize: 11, fontFamily: "SpaceGrotesk_400Regular", color: C.muted, lineHeight: 16 },
-  tomCheck: {
-    position: "absolute", top: 10, right: 10,
-    width: 18, height: 18, borderRadius: 9,
-    alignItems: "center", justifyContent: "center",
-  },
+  tomCheck: { position: "absolute", top: 10, right: 10, width: 18, height: 18, borderRadius: 9, alignItems: "center", justifyContent: "center" },
 
-  textareaWrap: {
-    backgroundColor: C.card, borderRadius: 14, borderWidth: 1,
-    padding: 14, minHeight: 120, marginBottom: 4,
-  },
-  textarea: {
-    fontSize: 14, fontFamily: "SpaceGrotesk_400Regular",
-    color: C.text, lineHeight: 22,
-  },
+  produtoCard: { backgroundColor: C.card, borderRadius: 16, borderWidth: 1.5, padding: 16, gap: 12 },
+  produtoHeader: { flexDirection: "row", alignItems: "center", gap: 10 },
+  produtoNum: { width: 28, height: 28, borderRadius: 8, alignItems: "center", justifyContent: "center" },
+  produtoNumText: { fontSize: 13, fontFamily: "SpaceGrotesk_700Bold" },
+  produtoTitle: { flex: 1, fontSize: 14, fontFamily: "SpaceGrotesk_600SemiBold" },
+  removeBtn: { width: 34, height: 34, borderRadius: 10, alignItems: "center", justifyContent: "center" },
+  produtoFields: { gap: 10 },
+  campanhaRow: { flexDirection: "row", alignItems: "center", gap: 12, backgroundColor: C.surface, borderRadius: 12, padding: 14 },
+  campanhaLabel: { fontSize: 14, fontFamily: "SpaceGrotesk_500Medium" },
+  campanhaSub: { fontSize: 11, fontFamily: "SpaceGrotesk_400Regular", marginTop: 2 },
 
-  saveBtn: {
-    backgroundColor: C.primary, flexDirection: "row",
-    alignItems: "center", justifyContent: "center",
-    gap: 10, height: 54, borderRadius: 14, marginTop: 8,
-    shadowColor: C.primary, shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.4, shadowRadius: 18, elevation: 10,
-  },
+  addProdutoBtn: { flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8, borderRadius: 14, borderWidth: 1.5, borderStyle: "dashed", paddingVertical: 14 },
+  addProdutoBtnText: { fontSize: 15, fontFamily: "SpaceGrotesk_600SemiBold" },
+
+  saveBtn: { backgroundColor: C.primary, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 10, height: 54, borderRadius: 14, marginTop: 8, shadowColor: C.primary, shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.4, shadowRadius: 18, elevation: 10 },
   saveBtnText: { fontSize: 16, fontFamily: "SpaceGrotesk_700Bold", color: "#fff" },
-
-  savedNote: {
-    backgroundColor: "#00D68F18", borderRadius: 12,
-    borderWidth: 1, borderColor: "#00D68F33", padding: 14,
-  },
-  savedNoteText: {
-    fontSize: 13, fontFamily: "SpaceGrotesk_400Regular",
-    color: "#00D68F", textAlign: "center", lineHeight: 20,
-  },
+  savedNote: { backgroundColor: "#00D68F18", borderRadius: 12, borderWidth: 1, borderColor: "#00D68F33", padding: 14 },
+  savedNoteText: { fontSize: 13, fontFamily: "SpaceGrotesk_400Regular", color: "#00D68F", textAlign: "center", lineHeight: 20 },
 });
