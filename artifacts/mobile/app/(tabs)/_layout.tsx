@@ -1,41 +1,12 @@
 import { BlurView } from "expo-blur";
-import { isLiquidGlassAvailable } from "expo-glass-effect";
 import { Tabs } from "expo-router";
-import { Icon, Label, NativeTabs } from "expo-router/unstable-native-tabs";
 import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
 import React from "react";
 import { Platform, StyleSheet, View } from "react-native";
 
 import { useColors } from "@/hooks/useColors";
 
-function NativeTabLayout() {
-  return (
-    <NativeTabs>
-      <NativeTabs.Trigger name="index">
-        <Icon sf={{ default: "antenna.radiowaves.left.and.right", selected: "antenna.radiowaves.left.and.right" }} />
-        <Label>Radar</Label>
-      </NativeTabs.Trigger>
-      <NativeTabs.Trigger name="leads">
-        <Icon sf={{ default: "person.2", selected: "person.2.fill" }} />
-        <Label>Leads</Label>
-      </NativeTabs.Trigger>
-      <NativeTabs.Trigger name="conversas">
-        <Icon sf={{ default: "bubble.left.and.bubble.right", selected: "bubble.left.and.bubble.right.fill" }} />
-        <Label>Conversas</Label>
-      </NativeTabs.Trigger>
-      <NativeTabs.Trigger name="jade">
-        <Icon sf={{ default: "cpu", selected: "cpu.fill" }} />
-        <Label>JADE</Label>
-      </NativeTabs.Trigger>
-      <NativeTabs.Trigger name="mais">
-        <Icon sf={{ default: "ellipsis", selected: "ellipsis.circle.fill" }} />
-        <Label>Mais</Label>
-      </NativeTabs.Trigger>
-    </NativeTabs>
-  );
-}
-
-function ClassicTabLayout() {
+export default function TabLayout() {
   const colors = useColors();
   const isIOS = Platform.OS === "ios";
   const isWeb = Platform.OS === "web";
@@ -132,13 +103,4 @@ function ClassicTabLayout() {
       />
     </Tabs>
   );
-}
-
-export default function TabLayout() {
-  // NativeTabs (unstable) causes eager tab rendering on iOS 26 which can
-  // crash certain screens. Use ClassicTabLayout until the API stabilises.
-  if (!__DEV__ && isLiquidGlassAvailable()) {
-    return <NativeTabLayout />;
-  }
-  return <ClassicTabLayout />;
 }
