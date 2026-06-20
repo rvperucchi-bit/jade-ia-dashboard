@@ -1,5 +1,6 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
+  Alert,
   Animated,
   Easing,
   Platform,
@@ -34,6 +35,11 @@ function CrosshairIcon({ size, color }: { size: number; color: string }) {
 }
 
 // ─── Pulsing module button ───────────────────────────────────────────────────
+// Active = dark button (same as inactive) + subtle pink energy halo pulsing behind
+const BTN_SIZE  = 65;   // +8% from 60
+const WRAP_SIZE = 79;   // room for glow ring
+const GLOW_SIZE = 81;
+
 function ModuleBtn({
   active,
   onPress,
@@ -45,74 +51,82 @@ function ModuleBtn({
   children: React.ReactNode;
   colors: ReturnType<typeof useColors>;
 }) {
-  const pulse = useRef(new Animated.Value(1)).current;
-  const glow  = useRef(new Animated.Value(0)).current;
+  const glowScale   = useRef(new Animated.Value(1)).current;
+  const glowOpacity = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     if (active) {
       Animated.loop(
-        Animated.sequence([
-          Animated.timing(pulse, { toValue: 1.12, duration: 700, easing: Easing.inOut(Easing.sin), useNativeDriver: true }),
-          Animated.timing(pulse, { toValue: 1.0,  duration: 700, easing: Easing.inOut(Easing.sin), useNativeDriver: true }),
-        ])
-      ).start();
-      Animated.loop(
-        Animated.sequence([
-          Animated.timing(glow, { toValue: 1, duration: 700, useNativeDriver: true }),
-          Animated.timing(glow, { toValue: 0, duration: 700, useNativeDriver: true }),
+        Animated.parallel([
+          Animated.sequence([
+            Animated.timing(glowScale,   { toValue: 1.18, duration: 900, easing: Easing.inOut(Easing.sin), useNativeDriver: true }),
+            Animated.timing(glowScale,   { toValue: 1.0,  duration: 900, easing: Easing.inOut(Easing.sin), useNativeDriver: true }),
+          ]),
+          Animated.sequence([
+            Animated.timing(glowOpacity, { toValue: 0.45, duration: 900, useNativeDriver: true }),
+            Animated.timing(glowOpacity, { toValue: 0.0,  duration: 900, useNativeDriver: true }),
+          ]),
         ])
       ).start();
     } else {
-      pulse.setValue(1);
-      glow.setValue(0);
+      glowScale.stopAnimation();
+      glowOpacity.stopAnimation();
+      glowScale.setValue(1);
+      glowOpacity.setValue(0);
     }
   }, [active]);
 
-  const glowOpacity = glow.interpolate({ inputRange: [0, 1], outputRange: [0, 0.55] });
-
   return (
-    <TouchableOpacity onPress={onPress} activeOpacity={0.75} style={M.wrap}>
-      {/* Glow ring (only active) */}
-      {active && (
-        <Animated.View
-          style={[
-            M.glowRing,
-            { borderColor: colors.primary, opacity: glowOpacity },
-          ]}
-        />
-      )}
+    <TouchableOpacity onPress={onPress} activeOpacity={0.75} style={[M.wrap, { width: WRAP_SIZE, height: WRAP_SIZE }]}>
+      {/* Subtle pink energy halo — only when active */}
       <Animated.View
+        style={[
+          M.glowRing,
+          {
+            opacity: glowOpacity,
+            transform: [{ scale: glowScale }],
+          },
+        ]}
+      />
+      {/* Button — identical style active or not */}
+      <View
         style={[
           M.btn,
           {
-            backgroundColor: active ? colors.primary : colors.surface,
-            borderColor: active ? colors.primary : colors.border,
-            transform: [{ scale: pulse }],
+            backgroundColor: colors.surface,
+            borderColor: active ? colors.primary + "99" : colors.border,
           },
         ]}
       >
         {children}
-      </Animated.View>
+      </View>
     </TouchableOpacity>
   );
 }
 
 const M = StyleSheet.create({
-  wrap: { alignItems: "center", justifyContent: "center", width: 68 },
+  wrap: { alignItems: "center", justifyContent: "center" },
   btn: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
+    width: BTN_SIZE,
+    height: BTN_SIZE,
+    borderRadius: BTN_SIZE / 2,
     alignItems: "center",
     justifyContent: "center",
     borderWidth: 1.5,
+    position: "absolute",
   },
   glowRing: {
     position: "absolute",
-    width: 76,
-    height: 76,
-    borderRadius: 38,
-    borderWidth: 2,
+    width: GLOW_SIZE,
+    height: GLOW_SIZE,
+    borderRadius: GLOW_SIZE / 2,
+    backgroundColor: "#FF0080",
+    // soft radial glow effect via shadow
+    shadowColor: "#FF0080",
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 1,
+    shadowRadius: 18,
+    elevation: 12,
   },
 });
 
@@ -160,9 +174,36 @@ export default function RadarScreen() {
   const bottomPad = Platform.OS === "web" ? 84  : insets.bottom + 60;
   const unread    = conversations.filter((c) => c.unread > 0).length;
 
-  // Scanner e JADE estão ativos/prospectando
-  const scannerActive = true;
-  const jadeActive    = true;
+  // Module toggle states
+  const [scannerActive, setScannerActive] = useState(true);
+  const [jadeActive,    setJadeActive]    = useState(true);
+  const [leadsActive,   setLeadsActive]   = useState(false);
+  const [whatsActive,   setWhatsActive]   = useState(false);
+  const [mktActive,     setMktActive]     = useState(false);
+
+  const activeModules = [
+    scannerActive && "Scanner",
+    jadeActive    && "JADE",
+    leadsActive   && "CRM",
+    whatsActive   && "WhatsApp",
+    mktActive     && "Marketing",
+  ].filter(Boolean) as string[];
+
+  function toggleModule(
+    name: string,
+    state: boolean,
+    set: (v: boolean) => void,
+    onMsg: string,
+    offMsg: string,
+  ) {
+    const next = !state;
+    set(next);
+    Alert.alert(
+      next ? `${name} ativado` : `${name} pausado`,
+      next ? onMsg : offMsg,
+      [{ text: "OK" }],
+    );
+  }
 
   return (
     <ScrollView
@@ -207,35 +248,81 @@ export default function RadarScreen() {
         style={S.modulesScroll}
       >
         {/* Scanner Radar */}
-        <ModuleBtn active={scannerActive} onPress={() => router.push("/scanner" as any)} colors={colors}>
-          <CrosshairIcon size={26} color={scannerActive ? "#fff" : colors.primary} />
+        <ModuleBtn
+          active={scannerActive}
+          onPress={() => toggleModule(
+            "Scanner Radar", scannerActive, setScannerActive,
+            "JADE está buscando novos estabelecimentos próximos automaticamente.",
+            "Scanner pausado. Nenhuma prospecção automática em andamento.",
+          )}
+          colors={colors}
+        >
+          <CrosshairIcon size={27} color={colors.primary} />
         </ModuleBtn>
 
         {/* JADE IA */}
-        <ModuleBtn active={jadeActive} onPress={() => router.push("/jade" as any)} colors={colors}>
-          <MaterialCommunityIcons name="robot" size={26} color={jadeActive ? "#fff" : colors.primary} />
+        <ModuleBtn
+          active={jadeActive}
+          onPress={() => toggleModule(
+            "JADE IA", jadeActive, setJadeActive,
+            "JADE está ativa e respondendo leads automaticamente.",
+            "JADE pausada. Respostas automáticas desativadas.",
+          )}
+          colors={colors}
+        >
+          <MaterialCommunityIcons name="robot" size={27} color={colors.primary} />
         </ModuleBtn>
 
         {/* Leads / CRM */}
-        <ModuleBtn active={false} onPress={() => router.push("/leads" as any)} colors={colors}>
-          <Feather name="users" size={24} color={colors.primary} />
+        <ModuleBtn
+          active={leadsActive}
+          onPress={() => toggleModule(
+            "CRM", leadsActive, setLeadsActive,
+            "Sincronização automática de leads ativada.",
+            "CRM em modo manual.",
+          )}
+          colors={colors}
+        >
+          <Feather name="users" size={25} color={colors.primary} />
         </ModuleBtn>
 
         {/* WhatsApp */}
-        <ModuleBtn active={false} onPress={() => {}} colors={colors}>
-          <Feather name="message-circle" size={24} color={colors.primary} />
+        <ModuleBtn
+          active={whatsActive}
+          onPress={() => toggleModule(
+            "WhatsApp", whatsActive, setWhatsActive,
+            "JADE vai abordar leads via WhatsApp automaticamente.",
+            "Abordagem WhatsApp pausada.",
+          )}
+          colors={colors}
+        >
+          <Feather name="message-circle" size={25} color={colors.primary} />
         </ModuleBtn>
 
         {/* Marketing */}
-        <ModuleBtn active={false} onPress={() => router.push("/marketing" as any)} colors={colors}>
-          <Feather name="zap" size={24} color={colors.primary} />
+        <ModuleBtn
+          active={mktActive}
+          onPress={() => toggleModule(
+            "Marketing", mktActive, setMktActive,
+            "Campanhas de marketing automático ativadas.",
+            "Marketing automático pausado.",
+          )}
+          colors={colors}
+        >
+          <Feather name="zap" size={25} color={colors.primary} />
         </ModuleBtn>
       </ScrollView>
 
-      {/* Active modules label */}
+      {/* Active modules label — dynamic */}
       <Text style={[S.activeLabel, { color: colors.mutedForeground }]}>
-        <Text style={{ color: colors.primary }}>●</Text>
-        {"  Scanner · JADE ativos agora"}
+        {activeModules.length > 0 ? (
+          <>
+            <Text style={{ color: colors.primary }}>●{"  "}</Text>
+            {activeModules.join(" · ") + " ativos agora"}
+          </>
+        ) : (
+          <Text style={{ color: colors.mutedForeground }}>Nenhum módulo ativo</Text>
+        )}
       </Text>
 
       {/* ── Metric Cards ── */}
