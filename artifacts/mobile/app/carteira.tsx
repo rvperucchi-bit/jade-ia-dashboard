@@ -110,6 +110,8 @@ export default function CarteiraScreen() {
       const resumo = clientes.map(
         (c) => `${c.empresa} (${c.tipo}, ${c.diasSemContato} dias sem contato, status: ${c.status})`
       ).join("; ");
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 30000);
       const res = await fetch(`${API_BASE}/api/jade/chat`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -119,11 +121,14 @@ export default function CarteiraScreen() {
             content: `Sou gestor comercial. Minha carteira: ${resumo}. Analise: 1) Clientes com maior potencial de upsell, 2) Clientes em risco de perda e ações imediatas, 3) Prioridade de contato desta semana, 4) Recomendações de relacionamento farmer/hunter. Seja prático e específico.`,
           }],
         }),
+        signal: controller.signal,
       });
+      clearTimeout(timeoutId);
       const data = await res.json();
-      setAnalise(data.message?.trim() || "Não foi possível gerar a análise. Tente novamente.");
-    } catch {
-      setAnalise("Erro de conexão. Tente novamente.");
+      setAnalise(data.message?.trim() || data.response?.trim() || "Não foi possível gerar a análise. Tente novamente.");
+    } catch (err: unknown) {
+      const isAbort = err instanceof Error && err.name === "AbortError";
+      setAnalise(isAbort ? "A JADE demorou demais. Tente novamente em instantes." : "Erro de conexão. Tente novamente.");
     } finally {
       setLoadingAnalise(false);
     }

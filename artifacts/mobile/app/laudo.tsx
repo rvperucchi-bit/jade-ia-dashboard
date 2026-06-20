@@ -5,6 +5,7 @@ import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
   ActivityIndicator,
+  Alert,
   Platform,
   ScrollView,
   StyleSheet,
@@ -72,15 +73,25 @@ O laudo deve conter as seguintes seções claramente separadas:
 
 Use linguagem executiva, direta e baseada no segmento/negócio descrito. Seja específico e acionável.`;
 
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 30000);
       const res = await fetch(`${API_BASE}/api/jade/chat`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ messages: [{ role: "user", content: prompt }] }),
+        signal: controller.signal,
       });
+      clearTimeout(timeoutId);
       const data = await res.json();
-      setResult(data.message ?? "");
-    } catch {
-      setResult("Erro ao gerar laudo. Verifique sua conexão.");
+      setResult(data.message?.trim() || data.response?.trim() || "");
+    } catch (err: unknown) {
+      const isAbort = err instanceof Error && err.name === "AbortError";
+      Alert.alert(
+        "Erro",
+        isAbort
+          ? "A JADE demorou demais para responder. Tente novamente em instantes."
+          : "Não foi possível gerar o laudo. Verifique sua conexão.",
+      );
     } finally {
       setLoading(false);
     }

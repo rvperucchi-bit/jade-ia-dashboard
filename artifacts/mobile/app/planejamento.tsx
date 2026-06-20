@@ -165,16 +165,26 @@ export default function PlanejamentoScreen() {
     const itensStr = plano.itens.map((it, i) => `${i + 1}. [${it.tipo}] ${it.titulo}${it.horario ? ` às ${it.horario}` : ""}${it.descricao ? ` — ${it.descricao}` : ""}`).join("\n");
     const prompt = `Você é a JADE, minha parceira de vendas. Analise meu planejamento de hoje e dê dicas estratégicas:\n\n${itensStr}\n\nGere:\n1. Uma frase de motivação personalizada para meu dia\n2. O compromisso mais importante do dia e por quê\n3. Uma dica rápida para maximizar cada compromisso\n4. Alertas: o que posso estar esquecendo ou subestimando\n\nSeja concisa, direta e motivadora. Máximo 200 palavras.`;
     try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 30000);
       const res = await fetch(`${API_BASE}/api/jade/chat`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ messages: [{ role: "user", content: prompt }] }),
+        signal: controller.signal,
       });
+      clearTimeout(timeoutId);
       if (!res.ok) throw new Error("API error");
       const data = await res.json();
-      setSugestao(data.message?.trim() ?? "");
-    } catch {
-      setSugestao("Não foi possível consultar a JADE agora. Tente novamente.");
+      setSugestao(data.message?.trim() || data.response?.trim() || "");
+    } catch (err: unknown) {
+      const isAbort = err instanceof Error && err.name === "AbortError";
+      Alert.alert(
+        "Erro",
+        isAbort
+          ? "A JADE demorou demais para responder. Tente novamente em instantes."
+          : "Não foi possível consultar a JADE. Verifique sua conexão.",
+      );
     } finally {
       setGerandoJade(false);
     }

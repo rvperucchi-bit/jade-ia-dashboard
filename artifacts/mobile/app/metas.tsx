@@ -3,6 +3,7 @@ import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
   ActivityIndicator,
+  Alert,
   Platform,
   ScrollView,
   StyleSheet,
@@ -73,6 +74,8 @@ export default function MetasScreen() {
       const resumo = VENDEDORES.map(
         (v) => `${v.nome}: ${pct(v.realizado, v.meta)}% da meta (R$${v.realizado.toLocaleString()} de R$${v.meta.toLocaleString()})`
       ).join("; ");
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 30000);
       const res = await fetch(`${API_BASE}/api/jade/chat`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -82,11 +85,19 @@ export default function MetasScreen() {
             content: `Sou gestor comercial. Meu time está assim: ${resumo}. Meta total: ${fmt(metaTotal)}, realizado: ${fmt(realizadoTotal)} (${pTotal}%). Faltam ${fmt(metaTotal - realizadoTotal)} para bater a meta. Gere uma estratégia prática e objetiva para fechar o mês, focando nos vendedores com maior gap e nas ações que gerarão mais resultado rápido.`,
           }],
         }),
+        signal: controller.signal,
       });
+      clearTimeout(timeoutId);
       const data = await res.json();
-      setEstrategia(data.message?.trim() || "Não foi possível gerar a estratégia. Tente novamente.");
-    } catch {
-      setEstrategia("Erro de conexão. Verifique sua internet e tente novamente.");
+      setEstrategia(data.message?.trim() || data.response?.trim() || "Não foi possível gerar a estratégia. Tente novamente.");
+    } catch (err: unknown) {
+      const isAbort = err instanceof Error && err.name === "AbortError";
+      Alert.alert(
+        "Erro",
+        isAbort
+          ? "A JADE demorou demais para responder. Tente novamente em instantes."
+          : "Não foi possível gerar a estratégia. Verifique sua conexão.",
+      );
     } finally {
       setLoadingEst(false);
     }

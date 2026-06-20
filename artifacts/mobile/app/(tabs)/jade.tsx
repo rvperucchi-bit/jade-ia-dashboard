@@ -43,11 +43,12 @@ function nowTime() {
   return new Date().toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
 }
 
-const WELCOME: AIMessage = {
-  id: "welcome",
-  text: "Olá! Sou a JADE, sua agente de vendas com IA. Posso ajudar a qualificar leads, criar propostas, analisar seu pipeline e muito mais. O que você precisa hoje?",
-  sender: "jade",
-  time: nowTime(),
+const WELCOME_MSGS = (): AIMessage[] => {
+  const t = nowTime();
+  return [
+    { id: "welcome-2", text: "Como posso te ajudar hoje?", sender: "jade", time: t },
+    { id: "welcome-1", text: "Bora para os negócios! 🚀", sender: "jade", time: t },
+  ];
 };
 
 function MessageBubble({ msg, colors }: { msg: AIMessage; colors: ReturnType<typeof useColors> }) {
@@ -92,7 +93,7 @@ export default function JADEScreen() {
   const TAB_BAR_H = Platform.OS === "web" ? 84 : 60;
   const bottomPad = TAB_BAR_H + (Platform.OS === "web" ? 0 : insets.bottom);
 
-  const [messages,   setMessages]   = useState<AIMessage[]>([WELCOME]);
+  const [messages,   setMessages]   = useState<AIMessage[]>(WELCOME_MSGS());
   const [input,      setInput]      = useState("");
   const [loading,    setLoading]    = useState(false);
   const [showChips,  setShowChips]  = useState(true);
@@ -142,6 +143,8 @@ export default function JADEScreen() {
     setLoading(true);
 
     try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 30000);
       const response = await fetch(`${API_BASE}/api/jade/chat`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -149,12 +152,14 @@ export default function JADEScreen() {
           messages: buildHistory(updatedMsgs),
           session_id: sid,
         }),
+        signal: controller.signal,
       });
+      clearTimeout(timeoutId);
 
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
 
-      const data = (await response.json()) as { message?: string; error?: string };
-      const replyText = data.message?.trim() || "Desculpe, não consegui processar sua mensagem. Tente novamente.";
+      const data = (await response.json()) as { message?: string; response?: string; error?: string };
+      const replyText = data.message?.trim() || data.response?.trim() || "Desculpe, não consegui processar sua mensagem. Tente novamente.";
 
       setMessages((prev) => [{ id: (Date.now() + 1).toString(), text: replyText, sender: "jade", time: nowTime() }, ...prev]);
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -165,10 +170,13 @@ export default function JADEScreen() {
         icon: "robot",
         color: "#FF0080",
       });
-    } catch {
+    } catch (err: unknown) {
+      const isAbort = err instanceof Error && err.name === "AbortError";
       setMessages((prev) => [{
         id: (Date.now() + 1).toString(),
-        text: "Ops! Tive um problema de conexão. Verifique sua internet e tente novamente.",
+        text: isAbort
+          ? "Ops! A JADE demorou demais. Tente enviar novamente."
+          : "Ops! Tive um problema de conexão. Verifique sua internet e tente novamente.",
         sender: "jade",
         time: nowTime(),
       }, ...prev]);
@@ -178,7 +186,7 @@ export default function JADEScreen() {
   };
 
   const resetConversation = () => {
-    setMessages([{ ...WELCOME, id: "welcome-" + Date.now(), time: nowTime() }]);
+    setMessages(WELCOME_MSGS().map((m) => ({ ...m, id: m.id + "-" + Date.now() })));
     setShowChips(true);
     setSessionId(null);
     sessionCreating.current = false;

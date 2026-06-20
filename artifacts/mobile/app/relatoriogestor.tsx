@@ -3,6 +3,7 @@ import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
   ActivityIndicator,
+  Alert,
   Platform,
   ScrollView,
   StyleSheet,
@@ -62,6 +63,8 @@ export default function RelatorioGestorScreen() {
         (v) => `${v.nome}: ${pct(v.realizado, v.meta)}% da meta (${fmt(v.realizado)}/${fmt(v.meta)}), ${v.leads} leads, ${v.conversao}% conversão`
       ).join("\n");
 
+      const ctrl1 = new AbortController();
+      const t1 = setTimeout(() => ctrl1.abort(), 30000);
       const res = await fetch(`${API_BASE}/api/jade/chat`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -71,11 +74,14 @@ export default function RelatorioGestorScreen() {
             content: `Gere um relatório mensal executivo para apresentar à diretoria. Dados do time:\n${resumo}\nMeta total: ${fmt(metaTotal)}, Realizado: ${fmt(realTotal)} (${pTotal}%), Forecast: ${fmt(forecastTotal)}.\n\nO relatório deve ter: 1) Resumo executivo, 2) Performance individual, 3) Análise de gaps e onde o time perdeu negócios, 4) Destaques e riscos, 5) Recomendações para o próximo mês. Tom formal e executivo.`,
           }],
         }),
+        signal: ctrl1.signal,
       });
+      clearTimeout(t1);
       const data = await res.json();
-      setRelatorio(data.message?.trim() || "Não foi possível gerar o relatório.");
-    } catch {
-      setRelatorio("Erro de conexão. Tente novamente.");
+      setRelatorio(data.message?.trim() || data.response?.trim() || "Não foi possível gerar o relatório.");
+    } catch (err: unknown) {
+      const isAbort = err instanceof Error && err.name === "AbortError";
+      Alert.alert("Erro", isAbort ? "A JADE demorou demais. Tente novamente." : "Não foi possível gerar o relatório. Verifique sua conexão.");
     } finally {
       setLoadingRel(false);
     }
@@ -85,6 +91,8 @@ export default function RelatorioGestorScreen() {
     setLoadingEst(true);
     setEstrategia("");
     try {
+      const ctrl2 = new AbortController();
+      const t2 = setTimeout(() => ctrl2.abort(), 30000);
       const res = await fetch(`${API_BASE}/api/jade/chat`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -94,11 +102,14 @@ export default function RelatorioGestorScreen() {
             content: `Com base no desempenho do time este mês (${pTotal}% da meta, ${fmt(realTotal)} de ${fmt(metaTotal)}), top performer: ${topPerformer.nome} (${pct(topPerformer.realizado, topPerformer.meta)}%), precisa de atenção: ${precisaAtencao.nome} (${pct(precisaAtencao.realizado, precisaAtencao.meta)}%). Gere uma estratégia detalhada para o próximo mês: metas individuais revisadas, foco de segmento, ações de capacitação, e como usar os pontos fortes do time para superar as fraquezas.`,
           }],
         }),
+        signal: ctrl2.signal,
       });
+      clearTimeout(t2);
       const data = await res.json();
-      setEstrategia(data.message?.trim() || "Não foi possível gerar a estratégia.");
-    } catch {
-      setEstrategia("Erro de conexão. Tente novamente.");
+      setEstrategia(data.message?.trim() || data.response?.trim() || "Não foi possível gerar a estratégia.");
+    } catch (err: unknown) {
+      const isAbort = err instanceof Error && err.name === "AbortError";
+      Alert.alert("Erro", isAbort ? "A JADE demorou demais. Tente novamente." : "Não foi possível gerar a estratégia. Verifique sua conexão.");
     } finally {
       setLoadingEst(false);
     }

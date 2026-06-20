@@ -111,16 +111,21 @@ export default function RoleplayScreen() {
     ];
 
     try {
+      const ctrl1 = new AbortController();
+      const t1 = setTimeout(() => ctrl1.abort(), 30000);
       const res = await fetch(`${API_BASE}/api/jade/chat`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ messages: apiMessages }),
+        signal: ctrl1.signal,
       });
+      clearTimeout(t1);
       const data = await res.json();
-      setMessages((prev) => [...prev, { role: "jade", text: data.message ?? "..." }]);
+      setMessages((prev) => [...prev, { role: "jade", text: data.message?.trim() || data.response?.trim() || "..." }]);
       setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 100);
-    } catch {
-      setMessages((prev) => [...prev, { role: "jade", text: "Erro de conexão." }]);
+    } catch (err: unknown) {
+      const isAbort = err instanceof Error && err.name === "AbortError";
+      setMessages((prev) => [...prev, { role: "jade", text: isAbort ? "A JADE demorou demais. Tente novamente." : "Erro de conexão." }]);
     } finally {
       setLoading(false);
     }
@@ -144,15 +149,20 @@ Analise a performance do vendedor e estruture o feedback assim:
 Seja honesto, específico e encorajador.`;
 
     try {
+      const ctrl2 = new AbortController();
+      const t2 = setTimeout(() => ctrl2.abort(), 30000);
       const res = await fetch(`${API_BASE}/api/jade/chat`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ messages: [{ role: "user", content: prompt }] }),
+        signal: ctrl2.signal,
       });
+      clearTimeout(t2);
       const data = await res.json();
-      setFeedback(data.message ?? "");
-    } catch {
-      setFeedback("Erro ao gerar feedback.");
+      setFeedback(data.message?.trim() || data.response?.trim() || "");
+    } catch (err: unknown) {
+      const isAbort = err instanceof Error && err.name === "AbortError";
+      setFeedback(isAbort ? "A JADE demorou demais para gerar o feedback. Tente encerrar novamente." : "Erro ao gerar feedback.");
     } finally {
       setFeedbackLoading(false);
     }

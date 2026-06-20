@@ -30,24 +30,16 @@ interface HubCard {
   iconLib: "feather" | "mci";
   title: string;
   sub: string;
-  route: string;
+  route?: string;
   color: string;
   accent: string;
+  modalAction?: "notificar";
 }
 
-const HUB_CARDS: HubCard[] = [
-  { icon: "users",      iconLib: "feather", title: "Meu Time",         sub: "Vendedores e metas individuais",    route: "/meutime",        color: "#6C63FF",        accent: "#6C63FF18" },
-  { icon: "target",     iconLib: "feather", title: "Metas e Pipeline", sub: "Consolidado e forecast do time",   route: "/metas",          color: "#FF0080",        accent: "#FF008018" },
-  { icon: "briefcase",  iconLib: "feather", title: "Carteira",         sub: "Farmer, hunter e pós-venda",       route: "/carteira",       color: "#00D68F",        accent: "#00D68F18" },
-  { icon: "message-circle", iconLib: "feather", title: "Feedback JADE",sub: "Mentoria empática por vendedor",   route: "/feedbackjade",   color: ENTERPRISE_PURPLE,accent: "#8400FF18" },
-  { icon: "bar-chart-2",iconLib: "feather", title: "Relatório Gestor", sub: "Consolidado para diretoria",       route: "/relatoriogestor",color: "#FFB300",        accent: "#FFB30018" },
-  { icon: "calendar",   iconLib: "feather", title: "Planejamento Time",sub: "Ver o planejamento de cada vendedor", route: "/planejamento",color: "#4ECDC4",        accent: "#4ECDC418" },
-];
-
 const TIPO_NOTIF = [
-  { id: "informativo",   label: "📋 Informativo",  color: "#6C63FF" },
-  { id: "urgente",       label: "🚨 Urgente",      color: "#FF3B5C" },
-  { id: "motivacional",  label: "🚀 Motivacional", color: "#00D68F" },
+  { id: "informativo",  label: "📋 Informativo",  color: "#6C63FF" },
+  { id: "urgente",      label: "🚨 Urgente",      color: "#FF3B5C" },
+  { id: "motivacional", label: "🚀 Motivacional", color: "#00D68F" },
 ];
 
 export default function GestaoScreen() {
@@ -60,6 +52,17 @@ export default function GestaoScreen() {
   const [notifMensagem, setNotifMensagem] = useState("");
   const [notifTipo, setNotifTipo] = useState<"informativo" | "urgente" | "motivacional">("informativo");
   const [enviando, setEnviando] = useState(false);
+
+  const HUB_CARDS: HubCard[] = [
+    { icon: "users",         iconLib: "feather", title: "Meu Time",        sub: "Vendedores e metas",         route: "/meutime",          color: "#6C63FF",        accent: "#6C63FF18" },
+    { icon: "target",        iconLib: "feather", title: "Metas",           sub: "Pipeline consolidado",        route: "/metas",            color: "#FF0080",        accent: "#FF008018" },
+    { icon: "briefcase",     iconLib: "feather", title: "Carteira",        sub: "Farmer, hunter, pós-venda",   route: "/carteira",         color: "#00D68F",        accent: "#00D68F18" },
+    { icon: "message-circle",iconLib: "feather", title: "Feedback JADE",   sub: "Mentoria por vendedor",        route: "/feedbackjade",     color: ENTERPRISE_PURPLE,accent: "#8400FF18" },
+    { icon: "bar-chart-2",   iconLib: "feather", title: "Relatório",       sub: "Consolidado p/ diretoria",     route: "/relatoriogestor",  color: "#FFB300",        accent: "#FFB30018" },
+    { icon: "calendar",      iconLib: "feather", title: "Planejamento",    sub: "Agenda do time",               route: "/planejamento",     color: "#4ECDC4",        accent: "#4ECDC418" },
+    { icon: "users",         iconLib: "feather", title: "Roleplay",        sub: "Treino de vendas com IA",      route: "/roleplay",         color: "#AB47BC",        accent: "#AB47BC18" },
+    { icon: "bell",          iconLib: "feather", title: "Notificar Time",  sub: "Enviar broadcast ao time",     color: ENTERPRISE_PURPLE,   accent: "#8400FF18", modalAction: "notificar" },
+  ];
 
   const abrirNotifModal = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
@@ -92,6 +95,15 @@ export default function GestaoScreen() {
     }
   };
 
+  const handleCardPress = (card: HubCard) => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    if (card.modalAction === "notificar") {
+      abrirNotifModal();
+    } else if (card.route) {
+      router.push(card.route as any);
+    }
+  };
+
   return (
     <View style={[S.root, { backgroundColor: colors.background }]}>
       <View style={[S.header, { paddingTop: topPad, borderBottomColor: colors.border }]}>
@@ -107,7 +119,7 @@ export default function GestaoScreen() {
           onPress={abrirNotifModal}
           activeOpacity={0.85}
         >
-          <Feather name="bell" size={15} color={ENTERPRISE_PURPLE} />
+          <Feather name="bell" size={14} color={ENTERPRISE_PURPLE} />
           <Text style={[S.notifBtnText, { color: ENTERPRISE_PURPLE }]}>Notificar</Text>
         </TouchableOpacity>
       </View>
@@ -115,12 +127,12 @@ export default function GestaoScreen() {
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 120 }}>
         <View style={[S.heroBanner, { backgroundColor: ENTERPRISE_PURPLE + "14", borderColor: ENTERPRISE_PURPLE + "30" }]}>
           <View style={[S.heroIconWrap, { backgroundColor: ENTERPRISE_PURPLE + "22" }]}>
-            <MaterialCommunityIcons name="crown" size={28} color={ENTERPRISE_PURPLE} />
+            <MaterialCommunityIcons name="crown" size={24} color={ENTERPRISE_PURPLE} />
           </View>
           <View style={{ flex: 1 }}>
             <Text style={[S.heroTitle, { color: colors.text }]}>Gestão Comercial Completa</Text>
             <Text style={[S.heroSub, { color: colors.mutedForeground }]}>
-              Gerencie seu time, carteira de clientes e métricas com IA integrada.
+              Time, carteira e métricas com IA integrada.
             </Text>
           </View>
         </View>
@@ -132,25 +144,28 @@ export default function GestaoScreen() {
             <TouchableOpacity
               key={i}
               style={[S.card, { backgroundColor: colors.card, borderColor: colors.border }]}
-              onPress={() => router.push(card.route as any)}
+              onPress={() => handleCardPress(card)}
               activeOpacity={0.85}
             >
               <View style={[S.cardIcon, { backgroundColor: card.accent }]}>
-                <Feather name={card.icon as any} size={24} color={card.color} />
+                {card.iconLib === "mci"
+                  ? <MaterialCommunityIcons name={card.icon as any} size={18} color={card.color} />
+                  : <Feather name={card.icon as any} size={18} color={card.color} />
+                }
               </View>
               <Text style={[S.cardTitle, { color: colors.text }]}>{card.title}</Text>
               <Text style={[S.cardSub, { color: colors.mutedForeground }]}>{card.sub}</Text>
               <View style={S.cardArrow}>
-                <Feather name="arrow-right" size={14} color={card.color} />
+                <Feather name={card.modalAction === "notificar" ? "send" : "arrow-right"} size={12} color={card.color} />
               </View>
             </TouchableOpacity>
           ))}
         </View>
 
         <View style={[S.tipBox, { backgroundColor: colors.card, borderColor: ENTERPRISE_PURPLE + "30" }]}>
-          <MaterialCommunityIcons name="robot" size={18} color={ENTERPRISE_PURPLE} />
+          <MaterialCommunityIcons name="robot" size={16} color={ENTERPRISE_PURPLE} />
           <Text style={[S.tipText, { color: colors.mutedForeground }]}>
-            A JADE usa os dados do seu time para gerar feedback empático, analisar pipeline e sugerir estratégias personalizadas para cada vendedor.
+            A JADE analisa dados do time para gerar feedback empático, insights de pipeline e estratégias personalizadas.
           </Text>
         </View>
       </ScrollView>
@@ -169,7 +184,7 @@ export default function GestaoScreen() {
               </TouchableOpacity>
             </View>
 
-            <Text style={[S.fieldLabel, { color: colors.mutedForeground }]}>TIPO DE NOTIFICAÇÃO</Text>
+            <Text style={[S.fieldLabel, { color: colors.mutedForeground }]}>TIPO</Text>
             <View style={S.tipoRow}>
               {TIPO_NOTIF.map((t) => {
                 const sel = notifTipo === t.id;
@@ -221,25 +236,25 @@ export default function GestaoScreen() {
 
 const S = StyleSheet.create({
   root: { flex: 1 },
-  header: { flexDirection: "row", alignItems: "center", gap: 10, paddingHorizontal: 20, paddingBottom: 14, borderBottomWidth: StyleSheet.hairlineWidth },
-  backBtn: { width: 40, height: 40, borderRadius: 20, alignItems: "center", justifyContent: "center" },
-  headerTitle: { fontSize: 18, fontFamily: "SpaceGrotesk_700Bold" },
-  headerSub: { fontSize: 12, fontFamily: "SpaceGrotesk_400Regular", marginTop: 2 },
-  notifBtn: { flexDirection: "row", alignItems: "center", gap: 6, paddingHorizontal: 12, paddingVertical: 8, borderRadius: 12, borderWidth: 1 },
-  notifBtnText: { fontSize: 13, fontFamily: "SpaceGrotesk_600SemiBold" },
-  heroBanner: { flexDirection: "row", alignItems: "center", gap: 14, margin: 16, padding: 16, borderRadius: 16, borderWidth: 1 },
-  heroIconWrap: { width: 52, height: 52, borderRadius: 14, alignItems: "center", justifyContent: "center" },
-  heroTitle: { fontSize: 16, fontFamily: "SpaceGrotesk_700Bold", marginBottom: 4 },
-  heroSub: { fontSize: 13, fontFamily: "SpaceGrotesk_400Regular", lineHeight: 19 },
-  sectionLabel: { fontSize: 11, fontFamily: "SpaceGrotesk_600SemiBold", letterSpacing: 1, marginHorizontal: 20, marginBottom: 12 },
-  grid: { flexDirection: "row", flexWrap: "wrap", paddingHorizontal: 12, gap: 10 },
-  card: { width: "47%", flexGrow: 1, borderRadius: 16, borderWidth: 1, padding: 16, gap: 6, position: "relative" },
-  cardIcon: { width: 48, height: 48, borderRadius: 14, alignItems: "center", justifyContent: "center", marginBottom: 4 },
-  cardTitle: { fontSize: 15, fontFamily: "SpaceGrotesk_700Bold" },
-  cardSub: { fontSize: 12, fontFamily: "SpaceGrotesk_400Regular", lineHeight: 17 },
-  cardArrow: { marginTop: 8, alignSelf: "flex-end" },
-  tipBox: { flexDirection: "row", alignItems: "flex-start", gap: 12, margin: 16, padding: 14, borderRadius: 14, borderWidth: 1 },
-  tipText: { flex: 1, fontSize: 13, fontFamily: "SpaceGrotesk_400Regular", lineHeight: 20 },
+  header: { flexDirection: "row", alignItems: "center", gap: 10, paddingHorizontal: 20, paddingBottom: 12, borderBottomWidth: StyleSheet.hairlineWidth },
+  backBtn: { width: 38, height: 38, borderRadius: 19, alignItems: "center", justifyContent: "center" },
+  headerTitle: { fontSize: 17, fontFamily: "SpaceGrotesk_700Bold" },
+  headerSub: { fontSize: 11, fontFamily: "SpaceGrotesk_400Regular", marginTop: 1 },
+  notifBtn: { flexDirection: "row", alignItems: "center", gap: 5, paddingHorizontal: 10, paddingVertical: 7, borderRadius: 10, borderWidth: 1 },
+  notifBtnText: { fontSize: 12, fontFamily: "SpaceGrotesk_600SemiBold" },
+  heroBanner: { flexDirection: "row", alignItems: "center", gap: 12, margin: 14, padding: 14, borderRadius: 14, borderWidth: 1 },
+  heroIconWrap: { width: 44, height: 44, borderRadius: 12, alignItems: "center", justifyContent: "center" },
+  heroTitle: { fontSize: 14, fontFamily: "SpaceGrotesk_700Bold", marginBottom: 3 },
+  heroSub: { fontSize: 12, fontFamily: "SpaceGrotesk_400Regular", lineHeight: 18 },
+  sectionLabel: { fontSize: 11, fontFamily: "SpaceGrotesk_600SemiBold", letterSpacing: 1, marginHorizontal: 20, marginBottom: 10 },
+  grid: { flexDirection: "row", flexWrap: "wrap", paddingHorizontal: 12, gap: 8 },
+  card: { width: "47%", flexGrow: 1, borderRadius: 14, borderWidth: 1, padding: 12, gap: 3, position: "relative" },
+  cardIcon: { width: 36, height: 36, borderRadius: 10, alignItems: "center", justifyContent: "center", marginBottom: 2 },
+  cardTitle: { fontSize: 13, fontFamily: "SpaceGrotesk_700Bold" },
+  cardSub: { fontSize: 11, fontFamily: "SpaceGrotesk_400Regular", lineHeight: 15 },
+  cardArrow: { marginTop: 6, alignSelf: "flex-end" },
+  tipBox: { flexDirection: "row", alignItems: "flex-start", gap: 10, margin: 14, padding: 12, borderRadius: 12, borderWidth: 1 },
+  tipText: { flex: 1, fontSize: 12, fontFamily: "SpaceGrotesk_400Regular", lineHeight: 19 },
   modalOverlay: { flex: 1, backgroundColor: "rgba(0,0,0,0.7)", justifyContent: "flex-end" },
   modalBox: { borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 24, gap: 14, paddingBottom: 44 },
   modalHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start" },

@@ -210,6 +210,24 @@
   ],
   "activity_events": [
     {
+      "id": "4b1004fc88067646",
+      "type": "message",
+      "text": "JADE respondeu a uma mensagem",
+      "icon": "robot",
+      "color": "#FF0080",
+      "metadata": {},
+      "created_at": "2026-06-20T20:38:03.392Z"
+    },
+    {
+      "id": "acb9d00c54fe0e62",
+      "type": "message",
+      "text": "JADE respondeu a uma mensagem",
+      "icon": "robot",
+      "color": "#FF0080",
+      "metadata": {},
+      "created_at": "2026-06-20T20:33:50.638Z"
+    },
+    {
       "id": "59cf11b5bbd00412",
       "type": "message",
       "text": "JADE ativada no modo autônomo",

@@ -77,15 +77,20 @@ export default function RelatoriosScreen() {
       ? `Com base nas métricas do dia (8 leads abordados, 5 conversas, 2 propostas, 1 fechamento), gere uma análise executiva resumida do dia comercial. Inclua: o que foi bem, o que melhorar amanhã e a principal ação para o dia seguinte. Seja direto e prático. Máximo 200 palavras.`
       : `Com base nas métricas semanais (42 leads, 31 conversas, 14 propostas, 6 fechamentos, crescimento de ~10% vs semana anterior), gere um relatório semanal executivo. Inclua: desempenho geral, destaque positivo, ponto de melhoria e meta da próxima semana. Direto e acionável. Máximo 250 palavras.`;
     try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 30000);
       const res = await fetch(`${API_BASE}/api/jade/chat`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ messages: [{ role: "user", content: prompt }] }),
+        signal: controller.signal,
       });
+      clearTimeout(timeoutId);
       const data = await res.json();
-      setAnalysis(data.message ?? "");
-    } catch {
-      setAnalysis("Erro ao gerar análise. Verifique sua conexão.");
+      setAnalysis(data.message?.trim() || data.response?.trim() || "");
+    } catch (err: unknown) {
+      const isAbort = err instanceof Error && err.name === "AbortError";
+      setAnalysis(isAbort ? "A JADE demorou demais. Tente novamente em instantes." : "Erro ao gerar análise. Verifique sua conexão.");
     } finally {
       setLoading(false);
     }

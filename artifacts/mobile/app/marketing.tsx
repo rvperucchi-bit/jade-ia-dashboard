@@ -270,17 +270,24 @@ function MediaPlanner({
     const obj = OBJETIVOS.find((o) => o.id === objetivo)!;
     const prompt = `Você é especialista em mídia paga brasileira. Crie uma estratégia completa de tráfego pago:\n- Orçamento: R$ ${orcamento}/mês\n- Objetivo: ${obj.label}\n- Período: ${periodo} dias\n- Segmento: ${segmento || "geral"}\n\nEstruture exatamente assim:\n\n## DISTRIBUIÇÃO DO ORÇAMENTO\nPara cada plataforma relevante (Meta Ads, Google Ads, TikTok Ads), informe: valor em R$ e % do total. Use valores baseados no orçamento de R$ ${orcamento}.\n\n## ESTRATÉGIA POR PLATAFORMA\nPara cada plataforma: público-alvo, formato de anúncio, investimento diário, meta de resultado esperada.\n\n## CRONOGRAMA ${periodo} DIAS\nO que fazer em cada semana.\n\n## COPIES PRONTAS\nForneça 3 textos de anúncio prontos para usar (separe por ---).\n\n## KPIs PARA ACOMPANHAR\n4-5 métricas para monitorar diariamente.\n\nSeja específico com valores em R$ e metas numéricas.`;
     try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 30000);
       const res = await fetch(`${API_BASE}/api/jade/chat`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ messages: [{ role: "user", content: prompt }] }),
+        signal: controller.signal,
       });
+      clearTimeout(timeoutId);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
-      setResult(data.message?.trim() ?? "Estratégia gerada!");
+      setResult(data.message?.trim() || data.response?.trim() || "Estratégia gerada!");
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    } catch {
-      setResult("Não foi possível gerar a estratégia. Verifique sua conexão e tente novamente.");
+    } catch (err: unknown) {
+      const isAbort = err instanceof Error && err.name === "AbortError";
+      setResult(isAbort
+        ? "A JADE demorou demais para responder. Tente novamente em instantes."
+        : "Não foi possível gerar a estratégia. Verifique sua conexão e tente novamente.");
     } finally {
       setLoading(false);
     }

@@ -77,17 +77,27 @@ export default function CriarRotaScreen() {
     const prompt = `Você é especialista em rotas comerciais. Otimize a seguinte rota de visitas:\n\n${listaStr}\n\nCrie:\n\n## ORDEM OTIMIZADA DE VISITAS\nListe as visitas na ordem mais eficiente por proximidade geográfica/lógica. Numeradas.\n\n## HORÁRIOS SUGERIDOS\nPara cada visita: horário de chegada sugerido, duração estimada (30-60min), tempo de deslocamento até a próxima.\n\n## OPORTUNIDADES NO CAMINHO\nPara cada lead quente não agendado: "Você vai estar perto de [Lead] por volta das [hora]. Vale uma visita surpresa — [razão específica para tentar]."\n\n## RESUMO DO DIA\n- Total de visitas: X\n- Distância estimada: X km\n- Horário previsto de término: HH:mm\n- Lead com maior potencial do dia: [nome]\n\n## LINK GOOGLE MAPS\nGere um deep link do Google Maps no formato: https://www.google.com/maps/dir/[enderecos separados por /]\nSubstitua espaços por + nos endereços.\n\nSeja prático, específico e considere horário comercial (8h–18h).`;
 
     try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 30000);
       const res = await fetch(`${API_BASE}/api/jade/chat`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ messages: [{ role: "user", content: prompt }] }),
+        signal: controller.signal,
       });
+      clearTimeout(timeoutId);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
-      setResult(data.message?.trim() ?? "");
+      setResult(data.message?.trim() || data.response?.trim() || "");
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    } catch {
-      setResult("Não foi possível criar a rota. Verifique sua conexão e tente novamente.");
+    } catch (err: unknown) {
+      const isAbort = err instanceof Error && err.name === "AbortError";
+      Alert.alert(
+        "Erro",
+        isAbort
+          ? "A JADE demorou demais para responder. Tente novamente em instantes."
+          : "Não foi possível criar a rota. Verifique sua conexão.",
+      );
     } finally {
       setLoading(false);
     }

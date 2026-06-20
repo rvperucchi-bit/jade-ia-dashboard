@@ -3,6 +3,7 @@ import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
   ActivityIndicator,
+  Alert,
   Platform,
   ScrollView,
   StyleSheet,
@@ -128,6 +129,8 @@ export default function RoteiroScreen() {
         }
       } catch {}
 
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 30000);
       const res = await fetch(`${API_BASE}/api/jade/chat`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -139,13 +142,21 @@ export default function RoteiroScreen() {
             },
           ],
         }),
+        signal: controller.signal,
       });
+      clearTimeout(timeoutId);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
-      const texto = data.message?.trim();
+      const texto = data.message?.trim() || data.response?.trim() || "";
       setResult(texto || "Roteiro gerado! Verifique o conteúdo acima.");
-    } catch (err) {
-      setResult("Não foi possível gerar o roteiro. Verifique sua conexão e tente novamente.");
+    } catch (err: unknown) {
+      const isAbort = err instanceof Error && err.name === "AbortError";
+      Alert.alert(
+        "Erro",
+        isAbort
+          ? "A JADE demorou demais para responder. Tente novamente em instantes."
+          : "Não foi possível gerar o roteiro. Verifique sua conexão.",
+      );
     } finally {
       setLoading(false);
     }

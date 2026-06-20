@@ -3,6 +3,7 @@ import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
   ActivityIndicator,
+  Alert,
   Platform,
   ScrollView,
   StyleSheet,
@@ -63,6 +64,8 @@ export default function FeedbackJadeScreen() {
         ? `Vendedor: ${v.nome}. Atingiu ${p}% da meta (${fmt(v.realizado)} de ${fmt(v.meta)}). Segmento: ${v.segmento}. Pipeline: ${v.pipeline}. Escreva uma mensagem de parabenização genuína e calorosa, celebre a conquista, reconheça o esforço específico que levou ao resultado, e incentive a manter o ritmo com uma dica para o próximo mês.`
         : `Vendedor: ${v.nome}. Está em ${p}% da meta (${fmt(v.realizado)} de ${fmt(v.meta)}). Segmento: ${v.segmento}. Pipeline atual: ${v.pipeline}. Escreva um feedback empático, sem cobrança. Reconheça o esforço, identifique onde pode estar o gargalo baseado no pipeline, sugira 3 ações concretas para esta semana, e termine com encorajamento genuíno.`;
 
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 30000);
       const res = await fetch(`${API_BASE}/api/jade/chat`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -71,11 +74,19 @@ export default function FeedbackJadeScreen() {
             { role: "user", content: `[SYSTEM: ${SYSTEM_PROMPT}]\n\n${prompt}` },
           ],
         }),
+        signal: controller.signal,
       });
+      clearTimeout(timeoutId);
       const data = await res.json();
-      setFeedbacks((prev) => ({ ...prev, [v.id]: data.message?.trim() || "Não foi possível gerar o feedback." }));
-    } catch {
-      setFeedbacks((prev) => ({ ...prev, [v.id]: "Erro de conexão. Tente novamente." }));
+      setFeedbacks((prev) => ({ ...prev, [v.id]: data.message?.trim() || data.response?.trim() || "Não foi possível gerar o feedback." }));
+    } catch (err: unknown) {
+      const isAbort = err instanceof Error && err.name === "AbortError";
+      Alert.alert(
+        "Erro",
+        isAbort
+          ? "A JADE demorou demais para responder. Tente novamente em instantes."
+          : "Não foi possível gerar o feedback. Verifique sua conexão.",
+      );
     } finally {
       setLoading((prev) => ({ ...prev, [v.id]: false }));
     }
