@@ -17,3 +17,9 @@ id = "9_Jjqy9lubmfoY4jtPLmA"
 uri = "file://JADE_IA_Atualizacoes.pdf"
 type = "pdf"
 title = "JADE IA — Release Notes · Sprint Junho 2026"
+
+[[outputs]]
+id = "odo2BOZ1yQ2rPx7ljyuJG"
+uri = "file://relatorio-botoes.pdf"
+type = "pdf"
+title = "Relatório de Auditoria de Botões — JADE IA"
