@@ -3,6 +3,8 @@ import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
   ActivityIndicator,
+  Dimensions,
+  Image,
   KeyboardAvoidingView,
   Platform,
   StyleSheet,
@@ -14,6 +16,12 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { useAuth } from "@/context/AuthContext";
+
+const jadeIcon = require("../assets/images/jade-icon.png");
+const jadeWordmark = require("../assets/images/jade-wordmark-orig.png");
+
+const { width: SCREEN_W } = Dimensions.get("window");
+const ICON_SIZE = Math.min(SCREEN_W * 0.46, 190);
 
 export default function LoginScreen() {
   const { login } = useAuth();
@@ -48,18 +56,27 @@ export default function LoginScreen() {
       behavior={Platform.OS === "ios" ? "padding" : "height"}
     >
       <View style={styles.inner}>
+        {/* Brand section */}
         <View style={styles.logoSection}>
-          <View style={styles.logoRow}>
-            <Text style={styles.logoJ}>J</Text>
-            <Text style={styles.logoA}>A</Text>
-            <Text style={styles.logoDE}>DE</Text>
+          {/* Icon — circular crop to show neon circle */}
+          <View style={[styles.iconClip, { width: ICON_SIZE, height: ICON_SIZE }]}>
+            <Image
+              source={jadeIcon}
+              style={{ width: ICON_SIZE, height: ICON_SIZE * 1.5, marginTop: -ICON_SIZE * 0.22 }}
+              resizeMode="cover"
+            />
           </View>
-          <View style={styles.badgeRow}>
-            <Text style={styles.badgeText}>IA</Text>
-          </View>
+
+          {/* Wordmark */}
+          <Image
+            source={jadeWordmark}
+            style={styles.wordmarkImage}
+            resizeMode="contain"
+          />
           <Text style={styles.tagline}>Sua parceira de trabalho.</Text>
         </View>
 
+        {/* Form */}
         <View style={styles.form}>
           <Text style={styles.formTitle}>Entrar</Text>
 
@@ -147,59 +164,33 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingHorizontal: 28,
     justifyContent: "space-between",
-    paddingTop: 40,
+    paddingTop: 16,
     paddingBottom: 32,
   },
   logoSection: {
     alignItems: "center",
-    gap: 10,
-    marginTop: 20,
+    gap: 2,
+    marginTop: 12,
   },
-  logoRow: {
-    flexDirection: "row",
-    alignItems: "flex-end",
+  iconClip: {
+    borderRadius: 9999,
+    overflow: "hidden",
+    alignItems: "center",
   },
-  logoJ: {
-    fontSize: 56,
-    fontFamily: "SpaceGrotesk_700Bold",
-    color: "#FFFFFF",
-    lineHeight: 62,
-  },
-  logoA: {
-    fontSize: 56,
-    fontFamily: "SpaceGrotesk_700Bold",
-    color: "#FF0080",
-    lineHeight: 62,
-  },
-  logoDE: {
-    fontSize: 56,
-    fontFamily: "SpaceGrotesk_700Bold",
-    color: "#FFFFFF",
-    lineHeight: 62,
-  },
-  badgeRow: {
-    backgroundColor: "#FF008022",
-    borderWidth: 1,
-    borderColor: "#FF008055",
-    paddingHorizontal: 12,
-    paddingVertical: 3,
-    borderRadius: 16,
-  },
-  badgeText: {
-    fontSize: 13,
-    fontFamily: "SpaceGrotesk_600SemiBold",
-    color: "#FF0080",
-    letterSpacing: 3,
+  wordmarkImage: {
+    width: SCREEN_W * 0.64,
+    height: (SCREEN_W * 0.64) * (178 / 1024),
+    marginTop: 10,
   },
   tagline: {
-    fontSize: 14,
+    fontSize: 13,
     fontFamily: "SpaceGrotesk_400Regular",
-    color: "#FFFFFF55",
+    color: "#FFFFFF44",
     marginTop: 4,
   },
   form: {
     gap: 16,
-    marginTop: 20,
+    marginTop: 8,
   },
   formTitle: {
     fontSize: 26,

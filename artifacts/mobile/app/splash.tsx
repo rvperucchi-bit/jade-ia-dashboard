@@ -2,17 +2,24 @@ import { useRouter } from "expo-router";
 import React, { useEffect, useRef } from "react";
 import {
   Animated,
+  Dimensions,
   Easing,
+  Image,
   StyleSheet,
-  Text,
   View,
 } from "react-native";
+
+const jadeIcon = require("../assets/images/jade-icon.png");
+const jadeWordmark = require("../assets/images/jade-wordmark-orig.png");
+
+const { width: SCREEN_W } = Dimensions.get("window");
+const ICON_SIZE = Math.min(SCREEN_W * 0.68, 280);
 
 export default function SplashScreen() {
   const router = useRouter();
   const fadeAnim = useRef(new Animated.Value(0)).current;
-  const scaleAnim = useRef(new Animated.Value(0.88)).current;
-  const taglineAnim = useRef(new Animated.Value(0)).current;
+  const scaleAnim = useRef(new Animated.Value(0.82)).current;
+  const wordmarkAnim = useRef(new Animated.Value(0)).current;
   const dotAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
@@ -20,21 +27,21 @@ export default function SplashScreen() {
       Animated.parallel([
         Animated.timing(fadeAnim, {
           toValue: 1,
-          duration: 700,
+          duration: 750,
           easing: Easing.out(Easing.cubic),
           useNativeDriver: true,
         }),
         Animated.timing(scaleAnim, {
           toValue: 1,
-          duration: 700,
-          easing: Easing.out(Easing.back(1.2)),
+          duration: 750,
+          easing: Easing.out(Easing.back(1.12)),
           useNativeDriver: true,
         }),
       ]),
-      Animated.timing(taglineAnim, {
+      Animated.timing(wordmarkAnim, {
         toValue: 1,
-        duration: 500,
-        delay: 100,
+        duration: 450,
+        delay: 80,
         easing: Easing.out(Easing.cubic),
         useNativeDriver: true,
       }),
@@ -42,63 +49,60 @@ export default function SplashScreen() {
 
     Animated.loop(
       Animated.sequence([
-        Animated.timing(dotAnim, {
-          toValue: 1,
-          duration: 600,
-          useNativeDriver: true,
-        }),
-        Animated.timing(dotAnim, {
-          toValue: 0,
-          duration: 600,
-          useNativeDriver: true,
-        }),
+        Animated.timing(dotAnim, { toValue: 1, duration: 600, useNativeDriver: true }),
+        Animated.timing(dotAnim, { toValue: 0, duration: 600, useNativeDriver: true }),
       ])
     ).start();
 
     const timer = setTimeout(() => {
       router.replace("/login");
-    }, 2600);
+    }, 2800);
 
     return () => clearTimeout(timer);
   }, []);
 
   return (
     <View style={styles.container}>
+      {/* Icon: circular crop to show the neon circle prominently */}
       <Animated.View
         style={[
-          styles.logoWrap,
+          styles.iconContainer,
+          { width: ICON_SIZE, height: ICON_SIZE },
           { opacity: fadeAnim, transform: [{ scale: scaleAnim }] },
         ]}
       >
-        <View style={styles.logoRow}>
-          <Text style={styles.logoJ}>J</Text>
-          <Text style={styles.logoA}>A</Text>
-          <Text style={styles.logoDE}>DE</Text>
-        </View>
-        <View style={styles.badgeRow}>
-          <Text style={styles.badgeText}>IA</Text>
-        </View>
+        <Image
+          source={jadeIcon}
+          style={{ width: ICON_SIZE, height: ICON_SIZE * 1.5, marginTop: -ICON_SIZE * 0.22 }}
+          resizeMode="cover"
+        />
       </Animated.View>
 
-      <Animated.Text
+      {/* Wordmark */}
+      <Animated.View
         style={[
-          styles.tagline,
+          styles.wordmarkContainer,
           {
-            opacity: taglineAnim,
+            opacity: wordmarkAnim,
             transform: [
               {
-                translateY: taglineAnim.interpolate({
+                translateY: wordmarkAnim.interpolate({
                   inputRange: [0, 1],
-                  outputRange: [12, 0],
+                  outputRange: [14, 0],
                 }),
               },
             ],
           },
         ]}
       >
-        Sua parceira de trabalho.
-      </Animated.Text>
+        <Image
+          source={jadeWordmark}
+          style={styles.wordmarkImage}
+          resizeMode="contain"
+        />
+      </Animated.View>
 
+      {/* Loading dots */}
       <View style={styles.dotsRow}>
         {[0, 1, 2].map((i) => (
           <Animated.View
@@ -126,58 +130,24 @@ const styles = StyleSheet.create({
     backgroundColor: "#0A0A0F",
     alignItems: "center",
     justifyContent: "center",
-    gap: 20,
   },
-  logoWrap: {
+  iconContainer: {
+    borderRadius: 9999,
+    overflow: "hidden",
     alignItems: "center",
-    gap: 8,
   },
-  logoRow: {
-    flexDirection: "row",
-    alignItems: "flex-end",
+  wordmarkContainer: {
+    alignItems: "center",
+    marginTop: 20,
   },
-  logoJ: {
-    fontSize: 80,
-    fontFamily: "SpaceGrotesk_700Bold",
-    color: "#FFFFFF",
-    lineHeight: 88,
-  },
-  logoA: {
-    fontSize: 80,
-    fontFamily: "SpaceGrotesk_700Bold",
-    color: "#FF0080",
-    lineHeight: 88,
-  },
-  logoDE: {
-    fontSize: 80,
-    fontFamily: "SpaceGrotesk_700Bold",
-    color: "#FFFFFF",
-    lineHeight: 88,
-  },
-  badgeRow: {
-    backgroundColor: "#FF008022",
-    borderWidth: 1,
-    borderColor: "#FF008055",
-    paddingHorizontal: 14,
-    paddingVertical: 4,
-    borderRadius: 20,
-  },
-  badgeText: {
-    fontSize: 15,
-    fontFamily: "SpaceGrotesk_600SemiBold",
-    color: "#FF0080",
-    letterSpacing: 3,
-  },
-  tagline: {
-    fontSize: 16,
-    fontFamily: "SpaceGrotesk_400Regular",
-    color: "#FFFFFF88",
-    letterSpacing: 0.5,
+  wordmarkImage: {
+    width: SCREEN_W * 0.72,
+    height: (SCREEN_W * 0.72) * (178 / 1024),
   },
   dotsRow: {
     flexDirection: "row",
     gap: 8,
-    marginTop: 40,
+    marginTop: 52,
   },
   dot: {
     width: 6,
