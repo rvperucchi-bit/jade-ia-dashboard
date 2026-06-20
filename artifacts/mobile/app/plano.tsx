@@ -77,8 +77,8 @@ const PLANS: Plan[] = [
     users: "5 usuários",
   },
   {
-    id: "commander",
-    name: "Commander",
+    id: "enterprise",
+    name: "Enterprise",
     price: "R$697",
     period: "/mês",
     features: [

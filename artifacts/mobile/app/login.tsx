@@ -48,33 +48,31 @@ export default function LoginScreen() {
     Animated.parallel([
       Animated.timing(logoOpacity, {
         toValue: 1,
-        duration: 320,
+        duration: 380,
         easing: Easing.out(Easing.cubic),
         useNativeDriver: true,
       }),
       Animated.timing(logoScale, {
         toValue: 1,
-        duration: 400,
+        duration: 420,
         easing: Easing.out(Easing.back(1.06)),
         useNativeDriver: true,
       }),
       Animated.timing(logoY, {
         toValue: 0,
-        duration: 650,
+        duration: 420,
         easing: Easing.out(Easing.cubic),
         useNativeDriver: true,
       }),
       Animated.timing(formOpacity, {
         toValue: 1,
-        duration: 520,
-        delay: 220,
+        duration: 420,
         easing: Easing.out(Easing.cubic),
         useNativeDriver: true,
       }),
       Animated.timing(formY, {
         toValue: 0,
-        duration: 520,
-        delay: 220,
+        duration: 420,
         easing: Easing.out(Easing.cubic),
         useNativeDriver: true,
       }),

@@ -63,21 +63,23 @@ export default function MaisScreen() {
 
   const MENU_SECTIONS: { title: string; items: MenuItem[] }[] = [
     {
-      title: "Conta",
+      title: "Ferramentas de Vendas",
       items: [
         {
-          icon: "user", iconLib: "feather", label: "Meu Perfil", sub: "Rodrigo",
-          onPress: () => router.push("/perfil" as any),
+          icon: "file-text", iconLib: "feather", label: "Roteiro de Vendas",
+          sub: "Script do contato ao fechamento",
+          onPress: () => router.push("/roteiro" as any),
         },
         {
-          icon: "star", iconLib: "feather", label: "Meu Plano", sub: "Pro · R$247/mês", badge: "PRO",
-          onPress: () => router.push("/plano" as any),
+          icon: "clipboard", iconLib: "feather", label: "Briefing Pré-Reunião",
+          sub: "Chegue preparado para qualquer reunião",
+          onPress: () => router.push("/briefing" as any),
         },
-      ],
-    },
-    {
-      title: "Ferramentas",
-      items: [
+        {
+          icon: "award", iconLib: "feather", label: "Laudo Executivo",
+          sub: "Diagnóstico de marketing do cliente",
+          onPress: () => router.push("/laudo" as any),
+        },
         {
           icon: "search", iconLib: "feather", label: "Scanner Radar",
           sub: "Buscar novos estabelecimentos",
@@ -91,6 +93,31 @@ export default function MaisScreen() {
       ],
     },
     {
+      title: "Performance",
+      items: [
+        {
+          icon: "bar-chart-2", iconLib: "feather", label: "Relatórios",
+          sub: "Métricas diárias e semanais", badge: "PRO",
+          onPress: () => router.push("/relatorios" as any),
+        },
+      ],
+    },
+    {
+      title: "Treinamento",
+      items: [
+        {
+          icon: "users", iconLib: "feather", label: "Roleplay de Vendas",
+          sub: "Treine com a JADE como cliente", badge: "Enterprise",
+          onPress: () => router.push("/roleplay" as any),
+        },
+        {
+          icon: "book-open", iconLib: "feather", label: "Biblioteca de Técnicas",
+          sub: "SPIN, AIDA, Gatilhos e mais",
+          onPress: () => router.push("/marketing" as any),
+        },
+      ],
+    },
+    {
       title: "Configurações",
       items: [
         {
@@ -99,37 +126,24 @@ export default function MaisScreen() {
           onPress: () => router.push("/empresa" as any),
         },
         {
+          icon: "user", iconLib: "feather", label: "Meu Perfil", sub: "Rodrigo",
+          onPress: () => router.push("/perfil" as any),
+        },
+        {
+          icon: "star", iconLib: "feather", label: "Meu Plano", sub: "Pro · R$247/mês", badge: "PRO",
+          onPress: () => router.push("/plano" as any),
+        },
+        {
           icon: "bell", iconLib: "feather", label: "Notificações", sub: "3 não lidas",
           onPress: () => router.push("/notificacoes" as any),
-        },
-        {
-          icon: "robot", iconLib: "mci", label: "Treinamento da JADE", sub: "6 módulos ativos",
-          onPress: () => router.push("/treinamento" as any),
-        },
-        {
-          icon: "link", iconLib: "feather", label: "Integrações", sub: "WhatsApp, Instagram",
-          onPress: () => Alert.alert("Integrações", "WhatsApp Business e Instagram em configuração."),
         },
         {
           icon: "shield", iconLib: "feather", label: "Privacidade e Dados",
           onPress: () => router.push("/privacidade" as any),
         },
-      ],
-    },
-    {
-      title: "Suporte",
-      items: [
         {
           icon: "help-circle", iconLib: "feather", label: "Central de Ajuda",
           onPress: () => router.push("/ajuda" as any),
-        },
-        {
-          icon: "message-square", iconLib: "feather", label: "Falar com Suporte",
-          onPress: () => Alert.alert("Suporte", "Entre em contato pelo WhatsApp: (48) 99999-0000"),
-        },
-        {
-          icon: "star", iconLib: "feather", label: "Avaliar o App",
-          onPress: () => Alert.alert("Obrigado!", "Sua avaliação nos ajuda a melhorar a JADE."),
         },
       ],
     },

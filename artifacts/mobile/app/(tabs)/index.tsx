@@ -40,28 +40,44 @@ const BTN_SIZE  = 65;
 const WRAP_SIZE = 79;
 
 function ModuleBtn({
-  active, locked, onPress, onLockedPress, children, colors,
+  active, locked, onPress, onLockedPress, children, color, colors,
 }: {
   active: boolean;
   locked?: boolean;
   onPress: () => void;
   onLockedPress?: () => void;
   children: React.ReactNode;
+  color?: string;
   colors: ReturnType<typeof useColors>;
 }) {
-  const glowOpacity = useRef(new Animated.Value(0)).current;
+  const glowAnim = useRef(new Animated.Value(0)).current;
+  const loopRef  = useRef<ReturnType<typeof Animated.loop> | null>(null);
 
   useEffect(() => {
     if (active && !locked) {
-      Animated.loop(Animated.sequence([
-        Animated.timing(glowOpacity, { toValue: 0.55, duration: 1400, easing: Easing.inOut(Easing.sin), useNativeDriver: true }),
-        Animated.timing(glowOpacity, { toValue: 0.0,  duration: 1400, easing: Easing.inOut(Easing.sin), useNativeDriver: true }),
-      ])).start();
+      loopRef.current = Animated.loop(
+        Animated.sequence([
+          Animated.timing(glowAnim, { toValue: 1, duration: 1400, useNativeDriver: false }),
+          Animated.timing(glowAnim, { toValue: 0, duration: 1400, useNativeDriver: false }),
+        ])
+      );
+      loopRef.current.start();
     } else {
-      glowOpacity.stopAnimation();
-      glowOpacity.setValue(0);
+      loopRef.current?.stop();
+      glowAnim.setValue(0);
     }
+    return () => { loopRef.current?.stop(); };
   }, [active, locked]);
+
+  const glowColor = color ?? colors.primary;
+
+  const animatedBtnStyle = {
+    shadowColor: glowColor,
+    shadowOffset: { width: 0, height: 0 },
+    shadowRadius: glowAnim.interpolate({ inputRange: [0, 1], outputRange: [0, 8] }),
+    shadowOpacity: glowAnim.interpolate({ inputRange: [0, 1], outputRange: [0, 0.6] }),
+    elevation: glowAnim.interpolate({ inputRange: [0, 1], outputRange: [0, 8] }),
+  };
 
   return (
     <TouchableOpacity
@@ -69,18 +85,13 @@ function ModuleBtn({
       activeOpacity={0.75}
       style={[M.wrap, { width: WRAP_SIZE, height: WRAP_SIZE, overflow: "visible" }]}
     >
-      {/* Subtle 2mm energy glow — only when active */}
-      {active && !locked && (
-        <Animated.View style={[M.glowRing, { opacity: glowOpacity }]} />
-      )}
-
-      <View style={[M.btn, {
+      <Animated.View style={[M.btn, animatedBtnStyle, {
         backgroundColor: colors.surface,
-        borderColor: active && !locked ? colors.primary + "80" : colors.border,
+        borderColor: active && !locked ? glowColor + "80" : colors.border,
         opacity: locked ? 0.4 : 1,
       }]}>
         {children}
-      </View>
+      </Animated.View>
 
       {locked && (
         <View style={M.lockOverlay}>
@@ -95,19 +106,7 @@ const M = StyleSheet.create({
   wrap: { alignItems: "center", justifyContent: "center" },
   btn: {
     width: BTN_SIZE, height: BTN_SIZE, borderRadius: BTN_SIZE / 2,
-    alignItems: "center", justifyContent: "center", borderWidth: 1.5, position: "absolute",
-  },
-  glowRing: {
-    position: "absolute",
-    width: BTN_SIZE + 4,
-    height: BTN_SIZE + 4,
-    borderRadius: (BTN_SIZE + 4) / 2,
-    backgroundColor: "transparent",
-    shadowColor: "#FF0080",
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 1,
-    shadowRadius: 8,
-    elevation: 8,
+    alignItems: "center", justifyContent: "center", borderWidth: 1.5,
   },
   lockOverlay: {
     position: "absolute",
@@ -169,8 +168,8 @@ const MODULE_DEFS = [
   { name: "leads",      label: "CRM",      locked: false, plan: "",          onMsg: "Sincronização automática de leads ativada.",               offMsg: "CRM em modo manual." },
   { name: "whatsapp",   label: "WhatsApp", locked: false, plan: "",          onMsg: "WhatsApp configurado — envio ativado quando pronto.",      offMsg: "WhatsApp pausado." },
   { name: "marketing",  label: "Mkt",      locked: false, plan: "",          onMsg: "Campanhas de marketing automático ativadas.",              offMsg: "Marketing automático pausado." },
-  { name: "gestao",     label: "Gestão",   locked: true,  plan: "Commander", onMsg: "", offMsg: "" },
-  { name: "relatorios", label: "Relatórios", locked: true, plan: "Commander", onMsg: "", offMsg: "" },
+  { name: "gestao",     label: "Gestão",   locked: true,  plan: "Enterprise", onMsg: "", offMsg: "" },
+  { name: "relatorios", label: "Relatórios", locked: true, plan: "Enterprise", onMsg: "", offMsg: "" },
 ];
 
 // ─── Screen ───────────────────────────────────────────────────────────────────
@@ -272,11 +271,11 @@ export default function RadarScreen() {
               </TouchableOpacity>
             )}
             <TouchableOpacity
-              style={[S.avatarBtn, { backgroundColor: colors.primary }]}
-              onPress={() => router.push("/perfil" as any)}
+              style={[S.avatarBtn, { backgroundColor: colors.surface, borderWidth: 1.5, borderColor: colors.primary + "60" }]}
+              onPress={() => router.push("/scanner" as any)}
               activeOpacity={0.85}
             >
-              <Text style={S.avatarText}>R</Text>
+              <Feather name="target" size={20} color={colors.primary} />
             </TouchableOpacity>
           </View>
         </View>
@@ -296,6 +295,7 @@ export default function RadarScreen() {
                 <ModuleBtn
                   active={active}
                   locked={def.locked}
+                  color={def.locked ? "#8400FF" : undefined}
                   onPress={() => handleToggle(def.name)}
                   onLockedPress={() => handleLockedPress(def.name)}
                   colors={colors}
@@ -436,9 +436,9 @@ export default function RadarScreen() {
             <View style={S.modalIconWrap}>
               <Feather name="lock" size={30} color={colors.primary} />
             </View>
-            <Text style={S.modalTitle}>Módulo {lockedDef?.plan ?? "Commander"}</Text>
+            <Text style={S.modalTitle}>Módulo Enterprise</Text>
             <Text style={S.modalBody}>
-              O módulo <Text style={{ color: colors.primary, fontFamily: "SpaceGrotesk_600SemiBold" }}>{lockedDef?.label}</Text> é exclusivo do Plano Commander.{"\n\n"}Faça upgrade para desbloquear todo o potencial da JADE.
+              O módulo <Text style={{ color: colors.primary, fontFamily: "SpaceGrotesk_600SemiBold" }}>{lockedDef?.label}</Text> é exclusivo do Plano Enterprise.{"\n\n"}Desbloqueie e gerencie seu time comercial completo.
             </Text>
             <TouchableOpacity
               style={S.modalPrimaryBtn}

@@ -494,7 +494,7 @@ export default function MarketingScreen() {
         </ScrollView>
       )}
 
-      <ScrollView showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
+      <ScrollView showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled" contentContainerStyle={{ paddingBottom: 120 }}>
         {/* ─── Gerar ─── */}
         {tab === "gerar" && !activeCampaign && (
           <ContentGenerator
