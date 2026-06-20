@@ -1,0 +1,270 @@
+IMPLEMENTAÇÃO IMEDIATA — JADE IA
+
+Com base na auditoria técnica completa da JADE IA, execute agora as correções e implementações necessárias para transformar o sistema em uma plataforma funcional, não apenas visual.
+
+NÃO quero nova auditoria.
+NÃO quero apenas análise.
+Quero implementação real.
+
+Contexto:
+A auditoria apontou que existem 12 itens funcionando, 9 parciais, 14 inexistentes e 7 apenas visuais. Os botões de ativação dos módulos hoje são cosméticos, não persistem no banco, não executam processos reais e resetam após reload. As métricas do dashboard estão hardcoded. Não existe automação real rodando em background.
+
+OBJETIVO GERAL:
+Fazer a JADE funcionar de verdade como central operacional.
+
+Prioridade máxima:
+
+1. Corrigir os botões Liga/Desliga dos módulos
+
+Implementar estado real para:
+
+* Scanner/Radar
+* JADE
+* Leads/CRM
+* WhatsApp
+* Marketing
+* Seller, se já houver estrutura
+* Farmer, se já houver estrutura
+* Commander, se já houver estrutura
+
+Quando ativar:
+
+* salvar no banco
+* persistir após reload
+* persistir após novo login
+* atualizar visualmente o status
+* registrar log de ativação
+* disparar processo real quando aplicável
+
+Quando desativar:
+
+* salvar no banco
+* interromper processo real quando existir
+* registrar log de desativação
+* atualizar visualmente o status
+
+Criar tabela/estrutura module_states com:
+
+* id
+* user_id
+* module_name
+* is_active
+* last_started_at
+* last_stopped_at
+* last_run_at
+* status
+* created_at
+* updated_at
+
+Criar também logs de módulos:
+
+* id
+* user_id
+* module_name
+* action
+* message
+* metadata
+* created_at
+
+2. Implementar endpoints reais de módulos
+
+Criar ou corrigir:
+
+GET /api/modules/status
+PUT /api/modules/:name/toggle
+POST /api/modules/:name/run
+GET /api/modules/:name/logs
+
+Esses endpoints devem ser usados pelo app.
+
+3. Corrigir Dashboard / Hub
+
+Remover dados hardcoded.
+
+Substituir por dados reais:
+
+* Leads Hoje
+* Conversas Ativas
+* Taxa de Conversão
+* Receita do Mês
+* Pipeline por etapa
+* Atividade Recente
+* Status dos módulos ativos
+
+Criar endpoint:
+
+GET /api/analytics/dashboard
+
+O dashboard deve carregar dados reais do banco/contexto e atualizar após ações importantes.
+
+4. Scanner / Radar
+
+Fazer o Radar trabalhar quando estiver ligado.
+
+Quando o usuário ativar o Radar:
+
+* iniciar rotina automática de busca de leads
+* usar Google Places quando houver chave configurada
+* salvar resultados encontrados
+* evitar duplicados
+* registrar logs
+* atualizar dashboard
+* permitir execução manual também
+
+Criar:
+POST /api/scanner/run
+GET /api/scanner/history
+
+Se não for possível manter worker contínuo no ambiente atual, implementar uma solução compatível com Replit, usando polling/agendamento controlado pelo backend/app.
+
+5. Marketing IA
+
+Expandir o módulo Marketing.
+
+Implementar:
+
+* histórico de campanhas geradas
+* salvar conteúdo gerado
+* listar campanhas anteriores
+* status de campanha
+* tipo de campanha
+* canal
+* data de criação
+* botão copiar
+* botão reutilizar
+* botão gerar nova versão
+
+Criar endpoints:
+
+POST /api/marketing/generate
+GET /api/marketing/campaigns
+GET /api/marketing/campaigns/:id
+
+A geração deve passar pelo backend, não diretamente pelo mobile.
+
+6. JADE Chat
+
+Melhorar a JADE para ficar operacional.
+
+Implementar:
+
+* persistência do histórico de conversa
+* memória por usuário
+* salvar mensagens no banco
+* carregar histórico ao abrir
+* preparar base para ações executáveis futuras
+
+Criar:
+GET /api/jade/conversations
+POST /api/jade/chat
+GET /api/jade/conversations/:id
+
+7. Banco de dados
+
+Criar schema real para produção/desenvolvimento.
+
+Implementar tabelas necessárias para:
+
+* usuários
+* módulos
+* logs
+* leads
+* conversas
+* mensagens
+* campanhas de marketing
+* histórico de scanner
+* atividades recentes
+* métricas
+
+Corrigir:
+
+* índices em leads.column_name
+* índice em messages.conversation_id
+* updated_at em leads
+* soft delete quando necessário
+* migrations
+
+8. Segurança mínima obrigatória
+
+Corrigir agora:
+
+* remover credenciais hardcoded
+* proteger rotas sensíveis
+* adicionar autenticação real ou estrutura segura compatível com o estado atual do projeto
+* adicionar rate limit nas rotas de IA
+* restringir CORS
+* validar inputs
+* evitar chamada direta de Gemini pelo mobile
+* garantir que chaves fiquem apenas no backend
+
+9. WhatsApp
+
+O WhatsApp NÃO deve disparar mensagens reais ainda.
+
+Mas deixar tudo pronto para o play amanhã:
+
+* estrutura de módulo ativa
+* botão liga/desliga persistente
+* fila preparada
+* logs preparados
+* endpoint preparado
+* tela preparada
+* status preparado
+
+Não enviar mensagens reais por enquanto.
+
+Criar modo:
+WHATSAPP_READY_BUT_PAUSED
+
+Quando ativado hoje:
+
+* pode mudar status
+* pode registrar log
+* pode preparar fila
+* NÃO pode enviar mensagem real ainda
+
+10. Atividade Recente
+
+Substituir array estático por eventos reais.
+
+Registrar atividades como:
+
+* módulo ativado
+* módulo desativado
+* lead encontrado
+* lead movido no pipeline
+* campanha criada
+* mensagem gerada
+* scanner executado
+* erro de automação
+
+Criar tabela activity_events.
+
+11. Entrega esperada
+
+Ao finalizar, entregar um relatório objetivo com:
+
+* arquivos alterados
+* tabelas criadas
+* endpoints criados
+* funcionalidades que agora funcionam
+* funcionalidades que ficaram prontas para ativação amanhã
+* limitações técnicas restantes
+* como testar cada item
+
+IMPORTANTE:
+Implementar com cuidado para não quebrar o design atual do Hub.
+Manter identidade visual premium dark com rosa.
+Não recriar a interface do zero.
+Apenas conectar o que já existe à lógica real.
+
+Prioridade de execução:
+
+1. Persistência dos módulos
+2. Endpoints dos módulos
+3. Dashboard com dados reais
+4. Radar automático
+5. Marketing com histórico
+6. JADE com histórico
+7. WhatsApp pronto, mas pausado
+8. Segurança básica

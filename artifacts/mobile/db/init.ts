@@ -16,8 +16,11 @@ export async function initializeDatabase(db: SQLiteDatabase): Promise<void> {
       time_label TEXT NOT NULL,
       initials TEXT NOT NULL,
       avatar_color TEXT NOT NULL,
+      updated_at INTEGER DEFAULT (unixepoch()),
       created_at INTEGER DEFAULT (unixepoch())
     );
+
+    CREATE INDEX IF NOT EXISTS idx_leads_column ON leads(column_name);
 
     CREATE TABLE IF NOT EXISTS conversations (
       id TEXT PRIMARY KEY,
@@ -42,10 +45,61 @@ export async function initializeDatabase(db: SQLiteDatabase): Promise<void> {
       FOREIGN KEY (conversation_id) REFERENCES conversations(id)
     );
 
+    CREATE INDEX IF NOT EXISTS idx_messages_conv ON messages(conversation_id);
+
     CREATE TABLE IF NOT EXISTS app_meta (
       key TEXT PRIMARY KEY,
       value TEXT NOT NULL
     );
+
+    CREATE TABLE IF NOT EXISTS module_states (
+      module_name TEXT PRIMARY KEY,
+      is_active INTEGER NOT NULL DEFAULT 0,
+      status TEXT NOT NULL DEFAULT 'idle',
+      last_started_at TEXT,
+      last_stopped_at TEXT,
+      last_run_at TEXT,
+      updated_at TEXT DEFAULT (datetime('now'))
+    );
+
+    CREATE TABLE IF NOT EXISTS activity_events (
+      id TEXT PRIMARY KEY,
+      type TEXT NOT NULL,
+      text TEXT NOT NULL,
+      icon TEXT NOT NULL DEFAULT 'activity',
+      color TEXT NOT NULL DEFAULT '#FF0080',
+      metadata TEXT,
+      created_at INTEGER DEFAULT (unixepoch())
+    );
+
+    CREATE TABLE IF NOT EXISTS marketing_campaigns (
+      id TEXT PRIMARY KEY,
+      type_id TEXT NOT NULL,
+      type_title TEXT NOT NULL,
+      channel TEXT NOT NULL,
+      context_input TEXT NOT NULL,
+      generated_content TEXT NOT NULL,
+      status TEXT NOT NULL DEFAULT 'draft',
+      created_at INTEGER DEFAULT (unixepoch())
+    );
+
+    CREATE TABLE IF NOT EXISTS jade_sessions (
+      id TEXT PRIMARY KEY,
+      title TEXT NOT NULL DEFAULT 'Nova conversa',
+      created_at INTEGER DEFAULT (unixepoch()),
+      updated_at INTEGER DEFAULT (unixepoch())
+    );
+
+    CREATE TABLE IF NOT EXISTS jade_messages (
+      id TEXT PRIMARY KEY,
+      session_id TEXT NOT NULL,
+      role TEXT NOT NULL,
+      content TEXT NOT NULL,
+      created_at INTEGER DEFAULT (unixepoch()),
+      FOREIGN KEY (session_id) REFERENCES jade_sessions(id)
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_jade_msg_session ON jade_messages(session_id);
   `);
 
   const meta = await db.getFirstAsync<{ value: string }>(
@@ -58,6 +112,24 @@ export async function initializeDatabase(db: SQLiteDatabase): Promise<void> {
     await db.runAsync(
       "INSERT INTO app_meta (key, value) VALUES (?, ?)",
       ["seeded", "1"]
+    );
+  }
+
+  await seedModuleStates(db);
+}
+
+async function seedModuleStates(db: SQLiteDatabase): Promise<void> {
+  const modules = [
+    { name: "scanner", active: 1, status: "running" },
+    { name: "jade", active: 1, status: "running" },
+    { name: "leads", active: 0, status: "idle" },
+    { name: "whatsapp", active: 0, status: "ready_paused" },
+    { name: "marketing", active: 0, status: "idle" },
+  ];
+  for (const m of modules) {
+    await db.runAsync(
+      `INSERT OR IGNORE INTO module_states (module_name, is_active, status) VALUES (?, ?, ?)`,
+      [m.name, m.active, m.status]
     );
   }
 }
@@ -123,6 +195,22 @@ async function seedDatabase(db: SQLiteDatabase): Promise<void> {
       `INSERT INTO messages (id, conversation_id, text, sender, time_label, read)
        VALUES (?, ?, ?, ?, ?, ?)`,
       [id, conversation_id, text, sender, time_label, read]
+    );
+  }
+
+  // Seed initial activity events
+  const activities = [
+    ["act1", "lead", "Lead adicionado: Carlos Mendes (TechBrasil)", "user-plus", "#6C63FF"],
+    ["act2", "message", "JADE respondeu Ana Souza automaticamente", "robot", "#FF0080"],
+    ["act3", "deal", "Roberto Costa movido para Proposta", "briefcase", "#00D68F"],
+    ["act4", "deal", "Diego Nunes fechou contrato · R$ 41.200", "briefcase", "#00D68F"],
+    ["act5", "task", "Follow-up agendado com Mariana Lima", "calendar", "#FFB300"],
+  ] as const;
+
+  for (const [id, type, text, icon, color] of activities) {
+    await db.runAsync(
+      `INSERT INTO activity_events (id, type, text, icon, color) VALUES (?, ?, ?, ?, ?)`,
+      [id, type, text, icon, color]
     );
   }
 }

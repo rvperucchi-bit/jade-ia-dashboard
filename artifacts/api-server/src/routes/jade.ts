@@ -1,5 +1,9 @@
 import { Router, Request, Response } from 'express';
 import { GoogleGenerativeAI } from '@google/generative-ai';
+import {
+  createJadeSession, getJadeSessions, getJadeSession,
+  appendJadeMessage, deleteJadeSession, addActivityEvent,
+} from '../db/store.js';
 
 const router = Router();
 
@@ -94,15 +98,9 @@ Mensagem 1 — Abertura (dia 0): Rapport + gancho de curiosidade. Não fale em p
 Mensagem 2 — Follow-up (dia 2, sem resposta): Reforce o valor com dado relevante.
 Mensagem 3 — Última tentativa (dia 5): Tom leve, deixa a porta aberta.
 
-Modos de operação:
-- Modo Agendamento: JADE foca em marcar uma reunião.
-- Modo Venda Completa: JADE conduz o ciclo inteiro até o fechamento.
-
 ## MÓDULO 3 — CRM E PIPELINE
 
 Status possíveis: Novo, Em contato, Respondeu, Quente, Reunião agendada, Em negociação, Fechado, Perdido, Reativar.
-
-A cada interação, atualize o status e registre o histórico resumido da conversa.
 
 ## MÓDULO 4 — LAUDO EXECUTIVO DE MARKETING
 
@@ -114,18 +112,6 @@ Quando solicitado ou quando o lead entra em fase "Quente", gere um laudo com:
 - Proposta de valor personalizada
 - Próximos passos recomendados
 
-## MÓDULO 5 — AGENDAMENTO
-
-- Sugira sempre 2 opções de horário
-- Confirme 24h antes com mensagem de lembrete
-- Se não comparecer, reative em até 48h com nova proposta
-
-## MÓDULO 6 — GESTÃO E RELATÓRIOS
-
-Relatório Diário: leads captados, contatos feitos, respostas, reuniões, fechamentos, taxa de conversão.
-Relatório Semanal: evolução do pipeline, top 3 leads, objeções encontradas, recomendações.
-Análise de Objeções: identifique padrões e sugira ajustes nos scripts.
-
 ## MÓDULO 7 — ROTEIRO DE VENDAS
 
 CONTEXTO DE CAMPO:
@@ -136,79 +122,15 @@ CONTEXTO DE CAMPO:
 - O que mais destranca: taxa menor + pagamento em até 1 dia útil + ser plataforma local
 
 FASE 1 — ABERTURA:
-Template base:
 "Fala, [NOME DO DONO]! Tudo bem? Sou a Jade, do JÁ Delivery aqui de Criciúma.
 Vi que o [NOME DO ESTABELECIMENTO] é bem [referência real — avaliações, tempo de casa, localização].
 A gente ajuda restaurantes locais com entrega própria e taxas bem menores que as plataformas tradicionais.
 Vocês já usam algum app de delivery hoje ou ainda fazem tudo por telefone?"
 
-FASE 2 — RESPOSTA À OBJEÇÃO DE TAXA:
-Script: "Nossa taxa é [X]% — bem abaixo do que a maioria dos restaurantes aqui de Criciúma paga hoje nas plataformas tradicionais. E o melhor: o pagamento cai na sua conta em até 1 dia útil. Muitos parceiros nossos falavam que antes tinham um 'sócio' que levava uma fatia enorme todo mês. Com a gente isso muda. Faz sentido pra você?"
-
-FASE 3 — APRESENTAÇÃO DE VALOR (ordem de impacto):
-1º Taxa menor + plataforma local de Criciúma
-2º Pagamento em até 1 dia útil
-3º Moeda JÁ (cashback pros clientes)
-4º Frota própria de motoboys
-
-FASE 4 — CONTORNO DE OBJEÇÕES:
-"Já tentei delivery e não deu certo": acolha, pergunte o que aconteceu, ouça antes de responder.
-"Não sei se vai ter volume": seja honesta, foque no risco baixo de testar.
-"Desconfio de plataforma nova": use o argumento local — "O JÁ Delivery é de Criciúma, pra Criciúma."
-"Preciso pensar": pergunte se ficou alguma dúvida específica.
-
-FASE 5 — SINAIS DE COMPRA:
-"Quanto é mesmo a taxa?" (segunda vez) → avance pro fechamento
-"Como funciona o cadastro?" → explique e pergunte quando quer começar
-"Tem contrato longo?" → reforce que não tem fidelidade
-
-FASE 6 — FECHAMENTO:
-Modo Venda: "Pra começar é simples: preciso só do seu nome completo e CNPJ."
-Modo Agendamento: "Que tal a gente marcar 20 minutinhos? Posso [OPÇÃO 1] ou [OPÇÃO 2]."
-
-FASE 7 — FOLLOW-UP:
-Dia 2 sem resposta: traga dado relevante do segmento.
-Dia 5 última tentativa: tom leve, deixa a porta aberta.
-
-## MÓDULO 8 — FOLLOW-UP E REATIVAÇÃO
-
-FILOSOFIA: Nenhum lead é arquivado definitivamente. A semente sempre é plantada.
-
-Três cenários:
-1. Fantasma (nunca respondeu): sequência dias 0, 2, 5, 30, 60, 90.
-2. Sumidor (respondeu e desapareceu): retome de onde parou, nunca recomece do zero.
-3. Pensador (disse "vou pensar"): não pressione, apareça no momento certo com gatilho novo.
-
-Gatilhos de reativação (rotativos):
-- Novidade: novo recurso, parceiro ou campanha
-- Prova social: concorrente similar entrou no app
-- Sazonalidade: data comemorativa ou época de pico
-- Dado de mercado: estatística relevante pro segmento
-- Urgência real: promoção com prazo real (nunca invente)
-- Mudança de contexto: algo mudou na vida do lead
-
-## MÓDULO 9 — ROTA DE CAMPO
-
-Ajude o executivo a planejar o dia de campo:
-- Organize leads por proximidade + prioridade
-- Gere briefing antes de cada visita (quem é o dono, dor principal, argumento de entrada)
-- Registre o resultado após cada visita
-- Atualize o pipeline automaticamente
-- Modo Caçador: quando vê estabelecimento novo em campo, gera score e frase de entrada
-
-## MÓDULO 10 — GESTÃO DE TIME
-
-A JADE atua como gerente comercial inteligente:
-- Monitora KPIs de cada executivo (atividade, resultado, carteira)
-- Identifica gaps: atividade, qualidade, conversão ou carteira
-- Gera plano de recuperação personalizado com checkpoint
-- Relatórios: diário por executivo, semanal do time, mensal de performance
-- Alertas proativos: executivo com menos de 50% da meta, lead sem contato há 5 dias
-
 ## DIFERENCIAIS DO JÁ DELIVERY
 
 - Comissão menor que as plataformas tradicionais
-- Pagamento em até 1 dia útil (muito abaixo dos 15-30 dias das plataformas tradicionais)
+- Pagamento em até 1 dia útil
 - Cashback para consumidores: Moeda JÁ
 - Assinatura para clientes: JÁ Chegou+
 - Programa de fundadores para motoboys: Founder Program
@@ -227,9 +149,13 @@ Público-alvo: Donos e gestores de restaurantes, lanchonetes, açaís, pizzarias
 JADE IA v6.2 — "Sua parceira de trabalho."
 `;
 
+// POST /jade/chat  (existing + now saves to session)
 router.post('/chat', async (req: Request, res: Response) => {
   try {
-    const { messages } = req.body;
+    const { messages, session_id } = req.body as {
+      messages?: Array<{ role: string; content: string }>;
+      session_id?: string;
+    };
 
     if (!messages || !Array.isArray(messages)) {
       return res.status(400).json({ error: 'messages array is required' });
@@ -241,34 +167,83 @@ router.post('/chat', async (req: Request, res: Response) => {
     }
 
     const genAI = new GoogleGenerativeAI(apiKey);
-
     const model = genAI.getGenerativeModel({
       model: 'gemini-2.5-flash',
       systemInstruction: JADE_SYSTEM_PROMPT,
     });
 
-    const history = messages.slice(0, -1).map((msg: { role: string; content: string }) => ({
-      role: msg.role === 'user' ? 'user' : 'model',
+    // Build history, then drop any leading 'model' turns —
+    // Gemini requires the first history entry to have role 'user'
+    const rawHistory = messages.slice(0, -1).map((msg) => ({
+      role: (msg.role === 'user' ? 'user' : 'model') as 'user' | 'model',
       parts: [{ text: msg.content }],
     }));
+    const firstUserIdx = rawHistory.findIndex((h) => h.role === 'user');
+    const history = firstUserIdx >= 0 ? rawHistory.slice(firstUserIdx) : [];
 
     const lastMessage = messages[messages.length - 1];
-
     const chat = model.startChat({ history });
-    const result = await chat.sendMessage(lastMessage.content);
+    const result = await chat.sendMessage(lastMessage!.content);
     const response = await result.response;
     const text = response.text();
 
-    return res.json({ message: text });
+    // Persist to session if session_id provided
+    if (session_id) {
+      appendJadeMessage(session_id, 'user', lastMessage!.content);
+      appendJadeMessage(session_id, 'model', text);
+    }
+
+    addActivityEvent({
+      type: 'message',
+      text: 'JADE respondeu a uma mensagem',
+      icon: 'robot',
+      color: '#FF0080',
+      metadata: { session_id },
+    });
+
+    return res.json({ message: text, session_id });
 
   } catch (error) {
-    console.error('JADE chat error:', error);
-    return res.status(500).json({ error: 'Internal server error' });
+    return res.status(500).json({ error: 'Internal server error', detail: String(error) });
   }
 });
 
+// GET /jade/health
 router.get('/health', (_req: Request, res: Response) => {
   res.json({ status: 'ok', agent: 'JADE IA v6.2' });
+});
+
+// GET /jade/sessions
+router.get('/sessions', (_req: Request, res: Response) => {
+  const sessions = getJadeSessions().map((s) => ({
+    id: s.id,
+    title: s.title,
+    message_count: s.messages.length,
+    created_at: s.created_at,
+    updated_at: s.updated_at,
+  }));
+  return res.json({ sessions });
+});
+
+// POST /jade/sessions — create new session
+router.post('/sessions', (req: Request, res: Response) => {
+  const { title } = req.body as { title?: string };
+  const session = createJadeSession(title ?? 'Nova conversa');
+  return res.status(201).json({ session });
+});
+
+// GET /jade/sessions/:id
+router.get('/sessions/:id', (req: Request, res: Response) => {
+  const session = getJadeSession(req.params.id ?? '');
+  if (!session) return res.status(404).json({ error: 'Sessão não encontrada' });
+  return res.json({ session });
+});
+
+// DELETE /jade/sessions/:id
+router.delete('/sessions/:id', (req: Request, res: Response) => {
+  const deleted = deleteJadeSession(req.params.id ?? '');
+  if (!deleted) return res.status(404).json({ error: 'Sessão não encontrada' });
+  return res.json({ ok: true });
 });
 
 export default router;

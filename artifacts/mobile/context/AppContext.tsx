@@ -1,6 +1,13 @@
 import { useSQLiteContext } from "expo-sqlite";
-import React, { createContext, useContext, useEffect, useState } from "react";
+import React, { createContext, useCallback, useContext, useEffect, useRef, useState } from "react";
 import { Platform } from "react-native";
+
+const API_BASE =
+  Platform.OS === "web"
+    ? ""
+    : `https://${process.env.EXPO_PUBLIC_DOMAIN ?? ""}`;
+
+// ─── Types ────────────────────────────────────────────────────────────────────
 
 export type LeadColumn = "novo" | "qualificado" | "proposta" | "fechado";
 
@@ -38,15 +45,81 @@ export interface Conversation {
   messages: ConversationMessage[];
 }
 
+export interface ModuleState {
+  module_name: string;
+  is_active: boolean;
+  status: string;
+  last_started_at: string | null;
+  last_stopped_at: string | null;
+  last_run_at: string | null;
+  updated_at: string;
+}
+
+export interface ActivityEvent {
+  id: string;
+  type: "module" | "lead" | "message" | "deal" | "scan" | "campaign" | "error" | "task";
+  text: string;
+  icon: string;
+  color: string;
+  created_at: string;
+}
+
+export interface MarketingCampaign {
+  id: string;
+  type_id: string;
+  type_title: string;
+  channel: string;
+  context_input: string;
+  generated_content: string;
+  status: string;
+  created_at: string;
+}
+
+// ─── Context Type ─────────────────────────────────────────────────────────────
+
 interface AppContextType {
   leads: Lead[];
   conversations: Conversation[];
+  moduleStates: Record<string, ModuleState>;
+  activityEvents: ActivityEvent[];
+  campaigns: MarketingCampaign[];
   loading: boolean;
   moveLead: (id: string, column: LeadColumn) => void;
   addLead: (lead: Lead) => void;
+  toggleModule: (name: string) => Promise<void>;
+  addActivityEvent: (event: Omit<ActivityEvent, "id" | "created_at">) => Promise<void>;
+  addCampaign: (campaign: MarketingCampaign) => void;
+  refreshDashboard: () => Promise<void>;
 }
 
 const AppContext = createContext<AppContextType | null>(null);
+
+// ─── Default module states ─────────────────────────────────────────────────────
+
+const DEFAULT_MODULES: Record<string, ModuleState> = {
+  scanner: { module_name: "scanner", is_active: true, status: "running", last_started_at: null, last_stopped_at: null, last_run_at: null, updated_at: new Date().toISOString() },
+  jade: { module_name: "jade", is_active: true, status: "running", last_started_at: null, last_stopped_at: null, last_run_at: null, updated_at: new Date().toISOString() },
+  leads: { module_name: "leads", is_active: false, status: "idle", last_started_at: null, last_stopped_at: null, last_run_at: null, updated_at: new Date().toISOString() },
+  whatsapp: { module_name: "whatsapp", is_active: false, status: "ready_paused", last_started_at: null, last_stopped_at: null, last_run_at: null, updated_at: new Date().toISOString() },
+  marketing: { module_name: "marketing", is_active: false, status: "idle", last_started_at: null, last_stopped_at: null, last_run_at: null, updated_at: new Date().toISOString() },
+};
+
+// ─── API helpers ──────────────────────────────────────────────────────────────
+
+async function apiFetch<T>(path: string, options?: RequestInit): Promise<T | null> {
+  try {
+    const res = await fetch(`${API_BASE}${path}`, {
+      ...options,
+      headers: { "Content-Type": "application/json", ...(options?.headers ?? {}) },
+    });
+    if (!res.ok) return null;
+    return (await res.json()) as T;
+  } catch {
+    return null;
+  }
+}
+
+// ─── Seed data ────────────────────────────────────────────────────────────────
 
 const SEED_LEADS: Lead[] = [
   { id: "1", name: "Carlos Mendes", company: "TechBrasil", value: 12500, phone: "+55 11 99999-1111", column: "novo", tag: "E-commerce", tagColor: "#6C63FF", time: "2h atrás", initials: "CM", avatarColor: "#FF6B35" },
@@ -104,6 +177,16 @@ const SEED_CONVERSATIONS: Conversation[] = [
   },
 ];
 
+const SEED_ACTIVITY: ActivityEvent[] = [
+  { id: "act1", type: "lead", text: "Lead adicionado: Carlos Mendes (TechBrasil)", icon: "user-plus", color: "#6C63FF", created_at: new Date().toISOString() },
+  { id: "act2", type: "message", text: "JADE respondeu Ana Souza automaticamente", icon: "robot", color: "#FF0080", created_at: new Date().toISOString() },
+  { id: "act3", type: "deal", text: "Roberto Costa movido para Proposta", icon: "briefcase", color: "#00D68F", created_at: new Date().toISOString() },
+  { id: "act4", type: "deal", text: "Diego Nunes fechou contrato · R$ 41.200", icon: "briefcase", color: "#00D68F", created_at: new Date().toISOString() },
+  { id: "act5", type: "task", text: "Follow-up agendado com Mariana Lima", icon: "calendar", color: "#FFB300", created_at: new Date().toISOString() },
+];
+
+// ─── DB row types ─────────────────────────────────────────────────────────────
+
 interface DBLead {
   id: string; name: string; company: string; value: number; phone: string;
   column_name: string; tag: string; tag_color: string; time_label: string;
@@ -120,6 +203,21 @@ interface DBMessage {
   time_label: string; read: number;
 }
 
+interface DBModuleState {
+  module_name: string; is_active: number; status: string;
+  last_started_at: string | null; last_stopped_at: string | null;
+  last_run_at: string | null; updated_at: string;
+}
+
+interface DBActivityEvent {
+  id: string; type: string; text: string; icon: string; color: string; created_at: number;
+}
+
+interface DBCampaign {
+  id: string; type_id: string; type_title: string; channel: string;
+  context_input: string; generated_content: string; status: string; created_at: number;
+}
+
 function dbLeadToLead(row: DBLead): Lead {
   return {
     id: row.id, name: row.name, company: row.company, value: row.value,
@@ -129,17 +227,40 @@ function dbLeadToLead(row: DBLead): Lead {
   };
 }
 
+function dbModuleToModuleState(row: DBModuleState): ModuleState {
+  return {
+    module_name: row.module_name,
+    is_active: row.is_active === 1,
+    status: row.status,
+    last_started_at: row.last_started_at,
+    last_stopped_at: row.last_stopped_at,
+    last_run_at: row.last_run_at,
+    updated_at: row.updated_at,
+  };
+}
+
+function uid(): string {
+  return Math.random().toString(36).slice(2) + Date.now().toString(36);
+}
+
+// ─── Native Provider ──────────────────────────────────────────────────────────
+
 function NativeAppProvider({ children }: { children: React.ReactNode }) {
   const db = useSQLiteContext();
   const [leads, setLeads] = useState<Lead[]>([]);
   const [conversations, setConversations] = useState<Conversation[]>([]);
+  const [moduleStates, setModuleStates] = useState<Record<string, ModuleState>>(DEFAULT_MODULES);
+  const [activityEvents, setActivityEvents] = useState<ActivityEvent[]>(SEED_ACTIVITY);
+  const [campaigns, setCampaigns] = useState<MarketingCampaign[]>([]);
   const [loading, setLoading] = useState(true);
+  const refreshRef = useRef(false);
 
   useEffect(() => {
     (async () => {
       try {
         const leadRows = await db.getAllAsync<DBLead>("SELECT * FROM leads ORDER BY created_at ASC");
         setLeads(leadRows.map(dbLeadToLead));
+
         const convRows = await db.getAllAsync<DBConversation>("SELECT * FROM conversations ORDER BY created_at ASC");
         const msgRows = await db.getAllAsync<DBMessage>("SELECT * FROM messages ORDER BY created_at ASC");
         setConversations(convRows.map((c) => ({
@@ -151,15 +272,76 @@ function NativeAppProvider({ children }: { children: React.ReactNode }) {
             time: m.time_label, read: m.read === 1,
           })),
         })));
+
+        const modRows = await db.getAllAsync<DBModuleState>("SELECT * FROM module_states");
+        if (modRows.length > 0) {
+          const mods: Record<string, ModuleState> = {};
+          for (const r of modRows) mods[r.module_name] = dbModuleToModuleState(r);
+          setModuleStates(mods);
+        }
+
+        const actRows = await db.getAllAsync<DBActivityEvent>("SELECT * FROM activity_events ORDER BY created_at DESC LIMIT 20");
+        if (actRows.length > 0) {
+          setActivityEvents(actRows.map((r) => ({
+            id: r.id, type: r.type as ActivityEvent["type"], text: r.text,
+            icon: r.icon, color: r.color, created_at: new Date(r.created_at * 1000).toISOString(),
+          })));
+        }
+
+        const campRows = await db.getAllAsync<DBCampaign>("SELECT * FROM marketing_campaigns ORDER BY created_at DESC");
+        setCampaigns(campRows.map((r) => ({
+          id: r.id, type_id: r.type_id, type_title: r.type_title, channel: r.channel,
+          context_input: r.context_input, generated_content: r.generated_content,
+          status: r.status, created_at: new Date(r.created_at * 1000).toISOString(),
+        })));
       } finally {
         setLoading(false);
       }
     })();
   }, []);
 
+  // Sync module states from server
+  const refreshDashboard = useCallback(async () => {
+    if (refreshRef.current) return;
+    refreshRef.current = true;
+    try {
+      const data = await apiFetch<{ modules: Record<string, ModuleState>; activity_events: ActivityEvent[] }>("/api/analytics/dashboard");
+      if (data?.modules) {
+        setModuleStates(data.modules);
+        for (const [name, mod] of Object.entries(data.modules)) {
+          await db.runAsync(
+            `INSERT OR REPLACE INTO module_states (module_name, is_active, status, last_started_at, last_stopped_at, last_run_at, updated_at)
+             VALUES (?, ?, ?, ?, ?, ?, ?)`,
+            [name, mod.is_active ? 1 : 0, mod.status, mod.last_started_at, mod.last_stopped_at, mod.last_run_at, mod.updated_at]
+          );
+        }
+      }
+      if (data?.activity_events && data.activity_events.length > 0) {
+        setActivityEvents(data.activity_events);
+      }
+    } catch {
+      // ignore
+    } finally {
+      refreshRef.current = false;
+    }
+  }, [db]);
+
+  useEffect(() => {
+    refreshDashboard();
+  }, []);
+
   const moveLead = async (id: string, column: LeadColumn) => {
+    const lead = leads.find((l) => l.id === id);
     setLeads((prev) => prev.map((l) => (l.id === id ? { ...l, column } : l)));
-    await db.runAsync("UPDATE leads SET column_name = ? WHERE id = ?", [column, id]);
+    await db.runAsync("UPDATE leads SET column_name = ?, updated_at = unixepoch() WHERE id = ?", [column, id]);
+    if (lead) {
+      await addActivityEventFn({
+        type: "deal",
+        text: `${lead.name} movido para ${column.charAt(0).toUpperCase() + column.slice(1)}`,
+        icon: "briefcase",
+        color: "#00D68F",
+      });
+    }
   };
 
   const addLead = async (lead: Lead) => {
@@ -172,21 +354,92 @@ function NativeAppProvider({ children }: { children: React.ReactNode }) {
       [lead.id, lead.name, lead.company, lead.value, lead.phone, lead.column,
        lead.tag, lead.tagColor, lead.time, lead.initials, lead.avatarColor]
     );
+    await addActivityEventFn({
+      type: "lead",
+      text: `Novo lead adicionado: ${lead.name} (${lead.company})`,
+      icon: "user-plus",
+      color: "#6C63FF",
+    });
+  };
+
+  const toggleModule = async (name: string) => {
+    const current = moduleStates[name];
+    const newActive = !current?.is_active;
+
+    const optimistic: ModuleState = {
+      ...(current ?? DEFAULT_MODULES[name] ?? { module_name: name, last_started_at: null, last_stopped_at: null, last_run_at: null }),
+      is_active: newActive,
+      status: newActive ? (name === "whatsapp" ? "ready_paused" : "running") : "paused",
+      updated_at: new Date().toISOString(),
+    };
+    setModuleStates((prev) => ({ ...prev, [name]: optimistic }));
+
+    await db.runAsync(
+      `INSERT OR REPLACE INTO module_states (module_name, is_active, status, updated_at) VALUES (?, ?, ?, datetime('now'))`,
+      [name, newActive ? 1 : 0, optimistic.status]
+    );
+
+    const data = await apiFetch<{ module: ModuleState }>(`/api/modules/${name}/toggle`, { method: "POST", body: JSON.stringify({ active: newActive }) });
+    if (data?.module) {
+      setModuleStates((prev) => ({ ...prev, [name]: data.module }));
+    }
+  };
+
+  const addActivityEventFn = async (event: Omit<ActivityEvent, "id" | "created_at">) => {
+    const newEvent: ActivityEvent = { id: uid(), ...event, created_at: new Date().toISOString() };
+    setActivityEvents((prev) => [newEvent, ...prev.slice(0, 19)]);
+    await db.runAsync(
+      `INSERT INTO activity_events (id, type, text, icon, color) VALUES (?, ?, ?, ?, ?)`,
+      [newEvent.id, newEvent.type, newEvent.text, newEvent.icon, newEvent.color]
+    );
+    await apiFetch("/api/activity", { method: "POST", body: JSON.stringify({ type: event.type, text: event.text, icon: event.icon, color: event.color }) });
+  };
+
+  const addCampaign = (campaign: MarketingCampaign) => {
+    setCampaigns((prev) => [campaign, ...prev]);
+    db.runAsync(
+      `INSERT OR IGNORE INTO marketing_campaigns (id, type_id, type_title, channel, context_input, generated_content, status)
+       VALUES (?, ?, ?, ?, ?, ?, ?)`,
+      [campaign.id, campaign.type_id, campaign.type_title, campaign.channel,
+       campaign.context_input, campaign.generated_content, campaign.status]
+    );
   };
 
   return (
-    <AppContext.Provider value={{ leads, conversations, loading, moveLead, addLead }}>
+    <AppContext.Provider value={{
+      leads, conversations, moduleStates, activityEvents, campaigns, loading,
+      moveLead, addLead, toggleModule,
+      addActivityEvent: addActivityEventFn,
+      addCampaign, refreshDashboard,
+    }}>
       {children}
     </AppContext.Provider>
   );
 }
 
+// ─── Web Provider ─────────────────────────────────────────────────────────────
+
 function WebAppProvider({ children }: { children: React.ReactNode }) {
   const [leads, setLeads] = useState<Lead[]>(SEED_LEADS);
   const [conversations] = useState<Conversation[]>(SEED_CONVERSATIONS);
+  const [moduleStates, setModuleStates] = useState<Record<string, ModuleState>>(DEFAULT_MODULES);
+  const [activityEvents, setActivityEvents] = useState<ActivityEvent[]>(SEED_ACTIVITY);
+  const [campaigns, setCampaigns] = useState<MarketingCampaign[]>([]);
+
+  useEffect(() => {
+    (async () => {
+      const data = await apiFetch<{ modules: Record<string, ModuleState>; activity_events: ActivityEvent[] }>("/api/analytics/dashboard");
+      if (data?.modules) setModuleStates(data.modules);
+      if (data?.activity_events && data.activity_events.length > 0) setActivityEvents(data.activity_events);
+    })();
+  }, []);
 
   const moveLead = (id: string, column: LeadColumn) => {
+    const lead = leads.find((l) => l.id === id);
     setLeads((prev) => prev.map((l) => (l.id === id ? { ...l, column } : l)));
+    if (lead) {
+      addActivityEventFn({ type: "deal", text: `${lead.name} movido para ${column}`, icon: "briefcase", color: "#00D68F" });
+    }
   };
 
   const addLead = (lead: Lead) => {
@@ -194,14 +447,48 @@ function WebAppProvider({ children }: { children: React.ReactNode }) {
       if (prev.find((l) => l.id === lead.id)) return prev;
       return [lead, ...prev];
     });
+    addActivityEventFn({ type: "lead", text: `Novo lead: ${lead.name} (${lead.company})`, icon: "user-plus", color: "#6C63FF" });
+  };
+
+  const toggleModule = async (name: string) => {
+    const current = moduleStates[name];
+    const newActive = !current?.is_active;
+    setModuleStates((prev) => ({
+      ...prev,
+      [name]: { ...(current ?? DEFAULT_MODULES[name]!), is_active: newActive, status: newActive ? (name === "whatsapp" ? "ready_paused" : "running") : "paused", updated_at: new Date().toISOString() },
+    }));
+    await apiFetch<{ module: ModuleState }>(`/api/modules/${name}/toggle`, { method: "POST", body: JSON.stringify({ active: newActive }) });
+  };
+
+  const addActivityEventFn = async (event: Omit<ActivityEvent, "id" | "created_at">) => {
+    const newEvent: ActivityEvent = { id: uid(), ...event, created_at: new Date().toISOString() };
+    setActivityEvents((prev) => [newEvent, ...prev.slice(0, 19)]);
+    await apiFetch("/api/activity", { method: "POST", body: JSON.stringify(event) });
+  };
+
+  const addCampaign = (campaign: MarketingCampaign) => {
+    setCampaigns((prev) => [campaign, ...prev]);
+  };
+
+  const refreshDashboard = async () => {
+    const data = await apiFetch<{ modules: Record<string, ModuleState>; activity_events: ActivityEvent[] }>("/api/analytics/dashboard");
+    if (data?.modules) setModuleStates(data.modules);
+    if (data?.activity_events && data.activity_events.length > 0) setActivityEvents(data.activity_events);
   };
 
   return (
-    <AppContext.Provider value={{ leads, conversations, loading: false, moveLead, addLead }}>
+    <AppContext.Provider value={{
+      leads, conversations, moduleStates, activityEvents, campaigns, loading: false,
+      moveLead, addLead, toggleModule,
+      addActivityEvent: addActivityEventFn,
+      addCampaign, refreshDashboard,
+    }}>
       {children}
     </AppContext.Provider>
   );
 }
+
+// ─── Root Provider ─────────────────────────────────────────────────────────────
 
 export function AppProvider({ children }: { children: React.ReactNode }) {
   if (Platform.OS === "web") {
