@@ -2,7 +2,6 @@ import { Feather } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import React from "react";
 import {
-  Dimensions,
   ScrollView,
   StyleSheet,
   Text,
@@ -11,32 +10,149 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-const { width: SW } = Dimensions.get("window");
-const COLORS = {
+const C = {
   bg: "#0A0A0F",
   card: "#111118",
   border: "#1E1E2E",
   text: "#FFFFFF",
   muted: "#7777AA",
+  sub: "#AAAACC",
   primary: "#FF0080",
   surface: "#16161F",
   success: "#00D68F",
+  warning: "#FFB300",
 };
 
 const USED = 620;
 const LIMIT = 1000;
 const PCT = USED / LIMIT;
 
-const FEATURES = [
-  { label: "Leads / mês", jade: "Ilimitado", concorrente: "500" },
-  { label: "IA generativa", jade: "Gemini 2.5 Flash", concorrente: "Básica" },
-  { label: "Scanner Radar", jade: "✓", concorrente: "✗" },
-  { label: "Marketing IA", jade: "✓", concorrente: "✗" },
-  { label: "Conversas simultâneas", jade: "50", concorrente: "5" },
-  { label: "Integração WhatsApp", jade: "Em breve", concorrente: "Não" },
-  { label: "Suporte", jade: "Prioritário", concorrente: "E-mail" },
-  { label: "Treinamento personalizado", jade: "✓", concorrente: "✗" },
+interface Plan {
+  id: string;
+  name: string;
+  price: string;
+  period: string;
+  tag?: string;
+  current?: boolean;
+  highlight?: boolean;
+  features: string[];
+  credits: string;
+  users: string;
+  showUpgrade?: boolean;
+}
+
+const PLANS: Plan[] = [
+  {
+    id: "start",
+    name: "Start",
+    price: "R$97",
+    period: "/mês",
+    features: [
+      "Qualificação de leads com IA",
+      "Abordagem no WhatsApp",
+      "CRM + pipeline básico",
+      "Follow-up e reativação",
+    ],
+    credits: "300 créditos/mês",
+    users: "1 usuário",
+    showUpgrade: true,
+  },
+  {
+    id: "pro",
+    name: "Pro",
+    price: "R$247",
+    period: "/mês",
+    tag: "SEU PLANO",
+    current: true,
+    highlight: true,
+    features: [
+      "Tudo do Start +",
+      "Scanner Radar com Google Maps",
+      "Roteiro de vendas completo",
+      "Laudo executivo de marketing",
+      "Briefing pré-reunião",
+      "Relatórios diário e semanal",
+    ],
+    credits: "1.000 créditos/mês",
+    users: "5 usuários",
+  },
+  {
+    id: "commander",
+    name: "Commander",
+    price: "R$697",
+    period: "/mês",
+    features: [
+      "Tudo do Pro +",
+      "Gestão de time comercial",
+      "KPIs e metas por executivo",
+      "Análise de gaps + recuperação",
+      "Relatório mensal de performance",
+      "Roleplay de treino de vendas",
+    ],
+    credits: "Créditos ilimitados",
+    users: "15 usuários",
+  },
 ];
+
+function PlanCard({ plan }: { plan: Plan }) {
+  return (
+    <View
+      style={[
+        S.planCard,
+        plan.highlight && S.planCardHighlight,
+      ]}
+    >
+      {plan.tag && (
+        <View style={S.currentBadge}>
+          <Text style={S.currentBadgeText}>{plan.tag}</Text>
+        </View>
+      )}
+
+      <View style={S.planCardHeader}>
+        <Text style={[S.planName, plan.highlight && S.planNameHighlight]}>
+          {plan.name}
+        </Text>
+        <View style={S.planPriceRow}>
+          <Text style={S.planPrice}>{plan.price}</Text>
+          <Text style={S.planPeriod}>{plan.period}</Text>
+        </View>
+      </View>
+
+      <View style={[S.divider, plan.highlight && S.dividerHighlight]} />
+
+      <View style={S.featureList}>
+        {plan.features.map((f, i) => (
+          <View key={i} style={S.featureRow}>
+            <Feather
+              name="check"
+              size={14}
+              color={plan.highlight ? C.primary : C.success}
+            />
+            <Text style={S.featureText}>{f}</Text>
+          </View>
+        ))}
+      </View>
+
+      <View style={S.planMeta}>
+        <View style={S.metaChip}>
+          <Feather name="zap" size={12} color={C.muted} />
+          <Text style={S.metaText}>{plan.credits}</Text>
+        </View>
+        <View style={S.metaChip}>
+          <Feather name="users" size={12} color={C.muted} />
+          <Text style={S.metaText}>{plan.users}</Text>
+        </View>
+      </View>
+
+      {plan.showUpgrade && (
+        <TouchableOpacity style={S.upgradeBtn} activeOpacity={0.85}>
+          <Text style={S.upgradeBtnText}>Fazer upgrade</Text>
+          <Feather name="arrow-right" size={14} color={C.primary} />
+        </TouchableOpacity>
+      )}
+    </View>
+  );
+}
 
 export default function PlanoScreen() {
   const router = useRouter();
@@ -44,10 +160,9 @@ export default function PlanoScreen() {
 
   return (
     <View style={[S.root, { paddingTop: insets.top }]}>
-      {/* Header */}
       <View style={S.header}>
         <TouchableOpacity onPress={() => router.back()} style={S.backBtn} activeOpacity={0.7}>
-          <Feather name="arrow-left" size={22} color={COLORS.text} />
+          <Feather name="arrow-left" size={22} color={C.text} />
         </TouchableOpacity>
         <Text style={S.headerTitle}>Meu Plano</Text>
         <View style={{ width: 40 }} />
@@ -57,73 +172,46 @@ export default function PlanoScreen() {
         contentContainerStyle={[S.scroll, { paddingBottom: insets.bottom + 40 }]}
         showsVerticalScrollIndicator={false}
       >
-        {/* Plano atual */}
-        <View style={S.planCard}>
-          <View style={S.planHeader}>
-            <View>
-              <Text style={S.planBadge}>✦ PLANO PRO</Text>
-              <Text style={S.planPrice}>R$247<Text style={S.planPriceSub}>/mês</Text></Text>
-            </View>
-            <View style={S.activeChip}>
-              <View style={S.activeDot} />
-              <Text style={S.activeText}>Ativo</Text>
-            </View>
+        {/* Plano atual em destaque */}
+        <View style={S.activePlan}>
+          <View style={S.activePlanLeft}>
+            <Text style={S.activePlanBadge}>✦ PLANO PRO ATIVO</Text>
+            <Text style={S.activePlanPrice}>R$247<Text style={S.activePlanSub}>/mês</Text></Text>
+            <Text style={S.activePlanRenewal}>Próxima renovação: 20 de julho de 2026</Text>
           </View>
-          <Text style={S.planRenewal}>Próxima renovação: 20 de julho de 2026</Text>
+          <View style={S.activeChip}>
+            <View style={S.activeDot} />
+            <Text style={S.activeText}>Ativo</Text>
+          </View>
         </View>
 
-        {/* Créditos de IA */}
+        {/* Créditos */}
         <View style={S.section}>
           <Text style={S.sectionTitle}>CRÉDITOS DE IA</Text>
-          <View style={S.card}>
+          <View style={S.creditsCard}>
             <View style={S.creditsRow}>
               <Text style={S.creditsLabel}>Usados este mês</Text>
-              <Text style={S.creditsValue}>{USED.toLocaleString("pt-BR")} / {LIMIT.toLocaleString("pt-BR")}</Text>
+              <Text style={S.creditsValue}>
+                {USED.toLocaleString("pt-BR")} / {LIMIT.toLocaleString("pt-BR")}
+              </Text>
             </View>
             <View style={S.barTrack}>
               <View style={[S.barFill, { width: `${PCT * 100}%` as any }]} />
             </View>
-            <Text style={S.creditsHint}>{Math.round((1 - PCT) * LIMIT)} créditos restantes · renova em 30 dias</Text>
+            <Text style={S.creditsHint}>
+              {Math.round((1 - PCT) * LIMIT)} créditos restantes · renova em 30 dias
+            </Text>
           </View>
         </View>
 
-        {/* Comparativo */}
+        {/* Planos */}
         <View style={S.section}>
-          <Text style={S.sectionTitle}>JADE IA vs CONCORRENTES</Text>
-          <View style={S.card}>
-            {/* Cabeçalho da tabela */}
-            <View style={[S.tableRow, S.tableHeader]}>
-              <Text style={[S.tableCell, S.tableCellLeft, S.tableHeaderText]}>Recurso</Text>
-              <Text style={[S.tableCell, S.tableCellCenter, S.tableHeaderAccent]}>JADE IA</Text>
-              <Text style={[S.tableCell, S.tableCellCenter, S.tableHeaderText]}>Concorrente</Text>
-            </View>
-            {FEATURES.map((f, i) => (
-              <React.Fragment key={i}>
-                <View style={[S.tableRow, i % 2 === 0 && S.tableRowAlt]}>
-                  <Text style={[S.tableCell, S.tableCellLeft, S.tableCellText]}>{f.label}</Text>
-                  <Text style={[S.tableCell, S.tableCellCenter, S.tableCellJade]}>
-                    {f.jade}
-                  </Text>
-                  <Text style={[S.tableCell, S.tableCellCenter, S.tableCellCompetitor]}>
-                    {f.concorrente}
-                  </Text>
-                </View>
-              </React.Fragment>
-            ))}
-          </View>
+          <Text style={S.sectionTitle}>PLANOS DISPONÍVEIS</Text>
+          {PLANS.map((plan) => (
+            <PlanCard key={plan.id} plan={plan} />
+          ))}
         </View>
 
-        {/* Upgrade */}
-        <View style={S.upgradeCard}>
-          <Text style={S.upgradeTitle}>🚀 JADE Enterprise</Text>
-          <Text style={S.upgradeSub}>Leads ilimitados, múltiplos usuários e automação completa de vendas.</Text>
-          <TouchableOpacity style={S.upgradeBtn} activeOpacity={0.85}>
-            <Text style={S.upgradeBtnText}>Falar com comercial</Text>
-            <Feather name="arrow-right" size={16} color="#fff" />
-          </TouchableOpacity>
-        </View>
-
-        {/* Cancelar plano */}
         <TouchableOpacity style={S.cancelBtn} activeOpacity={0.7}>
           <Text style={S.cancelText}>Cancelar assinatura</Text>
         </TouchableOpacity>
@@ -133,7 +221,7 @@ export default function PlanoScreen() {
 }
 
 const S = StyleSheet.create({
-  root: { flex: 1, backgroundColor: COLORS.bg },
+  root: { flex: 1, backgroundColor: C.bg },
   header: {
     flexDirection: "row",
     alignItems: "center",
@@ -141,101 +229,196 @@ const S = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 14,
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: COLORS.border,
+    borderBottomColor: C.border,
   },
   backBtn: { width: 40, height: 40, alignItems: "center", justifyContent: "center" },
-  headerTitle: { fontSize: 17, fontFamily: "SpaceGrotesk_700Bold", color: COLORS.text },
+  headerTitle: { fontSize: 17, fontFamily: "SpaceGrotesk_700Bold", color: C.text },
   scroll: { paddingHorizontal: 20, paddingTop: 24 },
 
-  planCard: {
-    backgroundColor: COLORS.primary + "18",
+  activePlan: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    justifyContent: "space-between",
+    backgroundColor: C.primary + "18",
     borderWidth: 1,
-    borderColor: COLORS.primary + "55",
+    borderColor: C.primary + "55",
     borderRadius: 18,
     padding: 20,
-    marginBottom: 24,
+    marginBottom: 28,
   },
-  planHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 12 },
-  planBadge: { fontSize: 12, fontFamily: "SpaceGrotesk_700Bold", color: COLORS.primary, letterSpacing: 1 },
-  planPrice: { fontSize: 36, fontFamily: "SpaceGrotesk_700Bold", color: COLORS.text, marginTop: 4 },
-  planPriceSub: { fontSize: 16, fontFamily: "SpaceGrotesk_400Regular", color: COLORS.muted },
+  activePlanLeft: { gap: 4 },
+  activePlanBadge: {
+    fontSize: 11,
+    fontFamily: "SpaceGrotesk_700Bold",
+    color: C.primary,
+    letterSpacing: 1,
+  },
+  activePlanPrice: {
+    fontSize: 36,
+    fontFamily: "SpaceGrotesk_700Bold",
+    color: C.text,
+    marginTop: 4,
+  },
+  activePlanSub: {
+    fontSize: 16,
+    fontFamily: "SpaceGrotesk_400Regular",
+    color: C.muted,
+  },
+  activePlanRenewal: {
+    fontSize: 13,
+    fontFamily: "SpaceGrotesk_400Regular",
+    color: C.muted,
+    marginTop: 4,
+  },
   activeChip: {
     flexDirection: "row",
     alignItems: "center",
     gap: 6,
-    backgroundColor: COLORS.success + "22",
+    backgroundColor: C.success + "22",
     paddingHorizontal: 10,
     paddingVertical: 5,
     borderRadius: 20,
   },
-  activeDot: { width: 7, height: 7, borderRadius: 4, backgroundColor: COLORS.success },
-  activeText: { fontSize: 12, fontFamily: "SpaceGrotesk_600SemiBold", color: COLORS.success },
-  planRenewal: { fontSize: 13, fontFamily: "SpaceGrotesk_400Regular", color: COLORS.muted },
+  activeDot: { width: 7, height: 7, borderRadius: 4, backgroundColor: C.success },
+  activeText: { fontSize: 12, fontFamily: "SpaceGrotesk_600SemiBold", color: C.success },
 
   section: { marginBottom: 24 },
   sectionTitle: {
     fontSize: 11,
     fontFamily: "SpaceGrotesk_600SemiBold",
-    color: COLORS.muted,
+    color: C.muted,
     letterSpacing: 1,
-    marginBottom: 10,
+    marginBottom: 14,
   },
-  card: {
-    backgroundColor: COLORS.card,
+
+  creditsCard: {
+    backgroundColor: C.card,
     borderRadius: 16,
     borderWidth: 1,
-    borderColor: COLORS.border,
-    overflow: "hidden",
+    borderColor: C.border,
+  },
+  creditsRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    padding: 16,
+    paddingBottom: 10,
+  },
+  creditsLabel: { fontSize: 14, fontFamily: "SpaceGrotesk_500Medium", color: C.text },
+  creditsValue: { fontSize: 14, fontFamily: "SpaceGrotesk_700Bold", color: C.primary },
+  barTrack: { height: 8, backgroundColor: C.surface, marginHorizontal: 16, borderRadius: 4 },
+  barFill: { height: 8, backgroundColor: C.primary, borderRadius: 4 },
+  creditsHint: {
+    fontSize: 12,
+    fontFamily: "SpaceGrotesk_400Regular",
+    color: C.muted,
+    padding: 12,
+    paddingTop: 8,
   },
 
-  creditsRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", padding: 16, paddingBottom: 10 },
-  creditsLabel: { fontSize: 14, fontFamily: "SpaceGrotesk_500Medium", color: COLORS.text },
-  creditsValue: { fontSize: 14, fontFamily: "SpaceGrotesk_700Bold", color: COLORS.primary },
-  barTrack: { height: 8, backgroundColor: COLORS.surface, marginHorizontal: 16, borderRadius: 4 },
-  barFill: { height: 8, backgroundColor: COLORS.primary, borderRadius: 4 },
-  creditsHint: { fontSize: 12, fontFamily: "SpaceGrotesk_400Regular", color: COLORS.muted, padding: 12, paddingTop: 8 },
-
-  tableRow: { flexDirection: "row", alignItems: "center", paddingHorizontal: 14, paddingVertical: 12 },
-  tableRowAlt: { backgroundColor: COLORS.surface + "55" },
-  tableHeader: { backgroundColor: COLORS.surface, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: COLORS.border },
-  tableHeaderText: { fontSize: 11, fontFamily: "SpaceGrotesk_600SemiBold", color: COLORS.muted, textTransform: "uppercase", letterSpacing: 0.5 },
-  tableHeaderAccent: { fontSize: 11, fontFamily: "SpaceGrotesk_700Bold", color: COLORS.primary, textTransform: "uppercase", letterSpacing: 0.5 },
-  tableCell: { flex: 1 },
-  tableCellLeft: { flex: 1.5 },
-  tableCellCenter: { textAlign: "center" },
-  tableCellText: { fontSize: 13, fontFamily: "SpaceGrotesk_400Regular", color: COLORS.text },
-  tableCellJade: { fontSize: 13, fontFamily: "SpaceGrotesk_600SemiBold", color: COLORS.primary },
-  tableCellCompetitor: { fontSize: 13, fontFamily: "SpaceGrotesk_400Regular", color: COLORS.muted },
-
-  upgradeCard: {
-    backgroundColor: COLORS.card,
-    borderWidth: 1,
-    borderColor: COLORS.border,
+  // ── Plan cards ──
+  planCard: {
+    backgroundColor: C.card,
     borderRadius: 18,
+    borderWidth: 1,
+    borderColor: C.border,
     padding: 20,
-    marginBottom: 20,
-    gap: 10,
+    marginBottom: 14,
+    gap: 0,
+    position: "relative",
   },
-  upgradeTitle: { fontSize: 18, fontFamily: "SpaceGrotesk_700Bold", color: COLORS.text },
-  upgradeSub: { fontSize: 14, fontFamily: "SpaceGrotesk_400Regular", color: COLORS.muted, lineHeight: 20 },
+  planCardHighlight: {
+    borderColor: C.primary + "88",
+    backgroundColor: C.primary + "08",
+  },
+  currentBadge: {
+    position: "absolute",
+    top: -1,
+    right: 20,
+    backgroundColor: C.primary,
+    paddingHorizontal: 12,
+    paddingVertical: 5,
+    borderBottomLeftRadius: 10,
+    borderBottomRightRadius: 10,
+  },
+  currentBadgeText: {
+    fontSize: 10,
+    fontFamily: "SpaceGrotesk_700Bold",
+    color: "#fff",
+    letterSpacing: 1,
+  },
+  planCardHeader: { marginBottom: 16 },
+  planName: {
+    fontSize: 22,
+    fontFamily: "SpaceGrotesk_700Bold",
+    color: C.sub,
+    marginBottom: 4,
+  },
+  planNameHighlight: { color: C.text },
+  planPriceRow: { flexDirection: "row", alignItems: "flex-end", gap: 2 },
+  planPrice: { fontSize: 32, fontFamily: "SpaceGrotesk_700Bold", color: C.text },
+  planPeriod: {
+    fontSize: 15,
+    fontFamily: "SpaceGrotesk_400Regular",
+    color: C.muted,
+    marginBottom: 5,
+  },
+
+  divider: {
+    height: StyleSheet.hairlineWidth,
+    backgroundColor: C.border,
+    marginBottom: 16,
+  },
+  dividerHighlight: { backgroundColor: C.primary + "44" },
+
+  featureList: { gap: 10, marginBottom: 16 },
+  featureRow: { flexDirection: "row", alignItems: "flex-start", gap: 10 },
+  featureText: {
+    flex: 1,
+    fontSize: 14,
+    fontFamily: "SpaceGrotesk_400Regular",
+    color: C.sub,
+    lineHeight: 20,
+  },
+
+  planMeta: {
+    flexDirection: "row",
+    gap: 10,
+    flexWrap: "wrap",
+    marginBottom: 4,
+  },
+  metaChip: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 5,
+    backgroundColor: C.surface,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 20,
+  },
+  metaText: {
+    fontSize: 12,
+    fontFamily: "SpaceGrotesk_500Medium",
+    color: C.muted,
+  },
+
   upgradeBtn: {
     flexDirection: "row",
     alignItems: "center",
+    justifyContent: "center",
     gap: 8,
-    backgroundColor: COLORS.primary,
-    paddingHorizontal: 20,
-    paddingVertical: 12,
+    borderWidth: 1.5,
+    borderColor: C.primary,
     borderRadius: 12,
-    alignSelf: "flex-start",
-    marginTop: 4,
-    shadowColor: COLORS.primary,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.35,
-    shadowRadius: 12,
-    elevation: 6,
+    height: 44,
+    marginTop: 14,
   },
-  upgradeBtnText: { fontSize: 14, fontFamily: "SpaceGrotesk_700Bold", color: "#fff" },
+  upgradeBtnText: {
+    fontSize: 14,
+    fontFamily: "SpaceGrotesk_700Bold",
+    color: C.primary,
+  },
 
   cancelBtn: { alignItems: "center", paddingVertical: 12 },
-  cancelText: { fontSize: 14, fontFamily: "SpaceGrotesk_400Regular", color: COLORS.muted },
+  cancelText: { fontSize: 14, fontFamily: "SpaceGrotesk_400Regular", color: C.muted },
 });

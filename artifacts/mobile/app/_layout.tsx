@@ -64,6 +64,26 @@ function RootLayoutNav() {
         name="plano"
         options={{ headerShown: false, presentation: "card", animation: "slide_from_right" }}
       />
+      <Stack.Screen
+        name="privacidade"
+        options={{ headerShown: false, presentation: "card", animation: "slide_from_right" }}
+      />
+      <Stack.Screen
+        name="termos"
+        options={{ headerShown: false, presentation: "card", animation: "slide_from_right" }}
+      />
+      <Stack.Screen
+        name="ajuda"
+        options={{ headerShown: false, presentation: "card", animation: "slide_from_right" }}
+      />
+      <Stack.Screen
+        name="treinamento"
+        options={{ headerShown: false, presentation: "card", animation: "slide_from_right" }}
+      />
+      <Stack.Screen
+        name="notificacoes"
+        options={{ headerShown: false, presentation: "card", animation: "slide_from_right" }}
+      />
     </Stack>
   );
 }

@@ -90,12 +90,12 @@ export default function MaisScreen() {
       title: "Configurações",
       items: [
         {
-          icon: "bell", iconLib: "feather", label: "Notificações", sub: "Ativas",
-          onPress: () => Alert.alert("Notificações", "Todas as notificações estão ativas."),
+          icon: "bell", iconLib: "feather", label: "Notificações", sub: "3 não lidas",
+          onPress: () => router.push("/notificacoes" as any),
         },
         {
-          icon: "robot", iconLib: "mci", label: "Treinamento da JADE", sub: "3 scripts ativos",
-          onPress: () => Alert.alert("Em breve", "Personalização da JADE estará disponível em breve."),
+          icon: "robot", iconLib: "mci", label: "Treinamento da JADE", sub: "6 módulos ativos",
+          onPress: () => router.push("/treinamento" as any),
         },
         {
           icon: "link", iconLib: "feather", label: "Integrações", sub: "WhatsApp, Instagram",
@@ -103,7 +103,7 @@ export default function MaisScreen() {
         },
         {
           icon: "shield", iconLib: "feather", label: "Privacidade e Dados",
-          onPress: () => Alert.alert("Privacidade", "Seus dados são protegidos conforme a LGPD."),
+          onPress: () => router.push("/privacidade" as any),
         },
       ],
     },
@@ -112,7 +112,7 @@ export default function MaisScreen() {
       items: [
         {
           icon: "help-circle", iconLib: "feather", label: "Central de Ajuda",
-          onPress: () => Alert.alert("Central de Ajuda", "Acesse jadeia.com.br/ajuda para suporte completo."),
+          onPress: () => router.push("/ajuda" as any),
         },
         {
           icon: "message-square", iconLib: "feather", label: "Falar com Suporte",

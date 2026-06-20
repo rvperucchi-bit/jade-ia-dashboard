@@ -65,6 +65,76 @@ function activityColor(type: ActivityItem["type"], colors: ReturnType<typeof use
   }
 }
 
+// ─── Crosshair / Scanner icon ───────────────────────────────────────────────
+function CrosshairIcon({ size, color }: { size: number; color: string }) {
+  const stroke = 2;
+  const gap = size * 0.22;
+  const lineLen = size * 0.22;
+  const r = (size - stroke) / 2;
+
+  return (
+    <View style={{ width: size, height: size, alignItems: "center", justifyContent: "center" }}>
+      {/* Outer circle */}
+      <View style={{
+        position: "absolute",
+        width: size - stroke,
+        height: size - stroke,
+        borderRadius: r,
+        borderWidth: stroke,
+        borderColor: color,
+      }} />
+      {/* Inner dot */}
+      <View style={{
+        position: "absolute",
+        width: 4,
+        height: 4,
+        borderRadius: 2,
+        backgroundColor: color,
+      }} />
+      {/* Top line */}
+      <View style={{
+        position: "absolute",
+        top: stroke / 2,
+        left: (size - stroke) / 2,
+        width: stroke,
+        height: lineLen,
+        backgroundColor: color,
+        borderRadius: 1,
+      }} />
+      {/* Bottom line */}
+      <View style={{
+        position: "absolute",
+        bottom: stroke / 2,
+        left: (size - stroke) / 2,
+        width: stroke,
+        height: lineLen,
+        backgroundColor: color,
+        borderRadius: 1,
+      }} />
+      {/* Left line */}
+      <View style={{
+        position: "absolute",
+        left: stroke / 2,
+        top: (size - stroke) / 2,
+        height: stroke,
+        width: lineLen,
+        backgroundColor: color,
+        borderRadius: 1,
+      }} />
+      {/* Right line */}
+      <View style={{
+        position: "absolute",
+        right: stroke / 2,
+        top: (size - stroke) / 2,
+        height: stroke,
+        width: lineLen,
+        backgroundColor: color,
+        borderRadius: 1,
+      }} />
+    </View>
+  );
+}
+
 export default function RadarScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
@@ -82,18 +152,19 @@ export default function RadarScreen() {
       showsVerticalScrollIndicator={false}
     >
       {/* Header */}
-      <View style={[styles.header, { paddingTop: topPad + 16 }]}>
+      <View style={[styles.header, { paddingTop: topPad + 12 }]}>
         <View>
           <Text style={[styles.greeting, { color: colors.mutedForeground }]}>Bom dia,</Text>
           <Text style={[styles.name, { color: colors.text }]}>Rodrigo 👋</Text>
         </View>
         <View style={styles.headerActions}>
+          {/* Scanner / Crosshair button */}
           <TouchableOpacity
-            style={[styles.actionBtn, { backgroundColor: colors.surface }]}
+            style={[styles.scannerBtn, { backgroundColor: colors.primary + "18", borderColor: colors.primary + "55" }]}
             onPress={() => router.push("/scanner" as any)}
             activeOpacity={0.8}
           >
-            <Feather name="search" size={18} color={colors.primary} />
+            <CrosshairIcon size={22} color={colors.primary} />
           </TouchableOpacity>
           {unread > 0 && (
             <TouchableOpacity
@@ -113,13 +184,31 @@ export default function RadarScreen() {
         </View>
       </View>
 
+      {/* Scanner banner */}
+      <TouchableOpacity
+        style={[styles.scannerBanner, { backgroundColor: colors.primary + "12", borderColor: colors.primary + "40" }]}
+        activeOpacity={0.85}
+        onPress={() => router.push("/scanner" as any)}
+      >
+        <View style={[styles.scannerBannerIcon, { backgroundColor: colors.primary + "28" }]}>
+          <CrosshairIcon size={26} color={colors.primary} />
+        </View>
+        <View style={{ flex: 1 }}>
+          <Text style={[styles.scannerBannerTitle, { color: colors.text }]}>Scanner Radar</Text>
+          <Text style={[styles.scannerBannerSub, { color: colors.mutedForeground }]}>
+            Encontrar novos estabelecimentos próximos
+          </Text>
+        </View>
+        <Feather name="chevron-right" size={18} color={colors.primary} />
+      </TouchableOpacity>
+
       {/* JADE Banner */}
       <TouchableOpacity
-        style={[styles.jadeBanner, { backgroundColor: colors.primary + "18", borderColor: colors.primary + "44" }]}
+        style={[styles.jadeBanner, { backgroundColor: colors.card, borderColor: colors.border }]}
         activeOpacity={0.85}
         onPress={() => router.push("/jade" as any)}
       >
-        <View style={[styles.jadeBannerIcon, { backgroundColor: colors.primary + "33" }]}>
+        <View style={[styles.jadeBannerIcon, { backgroundColor: colors.primary + "22" }]}>
           <MaterialCommunityIcons name="robot" size={22} color={colors.primary} />
         </View>
         <View style={{ flex: 1 }}>
@@ -210,21 +299,65 @@ export default function RadarScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  header: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: 20, paddingBottom: 16 },
+  header: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: 20,
+    paddingBottom: 12,
+  },
   greeting: { fontSize: 14, fontFamily: "SpaceGrotesk_400Regular" },
   name: { fontSize: 22, fontFamily: "SpaceGrotesk_700Bold", marginTop: 2 },
   headerActions: { flexDirection: "row", alignItems: "center", gap: 10 },
-  actionBtn: { width: 40, height: 40, borderRadius: 20, alignItems: "center", justifyContent: "center" },
+  scannerBtn: {
+    width: 42,
+    height: 42,
+    borderRadius: 21,
+    alignItems: "center",
+    justifyContent: "center",
+    borderWidth: 1,
+  },
   notifBtn: { width: 40, height: 40, borderRadius: 20, alignItems: "center", justifyContent: "center", position: "relative" },
   notifDot: { position: "absolute", top: 6, right: 6, width: 16, height: 16, borderRadius: 8, alignItems: "center", justifyContent: "center" },
   notifDotText: { color: "#fff", fontSize: 9, fontFamily: "SpaceGrotesk_700Bold" },
   avatar: { width: 40, height: 40, borderRadius: 20, alignItems: "center", justifyContent: "center" },
   avatarText: { color: "#fff", fontSize: 15, fontFamily: "SpaceGrotesk_700Bold" },
-  jadeBanner: { flexDirection: "row", alignItems: "center", gap: 12, marginHorizontal: 16, marginBottom: 20, padding: 14, borderRadius: 14, borderWidth: 1 },
+
+  scannerBanner: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    marginHorizontal: 16,
+    marginBottom: 10,
+    padding: 14,
+    borderRadius: 14,
+    borderWidth: 1,
+  },
+  scannerBannerIcon: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  scannerBannerTitle: { fontSize: 14, fontFamily: "SpaceGrotesk_700Bold" },
+  scannerBannerSub: { fontSize: 12, fontFamily: "SpaceGrotesk_400Regular", marginTop: 2 },
+
+  jadeBanner: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    marginHorizontal: 16,
+    marginBottom: 16,
+    padding: 14,
+    borderRadius: 14,
+    borderWidth: 1,
+  },
   jadeBannerIcon: { width: 44, height: 44, borderRadius: 22, alignItems: "center", justifyContent: "center" },
   jadeBannerTitle: { fontSize: 14, fontFamily: "SpaceGrotesk_600SemiBold" },
   jadeBannerSub: { fontSize: 12, fontFamily: "SpaceGrotesk_400Regular", marginTop: 2 },
-  metricsGrid: { flexDirection: "row", flexWrap: "wrap", paddingHorizontal: 12, gap: 10, marginBottom: 20 },
+
+  metricsGrid: { flexDirection: "row", flexWrap: "wrap", paddingHorizontal: 12, gap: 10, marginBottom: 16 },
   metricCard: { width: "47%", borderRadius: 14, borderWidth: 1, padding: 14, flexGrow: 1 },
   metricHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 10 },
   metricIcon: { width: 34, height: 34, borderRadius: 10, alignItems: "center", justifyContent: "center" },
@@ -232,8 +365,9 @@ const styles = StyleSheet.create({
   metricChangeText: { fontSize: 11, fontFamily: "SpaceGrotesk_600SemiBold" },
   metricValue: { fontSize: 24, fontFamily: "SpaceGrotesk_700Bold" },
   metricLabel: { fontSize: 12, fontFamily: "SpaceGrotesk_400Regular", marginTop: 2 },
-  section: { paddingHorizontal: 16, marginBottom: 20 },
-  sectionHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 12 },
+
+  section: { paddingHorizontal: 16, marginBottom: 16 },
+  sectionHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 10 },
   sectionTitle: { fontSize: 17, fontFamily: "SpaceGrotesk_700Bold" },
   sectionLink: { fontSize: 14, fontFamily: "SpaceGrotesk_500Medium" },
   pipelineCard: { borderRadius: 14, borderWidth: 1, padding: 16, flexDirection: "row", gap: 8 },

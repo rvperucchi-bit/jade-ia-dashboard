@@ -43,25 +43,10 @@ interface Field {
 
 const FIELDS: Field[] = [
   { label: "Nome completo", placeholder: "Rodrigo Silva", icon: "user" },
-  {
-    label: "E-mail",
-    placeholder: "rodrigo@jadeia.com.br",
-    icon: "mail",
-    keyboard: "email-address",
-  },
-  {
-    label: "Telefone",
-    placeholder: "(48) 99999-9999",
-    icon: "phone",
-    keyboard: "phone-pad",
-  },
+  { label: "E-mail", placeholder: "rodrigo@jadeia.com.br", icon: "mail", keyboard: "email-address" },
+  { label: "Telefone", placeholder: "(48) 99999-9999", icon: "phone", keyboard: "phone-pad" },
   { label: "Senha", placeholder: "••••••••", icon: "lock", secure: true },
-  {
-    label: "Confirmar senha",
-    placeholder: "••••••••",
-    icon: "lock",
-    secure: true,
-  },
+  { label: "Confirmar senha", placeholder: "••••••••", icon: "lock", secure: true },
 ];
 
 // ─── Screen ───────────────────────────────────────────────────────────────────
@@ -78,6 +63,7 @@ export default function CadastroScreen() {
   const [showConfirm, setShowConfirm] = useState(false);
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [termsAccepted, setTermsAccepted] = useState(false);
 
   const values = [nome, email, phone, senha, confirmar];
   const setters = [
@@ -100,6 +86,7 @@ export default function CadastroScreen() {
   };
 
   const handleCadastro = async () => {
+    if (!termsAccepted) return;
     if (!validate()) return;
     setLoading(true);
     await new Promise((r) => setTimeout(r, 900));
@@ -162,17 +149,11 @@ export default function CadastroScreen() {
                     placeholderTextColor="#444"
                     secureTextEntry={secureEntry}
                     keyboardType={field.keyboard || "default"}
-                    autoCapitalize={
-                      field.keyboard === "email-address" ? "none" : "words"
-                    }
+                    autoCapitalize={field.keyboard === "email-address" ? "none" : "words"}
                     autoCorrect={false}
                   />
                   {isSecure && (
-                    <TouchableOpacity
-                      onPress={toggle}
-                      activeOpacity={0.7}
-                      style={S.eyeBtn}
-                    >
+                    <TouchableOpacity onPress={toggle} activeOpacity={0.7} style={S.eyeBtn}>
                       <Feather
                         name={(!isConfirm ? showPw : showConfirm) ? "eye-off" : "eye"}
                         size={18}
@@ -186,11 +167,38 @@ export default function CadastroScreen() {
             );
           })}
 
+          {/* ── Checkbox de termos ── */}
           <TouchableOpacity
-            style={[S.btn, loading && { opacity: 0.65 }]}
+            style={S.termsRow}
+            onPress={() => setTermsAccepted((v) => !v)}
+            activeOpacity={0.75}
+          >
+            <View style={[S.checkbox, termsAccepted && S.checkboxChecked]}>
+              {termsAccepted && <Feather name="check" size={12} color="#fff" />}
+            </View>
+            <Text style={S.termsText}>
+              {"Li e aceito os "}
+              <Text
+                style={S.termsLink}
+                onPress={() => router.push("/termos" as any)}
+              >
+                Termos de Uso
+              </Text>
+              {" e a "}
+              <Text
+                style={S.termsLink}
+                onPress={() => router.push("/privacidade" as any)}
+              >
+                Política de Privacidade
+              </Text>
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[S.btn, (!termsAccepted || loading) && S.btnDisabled]}
             onPress={handleCadastro}
-            activeOpacity={0.85}
-            disabled={loading}
+            activeOpacity={termsAccepted ? 0.85 : 1}
+            disabled={!termsAccepted || loading}
           >
             {loading ? (
               <ActivityIndicator color="#fff" />
@@ -222,7 +230,6 @@ const S = StyleSheet.create({
     paddingTop: 24,
     paddingBottom: 20,
   },
-
   tagline: {
     marginTop: 8,
     fontSize: 11,
@@ -233,18 +240,8 @@ const S = StyleSheet.create({
   },
 
   form: { gap: 12 },
-  formTitle: {
-    fontSize: 26,
-    fontFamily: "SpaceGrotesk_700Bold",
-    color: "#fff",
-  },
-  formSub: {
-    fontSize: 13,
-    fontFamily: "SpaceGrotesk_400Regular",
-    color: "#555",
-    marginTop: -4,
-    marginBottom: 2,
-  },
+  formTitle: { fontSize: 26, fontFamily: "SpaceGrotesk_700Bold", color: "#fff" },
+  formSub: { fontSize: 13, fontFamily: "SpaceGrotesk_400Regular", color: "#555", marginTop: -4, marginBottom: 2 },
 
   fieldGroup: { gap: 5 },
   label: { fontSize: 14, fontFamily: "SpaceGrotesk_500Medium", color: "#fff" },
@@ -260,17 +257,43 @@ const S = StyleSheet.create({
     borderColor: "transparent",
   },
   inputErr: { borderColor: "#FF3B5C" },
-  input: {
-    flex: 1,
-    fontSize: 15,
-    fontFamily: "SpaceGrotesk_400Regular",
-    color: "#fff",
-  },
+  input: { flex: 1, fontSize: 15, fontFamily: "SpaceGrotesk_400Regular", color: "#fff" },
   eyeBtn: { padding: 4 },
-  fieldErr: {
-    fontSize: 12,
+  fieldErr: { fontSize: 12, fontFamily: "SpaceGrotesk_400Regular", color: "#FF3B5C" },
+
+  // ── Terms checkbox ──
+  termsRow: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    gap: 12,
+    marginTop: 4,
+    marginBottom: 4,
+  },
+  checkbox: {
+    width: 22,
+    height: 22,
+    borderRadius: 6,
+    borderWidth: 2,
+    borderColor: "#444",
+    alignItems: "center",
+    justifyContent: "center",
+    marginTop: 1,
+    flexShrink: 0,
+  },
+  checkboxChecked: {
+    backgroundColor: "#FF0080",
+    borderColor: "#FF0080",
+  },
+  termsText: {
+    flex: 1,
+    fontSize: 13,
     fontFamily: "SpaceGrotesk_400Regular",
-    color: "#FF3B5C",
+    color: "#888",
+    lineHeight: 20,
+  },
+  termsLink: {
+    color: "#FF0080",
+    fontFamily: "SpaceGrotesk_600SemiBold",
   },
 
   btn: {
@@ -286,22 +309,14 @@ const S = StyleSheet.create({
     shadowRadius: 20,
     elevation: 10,
   },
+  btnDisabled: {
+    backgroundColor: "#333",
+    shadowOpacity: 0,
+    elevation: 0,
+  },
   btnText: { fontSize: 16, fontFamily: "SpaceGrotesk_700Bold", color: "#fff" },
 
-  footer: {
-    flexDirection: "row",
-    justifyContent: "center",
-    alignItems: "center",
-    marginTop: 20,
-  },
-  footerText: {
-    fontSize: 14,
-    fontFamily: "SpaceGrotesk_400Regular",
-    color: "#888",
-  },
-  footerLink: {
-    fontSize: 14,
-    fontFamily: "SpaceGrotesk_600SemiBold",
-    color: "#FF0080",
-  },
+  footer: { flexDirection: "row", justifyContent: "center", alignItems: "center", marginTop: 20 },
+  footerText: { fontSize: 14, fontFamily: "SpaceGrotesk_400Regular", color: "#888" },
+  footerLink: { fontSize: 14, fontFamily: "SpaceGrotesk_600SemiBold", color: "#FF0080" },
 });
