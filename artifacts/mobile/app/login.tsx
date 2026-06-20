@@ -3,6 +3,7 @@ import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
   ActivityIndicator,
+  Dimensions,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -12,66 +13,46 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import Svg, { Path } from "react-native-svg";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { useAuth } from "@/context/AuthContext";
 
-// ─── Official JADE Logo SVG ───────────────────────────────────────────────────
-const JadeLogo = () => (
-  <Svg width="280" height="100" viewBox="0 0 280 100">
-    {/* J - outline, rounded, no fill */}
-    <Path
-      d="M 28 15 L 28 72 Q 28 88 14 88 Q 4 88 2 80"
-      fill="none"
-      stroke="white"
-      strokeWidth="7"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    />
+const { height: SH } = Dimensions.get("window");
 
-    {/* A - solid pink, with concave arc at base */}
-    <Path
-      d="M 70 15 L 95 85 L 85 85 Q 80 72 70 68 Q 60 72 55 85 L 45 85 Z"
-      fill="#FF0080"
-      stroke="none"
-    />
-    {/* Arc cut at bottom of A - the signature wave */}
-    <Path
-      d="M 48 85 Q 58 74 70 78 Q 82 74 92 85"
-      fill="#FF0080"
-      stroke="none"
-    />
-    {/* Inner triangle cutout of A */}
-    <Path
-      d="M 58 60 L 82 60 L 70 30 Z"
-      fill="#0A0A0F"
-      stroke="none"
-    />
+// ─── JADE Text Logo ───────────────────────────────────────────────────────────
+function JadeLogo() {
+  return (
+    <View style={logo.row}>
+      <Text style={logo.outline}>J</Text>
+      <Text style={logo.pink}>A</Text>
+      <Text style={logo.outline}>D</Text>
+      <Text style={logo.outline}>E</Text>
+    </View>
+  );
+}
 
-    {/* D - outline, rounded, no fill */}
-    <Path
-      d="M 112 15 L 112 85 M 112 15 Q 155 15 155 50 Q 155 85 112 85"
-      fill="none"
-      stroke="white"
-      strokeWidth="7"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    />
+const logo = StyleSheet.create({
+  row: {
+    flexDirection: "row",
+    alignItems: "flex-end",
+  },
+  outline: {
+    fontSize: 72,
+    fontFamily: "SpaceGrotesk_300Light",
+    color: "white",
+    marginRight: 2,
+    lineHeight: 80,
+  },
+  pink: {
+    fontSize: 72,
+    fontFamily: "SpaceGrotesk_700Bold",
+    color: "#FF0080",
+    marginRight: 2,
+    lineHeight: 80,
+  },
+});
 
-    {/* E - outline, rounded, no fill */}
-    <Path
-      d="M 170 15 L 170 85 M 170 15 L 210 15 M 170 50 L 202 50 M 170 85 L 210 85"
-      fill="none"
-      stroke="white"
-      strokeWidth="7"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    />
-  </Svg>
-);
-
-// ─── Component ───────────────────────────────────────────────────────────────
+// ─── Screen ───────────────────────────────────────────────────────────────────
 export default function LoginScreen() {
   const { login } = useAuth();
   const router = useRouter();
@@ -103,9 +84,8 @@ export default function LoginScreen() {
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
-        {/* ── Logo section ── */}
-        <View style={S.logoSection}>
-          {/* Faint atmospheric glow — small, centered, barely visible */}
+        {/* ── Logo section: top 40% of screen ── */}
+        <View style={[S.logoSection, { height: SH * 0.40 }]}>
           <View style={S.glow} pointerEvents="none" />
           <JadeLogo />
           <Text style={S.tagline}>SUA PARCEIRA DE TRABALHO.</Text>
@@ -118,7 +98,7 @@ export default function LoginScreen() {
           <View style={S.fieldGroup}>
             <Text style={S.label}>E-mail</Text>
             <View style={S.inputRow}>
-              <Feather name="mail" size={18} color="#555" style={S.icon} />
+              <Feather name="mail" size={18} color="#555" />
               <TextInput
                 style={S.input}
                 value={email}
@@ -135,7 +115,7 @@ export default function LoginScreen() {
           <View style={S.fieldGroup}>
             <Text style={S.label}>Senha</Text>
             <View style={S.inputRow}>
-              <Feather name="lock" size={18} color="#555" style={S.icon} />
+              <Feather name="lock" size={18} color="#555" />
               <TextInput
                 style={S.input}
                 value={password}
@@ -159,7 +139,9 @@ export default function LoginScreen() {
             activeOpacity={0.85}
             disabled={loading}
           >
-            {loading ? <ActivityIndicator color="#fff" /> : <Text style={S.btnText}>Entrar</Text>}
+            {loading
+              ? <ActivityIndicator color="#fff" />
+              : <Text style={S.btnText}>Entrar</Text>}
           </TouchableOpacity>
 
           <TouchableOpacity style={S.forgotBtn} activeOpacity={0.7}>
@@ -179,7 +161,6 @@ export default function LoginScreen() {
   );
 }
 
-// ─── Styles ──────────────────────────────────────────────────────────────────
 const S = StyleSheet.create({
   root: { flex: 1, backgroundColor: "#000000" },
   scroll: { flexGrow: 1, paddingHorizontal: 28, paddingBottom: 36 },
@@ -187,32 +168,34 @@ const S = StyleSheet.create({
   logoSection: {
     alignItems: "center",
     justifyContent: "center",
-    paddingTop: 44,
-    paddingBottom: 40,
     position: "relative",
   },
-
-  // Small, barely-visible atmospheric bloom centered behind logo only
   glow: {
     position: "absolute",
-    width: 200,
-    height: 120,
-    borderRadius: 100,
-    backgroundColor: "#3D0020",
-    opacity: 0.12,
+    width: 300,
+    height: 200,
+    borderRadius: 150,
+    backgroundColor: "#1A0010",
+    opacity: 0.6,
     alignSelf: "center",
   },
 
   tagline: {
-    marginTop: 14,
+    marginTop: 8,
     fontSize: 11,
-    color: "#555",
-    letterSpacing: 2.6,
+    color: "#888888",
+    letterSpacing: 3,
+    textAlign: "center",
     fontFamily: "SpaceGrotesk_400Regular",
   },
 
   form: { gap: 16 },
-  formTitle: { fontSize: 28, fontFamily: "SpaceGrotesk_700Bold", color: "#fff", marginBottom: 2 },
+  formTitle: {
+    fontSize: 28,
+    fontFamily: "SpaceGrotesk_700Bold",
+    color: "#fff",
+    marginBottom: 2,
+  },
 
   fieldGroup: { gap: 6 },
   label: { fontSize: 14, fontFamily: "SpaceGrotesk_500Medium", color: "#fff" },
@@ -225,11 +208,20 @@ const S = StyleSheet.create({
     paddingHorizontal: 14,
     gap: 10,
   },
-  icon: {},
-  input: { flex: 1, fontSize: 15, fontFamily: "SpaceGrotesk_400Regular", color: "#fff" },
+  input: {
+    flex: 1,
+    fontSize: 15,
+    fontFamily: "SpaceGrotesk_400Regular",
+    color: "#fff",
+  },
   eyeBtn: { padding: 4 },
 
-  error: { fontSize: 13, fontFamily: "SpaceGrotesk_400Regular", color: "#FF3B5C", textAlign: "center" },
+  error: {
+    fontSize: 13,
+    fontFamily: "SpaceGrotesk_400Regular",
+    color: "#FF3B5C",
+    textAlign: "center",
+  },
 
   btn: {
     backgroundColor: "#FF0080",
@@ -247,9 +239,26 @@ const S = StyleSheet.create({
   btnText: { fontSize: 16, fontFamily: "SpaceGrotesk_700Bold", color: "#fff" },
 
   forgotBtn: { alignItems: "center", paddingVertical: 6 },
-  forgotText: { fontSize: 14, fontFamily: "SpaceGrotesk_400Regular", color: "#FF0080" },
+  forgotText: {
+    fontSize: 14,
+    fontFamily: "SpaceGrotesk_400Regular",
+    color: "#FF0080",
+  },
 
-  footer: { flexDirection: "row", justifyContent: "center", alignItems: "center", marginTop: 28 },
-  footerText: { fontSize: 14, fontFamily: "SpaceGrotesk_400Regular", color: "#888" },
-  footerLink: { fontSize: 14, fontFamily: "SpaceGrotesk_600SemiBold", color: "#FF0080" },
+  footer: {
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    marginTop: 28,
+  },
+  footerText: {
+    fontSize: 14,
+    fontFamily: "SpaceGrotesk_400Regular",
+    color: "#888",
+  },
+  footerLink: {
+    fontSize: 14,
+    fontFamily: "SpaceGrotesk_600SemiBold",
+    color: "#FF0080",
+  },
 });
