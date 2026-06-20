@@ -5,6 +5,7 @@ import {
   ActivityIndicator,
   Alert,
   Dimensions,
+  Image,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -16,40 +17,11 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-const { height: SH } = Dimensions.get("window");
+const jadeLogo = require("../assets/images/jade-logo.png");
 
-// ─── JADE Text Logo ───────────────────────────────────────────────────────────
-function JadeLogo() {
-  return (
-    <View style={logo.row}>
-      <Text style={logo.outline}>J</Text>
-      <Text style={logo.pink}>A</Text>
-      <Text style={logo.outline}>D</Text>
-      <Text style={logo.outline}>E</Text>
-    </View>
-  );
-}
-
-const logo = StyleSheet.create({
-  row: {
-    flexDirection: "row",
-    alignItems: "flex-end",
-  },
-  outline: {
-    fontSize: 72,
-    fontFamily: "SpaceGrotesk_300Light",
-    color: "white",
-    marginRight: 2,
-    lineHeight: 80,
-  },
-  pink: {
-    fontSize: 72,
-    fontFamily: "SpaceGrotesk_700Bold",
-    color: "#FF0080",
-    marginRight: 2,
-    lineHeight: 80,
-  },
-});
+const { width: SW } = Dimensions.get("window");
+const LOGO_W = Math.min(SW * 0.70, 294);
+const LOGO_H = LOGO_W * (683 / 1024);
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 function maskPhone(raw: string): string {
@@ -151,29 +123,26 @@ export default function CadastroScreen() {
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
-        {/* ── Logo section ── */}
+        {/* ── Logo ── */}
         <View style={S.logoSection}>
-          <View style={S.glow} pointerEvents="none" />
-          <JadeLogo />
-          <Text style={S.tagline}>SUA PARCEIRA DE TRABALHO.</Text>
+          <Image
+            source={jadeLogo}
+            style={{ width: LOGO_W, height: LOGO_H }}
+            resizeMode="contain"
+          />
+          <Text style={S.tagline}>SUA PARCEIRA DE NEGÓCIOS.</Text>
         </View>
 
         {/* ── Formulário ── */}
         <View style={S.form}>
           <Text style={S.formTitle}>Criar conta</Text>
-          <Text style={S.formSub}>
-            Junte-se à JADE e aumente suas vendas
-          </Text>
+          <Text style={S.formSub}>Junte-se à JADE e aumente suas vendas</Text>
 
           {FIELDS.map((field, i) => {
             const isSecure = field.secure;
             const isConfirm = i === 4;
             const isPw = i === 3;
-            const secureEntry = isSecure
-              ? isPw
-                ? !showPw
-                : !showConfirm
-              : false;
+            const secureEntry = isSecure ? (isPw ? !showPw : !showConfirm) : false;
             const toggle = isPw
               ? () => setShowPw((v) => !v)
               : () => setShowConfirm((v) => !v);
@@ -184,11 +153,7 @@ export default function CadastroScreen() {
               <View key={i} style={S.fieldGroup}>
                 <Text style={S.label}>{field.label}</Text>
                 <View style={[S.inputRow, hasErr && S.inputErr]}>
-                  <Feather
-                    name={field.icon as any}
-                    size={18}
-                    color="#555"
-                  />
+                  <Feather name={field.icon as any} size={18} color="#555" />
                   <TextInput
                     style={S.input}
                     value={values[i]}
@@ -209,20 +174,14 @@ export default function CadastroScreen() {
                       style={S.eyeBtn}
                     >
                       <Feather
-                        name={
-                          (!isConfirm ? showPw : showConfirm)
-                            ? "eye-off"
-                            : "eye"
-                        }
+                        name={(!isConfirm ? showPw : showConfirm) ? "eye-off" : "eye"}
                         size={18}
                         color="#555"
                       />
                     </TouchableOpacity>
                   )}
                 </View>
-                {hasErr && (
-                  <Text style={S.fieldErr}>{errors[errKey]}</Text>
-                )}
+                {hasErr && <Text style={S.fieldErr}>{errors[errKey]}</Text>}
               </View>
             );
           })}
@@ -244,10 +203,7 @@ export default function CadastroScreen() {
         {/* ── Rodapé ── */}
         <View style={S.footer}>
           <Text style={S.footerText}>Já tem uma conta?</Text>
-          <TouchableOpacity
-            activeOpacity={0.7}
-            onPress={() => router.replace("/login")}
-          >
+          <TouchableOpacity activeOpacity={0.7} onPress={() => router.replace("/login")}>
             <Text style={S.footerLink}> Entrar</Text>
           </TouchableOpacity>
         </View>
@@ -258,46 +214,36 @@ export default function CadastroScreen() {
 
 const S = StyleSheet.create({
   root: { flex: 1, backgroundColor: "#000000" },
-  scroll: { flexGrow: 1, paddingHorizontal: 28, paddingBottom: 40 },
+  scroll: { flexGrow: 1, paddingHorizontal: 28, paddingBottom: 32 },
 
   logoSection: {
     alignItems: "center",
     justifyContent: "center",
-    paddingTop: 32,
-    paddingBottom: 28,
-    position: "relative",
-  },
-  glow: {
-    position: "absolute",
-    width: 300,
-    height: 200,
-    borderRadius: 150,
-    backgroundColor: "#1A0010",
-    opacity: 0.6,
-    alignSelf: "center",
+    paddingTop: 24,
+    paddingBottom: 20,
   },
 
   tagline: {
     marginTop: 8,
     fontSize: 11,
-    color: "#888888",
+    color: "#555",
     letterSpacing: 3,
     textAlign: "center",
     fontFamily: "SpaceGrotesk_400Regular",
   },
 
-  form: { gap: 14 },
+  form: { gap: 12 },
   formTitle: {
-    fontSize: 28,
+    fontSize: 26,
     fontFamily: "SpaceGrotesk_700Bold",
     color: "#fff",
   },
   formSub: {
-    fontSize: 14,
+    fontSize: 13,
     fontFamily: "SpaceGrotesk_400Regular",
-    color: "#666",
-    marginTop: -6,
-    marginBottom: 4,
+    color: "#555",
+    marginTop: -4,
+    marginBottom: 2,
   },
 
   fieldGroup: { gap: 5 },
@@ -307,7 +253,7 @@ const S = StyleSheet.create({
     alignItems: "center",
     backgroundColor: "#1A1A1A",
     borderRadius: 12,
-    height: 52,
+    height: 50,
     paddingHorizontal: 14,
     gap: 10,
     borderWidth: 1,
@@ -333,7 +279,7 @@ const S = StyleSheet.create({
     borderRadius: 12,
     alignItems: "center",
     justifyContent: "center",
-    marginTop: 6,
+    marginTop: 4,
     shadowColor: "#FF0080",
     shadowOffset: { width: 0, height: 6 },
     shadowOpacity: 0.45,
@@ -346,7 +292,7 @@ const S = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "center",
     alignItems: "center",
-    marginTop: 28,
+    marginTop: 20,
   },
   footerText: {
     fontSize: 14,

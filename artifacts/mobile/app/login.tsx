@@ -1,9 +1,11 @@
 import { Feather } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
+  Animated,
   Dimensions,
+  Easing,
   Image,
   KeyboardAvoidingView,
   Platform,
@@ -21,7 +23,7 @@ import { useAuth } from "@/context/AuthContext";
 const jadeLogo = require("../assets/images/jade-logo.png");
 
 const { width: SW } = Dimensions.get("window");
-const LOGO_W = Math.min(SW * 0.62, 260);
+const LOGO_W = Math.min(SW * 0.713, 299);
 const LOGO_H = LOGO_W * (683 / 1024);
 
 export default function LoginScreen() {
@@ -34,6 +36,50 @@ export default function LoginScreen() {
   const [showPw, setShowPw] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
+  // ── Logo entrance animation ──────────────────────────────────────────────
+  const logoOpacity = useRef(new Animated.Value(0)).current;
+  const logoScale   = useRef(new Animated.Value(0.78)).current;
+  const logoY       = useRef(new Animated.Value(18)).current;
+  const formOpacity = useRef(new Animated.Value(0)).current;
+  const formY       = useRef(new Animated.Value(24)).current;
+
+  useEffect(() => {
+    Animated.parallel([
+      Animated.timing(logoOpacity, {
+        toValue: 1,
+        duration: 650,
+        easing: Easing.out(Easing.cubic),
+        useNativeDriver: true,
+      }),
+      Animated.timing(logoScale, {
+        toValue: 1,
+        duration: 750,
+        easing: Easing.out(Easing.back(1.08)),
+        useNativeDriver: true,
+      }),
+      Animated.timing(logoY, {
+        toValue: 0,
+        duration: 650,
+        easing: Easing.out(Easing.cubic),
+        useNativeDriver: true,
+      }),
+      Animated.timing(formOpacity, {
+        toValue: 1,
+        duration: 520,
+        delay: 220,
+        easing: Easing.out(Easing.cubic),
+        useNativeDriver: true,
+      }),
+      Animated.timing(formY, {
+        toValue: 0,
+        duration: 520,
+        delay: 220,
+        easing: Easing.out(Easing.cubic),
+        useNativeDriver: true,
+      }),
+    ]).start();
+  }, []);
 
   const handleLogin = async () => {
     if (!email.trim() || !password) { setError("Preencha e-mail e senha."); return; }
@@ -55,18 +101,31 @@ export default function LoginScreen() {
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
-        {/* ── Logo ── */}
-        <View style={S.logoSection}>
+        {/* ── Logo com animação de entrada ── */}
+        <Animated.View
+          style={[
+            S.logoSection,
+            {
+              opacity: logoOpacity,
+              transform: [{ scale: logoScale }, { translateY: logoY }],
+            },
+          ]}
+        >
           <Image
             source={jadeLogo}
             style={{ width: LOGO_W, height: LOGO_H }}
             resizeMode="contain"
           />
           <Text style={S.tagline}>SUA PARCEIRA DE TRABALHO.</Text>
-        </View>
+        </Animated.View>
 
         {/* ── Form ── */}
-        <View style={S.form}>
+        <Animated.View
+          style={[
+            S.form,
+            { opacity: formOpacity, transform: [{ translateY: formY }] },
+          ]}
+        >
           <Text style={S.formTitle}>Entrar</Text>
 
           <View style={S.fieldGroup}>
@@ -121,15 +180,15 @@ export default function LoginScreen() {
           <TouchableOpacity style={S.forgotBtn} activeOpacity={0.7}>
             <Text style={S.forgotText}>Esqueci minha senha</Text>
           </TouchableOpacity>
-        </View>
+        </Animated.View>
 
         {/* ── Footer ── */}
-        <View style={S.footer}>
+        <Animated.View style={[S.footer, { opacity: formOpacity }]}>
           <Text style={S.footerText}>Não tem uma conta?</Text>
           <TouchableOpacity activeOpacity={0.7} onPress={() => router.push("/cadastro" as any)}>
             <Text style={S.footerLink}> Criar conta</Text>
           </TouchableOpacity>
-        </View>
+        </Animated.View>
       </ScrollView>
     </KeyboardAvoidingView>
   );
@@ -142,8 +201,8 @@ const S = StyleSheet.create({
   logoSection: {
     alignItems: "center",
     justifyContent: "center",
-    paddingTop: 48,
-    paddingBottom: 36,
+    paddingTop: 40,
+    paddingBottom: 32,
   },
 
   tagline: {
