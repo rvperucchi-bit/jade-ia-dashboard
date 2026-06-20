@@ -36,7 +36,7 @@ function parseResult(text: string): BriefingResult {
     return m?.[1]?.trim() ?? "";
   };
   return {
-    resumo:     get("Resumo do Perfil") || get("Perfil") || text.split("\n\n")[0] ?? "",
+    resumo:     get("Resumo do Perfil") || get("Perfil") || text.split("\n\n")[0] || "",
     dores:      get("Dores Prováveis") || get("Dores") || "",
     argumentos: get("Argumentos de Venda") || get("Argumentos") || "",
     perguntas:  get("Perguntas-Chave") || get("Perguntas") || "",
