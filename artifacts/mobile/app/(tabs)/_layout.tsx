@@ -135,7 +135,9 @@ function ClassicTabLayout() {
 }
 
 export default function TabLayout() {
-  if (isLiquidGlassAvailable()) {
+  // NativeTabs (unstable) causes eager tab rendering on iOS 26 which can
+  // crash certain screens. Use ClassicTabLayout until the API stabilises.
+  if (!__DEV__ && isLiquidGlassAvailable()) {
     return <NativeTabLayout />;
   }
   return <ClassicTabLayout />;
