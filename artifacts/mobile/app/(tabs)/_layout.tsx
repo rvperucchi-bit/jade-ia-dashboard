@@ -61,15 +61,9 @@ function ClassicTabLayout() {
         },
         tabBarBackground: () =>
           isIOS ? (
-            <BlurView
-              intensity={80}
-              tint="dark"
-              style={StyleSheet.absoluteFill}
-            />
+            <BlurView intensity={80} tint="dark" style={StyleSheet.absoluteFill} />
           ) : (
-            <View
-              style={[StyleSheet.absoluteFill, { backgroundColor: colors.tabBar }]}
-            />
+            <View style={[StyleSheet.absoluteFill, { backgroundColor: colors.tabBar }]} />
           ),
       }}
     >
@@ -104,22 +98,27 @@ function ClassicTabLayout() {
         name="jade"
         options={{
           title: "JADE",
-          tabBarIcon: ({ color, focused }) => (
+          tabBarShowLabel: false,
+          tabBarIcon: ({ focused }) => (
             <View
               style={{
-                width: 44,
-                height: 44,
-                borderRadius: 22,
+                width: 48,
+                height: 48,
+                borderRadius: 24,
                 backgroundColor: focused ? colors.primary : colors.surface,
                 alignItems: "center",
                 justifyContent: "center",
-                marginBottom: 4,
+                borderWidth: focused ? 0 : 1,
+                borderColor: colors.border,
               }}
             >
-              <MaterialCommunityIcons name="robot" size={22} color={focused ? "#fff" : color} />
+              <MaterialCommunityIcons
+                name="robot"
+                size={24}
+                color={focused ? "#fff" : colors.mutedForeground}
+              />
             </View>
           ),
-          tabBarLabel: () => null,
         }}
       />
       <Tabs.Screen

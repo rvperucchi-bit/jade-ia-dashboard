@@ -27,9 +27,7 @@ interface MenuItem {
 }
 
 function Icon({ name, lib, color }: { name: string; lib: "feather" | "mci"; color: string }) {
-  if (lib === "mci") {
-    return <MaterialCommunityIcons name={name as any} size={20} color={color} />;
-  }
+  if (lib === "mci") return <MaterialCommunityIcons name={name as any} size={20} color={color} />;
   return <Feather name={name as any} size={20} color={color} />;
 }
 
@@ -43,6 +41,7 @@ export default function MaisScreen() {
   const bottomPad = Platform.OS === "web" ? 84 : insets.bottom + 60;
 
   const handleLogout = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     Alert.alert(
       "Sair da conta",
       "Tem certeza que deseja sair?",
@@ -70,6 +69,21 @@ export default function MaisScreen() {
       items: [
         { icon: "user", iconLib: "feather", label: "Meu Perfil", sub: "Rodrigo" },
         { icon: "star", iconLib: "feather", label: "Meu Plano", sub: "Pro · R$199/mês", badge: "PRO" },
+      ],
+    },
+    {
+      title: "Ferramentas",
+      items: [
+        {
+          icon: "search", iconLib: "feather", label: "Scanner Radar",
+          sub: "Buscar novos estabelecimentos",
+          onPress: () => router.push("/scanner" as any),
+        },
+        {
+          icon: "zap", iconLib: "feather", label: "Marketing IA",
+          sub: "Posts, Stories, WhatsApp...",
+          onPress: () => router.push("/marketing" as any),
+        },
       ],
     },
     {
@@ -103,12 +117,10 @@ export default function MaisScreen() {
       contentContainerStyle={{ paddingBottom: bottomPad }}
       showsVerticalScrollIndicator={false}
     >
-      {/* Header */}
       <View style={[styles.header, { paddingTop: topPad + 16 }]}>
         <Text style={[styles.title, { color: colors.text }]}>Mais</Text>
       </View>
 
-      {/* Profile Card */}
       <View style={[styles.profileCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
         <View style={[styles.profileAvatar, { backgroundColor: colors.primary }]}>
           <Text style={styles.profileInitials}>R</Text>
@@ -129,24 +141,19 @@ export default function MaisScreen() {
         </TouchableOpacity>
       </View>
 
-      {/* Stats Row */}
       <View style={styles.statsRow}>
         {[
           { label: "Leads", value: "124" },
           { label: "Fechados", value: "38" },
           { label: "Receita", value: "R$92k" },
         ].map((s, i) => (
-          <View
-            key={i}
-            style={[styles.statBox, { backgroundColor: colors.card, borderColor: colors.border }]}
-          >
+          <View key={i} style={[styles.statBox, { backgroundColor: colors.card, borderColor: colors.border }]}>
             <Text style={[styles.statValue, { color: colors.text }]}>{s.value}</Text>
             <Text style={[styles.statLabel, { color: colors.mutedForeground }]}>{s.label}</Text>
           </View>
         ))}
       </View>
 
-      {/* Menu Sections */}
       {MENU_SECTIONS.map((section, si) => (
         <View key={si} style={styles.section}>
           {section.title ? (
@@ -162,31 +169,15 @@ export default function MaisScreen() {
                   onPress={item.onPress ?? handlePress}
                   activeOpacity={0.7}
                 >
-                  <View
-                    style={[
-                      styles.menuIcon,
-                      { backgroundColor: item.danger ? colors.destructive + "22" : colors.surface },
-                    ]}
-                  >
-                    <Icon
-                      name={item.icon}
-                      lib={item.iconLib}
-                      color={item.danger ? colors.destructive : colors.primary}
-                    />
+                  <View style={[styles.menuIcon, { backgroundColor: item.danger ? colors.destructive + "22" : colors.surface }]}>
+                    <Icon name={item.icon} lib={item.iconLib} color={item.danger ? colors.destructive : colors.primary} />
                   </View>
                   <View style={{ flex: 1 }}>
-                    <Text
-                      style={[
-                        styles.menuLabel,
-                        { color: item.danger ? colors.destructive : colors.text },
-                      ]}
-                    >
+                    <Text style={[styles.menuLabel, { color: item.danger ? colors.destructive : colors.text }]}>
                       {item.label}
                     </Text>
                     {item.sub && (
-                      <Text style={[styles.menuSub, { color: colors.mutedForeground }]}>
-                        {item.sub}
-                      </Text>
+                      <Text style={[styles.menuSub, { color: colors.mutedForeground }]}>{item.sub}</Text>
                     )}
                   </View>
                   {item.badge && (
@@ -217,22 +208,11 @@ const styles = StyleSheet.create({
   header: { paddingHorizontal: 20, paddingBottom: 16 },
   title: { fontSize: 26, fontFamily: "SpaceGrotesk_700Bold" },
   profileCard: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginHorizontal: 16,
-    marginBottom: 12,
-    padding: 16,
-    borderRadius: 16,
-    borderWidth: 1,
-    gap: 14,
+    flexDirection: "row", alignItems: "center",
+    marginHorizontal: 16, marginBottom: 12, padding: 16,
+    borderRadius: 16, borderWidth: 1, gap: 14,
   },
-  profileAvatar: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    alignItems: "center",
-    justifyContent: "center",
-  },
+  profileAvatar: { width: 56, height: 56, borderRadius: 28, alignItems: "center", justifyContent: "center" },
   profileInitials: { color: "#fff", fontSize: 22, fontFamily: "SpaceGrotesk_700Bold" },
   profileName: { fontSize: 17, fontFamily: "SpaceGrotesk_700Bold" },
   profileRole: { fontSize: 13, fontFamily: "SpaceGrotesk_400Regular", marginTop: 2 },
@@ -240,23 +220,11 @@ const styles = StyleSheet.create({
   proBadgeText: { fontSize: 11, fontFamily: "SpaceGrotesk_600SemiBold" },
   editBtn: { width: 36, height: 36, borderRadius: 18, alignItems: "center", justifyContent: "center" },
   statsRow: { flexDirection: "row", marginHorizontal: 16, marginBottom: 20, gap: 10 },
-  statBox: {
-    flex: 1,
-    alignItems: "center",
-    paddingVertical: 14,
-    borderRadius: 12,
-    borderWidth: 1,
-  },
+  statBox: { flex: 1, alignItems: "center", paddingVertical: 14, borderRadius: 12, borderWidth: 1 },
   statValue: { fontSize: 18, fontFamily: "SpaceGrotesk_700Bold" },
   statLabel: { fontSize: 12, fontFamily: "SpaceGrotesk_400Regular", marginTop: 2 },
   section: { marginBottom: 16 },
-  sectionTitle: {
-    fontSize: 11,
-    fontFamily: "SpaceGrotesk_600SemiBold",
-    letterSpacing: 1,
-    marginHorizontal: 20,
-    marginBottom: 8,
-  },
+  sectionTitle: { fontSize: 11, fontFamily: "SpaceGrotesk_600SemiBold", letterSpacing: 1, marginHorizontal: 20, marginBottom: 8 },
   sectionBox: { marginHorizontal: 16, borderRadius: 14, borderWidth: 1, overflow: "hidden" },
   menuItem: { flexDirection: "row", alignItems: "center", gap: 12, paddingHorizontal: 14, paddingVertical: 13 },
   menuIcon: { width: 36, height: 36, borderRadius: 10, alignItems: "center", justifyContent: "center" },

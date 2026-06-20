@@ -43,6 +43,7 @@ interface AppContextType {
   conversations: Conversation[];
   loading: boolean;
   moveLead: (id: string, column: LeadColumn) => void;
+  addLead: (lead: Lead) => void;
 }
 
 const AppContext = createContext<AppContextType | null>(null);
@@ -104,37 +105,19 @@ const SEED_CONVERSATIONS: Conversation[] = [
 ];
 
 interface DBLead {
-  id: string;
-  name: string;
-  company: string;
-  value: number;
-  phone: string;
-  column_name: string;
-  tag: string;
-  tag_color: string;
-  time_label: string;
-  initials: string;
-  avatar_color: string;
+  id: string; name: string; company: string; value: number; phone: string;
+  column_name: string; tag: string; tag_color: string; time_label: string;
+  initials: string; avatar_color: string;
 }
 
 interface DBConversation {
-  id: string;
-  contact_name: string;
-  last_message: string;
-  time_label: string;
-  unread: number;
-  initials: string;
-  avatar_color: string;
-  is_online: number;
+  id: string; contact_name: string; last_message: string; time_label: string;
+  unread: number; initials: string; avatar_color: string; is_online: number;
 }
 
 interface DBMessage {
-  id: string;
-  conversation_id: string;
-  text: string;
-  sender: string;
-  time_label: string;
-  read: number;
+  id: string; conversation_id: string; text: string; sender: string;
+  time_label: string; read: number;
 }
 
 function dbLeadToLead(row: DBLead): Lead {
@@ -157,7 +140,6 @@ function NativeAppProvider({ children }: { children: React.ReactNode }) {
       try {
         const leadRows = await db.getAllAsync<DBLead>("SELECT * FROM leads ORDER BY created_at ASC");
         setLeads(leadRows.map(dbLeadToLead));
-
         const convRows = await db.getAllAsync<DBConversation>("SELECT * FROM conversations ORDER BY created_at ASC");
         const msgRows = await db.getAllAsync<DBMessage>("SELECT * FROM messages ORDER BY created_at ASC");
         setConversations(convRows.map((c) => ({
@@ -180,8 +162,20 @@ function NativeAppProvider({ children }: { children: React.ReactNode }) {
     await db.runAsync("UPDATE leads SET column_name = ? WHERE id = ?", [column, id]);
   };
 
+  const addLead = async (lead: Lead) => {
+    const exists = leads.find((l) => l.id === lead.id);
+    if (exists) return;
+    setLeads((prev) => [lead, ...prev]);
+    await db.runAsync(
+      `INSERT OR IGNORE INTO leads (id, name, company, value, phone, column_name, tag, tag_color, time_label, initials, avatar_color)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [lead.id, lead.name, lead.company, lead.value, lead.phone, lead.column,
+       lead.tag, lead.tagColor, lead.time, lead.initials, lead.avatarColor]
+    );
+  };
+
   return (
-    <AppContext.Provider value={{ leads, conversations, loading, moveLead }}>
+    <AppContext.Provider value={{ leads, conversations, loading, moveLead, addLead }}>
       {children}
     </AppContext.Provider>
   );
@@ -195,8 +189,15 @@ function WebAppProvider({ children }: { children: React.ReactNode }) {
     setLeads((prev) => prev.map((l) => (l.id === id ? { ...l, column } : l)));
   };
 
+  const addLead = (lead: Lead) => {
+    setLeads((prev) => {
+      if (prev.find((l) => l.id === lead.id)) return prev;
+      return [lead, ...prev];
+    });
+  };
+
   return (
-    <AppContext.Provider value={{ leads, conversations, loading: false, moveLead }}>
+    <AppContext.Provider value={{ leads, conversations, loading: false, moveLead, addLead }}>
       {children}
     </AppContext.Provider>
   );

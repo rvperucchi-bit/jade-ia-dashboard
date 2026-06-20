@@ -45,11 +45,15 @@ function RootLayoutNav() {
       <Stack.Screen name="(tabs)" options={{ animation: "fade" }} />
       <Stack.Screen
         name="conversa/[id]"
-        options={{
-          headerShown: false,
-          presentation: "card",
-          animation: "slide_from_right",
-        }}
+        options={{ headerShown: false, presentation: "card", animation: "slide_from_right" }}
+      />
+      <Stack.Screen
+        name="scanner"
+        options={{ headerShown: false, presentation: "card", animation: "slide_from_right" }}
+      />
+      <Stack.Screen
+        name="marketing"
+        options={{ headerShown: false, presentation: "card", animation: "slide_from_right" }}
       />
     </Stack>
   );

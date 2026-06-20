@@ -73,7 +73,6 @@ export default function RadarScreen() {
 
   const topPad = Platform.OS === "web" ? 67 : insets.top;
   const bottomPad = Platform.OS === "web" ? 84 : insets.bottom + 60;
-
   const unread = conversations.filter((c) => c.unread > 0).length;
 
   return (
@@ -89,6 +88,13 @@ export default function RadarScreen() {
           <Text style={[styles.name, { color: colors.text }]}>Rodrigo 👋</Text>
         </View>
         <View style={styles.headerActions}>
+          <TouchableOpacity
+            style={[styles.actionBtn, { backgroundColor: colors.surface }]}
+            onPress={() => router.push("/scanner" as any)}
+            activeOpacity={0.8}
+          >
+            <Feather name="search" size={18} color={colors.primary} />
+          </TouchableOpacity>
           {unread > 0 && (
             <TouchableOpacity
               style={[styles.notifBtn, { backgroundColor: colors.surface }]}
@@ -128,31 +134,14 @@ export default function RadarScreen() {
       {/* Metric Cards */}
       <View style={styles.metricsGrid}>
         {METRICS.map((m, i) => (
-          <View
-            key={i}
-            style={[styles.metricCard, { backgroundColor: colors.card, borderColor: colors.border }]}
-          >
+          <View key={i} style={[styles.metricCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
             <View style={styles.metricHeader}>
               <View style={[styles.metricIcon, { backgroundColor: m.iconColor + "22" }]}>
                 <Feather name={m.icon as any} size={16} color={m.iconColor} />
               </View>
-              <View
-                style={[
-                  styles.metricChange,
-                  { backgroundColor: m.positive ? "#00D68F22" : "#FF3B5C22" },
-                ]}
-              >
-                <Feather
-                  name={m.positive ? "trending-up" : "trending-down"}
-                  size={10}
-                  color={m.positive ? colors.success : colors.destructive}
-                />
-                <Text
-                  style={[
-                    styles.metricChangeText,
-                    { color: m.positive ? colors.success : colors.destructive },
-                  ]}
-                >
+              <View style={[styles.metricChange, { backgroundColor: m.positive ? "#00D68F22" : "#FF3B5C22" }]}>
+                <Feather name={m.positive ? "trending-up" : "trending-down"} size={10} color={m.positive ? colors.success : colors.destructive} />
+                <Text style={[styles.metricChangeText, { color: m.positive ? colors.success : colors.destructive }]}>
                   {m.change}
                 </Text>
               </View>
@@ -183,12 +172,7 @@ export default function RadarScreen() {
               <Text style={[styles.pipelineCount, { color: colors.text }]}>{col.count}</Text>
               <Text style={[styles.pipelineLabel, { color: colors.mutedForeground }]}>{col.label}</Text>
               <View style={[styles.pipelineBar, { backgroundColor: col.color + "33" }]}>
-                <View
-                  style={[
-                    styles.pipelineBarFill,
-                    { backgroundColor: col.color, flex: col.count / (leads.length || 1) },
-                  ]}
-                />
+                <View style={[styles.pipelineBarFill, { backgroundColor: col.color, flex: col.count / (leads.length || 1) }]} />
               </View>
             </View>
           ))}
@@ -210,17 +194,11 @@ export default function RadarScreen() {
                     {activityIcon(item.type, color)}
                   </View>
                   <View style={{ flex: 1 }}>
-                    <Text style={[styles.activityText, { color: colors.text }]} numberOfLines={2}>
-                      {item.text}
-                    </Text>
-                    <Text style={[styles.activityTime, { color: colors.mutedForeground }]}>
-                      {item.time}
-                    </Text>
+                    <Text style={[styles.activityText, { color: colors.text }]} numberOfLines={2}>{item.text}</Text>
+                    <Text style={[styles.activityTime, { color: colors.mutedForeground }]}>{item.time}</Text>
                   </View>
                 </View>
-                {i < ACTIVITY.length - 1 && (
-                  <View style={[styles.activityDivider, { backgroundColor: colors.border }]} />
-                )}
+                {i < ACTIVITY.length - 1 && <View style={[styles.activityDivider, { backgroundColor: colors.border }]} />}
               </React.Fragment>
             );
           })}
@@ -232,48 +210,22 @@ export default function RadarScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingHorizontal: 20,
-    paddingBottom: 16,
-  },
+  header: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: 20, paddingBottom: 16 },
   greeting: { fontSize: 14, fontFamily: "SpaceGrotesk_400Regular" },
   name: { fontSize: 22, fontFamily: "SpaceGrotesk_700Bold", marginTop: 2 },
   headerActions: { flexDirection: "row", alignItems: "center", gap: 10 },
+  actionBtn: { width: 40, height: 40, borderRadius: 20, alignItems: "center", justifyContent: "center" },
   notifBtn: { width: 40, height: 40, borderRadius: 20, alignItems: "center", justifyContent: "center", position: "relative" },
   notifDot: { position: "absolute", top: 6, right: 6, width: 16, height: 16, borderRadius: 8, alignItems: "center", justifyContent: "center" },
   notifDotText: { color: "#fff", fontSize: 9, fontFamily: "SpaceGrotesk_700Bold" },
   avatar: { width: 40, height: 40, borderRadius: 20, alignItems: "center", justifyContent: "center" },
   avatarText: { color: "#fff", fontSize: 15, fontFamily: "SpaceGrotesk_700Bold" },
-  jadeBanner: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
-    marginHorizontal: 16,
-    marginBottom: 20,
-    padding: 14,
-    borderRadius: 14,
-    borderWidth: 1,
-  },
+  jadeBanner: { flexDirection: "row", alignItems: "center", gap: 12, marginHorizontal: 16, marginBottom: 20, padding: 14, borderRadius: 14, borderWidth: 1 },
   jadeBannerIcon: { width: 44, height: 44, borderRadius: 22, alignItems: "center", justifyContent: "center" },
   jadeBannerTitle: { fontSize: 14, fontFamily: "SpaceGrotesk_600SemiBold" },
   jadeBannerSub: { fontSize: 12, fontFamily: "SpaceGrotesk_400Regular", marginTop: 2 },
-  metricsGrid: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    paddingHorizontal: 12,
-    gap: 10,
-    marginBottom: 20,
-  },
-  metricCard: {
-    width: "47%",
-    borderRadius: 14,
-    borderWidth: 1,
-    padding: 14,
-    flexGrow: 1,
-  },
+  metricsGrid: { flexDirection: "row", flexWrap: "wrap", paddingHorizontal: 12, gap: 10, marginBottom: 20 },
+  metricCard: { width: "47%", borderRadius: 14, borderWidth: 1, padding: 14, flexGrow: 1 },
   metricHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 10 },
   metricIcon: { width: 34, height: 34, borderRadius: 10, alignItems: "center", justifyContent: "center" },
   metricChange: { flexDirection: "row", alignItems: "center", gap: 3, paddingHorizontal: 7, paddingVertical: 3, borderRadius: 8 },

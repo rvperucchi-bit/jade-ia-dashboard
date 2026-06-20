@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import {
   View,
   Text,
@@ -8,10 +8,12 @@ import {
   TextInput,
   Platform,
   ActivityIndicator,
+  ScrollView,
 } from "react-native";
 import { KeyboardAvoidingView } from "react-native-keyboard-controller";
 import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useRouter } from "expo-router";
 import * as Haptics from "expo-haptics";
 
 import { useColors } from "@/hooks/useColors";
@@ -37,19 +39,10 @@ const API_BASE =
     : `https://${process.env.EXPO_PUBLIC_DOMAIN ?? ""}`;
 
 function now() {
-  return new Date().toLocaleTimeString("pt-BR", {
-    hour: "2-digit",
-    minute: "2-digit",
-  });
+  return new Date().toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
 }
 
-function MessageBubble({
-  msg,
-  colors,
-}: {
-  msg: AIMessage;
-  colors: ReturnType<typeof useColors>;
-}) {
+function MessageBubble({ msg, colors }: { msg: AIMessage; colors: ReturnType<typeof useColors> }) {
   const isJade = msg.sender === "jade";
   return (
     <View style={[styles.msgRow, isJade ? styles.msgLeft : styles.msgRight]}>
@@ -69,12 +62,7 @@ function MessageBubble({
         <Text style={[styles.bubbleText, { color: isJade ? colors.text : "#fff" }]}>
           {msg.text}
         </Text>
-        <Text
-          style={[
-            styles.bubbleTime,
-            { color: isJade ? colors.mutedForeground : "rgba(255,255,255,0.7)" },
-          ]}
-        >
+        <Text style={[styles.bubbleTime, { color: isJade ? colors.mutedForeground : "rgba(255,255,255,0.7)" }]}>
           {msg.time}
         </Text>
       </View>
@@ -88,13 +76,7 @@ function TypingBubble({ colors }: { colors: ReturnType<typeof useColors> }) {
       <View style={[styles.jadeAvatar, { backgroundColor: colors.primary + "22" }]}>
         <MaterialCommunityIcons name="robot" size={16} color={colors.primary} />
       </View>
-      <View
-        style={[
-          styles.bubble,
-          styles.bubbleJade,
-          { backgroundColor: colors.surface, borderColor: colors.border, minWidth: 60, alignItems: "center" },
-        ]}
-      >
+      <View style={[styles.bubble, styles.bubbleJade, { backgroundColor: colors.surface, borderColor: colors.border, minWidth: 60, alignItems: "center" }]}>
         <ActivityIndicator size="small" color={colors.primary} />
       </View>
     </View>
@@ -104,6 +86,7 @@ function TypingBubble({ colors }: { colors: ReturnType<typeof useColors> }) {
 export default function JADEScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
+  const router = useRouter();
 
   const topPad = Platform.OS === "web" ? 67 : insets.top;
   const bottomPad = Platform.OS === "web" ? 34 : insets.bottom;
@@ -127,16 +110,11 @@ export default function JADEScreen() {
     }));
 
   const send = async (text: string) => {
-    if (!text.trim() || loading) return;
+    const trimmed = text.trim();
+    if (!trimmed || loading) return;
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
 
-    const userMsg: AIMessage = {
-      id: Date.now().toString(),
-      text: text.trim(),
-      sender: "user",
-      time: now(),
-    };
-
+    const userMsg: AIMessage = { id: Date.now().toString(), text: trimmed, sender: "user", time: now() };
     const updatedMsgs = [userMsg, ...messages];
     setMessages(updatedMsgs);
     setInput("");
@@ -153,29 +131,24 @@ export default function JADEScreen() {
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
 
       const data = (await response.json()) as { message?: string; error?: string };
-      const replyText =
-        data.message?.trim() ||
-        "Desculpe, não consegui processar sua mensagem. Tente novamente.";
+      const replyText = data.message?.trim() || "Desculpe, não consegui processar sua mensagem. Tente novamente.";
 
-      const jadeMsg: AIMessage = {
-        id: (Date.now() + 1).toString(),
-        text: replyText,
-        sender: "jade",
-        time: now(),
-      };
-      setMessages((prev) => [jadeMsg, ...prev]);
+      setMessages((prev) => [{ id: (Date.now() + 1).toString(), text: replyText, sender: "jade", time: now() }, ...prev]);
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     } catch {
-      const errMsg: AIMessage = {
+      setMessages((prev) => [{
         id: (Date.now() + 1).toString(),
         text: "Ops! Tive um problema de conexão. Verifique sua internet e tente novamente.",
         sender: "jade",
         time: now(),
-      };
-      setMessages((prev) => [errMsg, ...prev]);
+      }, ...prev]);
     } finally {
       setLoading(false);
     }
+  };
+
+  const sendChip = (chip: string) => {
+    send(chip);
   };
 
   const renderData: AIMessage[] = loading
@@ -189,12 +162,7 @@ export default function JADEScreen() {
       keyboardVerticalOffset={0}
     >
       {/* Header */}
-      <View
-        style={[
-          styles.header,
-          { paddingTop: topPad + 12, borderBottomColor: colors.border },
-        ]}
-      >
+      <View style={[styles.header, { paddingTop: topPad + 12, borderBottomColor: colors.border }]}>
         <View style={[styles.jadeIcon, { backgroundColor: colors.primary + "22" }]}>
           <MaterialCommunityIcons name="robot" size={22} color={colors.primary} />
         </View>
@@ -202,22 +170,20 @@ export default function JADEScreen() {
           <Text style={[styles.headerTitle, { color: colors.text }]}>JADE IA</Text>
           <View style={styles.statusRow}>
             <View style={styles.greenDot} />
-            <Text style={[styles.statusText, { color: colors.success }]}>
-              Gemini 2.5 Flash · Online
-            </Text>
+            <Text style={[styles.statusText, { color: colors.success }]}>Gemini 2.5 Flash · Online</Text>
           </View>
         </View>
         <TouchableOpacity
           style={[styles.iconBtn, { backgroundColor: colors.surface }]}
+          onPress={() => router.push("/marketing" as any)}
+          activeOpacity={0.8}
+        >
+          <Feather name="zap" size={16} color={colors.primary} />
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.iconBtn, { backgroundColor: colors.surface }]}
           onPress={() => {
-            setMessages([
-              {
-                id: "welcome-" + Date.now(),
-                text: "Olá! Sou a JADE, sua agente de vendas com IA. Posso ajudar a qualificar leads, criar propostas, analisar seu pipeline e muito mais. O que você precisa hoje?",
-                sender: "jade",
-                time: now(),
-              },
-            ]);
+            setMessages([{ id: "welcome-" + Date.now(), text: "Olá! Sou a JADE, sua agente de vendas com IA. Posso ajudar a qualificar leads, criar propostas, analisar seu pipeline e muito mais. O que você precisa hoje?", sender: "jade", time: now() }]);
             setShowChips(true);
           }}
           activeOpacity={0.8}
@@ -245,25 +211,23 @@ export default function JADEScreen() {
       {/* Shortcut chips */}
       {showChips && (
         <View style={styles.chipsContainer}>
-          <FlatList
+          <ScrollView
             horizontal
-            data={CHIPS}
-            keyExtractor={(c) => c}
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={styles.chips}
-            renderItem={({ item }) => (
+            keyboardShouldPersistTaps="always"
+          >
+            {CHIPS.map((chip) => (
               <TouchableOpacity
-                style={[
-                  styles.chip,
-                  { backgroundColor: colors.surface, borderColor: colors.border },
-                ]}
-                onPress={() => send(item)}
-                activeOpacity={0.8}
+                key={chip}
+                style={[styles.chip, { backgroundColor: colors.surface, borderColor: colors.border }]}
+                onPress={() => sendChip(chip)}
+                activeOpacity={0.7}
               >
-                <Text style={[styles.chipText, { color: colors.primary }]}>{item}</Text>
+                <Text style={[styles.chipText, { color: colors.primary }]}>{chip}</Text>
               </TouchableOpacity>
-            )}
-          />
+            ))}
+          </ScrollView>
         </View>
       )}
 
@@ -271,24 +235,12 @@ export default function JADEScreen() {
       <View
         style={[
           styles.inputBar,
-          {
-            borderTopColor: colors.border,
-            backgroundColor: colors.background,
-            paddingBottom: bottomPad + 8,
-          },
+          { borderTopColor: colors.border, backgroundColor: colors.background, paddingBottom: bottomPad + 8 },
         ]}
       >
-        <View
-          style={[
-            styles.inputWrap,
-            { backgroundColor: colors.surface, borderColor: colors.border },
-          ]}
-        >
+        <View style={[styles.inputWrap, { backgroundColor: colors.surface, borderColor: colors.border }]}>
           <TextInput
-            style={[
-              styles.input,
-              { color: colors.text, fontFamily: "SpaceGrotesk_400Regular" },
-            ]}
+            style={[styles.input, { color: colors.text, fontFamily: "SpaceGrotesk_400Regular" }]}
             placeholder="Pergunte algo para a JADE..."
             placeholderTextColor={colors.mutedForeground}
             value={input}
@@ -306,10 +258,7 @@ export default function JADEScreen() {
           )}
         </View>
         <TouchableOpacity
-          style={[
-            styles.sendBtn,
-            { backgroundColor: input.trim() && !loading ? colors.primary : colors.surface },
-          ]}
+          style={[styles.sendBtn, { backgroundColor: input.trim() && !loading ? colors.primary : colors.surface }]}
           onPress={() => send(input)}
           activeOpacity={0.8}
           disabled={!input.trim() || loading}
@@ -317,11 +266,7 @@ export default function JADEScreen() {
           {loading ? (
             <ActivityIndicator size="small" color={colors.primary} />
           ) : (
-            <Feather
-              name="send"
-              size={18}
-              color={input.trim() ? "#fff" : colors.mutedForeground}
-            />
+            <Feather name="send" size={18} color={input.trim() ? "#fff" : colors.mutedForeground} />
           )}
         </TouchableOpacity>
       </View>
@@ -332,93 +277,36 @@ export default function JADEScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1 },
   header: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: 20,
-    paddingBottom: 14,
-    gap: 12,
-    borderBottomWidth: StyleSheet.hairlineWidth,
+    flexDirection: "row", alignItems: "center", paddingHorizontal: 16,
+    paddingBottom: 14, gap: 10, borderBottomWidth: StyleSheet.hairlineWidth,
   },
-  jadeIcon: {
-    width: 42,
-    height: 42,
-    borderRadius: 21,
-    alignItems: "center",
-    justifyContent: "center",
-  },
+  jadeIcon: { width: 42, height: 42, borderRadius: 21, alignItems: "center", justifyContent: "center" },
   headerTitle: { fontSize: 17, fontFamily: "SpaceGrotesk_700Bold" },
   statusRow: { flexDirection: "row", alignItems: "center", gap: 5, marginTop: 2 },
   greenDot: { width: 7, height: 7, borderRadius: 4, backgroundColor: "#00D68F" },
   statusText: { fontSize: 12, fontFamily: "SpaceGrotesk_400Regular" },
-  iconBtn: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  msgRow: {
-    flexDirection: "row",
-    marginBottom: 10,
-    alignItems: "flex-end",
-    gap: 8,
-  },
+  iconBtn: { width: 36, height: 36, borderRadius: 18, alignItems: "center", justifyContent: "center" },
+  msgRow: { flexDirection: "row", marginBottom: 10, alignItems: "flex-end", gap: 8 },
   msgLeft: { justifyContent: "flex-start" },
   msgRight: { justifyContent: "flex-end" },
-  jadeAvatar: {
-    width: 30,
-    height: 30,
-    borderRadius: 15,
-    alignItems: "center",
-    justifyContent: "center",
-  },
+  jadeAvatar: { width: 30, height: 30, borderRadius: 15, alignItems: "center", justifyContent: "center" },
   bubble: { maxWidth: "78%", borderRadius: 16, padding: 12 },
   bubbleJade: { borderTopLeftRadius: 4, borderWidth: 1 },
   bubbleUser: { borderTopRightRadius: 4 },
-  bubbleText: {
-    fontSize: 14,
-    fontFamily: "SpaceGrotesk_400Regular",
-    lineHeight: 20,
-  },
-  bubbleTime: {
-    fontSize: 11,
-    fontFamily: "SpaceGrotesk_400Regular",
-    marginTop: 4,
-    textAlign: "right",
-  },
+  bubbleText: { fontSize: 14, fontFamily: "SpaceGrotesk_400Regular", lineHeight: 20 },
+  bubbleTime: { fontSize: 11, fontFamily: "SpaceGrotesk_400Regular", marginTop: 4, textAlign: "right" },
   chipsContainer: { paddingVertical: 8 },
   chips: { paddingHorizontal: 16, gap: 8 },
-  chip: {
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    borderRadius: 20,
-    borderWidth: 1,
-  },
+  chip: { paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20, borderWidth: 1 },
   chipText: { fontSize: 13, fontFamily: "SpaceGrotesk_500Medium" },
   inputBar: {
-    flexDirection: "row",
-    alignItems: "flex-end",
-    paddingHorizontal: 16,
-    paddingTop: 10,
-    gap: 10,
-    borderTopWidth: StyleSheet.hairlineWidth,
+    flexDirection: "row", alignItems: "flex-end", paddingHorizontal: 16,
+    paddingTop: 10, gap: 10, borderTopWidth: StyleSheet.hairlineWidth,
   },
   inputWrap: {
-    flex: 1,
-    flexDirection: "row",
-    alignItems: "flex-end",
-    borderRadius: 20,
-    borderWidth: 1,
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    gap: 8,
+    flex: 1, flexDirection: "row", alignItems: "flex-end",
+    borderRadius: 20, borderWidth: 1, paddingHorizontal: 16, paddingVertical: 10, gap: 8,
   },
   input: { flex: 1, fontSize: 15, maxHeight: 100, lineHeight: 22 },
-  sendBtn: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    alignItems: "center",
-    justifyContent: "center",
-  },
+  sendBtn: { width: 44, height: 44, borderRadius: 22, alignItems: "center", justifyContent: "center" },
 });
