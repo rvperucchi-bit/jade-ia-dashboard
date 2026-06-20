@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import {
   ActivityIndicator,
   Dimensions,
+  Image,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -17,42 +18,12 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { useAuth } from "@/context/AuthContext";
 
-const { height: SH } = Dimensions.get("window");
+const jadeLogo = require("../assets/images/jade-logo.png");
 
-// ─── JADE Text Logo ───────────────────────────────────────────────────────────
-function JadeLogo() {
-  return (
-    <View style={logo.row}>
-      <Text style={logo.outline}>J</Text>
-      <Text style={logo.pink}>A</Text>
-      <Text style={logo.outline}>D</Text>
-      <Text style={logo.outline}>E</Text>
-    </View>
-  );
-}
+const { width: SW } = Dimensions.get("window");
+const LOGO_W = Math.min(SW * 0.62, 260);
+const LOGO_H = LOGO_W * (683 / 1024);
 
-const logo = StyleSheet.create({
-  row: {
-    flexDirection: "row",
-    alignItems: "flex-end",
-  },
-  outline: {
-    fontSize: 72,
-    fontFamily: "SpaceGrotesk_300Light",
-    color: "white",
-    marginRight: 2,
-    lineHeight: 80,
-  },
-  pink: {
-    fontSize: 72,
-    fontFamily: "SpaceGrotesk_700Bold",
-    color: "#FF0080",
-    marginRight: 2,
-    lineHeight: 80,
-  },
-});
-
-// ─── Screen ───────────────────────────────────────────────────────────────────
 export default function LoginScreen() {
   const { login } = useAuth();
   const router = useRouter();
@@ -84,10 +55,13 @@ export default function LoginScreen() {
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
-        {/* ── Logo section: top 40% of screen ── */}
-        <View style={[S.logoSection, { height: SH * 0.40 }]}>
-          <View style={S.glow} pointerEvents="none" />
-          <JadeLogo />
+        {/* ── Logo ── */}
+        <View style={S.logoSection}>
+          <Image
+            source={jadeLogo}
+            style={{ width: LOGO_W, height: LOGO_H }}
+            resizeMode="contain"
+          />
           <Text style={S.tagline}>SUA PARCEIRA DE TRABALHO.</Text>
         </View>
 
@@ -168,22 +142,14 @@ const S = StyleSheet.create({
   logoSection: {
     alignItems: "center",
     justifyContent: "center",
-    position: "relative",
-  },
-  glow: {
-    position: "absolute",
-    width: 300,
-    height: 200,
-    borderRadius: 150,
-    backgroundColor: "#1A0010",
-    opacity: 0.6,
-    alignSelf: "center",
+    paddingTop: 48,
+    paddingBottom: 36,
   },
 
   tagline: {
-    marginTop: 8,
+    marginTop: 10,
     fontSize: 11,
-    color: "#888888",
+    color: "#555",
     letterSpacing: 3,
     textAlign: "center",
     fontFamily: "SpaceGrotesk_400Regular",
