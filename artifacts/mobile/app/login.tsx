@@ -3,7 +3,6 @@ import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
   ActivityIndicator,
-  Dimensions,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -13,87 +12,64 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import Svg, { Path, Text as SvgText } from "react-native-svg";
+import Svg, { Path } from "react-native-svg";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { useAuth } from "@/context/AuthContext";
 
-const { width: SW } = Dimensions.get("window");
+// ─── Official JADE Logo SVG ───────────────────────────────────────────────────
+const JadeLogo = () => (
+  <Svg width="280" height="100" viewBox="0 0 280 100">
+    {/* J - outline, rounded, no fill */}
+    <Path
+      d="M 28 15 L 28 72 Q 28 88 14 88 Q 4 88 2 80"
+      fill="none"
+      stroke="white"
+      strokeWidth="7"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
 
-// ─── JADE SVG Logo ───────────────────────────────────────────────────────────
-// ViewBox 0 0 260 82 — letters positioned by measured Space Grotesk Bold widths
-// J≈40  A≈58  D≈56  E≈48  gaps=4px each → total≈210, padded to 260 for breathing room
-const VB_W = 260;
-const VB_H = 82;
-const LOGO_W = Math.min(SW * 0.84, 340);
-const LOGO_H = LOGO_W * (VB_H / VB_W);
-const FS = 78; // font-size in viewBox units
-const BASE = 74; // baseline y
+    {/* A - solid pink, with concave arc at base */}
+    <Path
+      d="M 70 15 L 95 85 L 85 85 Q 80 72 70 68 Q 60 72 55 85 L 45 85 Z"
+      fill="#FF0080"
+      stroke="none"
+    />
+    {/* Arc cut at bottom of A - the signature wave */}
+    <Path
+      d="M 48 85 Q 58 74 70 78 Q 82 74 92 85"
+      fill="#FF0080"
+      stroke="none"
+    />
+    {/* Inner triangle cutout of A */}
+    <Path
+      d="M 58 60 L 82 60 L 70 30 Z"
+      fill="#0A0A0F"
+      stroke="none"
+    />
 
-// The brand "A": filled pink triangle with concave curved base (smile arc at bottom).
-// Cap-height aligns with J/D/E (baseline=74, capHeight≈56 → top≈18).
-// Width ≈58 viewBox units, centered between x=44 and x=102.
-const A_PATH = `
-  M 73 14
-  L 44 74
-  Q 58 60 73 66
-  Q 88 60 102 74
-  Z
-`;
+    {/* D - outline, rounded, no fill */}
+    <Path
+      d="M 112 15 L 112 85 M 112 15 Q 155 15 155 50 Q 155 85 112 85"
+      fill="none"
+      stroke="white"
+      strokeWidth="7"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
 
-function JadeLogoSVG() {
-  return (
-    <Svg width={LOGO_W} height={LOGO_H} viewBox={`0 0 ${VB_W} ${VB_H}`}>
-      {/* J — white outline, no fill */}
-      <SvgText
-        x={2}
-        y={BASE}
-        fontSize={FS}
-        fontFamily="SpaceGrotesk_700Bold"
-        fontWeight="bold"
-        fill="none"
-        stroke="white"
-        strokeWidth={1.6}
-        strokeLinejoin="round"
-      >
-        J
-      </SvgText>
-
-      {/* A — solid pink fill with custom arc path */}
-      <Path d={A_PATH} fill="#FF0A7A" />
-
-      {/* D — white outline, no fill */}
-      <SvgText
-        x={106}
-        y={BASE}
-        fontSize={FS}
-        fontFamily="SpaceGrotesk_700Bold"
-        fontWeight="bold"
-        fill="none"
-        stroke="white"
-        strokeWidth={1.6}
-        strokeLinejoin="round"
-      >
-        D
-      </SvgText>
-
-      {/* E — white outline, no fill */}
-      <SvgText
-        x={166}
-        y={BASE}
-        fontSize={FS}
-        fontFamily="SpaceGrotesk_700Bold"
-        fontWeight="bold"
-        fill="none"
-        stroke="white"
-        strokeWidth={1.6}
-        strokeLinejoin="round"
-      >
-        E
-      </SvgText>
-    </Svg>
-  );
-}
+    {/* E - outline, rounded, no fill */}
+    <Path
+      d="M 170 15 L 170 85 M 170 15 L 210 15 M 170 50 L 202 50 M 170 85 L 210 85"
+      fill="none"
+      stroke="white"
+      strokeWidth="7"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  </Svg>
+);
 
 // ─── Component ───────────────────────────────────────────────────────────────
 export default function LoginScreen() {
@@ -129,13 +105,9 @@ export default function LoginScreen() {
       >
         {/* ── Logo section ── */}
         <View style={S.logoSection}>
-          {/* Atmospheric glow — very faint, small, centered. NOT a visible shape */}
-          <View style={S.glowOuter} pointerEvents="none" />
-          <View style={S.glowMid} pointerEvents="none" />
-          <View style={S.glowCore} pointerEvents="none" />
-
-          <JadeLogoSVG />
-
+          {/* Faint atmospheric glow — small, centered, barely visible */}
+          <View style={S.glow} pointerEvents="none" />
+          <JadeLogo />
           <Text style={S.tagline}>SUA PARCEIRA DE TRABALHO.</Text>
         </View>
 
@@ -215,42 +187,27 @@ const S = StyleSheet.create({
   logoSection: {
     alignItems: "center",
     justifyContent: "center",
-    paddingTop: 40,
-    paddingBottom: 36,
+    paddingTop: 44,
+    paddingBottom: 40,
     position: "relative",
-    overflow: "visible",
   },
 
-  // Atmospheric glow — single very large ellipse at barely-perceptible opacity.
-  // Too large to read as a "shape" — just imparts a faint warm tint behind the logo.
-  glowOuter: {
+  // Small, barely-visible atmospheric bloom centered behind logo only
+  glow: {
     position: "absolute",
-    width: 500,
-    height: 320,
-    borderRadius: 250,
-    backgroundColor: "#FF0A7A",
-    opacity: 0.05,
+    width: 200,
+    height: 120,
+    borderRadius: 100,
+    backgroundColor: "#3D0020",
+    opacity: 0.12,
     alignSelf: "center",
-  },
-  // unused but kept for JSX structure — opacity:0 = invisible
-  glowMid: {
-    position: "absolute",
-    width: 0,
-    height: 0,
-    opacity: 0,
-  },
-  glowCore: {
-    position: "absolute",
-    width: 0,
-    height: 0,
-    opacity: 0,
   },
 
   tagline: {
     marginTop: 14,
     fontSize: 11,
-    color: "#666",
-    letterSpacing: 2.4,
+    color: "#555",
+    letterSpacing: 2.6,
     fontFamily: "SpaceGrotesk_400Regular",
   },
 
@@ -275,13 +232,13 @@ const S = StyleSheet.create({
   error: { fontSize: 13, fontFamily: "SpaceGrotesk_400Regular", color: "#FF3B5C", textAlign: "center" },
 
   btn: {
-    backgroundColor: "#FF0A7A",
+    backgroundColor: "#FF0080",
     height: 52,
     borderRadius: 12,
     alignItems: "center",
     justifyContent: "center",
     marginTop: 4,
-    shadowColor: "#FF0A7A",
+    shadowColor: "#FF0080",
     shadowOffset: { width: 0, height: 6 },
     shadowOpacity: 0.45,
     shadowRadius: 20,
@@ -290,9 +247,9 @@ const S = StyleSheet.create({
   btnText: { fontSize: 16, fontFamily: "SpaceGrotesk_700Bold", color: "#fff" },
 
   forgotBtn: { alignItems: "center", paddingVertical: 6 },
-  forgotText: { fontSize: 14, fontFamily: "SpaceGrotesk_400Regular", color: "#FF0A7A" },
+  forgotText: { fontSize: 14, fontFamily: "SpaceGrotesk_400Regular", color: "#FF0080" },
 
   footer: { flexDirection: "row", justifyContent: "center", alignItems: "center", marginTop: 28 },
   footerText: { fontSize: 14, fontFamily: "SpaceGrotesk_400Regular", color: "#888" },
-  footerLink: { fontSize: 14, fontFamily: "SpaceGrotesk_600SemiBold", color: "#FF0A7A" },
+  footerLink: { fontSize: 14, fontFamily: "SpaceGrotesk_600SemiBold", color: "#FF0080" },
 });

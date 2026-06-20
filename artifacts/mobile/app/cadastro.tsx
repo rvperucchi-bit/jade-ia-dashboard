@@ -4,8 +4,6 @@ import React, { useState } from "react";
 import {
   ActivityIndicator,
   Alert,
-  Dimensions,
-  Image,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -15,12 +13,62 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import Svg, { Path } from "react-native-svg";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-const jadeWordmark = require("../assets/images/jade-wordmark-orig.png");
-const { width: SW } = Dimensions.get("window");
-const WM_W = SW * 0.62;
-const WM_H = WM_W * (434 / 1024);
+// ─── Official JADE Logo SVG (same as login) ──────────────────────────────────
+const JadeLogo = () => (
+  <Svg width="280" height="100" viewBox="0 0 280 100">
+    {/* J - outline, rounded, no fill */}
+    <Path
+      d="M 28 15 L 28 72 Q 28 88 14 88 Q 4 88 2 80"
+      fill="none"
+      stroke="white"
+      strokeWidth="7"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+
+    {/* A - solid pink, with concave arc at base */}
+    <Path
+      d="M 70 15 L 95 85 L 85 85 Q 80 72 70 68 Q 60 72 55 85 L 45 85 Z"
+      fill="#FF0080"
+      stroke="none"
+    />
+    {/* Arc cut at bottom of A - the signature wave */}
+    <Path
+      d="M 48 85 Q 58 74 70 78 Q 82 74 92 85"
+      fill="#FF0080"
+      stroke="none"
+    />
+    {/* Inner triangle cutout of A */}
+    <Path
+      d="M 58 60 L 82 60 L 70 30 Z"
+      fill="#0A0A0F"
+      stroke="none"
+    />
+
+    {/* D - outline, rounded, no fill */}
+    <Path
+      d="M 112 15 L 112 85 M 112 15 Q 155 15 155 50 Q 155 85 112 85"
+      fill="none"
+      stroke="white"
+      strokeWidth="7"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+
+    {/* E - outline, rounded, no fill */}
+    <Path
+      d="M 170 15 L 170 85 M 170 15 L 210 15 M 170 50 L 202 50 M 170 85 L 210 85"
+      fill="none"
+      stroke="white"
+      strokeWidth="7"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  </Svg>
+);
 
 function maskPhone(raw: string): string {
   const digits = raw.replace(/\D/g, "").slice(0, 11);
@@ -100,8 +148,8 @@ export default function CadastroScreen() {
       >
         {/* Header com logo */}
         <View style={S.logoWrap}>
-          <View style={S.glowA} pointerEvents="none" />
-          <Image source={jadeWordmark} style={{ width: WM_W, height: WM_H }} resizeMode="contain" />
+          <View style={S.glow} pointerEvents="none" />
+          <JadeLogo />
         </View>
 
         {/* Formulário */}
@@ -175,19 +223,18 @@ const S = StyleSheet.create({
   logoWrap: {
     alignItems: "center",
     justifyContent: "center",
-    paddingTop: 20,
-    paddingBottom: 20,
+    paddingTop: 24,
+    paddingBottom: 24,
     position: "relative",
   },
-  glowA: {
+  glow: {
     position: "absolute",
-    width: 300,
-    height: 200,
-    borderRadius: 150,
-    backgroundColor: "#FF0A7A",
-    opacity: 0.09,
+    width: 200,
+    height: 120,
+    borderRadius: 100,
+    backgroundColor: "#3D0020",
+    opacity: 0.12,
     alignSelf: "center",
-    top: 10,
   },
 
   form: { gap: 14 },
@@ -214,13 +261,13 @@ const S = StyleSheet.create({
   fieldErr: { fontSize: 12, fontFamily: "SpaceGrotesk_400Regular", color: "#FF3B5C" },
 
   btn: {
-    backgroundColor: "#FF0A7A",
+    backgroundColor: "#FF0080",
     height: 52,
     borderRadius: 12,
     alignItems: "center",
     justifyContent: "center",
     marginTop: 6,
-    shadowColor: "#FF0A7A",
+    shadowColor: "#FF0080",
     shadowOffset: { width: 0, height: 6 },
     shadowOpacity: 0.45,
     shadowRadius: 20,
@@ -235,5 +282,5 @@ const S = StyleSheet.create({
     marginTop: 28,
   },
   footerText: { fontSize: 14, fontFamily: "SpaceGrotesk_400Regular", color: "#888" },
-  footerLink: { fontSize: 14, fontFamily: "SpaceGrotesk_600SemiBold", color: "#FF0A7A" },
+  footerLink: { fontSize: 14, fontFamily: "SpaceGrotesk_600SemiBold", color: "#FF0080" },
 });
