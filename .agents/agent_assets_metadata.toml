@@ -23,3 +23,9 @@ id = "odo2BOZ1yQ2rPx7ljyuJG"
 uri = "file://relatorio-botoes.pdf"
 type = "pdf"
 title = "Relatório de Auditoria de Botões — JADE IA"
+
+[[outputs]]
+id = "yVvCJFyJKuQ70_Pv-UFNQ"
+uri = "file://relatorio-atualizacoes.pdf"
+type = "pdf"
+title = "Release Notes — Sprint JADE IA"
