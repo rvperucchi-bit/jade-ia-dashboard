@@ -230,7 +230,7 @@ export default function HomeScreen() {
   const { canAccess } = usePlan();
 
   const [refreshing, setRefreshing] = useState(false);
-  const [empresaNome, setEmpresaNome] = useState<string | null>(null);
+  const [empresaNome, setEmpresaNome] = useState<string>("JÁ Delivery");
 
   useEffect(() => {
     AsyncStorage.getItem("@jade_ia:empresa_v2").then((raw) => {

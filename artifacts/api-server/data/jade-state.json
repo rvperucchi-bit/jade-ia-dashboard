@@ -2,12 +2,12 @@
   "modules": {
     "scanner": {
       "module_name": "scanner",
-      "is_active": true,
-      "status": "running",
-      "last_started_at": "2026-06-21T03:32:59.897Z",
-      "last_stopped_at": "2026-06-21T03:21:32.429Z",
+      "is_active": false,
+      "status": "paused",
+      "last_started_at": "2026-06-21T03:38:47.902Z",
+      "last_stopped_at": "2026-06-21T03:42:11.247Z",
       "last_run_at": null,
-      "updated_at": "2026-06-21T03:32:59.897Z"
+      "updated_at": "2026-06-21T03:42:11.247Z"
     },
     "jade": {
       "module_name": "jade",
@@ -22,31 +22,171 @@
       "module_name": "leads",
       "is_active": false,
       "status": "paused",
-      "last_started_at": "2026-06-21T03:21:31.165Z",
-      "last_stopped_at": "2026-06-21T03:21:31.818Z",
+      "last_started_at": "2026-06-21T03:36:17.047Z",
+      "last_stopped_at": "2026-06-21T03:36:17.671Z",
       "last_run_at": null,
-      "updated_at": "2026-06-21T03:21:31.818Z"
+      "updated_at": "2026-06-21T03:36:17.671Z"
     },
     "whatsapp": {
       "module_name": "whatsapp",
       "is_active": false,
       "status": "paused",
-      "last_started_at": "2026-06-21T03:21:29.228Z",
-      "last_stopped_at": "2026-06-21T03:21:30.529Z",
+      "last_started_at": "2026-06-21T03:36:18.225Z",
+      "last_stopped_at": "2026-06-21T03:36:19.007Z",
       "last_run_at": null,
-      "updated_at": "2026-06-21T03:21:30.529Z"
+      "updated_at": "2026-06-21T03:36:19.007Z"
     },
     "marketing": {
       "module_name": "marketing",
       "is_active": false,
       "status": "paused",
-      "last_started_at": "2026-06-20T22:59:59.721Z",
-      "last_stopped_at": "2026-06-20T23:00:56.762Z",
+      "last_started_at": "2026-06-21T03:36:20.072Z",
+      "last_stopped_at": "2026-06-21T03:36:20.670Z",
       "last_run_at": null,
-      "updated_at": "2026-06-20T23:00:56.762Z"
+      "updated_at": "2026-06-21T03:36:20.670Z"
     }
   },
   "module_logs": [
+    {
+      "id": "c0eae2e01d67611c",
+      "module_name": "scanner",
+      "action": "deactivated",
+      "message": "Scanner Radar desativado",
+      "metadata": {
+        "active": false
+      },
+      "created_at": "2026-06-21T03:42:11.249Z"
+    },
+    {
+      "id": "3025a64463c26111",
+      "module_name": "scanner",
+      "action": "activated",
+      "message": "Scanner Radar ativado",
+      "metadata": {
+        "active": true
+      },
+      "created_at": "2026-06-21T03:38:47.904Z"
+    },
+    {
+      "id": "8ecd77cd15507b25",
+      "module_name": "marketing",
+      "action": "deactivated",
+      "message": "Marketing IA desativado",
+      "metadata": {
+        "active": false
+      },
+      "created_at": "2026-06-21T03:36:20.671Z"
+    },
+    {
+      "id": "162df1ca0d362866",
+      "module_name": "marketing",
+      "action": "activated",
+      "message": "Marketing IA ativado",
+      "metadata": {
+        "active": true
+      },
+      "created_at": "2026-06-21T03:36:20.073Z"
+    },
+    {
+      "id": "adbb97b3eb951970",
+      "module_name": "whatsapp",
+      "action": "deactivated",
+      "message": "WhatsApp desativado",
+      "metadata": {
+        "active": false
+      },
+      "created_at": "2026-06-21T03:36:19.009Z"
+    },
+    {
+      "id": "5824bfa461aa1c4c",
+      "module_name": "whatsapp",
+      "action": "activated",
+      "message": "WhatsApp ativado",
+      "metadata": {
+        "active": true
+      },
+      "created_at": "2026-06-21T03:36:18.227Z"
+    },
+    {
+      "id": "bdde0520fb7e9924",
+      "module_name": "leads",
+      "action": "deactivated",
+      "message": "CRM/Leads desativado",
+      "metadata": {
+        "active": false
+      },
+      "created_at": "2026-06-21T03:36:17.673Z"
+    },
+    {
+      "id": "744e2f28f8abfe66",
+      "module_name": "leads",
+      "action": "activated",
+      "message": "CRM/Leads ativado",
+      "metadata": {
+        "active": true
+      },
+      "created_at": "2026-06-21T03:36:17.048Z"
+    },
+    {
+      "id": "0a298db56d9ac7e5",
+      "module_name": "scanner",
+      "action": "deactivated",
+      "message": "Scanner Radar desativado",
+      "metadata": {
+        "active": false
+      },
+      "created_at": "2026-06-21T03:36:16.463Z"
+    },
+    {
+      "id": "c57c7bba9afd0ebd",
+      "module_name": "scanner",
+      "action": "activated",
+      "message": "Scanner Radar ativado",
+      "metadata": {
+        "active": true
+      },
+      "created_at": "2026-06-21T03:36:16.081Z"
+    },
+    {
+      "id": "b2f5a189b0f7c3bf",
+      "module_name": "scanner",
+      "action": "deactivated",
+      "message": "Scanner Radar desativado",
+      "metadata": {
+        "active": false
+      },
+      "created_at": "2026-06-21T03:34:30.587Z"
+    },
+    {
+      "id": "fb900d7b941d07cb",
+      "module_name": "scanner",
+      "action": "deactivated",
+      "message": "Scanner Radar desativado",
+      "metadata": {
+        "active": false
+      },
+      "created_at": "2026-06-21T03:34:30.569Z"
+    },
+    {
+      "id": "58142eace565cdd5",
+      "module_name": "scanner",
+      "action": "activated",
+      "message": "Scanner Radar ativado",
+      "metadata": {
+        "active": true
+      },
+      "created_at": "2026-06-21T03:33:20.977Z"
+    },
+    {
+      "id": "4131921b758aac95",
+      "module_name": "scanner",
+      "action": "deactivated",
+      "message": "Scanner Radar desativado",
+      "metadata": {
+        "active": false
+      },
+      "created_at": "2026-06-21T03:33:07.799Z"
+    },
     {
       "id": "8ee9a02e294864d3",
       "module_name": "scanner",
@@ -639,6 +779,390 @@
     }
   ],
   "activity_events": [
+    {
+      "id": "c75eb79f3365c6ed",
+      "type": "scan",
+      "text": "JADE encontrou 3 novos leads via radar em São Paulo",
+      "icon": "crosshair",
+      "color": "#6C63FF",
+      "metadata": {
+        "count": 3,
+        "cidade": "São Paulo"
+      },
+      "created_at": "2026-06-21T03:42:15.385Z"
+    },
+    {
+      "id": "e287beb2fe0d31b3",
+      "type": "module",
+      "text": "Scanner Radar desativado",
+      "icon": "crosshair",
+      "color": "#6C63FF",
+      "metadata": {
+        "module": "scanner",
+        "active": false
+      },
+      "created_at": "2026-06-21T03:42:11.251Z"
+    },
+    {
+      "id": "8d3d2dbf15b5c5f8",
+      "type": "lead",
+      "text": "Novo lead adicionado: Marina Santos (Letras & Café Livraria)",
+      "icon": "user-plus",
+      "color": "#6C63FF",
+      "created_at": "2026-06-21T03:41:16.716Z"
+    },
+    {
+      "id": "7134e2f169d8ce08",
+      "type": "lead",
+      "text": "Novo lead adicionado: Ana Paula Ribeiro (Estilo Urbano Boutique)",
+      "icon": "user-plus",
+      "color": "#6C63FF",
+      "created_at": "2026-06-21T03:41:16.713Z"
+    },
+    {
+      "id": "bd4f6dfd9b0310bd",
+      "type": "lead",
+      "text": "Novo lead adicionado: Carlos Eduardo Silva (Pão e Prosa Padaria)",
+      "icon": "user-plus",
+      "color": "#6C63FF",
+      "created_at": "2026-06-21T03:41:16.092Z"
+    },
+    {
+      "id": "1bea87c7e7382006",
+      "type": "scan",
+      "text": "JADE encontrou 3 novos leads via radar em São Paulo",
+      "icon": "crosshair",
+      "color": "#6C63FF",
+      "metadata": {
+        "count": 3,
+        "cidade": "São Paulo"
+      },
+      "created_at": "2026-06-21T03:41:15.695Z"
+    },
+    {
+      "id": "12858d60add75668",
+      "type": "lead",
+      "text": "Novo lead adicionado: Marcos Oliveira (Padaria Pão & Prosa)",
+      "icon": "user-plus",
+      "color": "#6C63FF",
+      "created_at": "2026-06-21T03:38:55.302Z"
+    },
+    {
+      "id": "89cecc183e36540a",
+      "type": "lead",
+      "text": "Novo lead adicionado: Carla Pereira (Loja de Brinquedos Mundo Divertido)",
+      "icon": "user-plus",
+      "color": "#6C63FF",
+      "created_at": "2026-06-21T03:38:55.299Z"
+    },
+    {
+      "id": "ff9fceb6a42762ae",
+      "type": "lead",
+      "text": "Novo lead adicionado: Ana Paula Santos (Boutique Essência Feminina)",
+      "icon": "user-plus",
+      "color": "#6C63FF",
+      "created_at": "2026-06-21T03:38:55.297Z"
+    },
+    {
+      "id": "12e417f5cc52a833",
+      "type": "scan",
+      "text": "JADE encontrou 3 novos leads via radar em São Paulo",
+      "icon": "crosshair",
+      "color": "#6C63FF",
+      "metadata": {
+        "count": 3,
+        "cidade": "São Paulo"
+      },
+      "created_at": "2026-06-21T03:38:54.901Z"
+    },
+    {
+      "id": "2096e1edea0bd372",
+      "type": "lead",
+      "text": "Novo lead adicionado: Ana Clara Silva (Empório Sabor & Arte)",
+      "icon": "user-plus",
+      "color": "#6C63FF",
+      "created_at": "2026-06-21T03:38:52.808Z"
+    },
+    {
+      "id": "5d4df2b3de4a6a7f",
+      "type": "lead",
+      "text": "Novo lead adicionado: Ricardo Mendes (Papelaria Ideal)",
+      "icon": "user-plus",
+      "color": "#6C63FF",
+      "created_at": "2026-06-21T03:38:51.755Z"
+    },
+    {
+      "id": "7d72637c9fb664c2",
+      "type": "lead",
+      "text": "Novo lead adicionado: Juliana Costa (Boutique da Moda)",
+      "icon": "user-plus",
+      "color": "#6C63FF",
+      "created_at": "2026-06-21T03:38:50.921Z"
+    },
+    {
+      "id": "32e8d53bc18d825f",
+      "type": "scan",
+      "text": "JADE encontrou 3 novos leads via radar em São Paulo",
+      "icon": "crosshair",
+      "color": "#6C63FF",
+      "metadata": {
+        "count": 3,
+        "cidade": "São Paulo"
+      },
+      "created_at": "2026-06-21T03:38:50.519Z"
+    },
+    {
+      "id": "a02b9f4a4b6bb46a",
+      "type": "module",
+      "text": "Scanner Radar ativado",
+      "icon": "crosshair",
+      "color": "#6C63FF",
+      "metadata": {
+        "module": "scanner",
+        "active": true
+      },
+      "created_at": "2026-06-21T03:38:47.914Z"
+    },
+    {
+      "id": "89b2edca2e894f2d",
+      "type": "lead",
+      "text": "Novo lead adicionado: Ricardo Almeida (Padaria Pão Fresco)",
+      "icon": "user-plus",
+      "color": "#6C63FF",
+      "created_at": "2026-06-21T03:36:25.278Z"
+    },
+    {
+      "id": "ebab1912c998eb9c",
+      "type": "lead",
+      "text": "Novo lead adicionado: Patrícia Ferreira (Livraria Conhecer)",
+      "icon": "user-plus",
+      "color": "#6C63FF",
+      "created_at": "2026-06-21T03:36:24.655Z"
+    },
+    {
+      "id": "195d781b6a28170e",
+      "type": "lead",
+      "text": "Novo lead adicionado: Ana Paula Costa (Boutique Chique)",
+      "icon": "user-plus",
+      "color": "#6C63FF",
+      "created_at": "2026-06-21T03:36:24.652Z"
+    },
+    {
+      "id": "9614a8daed775728",
+      "type": "scan",
+      "text": "JADE encontrou 3 novos leads via radar em São Paulo",
+      "icon": "crosshair",
+      "color": "#6C63FF",
+      "metadata": {
+        "count": 3,
+        "cidade": "São Paulo"
+      },
+      "created_at": "2026-06-21T03:36:24.355Z"
+    },
+    {
+      "id": "de3074590f62af7e",
+      "type": "module",
+      "text": "Marketing IA desativado",
+      "icon": "zap",
+      "color": "#FFB300",
+      "metadata": {
+        "module": "marketing",
+        "active": false
+      },
+      "created_at": "2026-06-21T03:36:20.672Z"
+    },
+    {
+      "id": "0a51bbeb184e28d7",
+      "type": "module",
+      "text": "Marketing IA ativado",
+      "icon": "zap",
+      "color": "#FFB300",
+      "metadata": {
+        "module": "marketing",
+        "active": true
+      },
+      "created_at": "2026-06-21T03:36:20.075Z"
+    },
+    {
+      "id": "2a4795b1d4e9173f",
+      "type": "module",
+      "text": "WhatsApp desativado",
+      "icon": "message-circle",
+      "color": "#25D366",
+      "metadata": {
+        "module": "whatsapp",
+        "active": false
+      },
+      "created_at": "2026-06-21T03:36:19.011Z"
+    },
+    {
+      "id": "9e88fe24a8014a94",
+      "type": "module",
+      "text": "WhatsApp ativado",
+      "icon": "message-circle",
+      "color": "#25D366",
+      "metadata": {
+        "module": "whatsapp",
+        "active": true
+      },
+      "created_at": "2026-06-21T03:36:18.229Z"
+    },
+    {
+      "id": "f776af374115f6d3",
+      "type": "module",
+      "text": "CRM/Leads desativado",
+      "icon": "users",
+      "color": "#00D68F",
+      "metadata": {
+        "module": "leads",
+        "active": false
+      },
+      "created_at": "2026-06-21T03:36:17.675Z"
+    },
+    {
+      "id": "7a16bf69d5a6ac90",
+      "type": "module",
+      "text": "CRM/Leads ativado",
+      "icon": "users",
+      "color": "#00D68F",
+      "metadata": {
+        "module": "leads",
+        "active": true
+      },
+      "created_at": "2026-06-21T03:36:17.050Z"
+    },
+    {
+      "id": "f403430ce29761b6",
+      "type": "module",
+      "text": "Scanner Radar desativado",
+      "icon": "crosshair",
+      "color": "#6C63FF",
+      "metadata": {
+        "module": "scanner",
+        "active": false
+      },
+      "created_at": "2026-06-21T03:36:16.465Z"
+    },
+    {
+      "id": "16bd425239e29b41",
+      "type": "module",
+      "text": "Scanner Radar ativado",
+      "icon": "crosshair",
+      "color": "#6C63FF",
+      "metadata": {
+        "module": "scanner",
+        "active": true
+      },
+      "created_at": "2026-06-21T03:36:16.083Z"
+    },
+    {
+      "id": "ae778b32a0279df6",
+      "type": "module",
+      "text": "Scanner Radar desativado",
+      "icon": "crosshair",
+      "color": "#6C63FF",
+      "metadata": {
+        "module": "scanner",
+        "active": false
+      },
+      "created_at": "2026-06-21T03:34:30.589Z"
+    },
+    {
+      "id": "31079c151b401b4e",
+      "type": "module",
+      "text": "Scanner Radar desativado",
+      "icon": "crosshair",
+      "color": "#6C63FF",
+      "metadata": {
+        "module": "scanner",
+        "active": false
+      },
+      "created_at": "2026-06-21T03:34:30.583Z"
+    },
+    {
+      "id": "5d49ff99a1460725",
+      "type": "scan",
+      "text": "JADE encontrou 3 novos leads via radar em São Paulo",
+      "icon": "crosshair",
+      "color": "#6C63FF",
+      "metadata": {
+        "count": 3,
+        "cidade": "São Paulo"
+      },
+      "created_at": "2026-06-21T03:33:28.662Z"
+    },
+    {
+      "id": "60c5afef459f306c",
+      "type": "scan",
+      "text": "JADE encontrou 3 novos leads via radar em São Paulo",
+      "icon": "crosshair",
+      "color": "#6C63FF",
+      "metadata": {
+        "count": 3,
+        "cidade": "São Paulo"
+      },
+      "created_at": "2026-06-21T03:33:27.918Z"
+    },
+    {
+      "id": "89fc95092bc8a1b2",
+      "type": "module",
+      "text": "Scanner Radar ativado",
+      "icon": "crosshair",
+      "color": "#6C63FF",
+      "metadata": {
+        "module": "scanner",
+        "active": true
+      },
+      "created_at": "2026-06-21T03:33:20.979Z"
+    },
+    {
+      "id": "cf47cec30a172dd6",
+      "type": "lead",
+      "text": "Novo lead adicionado: Fernanda Oliveira (Eletrônicos Mega Store)",
+      "icon": "user-plus",
+      "color": "#6C63FF",
+      "created_at": "2026-06-21T03:33:08.829Z"
+    },
+    {
+      "id": "c0f8aeede0d8ae48",
+      "type": "lead",
+      "text": "Novo lead adicionado: Roberto Santos (Pão Dourado Confeitaria)",
+      "icon": "user-plus",
+      "color": "#6C63FF",
+      "created_at": "2026-06-21T03:33:08.819Z"
+    },
+    {
+      "id": "b0a7dc279a9ad525",
+      "type": "lead",
+      "text": "Novo lead adicionado: Ana Paula Silva (Moda Urbana Chic)",
+      "icon": "user-plus",
+      "color": "#6C63FF",
+      "created_at": "2026-06-21T03:33:07.891Z"
+    },
+    {
+      "id": "a6304ffdc35b85ba",
+      "type": "module",
+      "text": "Scanner Radar desativado",
+      "icon": "crosshair",
+      "color": "#6C63FF",
+      "metadata": {
+        "module": "scanner",
+        "active": false
+      },
+      "created_at": "2026-06-21T03:33:07.800Z"
+    },
+    {
+      "id": "c3aa98eb1a2bdb1f",
+      "type": "scan",
+      "text": "JADE encontrou 3 novos leads via radar em São Paulo",
+      "icon": "crosshair",
+      "color": "#6C63FF",
+      "metadata": {
+        "count": 3,
+        "cidade": "São Paulo"
+      },
+      "created_at": "2026-06-21T03:33:07.478Z"
+    },
     {
       "id": "6de1f363c962867e",
       "type": "module",
@@ -2229,367 +2753,6 @@
       "icon": "user-plus",
       "color": "#6C63FF",
       "created_at": "2026-06-20T21:30:27.346Z"
-    },
-    {
-      "id": "9853db7d004dbf1d",
-      "type": "lead",
-      "text": "Novo lead adicionado: Ricardo Silva (Livraria Cultura Pop)",
-      "icon": "user-plus",
-      "color": "#6C63FF",
-      "created_at": "2026-06-20T21:30:26.733Z"
-    },
-    {
-      "id": "7ee1253f706f76b7",
-      "type": "scan",
-      "text": "JADE encontrou 3 novos leads via radar em São Paulo",
-      "icon": "crosshair",
-      "color": "#6C63FF",
-      "metadata": {
-        "count": 3,
-        "cidade": "São Paulo"
-      },
-      "created_at": "2026-06-20T21:30:26.353Z"
-    },
-    {
-      "id": "33ab9cb0473e6c6c",
-      "type": "message",
-      "text": "JADE respondeu a uma mensagem",
-      "icon": "robot",
-      "color": "#FF0080",
-      "metadata": {},
-      "created_at": "2026-06-20T21:30:06.089Z"
-    },
-    {
-      "id": "31e5cf46e0f66bcb",
-      "type": "lead",
-      "text": "Novo lead adicionado: Camila Oliveira (Padaria Pão da Vila)",
-      "icon": "user-plus",
-      "color": "#6C63FF",
-      "created_at": "2026-06-20T21:29:28.907Z"
-    },
-    {
-      "id": "9c87e02049c68846",
-      "type": "lead",
-      "text": "Novo lead adicionado: Ana Paula Silva (Livraria Saber & Café)",
-      "icon": "user-plus",
-      "color": "#6C63FF",
-      "created_at": "2026-06-20T21:29:28.872Z"
-    },
-    {
-      "id": "d4ec248b99a48f4a",
-      "type": "lead",
-      "text": "Novo lead adicionado: Ricardo Almeida (Boutique Elegance Moda Masculina)",
-      "icon": "user-plus",
-      "color": "#6C63FF",
-      "created_at": "2026-06-20T21:29:28.253Z"
-    },
-    {
-      "id": "4ddc941c7342f90e",
-      "type": "scan",
-      "text": "JADE encontrou 3 novos leads via radar em São Paulo",
-      "icon": "crosshair",
-      "color": "#6C63FF",
-      "metadata": {
-        "count": 3,
-        "cidade": "São Paulo"
-      },
-      "created_at": "2026-06-20T21:29:27.863Z"
-    },
-    {
-      "id": "27d07fb8c180b122",
-      "type": "message",
-      "text": "JADE respondeu a uma mensagem",
-      "icon": "robot",
-      "color": "#FF0080",
-      "metadata": {},
-      "created_at": "2026-06-20T21:28:37.812Z"
-    },
-    {
-      "id": "61132e18f46f9a0c",
-      "type": "lead",
-      "text": "Novo lead adicionado: Roberto Costa (Boutique Estilo Urbano)",
-      "icon": "user-plus",
-      "color": "#6C63FF",
-      "created_at": "2026-06-20T21:28:28.284Z"
-    },
-    {
-      "id": "7161bfd39db8ea48",
-      "type": "lead",
-      "text": "Novo lead adicionado: Patrícia Silveira (Mimos & Detalhes Presentes)",
-      "icon": "user-plus",
-      "color": "#6C63FF",
-      "created_at": "2026-06-20T21:28:28.280Z"
-    },
-    {
-      "id": "dbfa2e6e89f2be57",
-      "type": "lead",
-      "text": "Novo lead adicionado: Ana Paula Mendes (Empório Sabor Natural)",
-      "icon": "user-plus",
-      "color": "#6C63FF",
-      "created_at": "2026-06-20T21:28:27.637Z"
-    },
-    {
-      "id": "6993783722282a5f",
-      "type": "scan",
-      "text": "JADE encontrou 3 novos leads via radar em São Paulo",
-      "icon": "crosshair",
-      "color": "#6C63FF",
-      "metadata": {
-        "count": 3,
-        "cidade": "São Paulo"
-      },
-      "created_at": "2026-06-20T21:28:27.306Z"
-    },
-    {
-      "id": "b58372353477f113",
-      "type": "module",
-      "text": "JADE IA desativado",
-      "icon": "robot",
-      "color": "#FF0080",
-      "metadata": {
-        "module": "jade",
-        "active": false
-      },
-      "created_at": "2026-06-20T21:27:28.158Z"
-    },
-    {
-      "id": "ec7ea4e635a83e79",
-      "type": "lead",
-      "text": "Novo lead adicionado: Ricardo Mendes (Elegância Urbana Boutique)",
-      "icon": "user-plus",
-      "color": "#6C63FF",
-      "created_at": "2026-06-20T21:27:27.120Z"
-    },
-    {
-      "id": "6823e17c45c52f14",
-      "type": "lead",
-      "text": "Novo lead adicionado: Juliana Santos (Beleza Essencial)",
-      "icon": "user-plus",
-      "color": "#6C63FF",
-      "created_at": "2026-06-20T21:27:27.118Z"
-    },
-    {
-      "id": "a5257b42e84234d3",
-      "type": "lead",
-      "text": "Novo lead adicionado: Ana Silva (Mercado Fresco e Cia.)",
-      "icon": "user-plus",
-      "color": "#6C63FF",
-      "created_at": "2026-06-20T21:27:26.455Z"
-    },
-    {
-      "id": "d3a48783e7a141c8",
-      "type": "module",
-      "text": "JADE IA ativado",
-      "icon": "robot",
-      "color": "#FF0080",
-      "metadata": {
-        "module": "jade",
-        "active": true
-      },
-      "created_at": "2026-06-20T21:27:26.304Z"
-    },
-    {
-      "id": "f2ec8736b132f6be",
-      "type": "scan",
-      "text": "JADE encontrou 3 novos leads via radar em São Paulo",
-      "icon": "crosshair",
-      "color": "#6C63FF",
-      "metadata": {
-        "count": 3,
-        "cidade": "São Paulo"
-      },
-      "created_at": "2026-06-20T21:27:26.127Z"
-    },
-    {
-      "id": "e45864ed4c35dfcc",
-      "type": "scan",
-      "text": "JADE encontrou 3 novos leads via radar em São Paulo",
-      "icon": "crosshair",
-      "color": "#6C63FF",
-      "metadata": {
-        "count": 3,
-        "cidade": "São Paulo"
-      },
-      "created_at": "2026-06-20T21:21:28.920Z"
-    },
-    {
-      "id": "1390a09e9d89e2d4",
-      "type": "message",
-      "text": "JADE respondeu: \"Oi jade, to desanimado hoje pa…\"",
-      "icon": "robot",
-      "color": "#FF0080",
-      "created_at": "2026-06-20T21:04:56.912Z"
-    },
-    {
-      "id": "8e36cf4e0d2bbd4a",
-      "type": "message",
-      "text": "JADE respondeu a uma mensagem",
-      "icon": "robot",
-      "color": "#FF0080",
-      "metadata": {
-        "session_id": "9a14d3608d937488"
-      },
-      "created_at": "2026-06-20T21:04:56.608Z"
-    },
-    {
-      "id": "294f558e8b7e50df",
-      "type": "module",
-      "text": "Scanner Radar ativado",
-      "icon": "crosshair",
-      "color": "#6C63FF",
-      "metadata": {
-        "module": "scanner",
-        "active": true
-      },
-      "created_at": "2026-06-20T21:02:53.169Z"
-    },
-    {
-      "id": "a33041304574171e",
-      "type": "module",
-      "text": "JADE IA desativado",
-      "icon": "robot",
-      "color": "#FF0080",
-      "metadata": {
-        "module": "jade",
-        "active": false
-      },
-      "created_at": "2026-06-20T21:02:52.280Z"
-    },
-    {
-      "id": "ee6f8dc65bface2a",
-      "type": "module",
-      "text": "Scanner Radar desativado",
-      "icon": "crosshair",
-      "color": "#6C63FF",
-      "metadata": {
-        "module": "scanner",
-        "active": false
-      },
-      "created_at": "2026-06-20T21:02:51.881Z"
-    },
-    {
-      "id": "895141778c418b29",
-      "type": "module",
-      "text": "WhatsApp desativado",
-      "icon": "message-circle",
-      "color": "#25D366",
-      "metadata": {
-        "module": "whatsapp",
-        "active": false
-      },
-      "created_at": "2026-06-20T21:02:49.220Z"
-    },
-    {
-      "id": "c01bfc9b90722538",
-      "type": "module",
-      "text": "WhatsApp ativado",
-      "icon": "message-circle",
-      "color": "#25D366",
-      "metadata": {
-        "module": "whatsapp",
-        "active": true
-      },
-      "created_at": "2026-06-20T21:02:46.889Z"
-    },
-    {
-      "id": "95ee40a69559cf76",
-      "type": "message",
-      "text": "JADE ativada no modo autônomo",
-      "icon": "robot",
-      "color": "#00D68F",
-      "created_at": "2026-06-20T21:01:59.726Z"
-    },
-    {
-      "id": "f4429209dae7e83b",
-      "type": "message",
-      "text": "JADE respondeu a uma mensagem",
-      "icon": "robot",
-      "color": "#FF0080",
-      "metadata": {},
-      "created_at": "2026-06-20T21:00:12.690Z"
-    },
-    {
-      "id": "4b1004fc88067646",
-      "type": "message",
-      "text": "JADE respondeu a uma mensagem",
-      "icon": "robot",
-      "color": "#FF0080",
-      "metadata": {},
-      "created_at": "2026-06-20T20:38:03.392Z"
-    },
-    {
-      "id": "acb9d00c54fe0e62",
-      "type": "message",
-      "text": "JADE respondeu a uma mensagem",
-      "icon": "robot",
-      "color": "#FF0080",
-      "metadata": {},
-      "created_at": "2026-06-20T20:33:50.638Z"
-    },
-    {
-      "id": "59cf11b5bbd00412",
-      "type": "message",
-      "text": "JADE ativada no modo autônomo",
-      "icon": "robot",
-      "color": "#00D68F",
-      "created_at": "2026-06-20T20:28:14.963Z"
-    },
-    {
-      "id": "34cd97b51fdaa5ca",
-      "type": "message",
-      "text": "JADE respondeu a uma mensagem",
-      "icon": "robot",
-      "color": "#FF0080",
-      "metadata": {},
-      "created_at": "2026-06-20T19:56:11.575Z"
-    },
-    {
-      "id": "9e3e9bd1cdaa530a",
-      "type": "message",
-      "text": "JADE respondeu a uma mensagem",
-      "icon": "robot",
-      "color": "#FF0080",
-      "metadata": {},
-      "created_at": "2026-06-20T19:55:11.915Z"
-    },
-    {
-      "id": "40dd9e060e3ff2f2",
-      "type": "message",
-      "text": "JADE respondeu a uma mensagem",
-      "icon": "robot",
-      "color": "#FF0080",
-      "metadata": {},
-      "created_at": "2026-06-20T19:54:55.687Z"
-    },
-    {
-      "id": "09f4a439172c253c",
-      "type": "message",
-      "text": "JADE respondeu a uma mensagem",
-      "icon": "robot",
-      "color": "#FF0080",
-      "metadata": {},
-      "created_at": "2026-06-20T19:49:33.807Z"
-    },
-    {
-      "id": "5ad6aeff0f8d9fec",
-      "type": "message",
-      "text": "JADE respondeu a uma mensagem",
-      "icon": "robot",
-      "color": "#FF0080",
-      "metadata": {},
-      "created_at": "2026-06-20T19:24:02.197Z"
-    },
-    {
-      "id": "0385269312d9b4d5",
-      "type": "module",
-      "text": "JADE IA ativado",
-      "icon": "robot",
-      "color": "#FF0080",
-      "metadata": {
-        "module": "jade",
-        "active": true
-      },
-      "created_at": "2026-06-20T19:22:37.628Z"
     }
   ],
   "marketing_campaigns": [
@@ -2762,11 +2925,11 @@
   ],
   "scanner_history": [],
   "company_config": {
-    "nome": "Pereira imóvel",
-    "produto": "Casas",
-    "segmento": "Imóveis",
-    "tom": "descontraido",
-    "planos": "• Casas — R$Consultar",
-    "updated_at": "2026-06-20T22:51:29.401Z"
+    "nome": "Já delivery",
+    "produto": "Plano",
+    "segmento": "Alimentação",
+    "tom": "consultivo",
+    "planos": "• Plano — R$7373",
+    "updated_at": "2026-06-21T03:35:40.996Z"
   }
 }
