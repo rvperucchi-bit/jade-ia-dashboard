@@ -54,15 +54,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           setIsLoggedIn(true);
           return true;
         }
-      } else {
-        return false;
       }
+      // 401/403 = server explicitly rejected credentials → fail immediately
+      if (res.status === 401 || res.status === 403) return false;
+      // 5xx / 502 / etc. = server unavailable → fall through to offline fallback
     } catch {
-      // Server unreachable — fall through to local validation
+      // Network error — fall through to offline fallback
     }
 
-    // Offline fallback
-    if (email.trim().toLowerCase() === FALLBACK_EMAIL && password === FALLBACK_PASSWORD) {
+    // Offline fallback (server unreachable or returned a server error)
+    if (
+      email.trim().toLowerCase() === FALLBACK_EMAIL.toLowerCase() &&
+      password === FALLBACK_PASSWORD
+    ) {
       const token = "offline-" + Date.now();
       await AsyncStorage.setItem(AUTH_KEY, token);
       setAuthToken(token);
