@@ -15,9 +15,16 @@ import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import * as Haptics from "expo-haptics";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 import { useColors } from "@/hooks/useColors";
 import { useApp } from "@/context/AppContext";
+
+const MODO_LABEL: Record<string, string> = {
+  fechamento:             "Fechamento",
+  consultivo_presencial:  "Consultivo",
+  nutricao:               "Nutrição",
+};
 
 interface AIMessage {
   id: string;
@@ -99,8 +106,16 @@ export default function JADEScreen() {
   const [showChips,     setShowChips]     = useState(true);
   const [sessionId,     setSessionId]     = useState<string | null>(null);
   const [handoffAlert,  setHandoffAlert]  = useState(false);
+  const [modoOp,        setModoOp]        = useState<string | null>(null);
   const handoffTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const sessionCreating = useRef(false);
+
+  useEffect(() => {
+    AsyncStorage.getItem("@jade_ia:empresa_v2").then((raw) => {
+      if (!raw) return;
+      try { const parsed = JSON.parse(raw); setModoOp(parsed.modoOperacao ?? null); } catch {}
+    });
+  }, []);
 
   // Create a session on first real message
   const ensureSession = async (): Promise<string | null> => {
@@ -223,6 +238,13 @@ export default function JADEScreen() {
             <Text style={[styles.statusText, { color: colors.success }]}>
               Gemini 2.5 Flash · Online{sessionId ? " · Sessão salva" : ""}
             </Text>
+            {!!modoOp && (
+              <View style={[styles.modeBadge, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+                <Text style={[styles.modeText, { color: colors.mutedForeground }]}>
+                  {MODO_LABEL[modoOp] ?? modoOp}
+                </Text>
+              </View>
+            )}
           </View>
         </View>
         <TouchableOpacity style={[styles.iconBtn, { backgroundColor: colors.surface }]}
@@ -323,6 +345,8 @@ const styles = StyleSheet.create({
   statusRow: { flexDirection: "row", alignItems: "center", gap: 5, marginTop: 2 },
   greenDot: { width: 7, height: 7, borderRadius: 4, backgroundColor: "#00D68F" },
   statusText: { fontSize: 11, fontFamily: "SpaceGrotesk_400Regular" },
+  modeBadge: { paddingHorizontal: 6, paddingVertical: 2, borderRadius: 6, borderWidth: 1 },
+  modeText: { fontSize: 10, fontFamily: "SpaceGrotesk_600SemiBold", letterSpacing: 0.3 },
   iconBtn: { width: 36, height: 36, borderRadius: 18, alignItems: "center", justifyContent: "center" },
   msgRow: { flexDirection: "row", marginBottom: 10, alignItems: "flex-end", gap: 8 },
   msgLeft: { justifyContent: "flex-start" },

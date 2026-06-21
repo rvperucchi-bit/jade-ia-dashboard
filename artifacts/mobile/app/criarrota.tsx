@@ -19,6 +19,7 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useColors } from "@/hooks/useColors";
 import { useApp } from "@/context/AppContext";
+import { useJADE } from "@/hooks/useJADE";
 
 const API_BASE =
   Platform.OS === "web"
@@ -43,9 +44,8 @@ export default function CriarRotaScreen() {
   const { leads } = useApp();
   const topPad = Platform.OS === "web" ? 67 : insets.top;
 
+  const { loading, error, result, success, generate } = useJADE();
   const [paradas, setParadas] = useState<Parada[]>([novaPar()]);
-  const [loading, setLoading] = useState(false);
-  const [result, setResult] = useState("");
   const [copied, setCopied] = useState(false);
   const [carregandoAgenda, setCarregandoAgenda] = useState(true);
   const [autoCarregado, setAutoCarregado] = useState(false);
@@ -117,43 +117,15 @@ export default function CriarRotaScreen() {
       return;
     }
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    setLoading(true);
-    setResult("");
-
     const listaStr = validas.map((p, i) =>
       `${i + 1}. ${p.cliente}${p.endereco ? ` — ${p.endereco}` : ""} (${p.agendado ? "✅ Agendado" : "🔥 Lead quente não agendado"})`
     ).join("\n");
-
     const prompt = `Responda de forma direta e objetiva em no máximo 300 palavras.\n\nVocê é especialista em rotas comerciais. Otimize a seguinte rota de visitas:\n\n${listaStr}\n\nCrie:\n\n## ORDEM OTIMIZADA DE VISITAS\nListe as visitas na ordem mais eficiente por proximidade geográfica/lógica. Numeradas.\n\n## HORÁRIOS SUGERIDOS\nPara cada visita: horário de chegada sugerido, duração estimada (30-60min), tempo de deslocamento até a próxima.\n\n## OPORTUNIDADES NO CAMINHO\nPara cada lead quente não agendado: "Você vai estar perto de [Lead] por volta das [hora]. Vale uma visita surpresa — [razão específica para tentar]."\n\n## RESUMO DO DIA\n- Total de visitas: X\n- Distância estimada: X km\n- Horário previsto de término: HH:mm\n- Lead com maior potencial do dia: [nome]\n\n## LINK GOOGLE MAPS\nGere um deep link do Google Maps no formato: https://www.google.com/maps/dir/[enderecos separados por /]\nSubstitua espaços por + nos endereços.\n\nSeja prático, específico e considere horário comercial (8h–18h).`;
-
-    try {
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 30000);
-      const res = await fetch(`${API_BASE}/api/jade/chat`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ messages: [{ role: "user", content: prompt }] }),
-        signal: controller.signal,
-      });
-      clearTimeout(timeoutId);
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const data = await res.json();
-      setResult(data.message?.trim() || data.response?.trim() || "");
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    } catch (err: unknown) {
-      const isAbort = err instanceof Error && err.name === "AbortError";
-      Alert.alert(
-        "Erro",
-        isAbort
-          ? "A JADE demorou demais para responder. Tente novamente em instantes."
-          : "Não foi possível criar a rota. Verifique sua conexão.",
-      );
-    } finally {
-      setLoading(false);
-    }
+    await generate(prompt);
   };
 
   const copy = async () => {
+    if (!result) return;
     await Clipboard.setStringAsync(result);
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     setCopied(true);
@@ -270,16 +242,24 @@ export default function CriarRotaScreen() {
         </TouchableOpacity>
 
         <TouchableOpacity
-          style={[S.criarBtn, (loading || paradas.filter(p => p.cliente.trim()).length < 2) && { opacity: 0.6 }]}
+          style={[S.criarBtn, (loading || paradas.filter(p => p.cliente.trim()).length < 2) && { opacity: 0.6 }, success && { backgroundColor: "#00D68F" }]}
           onPress={criarRota}
           disabled={loading || paradas.filter(p => p.cliente.trim()).length < 2}
           activeOpacity={0.85}
         >
           {loading
             ? <><ActivityIndicator color="#fff" size="small" /><Text style={S.criarBtnText}>JADE planejando rota...</Text></>
-            : <><Feather name="navigation" size={18} color="#fff" /><Text style={S.criarBtnText}>Criar Rota Inteligente</Text></>
+            : success
+              ? <><Feather name="check" size={18} color="#fff" /><Text style={S.criarBtnText}>Rota Criada!</Text></>
+              : <><Feather name="navigation" size={18} color="#fff" /><Text style={S.criarBtnText}>Criar Rota Inteligente</Text></>
           }
         </TouchableOpacity>
+        {!!error && (
+          <View style={S.errorBox}>
+            <Feather name="alert-circle" size={14} color="#FF6B6B" />
+            <Text style={S.errorText}>{error}</Text>
+          </View>
+        )}
 
         {!!result && !loading && (
           <View style={[S.resultBox, { backgroundColor: colors.card, borderColor: colors.border }]}>
@@ -341,4 +321,6 @@ const S = StyleSheet.create({
   resultText: { fontSize: 14, fontFamily: "SpaceGrotesk_400Regular", lineHeight: 22 },
   mapsBtn: { flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8, borderRadius: 12, borderWidth: 1, paddingVertical: 12 },
   mapsBtnText: { fontSize: 14, fontFamily: "SpaceGrotesk_600SemiBold" },
+  errorBox: { flexDirection: "row", alignItems: "center", gap: 8, padding: 12, borderRadius: 10, backgroundColor: "#FF6B6B18", borderWidth: 1, borderColor: "#FF6B6B40" },
+  errorText: { flex: 1, fontSize: 13, fontFamily: "SpaceGrotesk_400Regular", color: "#FF6B6B", lineHeight: 20 },
 });

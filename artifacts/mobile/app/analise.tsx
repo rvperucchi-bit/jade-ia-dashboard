@@ -1,7 +1,7 @@
 import { Feather } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import { useRouter } from "expo-router";
-import React, { useState } from "react";
+import React from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -16,11 +16,8 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { useApp } from "@/context/AppContext";
 import { useColors } from "@/hooks/useColors";
+import { useJADE } from "@/hooks/useJADE";
 
-const API_BASE =
-  Platform.OS === "web"
-    ? ""
-    : `https://${process.env.EXPO_PUBLIC_DOMAIN ?? ""}`;
 
 function GapBar({
   label, count, total, color,
@@ -82,8 +79,7 @@ export default function AnaliseScreen() {
   const { leads, conversations } = useApp();
   const topPad = Platform.OS === "web" ? 67 : insets.top;
 
-  const [analise, setAnalise]     = useState("");
-  const [gerando, setGerando]     = useState(false);
+  const { loading: gerando, error: jadeError, result: analise, generate } = useJADE();
 
   // ─── KPIs ─────────────────────────────────────────────────────────────────
   const total      = leads.length;
@@ -118,36 +114,11 @@ export default function AnaliseScreen() {
       return;
     }
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    setGerando(true);
-    setAnalise("");
-
     const piStr = stages.map((s) => `${s.label}: ${s.count}`).join(", ");
     const dropStr = drops
       .map((d) => `${d.from}: ${d.rate > 0 ? Math.round(d.rate * 100) + "%" : "—"}`)
       .join(", ");
-
-    const prompt = `Você é a JADE, especialista em vendas B2B. Analise os dados do pipeline e gere uma análise de gaps objetiva.\n\nDADOS:\n- Pipeline: ${piStr}\n- Total leads: ${total}\n- Taxa de conversão: ${txConv}%\n- Ticket médio: R$${ticket.toLocaleString("pt-BR")}\n- Conversas não lidas: ${msgNaoLidas}\n- Conversão por etapa: ${dropStr}\n\nGere:\n1. DIAGNÓSTICO RÁPIDO (2 linhas)\n2. MAIOR GAP: onde está perdendo mais leads e por quê\n3. TOP 3 AÇÕES para melhorar a conversão\n4. META REALISTA: conversão possível com as ações implementadas\n\nSeja direta, prática e motivadora. Máximo 250 palavras.`;
-
-    try {
-      const controller = new AbortController();
-      const to = setTimeout(() => controller.abort(), 30000);
-      const res = await fetch(`${API_BASE}/api/jade/chat`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ messages: [{ role: "user", content: prompt }] }),
-        signal: controller.signal,
-      });
-      clearTimeout(to);
-      if (!res.ok) throw new Error("API error");
-      const data = await res.json();
-      setAnalise(data.message?.trim() || data.response?.trim() || "");
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    } catch (err) {
-      const isAbort = err instanceof Error && err.name === "AbortError";
-      Alert.alert("Erro", isAbort ? "A JADE demorou demais. Tente novamente." : "Erro de conexão. Verifique sua internet.");
-    } finally {
-      setGerando(false);
-    }
+    await generate(`Você é a JADE, especialista em vendas B2B. Analise os dados do pipeline e gere uma análise de gaps objetiva.\n\nDADOS:\n- Pipeline: ${piStr}\n- Total leads: ${total}\n- Taxa de conversão: ${txConv}%\n- Ticket médio: R$${ticket.toLocaleString("pt-BR")}\n- Conversas não lidas: ${msgNaoLidas}\n- Conversão por etapa: ${dropStr}\n\nGere:\n1. DIAGNÓSTICO RÁPIDO (2 linhas)\n2. MAIOR GAP: onde está perdendo mais leads e por quê\n3. TOP 3 AÇÕES para melhorar a conversão\n4. META REALISTA: conversão possível com as ações implementadas\n\nSeja direta, prática e motivadora. Máximo 250 palavras.`);
   };
 
   return (
@@ -252,6 +223,13 @@ export default function AnaliseScreen() {
           }
         </TouchableOpacity>
 
+        {!!jadeError && (
+          <View style={[S.errorBox]}>
+            <Feather name="alert-circle" size={14} color="#FF6B6B" />
+            <Text style={S.errorText}>{jadeError}</Text>
+          </View>
+        )}
+
         {!!analise && !gerando && (
           <View style={[S.analiseBox, { backgroundColor: colors.card, borderColor: "#FF008030" }]}>
             <View style={[S.analiseHeader, { backgroundColor: "#FF008012" }]}>
@@ -295,4 +273,6 @@ const S = StyleSheet.create({
   analiseHeader:{ flexDirection: "row", alignItems: "center", gap: 8, padding: 12 },
   analiseLabel: { fontSize: 12, fontFamily: "SpaceGrotesk_600SemiBold", color: "#FF0080" },
   analiseText:  { fontSize: 14, fontFamily: "SpaceGrotesk_400Regular", lineHeight: 22, padding: 16, paddingTop: 4, color: "#FFFFFF" },
+  errorBox: { flexDirection: "row", alignItems: "center", gap: 8, padding: 12, borderRadius: 10, backgroundColor: "#FF6B6B18", borderWidth: 1, borderColor: "#FF6B6B40" },
+  errorText: { flex: 1, fontSize: 13, fontFamily: "SpaceGrotesk_400Regular", color: "#FF6B6B", lineHeight: 20 },
 });

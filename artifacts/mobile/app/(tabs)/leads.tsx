@@ -16,7 +16,7 @@ import * as Haptics from "expo-haptics";
 import { useRouter } from "expo-router";
 
 import { useColors } from "@/hooks/useColors";
-import { useApp, Lead, LeadColumn } from "@/context/AppContext";
+import { useApp, Lead, LeadColumn, LeadActivity } from "@/context/AppContext";
 
 const COLUMNS: { key: LeadColumn; label: string; color: string }[] = [
   { key: "novo",       label: "Novo",        color: "#6C63FF" },
@@ -166,9 +166,29 @@ function LeadDetailModal({
     }
   }, [visible]);
 
+  const { leadActivities } = useApp();
+
   if (!lead) return null;
 
-  const history = CRM_HISTORY[lead.id] ?? CRM_HISTORY.default;
+  const realActivities: LeadActivity[] | undefined = leadActivities[lead.id];
+
+  const history: ContactEntry[] = realActivities && realActivities.length > 0
+    ? realActivities.map((a) => {
+        const d = new Date(a.created_at);
+        const today = new Date();
+        const yesterday = new Date(); yesterday.setDate(today.getDate() - 1);
+        const isToday = d.toDateString() === today.toDateString();
+        const isYesterday = d.toDateString() === yesterday.toDateString();
+        return {
+          date: isToday ? "Hoje" : isYesterday ? "Ontem" : d.toLocaleDateString("pt-BR", { day: "2-digit", month: "short" }),
+          time: d.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }),
+          channel: a.channel as ContactEntry["channel"],
+          agent: a.agent,
+          note: a.note,
+        };
+      }).reverse()
+    : (CRM_HISTORY[lead.id] ?? CRM_HISTORY.default);
+
   const summaryIndex = parseInt(lead.id, 10) % JADE_SUMMARIES.length;
   const summary = JADE_SUMMARIES[Math.abs(summaryIndex)] ?? JADE_SUMMARIES[0];
   const stageCol = COLUMNS.find((c) => c.key === lead.column);

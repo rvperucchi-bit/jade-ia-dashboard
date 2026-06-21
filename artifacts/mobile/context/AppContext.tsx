@@ -64,6 +64,14 @@ export interface ActivityEvent {
   created_at: string;
 }
 
+export interface LeadActivity {
+  id: string;
+  channel: "jade" | "phone" | "whatsapp" | "email";
+  agent: string;
+  note: string;
+  created_at: string;
+}
+
 export interface MarketingCampaign {
   id: string;
   type_id: string;
@@ -83,11 +91,13 @@ interface AppContextType {
   moduleStates: Record<string, ModuleState>;
   activityEvents: ActivityEvent[];
   campaigns: MarketingCampaign[];
+  leadActivities: Record<string, LeadActivity[]>;
   loading: boolean;
   moveLead: (id: string, column: LeadColumn) => void;
   addLead: (lead: Lead) => void;
   toggleModule: (name: string) => Promise<void>;
   addActivityEvent: (event: Omit<ActivityEvent, "id" | "created_at">) => Promise<void>;
+  addLeadActivity: (leadId: string, activity: Omit<LeadActivity, "id" | "created_at">) => void;
   addCampaign: (campaign: MarketingCampaign) => void;
   refreshDashboard: () => Promise<void>;
 }
@@ -252,6 +262,7 @@ function NativeAppProvider({ children }: { children: React.ReactNode }) {
   const [moduleStates, setModuleStates] = useState<Record<string, ModuleState>>(DEFAULT_MODULES);
   const [activityEvents, setActivityEvents] = useState<ActivityEvent[]>(SEED_ACTIVITY);
   const [campaigns, setCampaigns] = useState<MarketingCampaign[]>([]);
+  const [leadActivities, setLeadActivities] = useState<Record<string, LeadActivity[]>>({});
   const [loading, setLoading] = useState(true);
   const refreshRef = useRef(false);
 
@@ -330,11 +341,18 @@ function NativeAppProvider({ children }: { children: React.ReactNode }) {
     refreshDashboard();
   }, []);
 
+  const addLeadActivityFn = useCallback((leadId: string, activity: Omit<LeadActivity, "id" | "created_at">) => {
+    const newAct: LeadActivity = { id: uid(), ...activity, created_at: new Date().toISOString() };
+    setLeadActivities((prev) => ({ ...prev, [leadId]: [newAct, ...(prev[leadId] ?? [])] }));
+  }, []);
+
   const moveLead = async (id: string, column: LeadColumn) => {
     const lead = leads.find((l) => l.id === id);
     setLeads((prev) => prev.map((l) => (l.id === id ? { ...l, column } : l)));
     await db.runAsync("UPDATE leads SET column_name = ?, updated_at = unixepoch() WHERE id = ?", [column, id]);
     if (lead) {
+      const colLabel = { novo: "Novo", qualificado: "Qualificado", proposta: "Proposta", fechado: "Fechado" }[column] ?? column;
+      addLeadActivityFn(id, { channel: "jade", agent: "CRM", note: `Movido para ${colLabel}.` });
       await addActivityEventFn({
         type: "deal",
         text: `${lead.name} movido para ${column.charAt(0).toUpperCase() + column.slice(1)}`,
@@ -354,6 +372,7 @@ function NativeAppProvider({ children }: { children: React.ReactNode }) {
       [lead.id, lead.name, lead.company, lead.value, lead.phone, lead.column,
        lead.tag, lead.tagColor, lead.time, lead.initials, lead.avatarColor]
     );
+    addLeadActivityFn(lead.id, { channel: "jade", agent: "JADE IA", note: "Lead adicionado via Scanner Radar. Primeiro contato automático." });
     await addActivityEventFn({
       type: "lead",
       text: `Novo lead adicionado: ${lead.name} (${lead.company})`,
@@ -407,9 +426,10 @@ function NativeAppProvider({ children }: { children: React.ReactNode }) {
 
   return (
     <AppContext.Provider value={{
-      leads, conversations, moduleStates, activityEvents, campaigns, loading,
+      leads, conversations, moduleStates, activityEvents, campaigns, leadActivities, loading,
       moveLead, addLead, toggleModule,
       addActivityEvent: addActivityEventFn,
+      addLeadActivity: addLeadActivityFn,
       addCampaign, refreshDashboard,
     }}>
       {children}
@@ -425,6 +445,7 @@ function WebAppProvider({ children }: { children: React.ReactNode }) {
   const [moduleStates, setModuleStates] = useState<Record<string, ModuleState>>(DEFAULT_MODULES);
   const [activityEvents, setActivityEvents] = useState<ActivityEvent[]>(SEED_ACTIVITY);
   const [campaigns, setCampaigns] = useState<MarketingCampaign[]>([]);
+  const [leadActivities, setLeadActivities] = useState<Record<string, LeadActivity[]>>({});
 
   useEffect(() => {
     (async () => {
@@ -434,10 +455,17 @@ function WebAppProvider({ children }: { children: React.ReactNode }) {
     })();
   }, []);
 
+  const addLeadActivityFn = useCallback((leadId: string, activity: Omit<LeadActivity, "id" | "created_at">) => {
+    const newAct: LeadActivity = { id: uid(), ...activity, created_at: new Date().toISOString() };
+    setLeadActivities((prev) => ({ ...prev, [leadId]: [newAct, ...(prev[leadId] ?? [])] }));
+  }, []);
+
   const moveLead = (id: string, column: LeadColumn) => {
     const lead = leads.find((l) => l.id === id);
     setLeads((prev) => prev.map((l) => (l.id === id ? { ...l, column } : l)));
     if (lead) {
+      const colLabel = { novo: "Novo", qualificado: "Qualificado", proposta: "Proposta", fechado: "Fechado" }[column] ?? column;
+      addLeadActivityFn(id, { channel: "jade", agent: "CRM", note: `Movido para ${colLabel}.` });
       addActivityEventFn({ type: "deal", text: `${lead.name} movido para ${column}`, icon: "briefcase", color: "#00D68F" });
     }
   };
@@ -447,6 +475,7 @@ function WebAppProvider({ children }: { children: React.ReactNode }) {
       if (prev.find((l) => l.id === lead.id)) return prev;
       return [lead, ...prev];
     });
+    addLeadActivityFn(lead.id, { channel: "jade", agent: "JADE IA", note: "Lead adicionado via Scanner Radar. Primeiro contato automático." });
     addActivityEventFn({ type: "lead", text: `Novo lead: ${lead.name} (${lead.company})`, icon: "user-plus", color: "#6C63FF" });
   };
 
@@ -478,9 +507,10 @@ function WebAppProvider({ children }: { children: React.ReactNode }) {
 
   return (
     <AppContext.Provider value={{
-      leads, conversations, moduleStates, activityEvents, campaigns, loading: false,
+      leads, conversations, moduleStates, activityEvents, campaigns, leadActivities, loading: false,
       moveLead, addLead, toggleModule,
       addActivityEvent: addActivityEventFn,
+      addLeadActivity: addLeadActivityFn,
       addCampaign, refreshDashboard,
     }}>
       {children}

@@ -5,7 +5,6 @@ import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
   ActivityIndicator,
-  Alert,
   Platform,
   ScrollView,
   StyleSheet,
@@ -16,11 +15,7 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useColors } from "@/hooks/useColors";
-
-const API_BASE =
-  Platform.OS === "web"
-    ? ""
-    : `https://${process.env.EXPO_PUBLIC_DOMAIN ?? ""}`;
+import { useJADE } from "@/hooks/useJADE";
 
 const CHIPS = [
   { id: "caro",       label: "Está caro",            emoji: "💸" },
@@ -37,11 +32,11 @@ export default function ObjectionScreen() {
   const router = useRouter();
   const topPad = Platform.OS === "web" ? 67 : insets.top;
 
+  const { loading, error, result, success, generate } = useJADE();
+
   const [reuniao, setReuniao] = useState("");
   const [objecoesTexto, setObjecoesTexto] = useState("");
   const [chipsSelected, setChipsSelected] = useState<string[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [result, setResult] = useState("");
   const [copied, setCopied] = useState(false);
 
   const toggleChip = (id: string) => {
@@ -54,43 +49,13 @@ export default function ObjectionScreen() {
   const gerar = async () => {
     const objecoesChips = chipsSelected.map((id) => CHIPS.find((c) => c.id === id)?.label ?? "").filter(Boolean);
     const todasObjecoes = [...objecoesChips, objecoesTexto.trim()].filter(Boolean).join("; ");
-    if (!todasObjecoes) {
-      return;
-    }
+    if (!todasObjecoes) return;
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    setLoading(true);
-    setResult("");
-
-    const prompt = `Responda de forma direta e objetiva em no máximo 300 palavras.\n\nVocê é a JADE, especialista em vendas consultivas e psicologia de objeções. Analise a situação abaixo e gere uma estratégia de contorno.\n\nContexto da reunião: ${reuniao.trim() || "Reunião comercial — detalhes não informados"}\n\nObjeções levantadas: ${todasObjecoes}\n\nEstruture a resposta assim:\n\n## ANÁLISE DA OBJEÇÃO\nPor que o cliente disse isso? Qual a objeção real por trás? (psicologia, não medo superficial)\n\n## 3 SCRIPTS DE RESPOSTA\nDo mais suave ao mais direto. Para cada um: nome do estilo, script completo pronto para usar.\n\n**Script 1 — Empático:**\n[texto]\n\n**Script 2 — Consultivo:**\n[texto]\n\n**Script 3 — Direto ao Ponto:**\n[texto]\n\n## PERGUNTA-CHAVE\nUma única pergunta para fazer na próxima interação para reabrir o diálogo.\n\n## PRÓXIMO PASSO RECOMENDADO\nAção concreta: follow-up, nova proposta, reunião de demonstração, etc. Com prazo sugerido.\n\nTom: parceiro estratégico, nunca robótico. Linguagem natural e direta em português do Brasil.`;
-
-    try {
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 30000);
-      const res = await fetch(`${API_BASE}/api/jade/chat`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ messages: [{ role: "user", content: prompt }] }),
-        signal: controller.signal,
-      });
-      clearTimeout(timeoutId);
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const data = await res.json();
-      setResult(data.message?.trim() || data.response?.trim() || "");
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    } catch (err: unknown) {
-      const isAbort = err instanceof Error && err.name === "AbortError";
-      Alert.alert(
-        "Erro",
-        isAbort
-          ? "A JADE demorou demais para responder. Tente novamente em instantes."
-          : "Não foi possível gerar a estratégia. Verifique sua conexão.",
-      );
-    } finally {
-      setLoading(false);
-    }
+    await generate(`Responda de forma direta e objetiva em no máximo 300 palavras.\n\nVocê é a JADE, especialista em vendas consultivas e psicologia de objeções. Analise a situação abaixo e gere uma estratégia de contorno.\n\nContexto da reunião: ${reuniao.trim() || "Reunião comercial — detalhes não informados"}\n\nObjeções levantadas: ${todasObjecoes}\n\nEstruture a resposta assim:\n\n## ANÁLISE DA OBJEÇÃO\nPor que o cliente disse isso? Qual a objeção real por trás? (psicologia, não medo superficial)\n\n## 3 SCRIPTS DE RESPOSTA\nDo mais suave ao mais direto. Para cada um: nome do estilo, script completo pronto para usar.\n\n**Script 1 — Empático:**\n[texto]\n\n**Script 2 — Consultivo:**\n[texto]\n\n**Script 3 — Direto ao Ponto:**\n[texto]\n\n## PERGUNTA-CHAVE\nUma única pergunta para fazer na próxima interação para reabrir o diálogo.\n\n## PRÓXIMO PASSO RECOMENDADO\nAção concreta: follow-up, nova proposta, reunião de demonstração, etc. Com prazo sugerido.\n\nTom: parceiro estratégico, nunca robótico. Linguagem natural e direta em português do Brasil.`);
   };
 
   const copy = async () => {
+    if (!result) return;
     await Clipboard.setStringAsync(result);
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     setCopied(true);
@@ -168,16 +133,24 @@ export default function ObjectionScreen() {
         </View>
 
         <TouchableOpacity
-          style={[S.gerarBtn, (!canGerar || loading) && { opacity: 0.6 }]}
+          style={[S.gerarBtn, (!canGerar || loading) && { opacity: 0.6 }, success && { backgroundColor: "#00D68F" }]}
           onPress={gerar}
           disabled={!canGerar || loading}
           activeOpacity={0.85}
         >
           {loading
             ? <><ActivityIndicator color="#fff" size="small" /><Text style={S.gerarBtnText}>JADE analisando...</Text></>
-            : <><Feather name="shield" size={18} color="#fff" /><Text style={S.gerarBtnText}>Gerar Estratégia de Contorno</Text></>
+            : success
+              ? <><Feather name="check" size={18} color="#fff" /><Text style={S.gerarBtnText}>Estratégia Gerada!</Text></>
+              : <><Feather name="shield" size={18} color="#fff" /><Text style={S.gerarBtnText}>Gerar Estratégia de Contorno</Text></>
           }
         </TouchableOpacity>
+        {!!error && (
+          <View style={S.errorBox}>
+            <Feather name="alert-circle" size={14} color="#FF6B6B" />
+            <Text style={S.errorText}>{error}</Text>
+          </View>
+        )}
 
         {!!result && !loading && (
           <View style={[S.resultBox, { backgroundColor: colors.card, borderColor: colors.border }]}>
@@ -232,4 +205,6 @@ const S = StyleSheet.create({
   resultText: { fontSize: 14, fontFamily: "SpaceGrotesk_400Regular", lineHeight: 22 },
   regenBtn: { flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8, paddingVertical: 10, borderRadius: 10, borderWidth: 1 },
   regenText: { fontSize: 13, fontFamily: "SpaceGrotesk_600SemiBold" },
+  errorBox: { flexDirection: "row", alignItems: "center", gap: 8, padding: 12, borderRadius: 10, backgroundColor: "#FF6B6B18", borderWidth: 1, borderColor: "#FF6B6B40" },
+  errorText: { flex: 1, fontSize: 13, fontFamily: "SpaceGrotesk_400Regular", color: "#FF6B6B", lineHeight: 20 },
 });

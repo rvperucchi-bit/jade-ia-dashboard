@@ -3,7 +3,6 @@ import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
   ActivityIndicator,
-  Alert,
   Platform,
   ScrollView,
   StyleSheet,
@@ -13,6 +12,7 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useColors } from "@/hooks/useColors";
+import { useJADE } from "@/hooks/useJADE";
 
 const API_BASE =
   Platform.OS === "web"
@@ -108,58 +108,23 @@ export default function RoteiroScreen() {
   const topPad  = Platform.OS === "web" ? 67 : insets.top;
 
   const [open, setOpen] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [result, setResult] = useState("");
+  const { loading, error, result, success, generate } = useJADE();
 
   const toggle = (id: string) => setOpen((prev) => prev === id ? null : id);
 
   const gerar = async () => {
-    setLoading(true);
-    setResult("");
+    let contexto = "Empresa não configurada. Use contexto genérico de vendas B2B.";
     try {
-      let contexto = "Empresa não configurada. Use contexto genérico de vendas B2B.";
-      try {
-        const empresaRes = await fetch(`${API_BASE}/api/empresa`);
-        if (empresaRes.ok) {
-          const empresaData = await empresaRes.json();
-          const cfg = empresaData.config;
-          if (cfg?.nome) {
-            contexto = `Empresa: ${cfg.nome}. Produto/serviço: ${cfg.produto || "não informado"}. Segmento: ${cfg.segmento || "B2B"}. Planos: ${cfg.planos || "ver catálogo"}.`;
-          }
+      const empresaRes = await fetch(`${API_BASE}/api/empresa`);
+      if (empresaRes.ok) {
+        const empresaData = await empresaRes.json();
+        const cfg = empresaData.config;
+        if (cfg?.nome) {
+          contexto = `Empresa: ${cfg.nome}. Produto/serviço: ${cfg.produto || "não informado"}. Segmento: ${cfg.segmento || "B2B"}. Planos: ${cfg.planos || "ver catálogo"}.`;
         }
-      } catch {}
-
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 30000);
-      const res = await fetch(`${API_BASE}/api/jade/chat`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          messages: [
-            {
-              role: "user",
-              content: `Responda de forma direta e objetiva em no máximo 300 palavras.\n\nVocê é a JADE, especialista em vendas. Gere um roteiro de vendas completo e personalizado.\n\nContexto: ${contexto}\n\nO roteiro deve cobrir as 5 etapas: Abertura, Qualificação (SPIN), Apresentação, Objeções e Fechamento. Para cada etapa forneça: script pronto para usar, adaptado ao produto/serviço e segmento. Use linguagem brasileira natural e direta.`,
-            },
-          ],
-        }),
-        signal: controller.signal,
-      });
-      clearTimeout(timeoutId);
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const data = await res.json();
-      const texto = data.message?.trim() || data.response?.trim() || "";
-      setResult(texto || "Roteiro gerado! Verifique o conteúdo acima.");
-    } catch (err: unknown) {
-      const isAbort = err instanceof Error && err.name === "AbortError";
-      Alert.alert(
-        "Erro",
-        isAbort
-          ? "A JADE demorou demais para responder. Tente novamente em instantes."
-          : "Não foi possível gerar o roteiro. Verifique sua conexão.",
-      );
-    } finally {
-      setLoading(false);
-    }
+      }
+    } catch {}
+    await generate(`Responda de forma direta e objetiva em no máximo 300 palavras.\n\nVocê é a JADE, especialista em vendas. Gere um roteiro de vendas completo e personalizado.\n\nContexto: ${contexto}\n\nO roteiro deve cobrir as 5 etapas: Abertura, Qualificação (SPIN), Apresentação, Objeções e Fechamento. Para cada etapa forneça: script pronto para usar, adaptado ao produto/serviço e segmento. Use linguagem brasileira natural e direta.`);
   };
 
   return (
@@ -229,15 +194,24 @@ export default function RoteiroScreen() {
 
         <View style={S.genSection}>
           <TouchableOpacity
-            style={[S.genBtn, loading && { opacity: 0.7 }]}
+            style={[S.genBtn, loading && { opacity: 0.7 }, success && { backgroundColor: "#00D68F" }]}
             onPress={gerar}
             activeOpacity={0.85}
             disabled={loading}
           >
             {loading
               ? <ActivityIndicator color="#fff" />
-              : <><Feather name="cpu" size={18} color="#fff" /><Text style={S.genBtnText}>Gerar Roteiro Personalizado</Text></>}
+              : success
+                ? <><Feather name="check" size={18} color="#fff" /><Text style={S.genBtnText}>Roteiro Gerado!</Text></>
+                : <><Feather name="cpu" size={18} color="#fff" /><Text style={S.genBtnText}>Gerar Roteiro Personalizado</Text></>}
           </TouchableOpacity>
+
+          {!!error && (
+            <View style={S.errorBox}>
+              <Feather name="alert-circle" size={14} color="#FF6B6B" />
+              <Text style={S.errorText}>{error}</Text>
+            </View>
+          )}
 
           {!!result && (
             <View style={[S.resultBox, { backgroundColor: colors.card, borderColor: colors.border }]}>
@@ -300,4 +274,6 @@ const S = StyleSheet.create({
   greenDot: { width: 7, height: 7, borderRadius: 4 },
   resultLabel: { fontSize: 12, fontFamily: "SpaceGrotesk_600SemiBold" },
   resultText: { fontSize: 14, fontFamily: "SpaceGrotesk_400Regular", lineHeight: 22 },
+  errorBox: { flexDirection: "row", alignItems: "center", gap: 8, padding: 12, borderRadius: 10, backgroundColor: "#FF6B6B18", borderWidth: 1, borderColor: "#FF6B6B40" },
+  errorText: { flex: 1, fontSize: 13, fontFamily: "SpaceGrotesk_400Regular", color: "#FF6B6B", lineHeight: 20 },
 });

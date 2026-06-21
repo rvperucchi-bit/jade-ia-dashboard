@@ -4,28 +4,28 @@
       "module_name": "scanner",
       "is_active": false,
       "status": "paused",
-      "last_started_at": "2026-06-20T21:02:53.167Z",
-      "last_stopped_at": "2026-06-20T22:01:03.228Z",
+      "last_started_at": "2026-06-20T22:43:57.412Z",
+      "last_stopped_at": "2026-06-20T22:44:09.067Z",
       "last_run_at": null,
-      "updated_at": "2026-06-20T22:01:03.228Z"
+      "updated_at": "2026-06-20T22:44:09.067Z"
     },
     "jade": {
       "module_name": "jade",
       "is_active": false,
       "status": "paused",
-      "last_started_at": "2026-06-20T21:27:26.302Z",
-      "last_stopped_at": "2026-06-20T21:27:28.156Z",
+      "last_started_at": "2026-06-20T22:44:11.242Z",
+      "last_stopped_at": "2026-06-20T22:44:18.027Z",
       "last_run_at": null,
-      "updated_at": "2026-06-20T21:27:28.156Z"
+      "updated_at": "2026-06-20T22:44:18.027Z"
     },
     "leads": {
       "module_name": "leads",
       "is_active": false,
-      "status": "idle",
-      "last_started_at": null,
-      "last_stopped_at": null,
+      "status": "paused",
+      "last_started_at": "2026-06-20T22:44:19.724Z",
+      "last_stopped_at": "2026-06-20T22:51:48.511Z",
       "last_run_at": null,
-      "updated_at": "2026-06-20T09:04:14.587Z"
+      "updated_at": "2026-06-20T22:51:48.511Z"
     },
     "whatsapp": {
       "module_name": "whatsapp",
@@ -39,14 +39,154 @@
     "marketing": {
       "module_name": "marketing",
       "is_active": false,
-      "status": "idle",
-      "last_started_at": null,
-      "last_stopped_at": null,
+      "status": "paused",
+      "last_started_at": "2026-06-20T22:59:59.721Z",
+      "last_stopped_at": "2026-06-20T23:00:56.762Z",
       "last_run_at": null,
-      "updated_at": "2026-06-20T09:04:14.587Z"
+      "updated_at": "2026-06-20T23:00:56.762Z"
     }
   },
   "module_logs": [
+    {
+      "id": "26f2d28170538d3b",
+      "module_name": "marketing",
+      "action": "deactivated",
+      "message": "Marketing IA desativado",
+      "metadata": {
+        "active": false
+      },
+      "created_at": "2026-06-20T23:00:56.763Z"
+    },
+    {
+      "id": "2a931bbee26dee71",
+      "module_name": "marketing",
+      "action": "activated",
+      "message": "Marketing IA ativado",
+      "metadata": {
+        "active": true
+      },
+      "created_at": "2026-06-20T22:59:59.722Z"
+    },
+    {
+      "id": "1c09d442080b6ef8",
+      "module_name": "marketing",
+      "action": "deactivated",
+      "message": "Marketing IA desativado",
+      "metadata": {
+        "active": false
+      },
+      "created_at": "2026-06-20T22:59:39.643Z"
+    },
+    {
+      "id": "6b386be3af1a4f4b",
+      "module_name": "marketing",
+      "action": "activated",
+      "message": "Marketing IA ativado",
+      "metadata": {
+        "active": true
+      },
+      "created_at": "2026-06-20T22:59:38.815Z"
+    },
+    {
+      "id": "bd5096a173af951e",
+      "module_name": "leads",
+      "action": "deactivated",
+      "message": "CRM/Leads desativado",
+      "metadata": {
+        "active": false
+      },
+      "created_at": "2026-06-20T22:51:48.513Z"
+    },
+    {
+      "id": "31722a9a2456b23d",
+      "module_name": "leads",
+      "action": "activated",
+      "message": "CRM/Leads ativado",
+      "metadata": {
+        "active": true
+      },
+      "created_at": "2026-06-20T22:44:19.725Z"
+    },
+    {
+      "id": "d3aac5a03c77321f",
+      "module_name": "jade",
+      "action": "deactivated",
+      "message": "JADE IA desativado",
+      "metadata": {
+        "active": false
+      },
+      "created_at": "2026-06-20T22:44:18.029Z"
+    },
+    {
+      "id": "dfd23a3c9a24aabe",
+      "module_name": "jade",
+      "action": "activated",
+      "message": "JADE IA ativado",
+      "metadata": {
+        "active": true
+      },
+      "created_at": "2026-06-20T22:44:11.243Z"
+    },
+    {
+      "id": "006c81c680f07831",
+      "module_name": "scanner",
+      "action": "deactivated",
+      "message": "Scanner Radar desativado",
+      "metadata": {
+        "active": false
+      },
+      "created_at": "2026-06-20T22:44:09.069Z"
+    },
+    {
+      "id": "a48740d46e0a72f4",
+      "module_name": "scanner",
+      "action": "activated",
+      "message": "Scanner Radar ativado",
+      "metadata": {
+        "active": true
+      },
+      "created_at": "2026-06-20T22:43:57.413Z"
+    },
+    {
+      "id": "6608948e023ce98e",
+      "module_name": "scanner",
+      "action": "deactivated",
+      "message": "Scanner Radar desativado",
+      "metadata": {
+        "active": false
+      },
+      "created_at": "2026-06-20T22:21:24.954Z"
+    },
+    {
+      "id": "c7260356dcadc6c2",
+      "module_name": "marketing",
+      "action": "deactivated",
+      "message": "Marketing IA desativado",
+      "metadata": {
+        "active": false
+      },
+      "created_at": "2026-06-20T22:21:10.382Z"
+    },
+    {
+      "id": "e691892b434f00dc",
+      "module_name": "marketing",
+      "action": "activated",
+      "message": "Marketing IA ativado",
+      "metadata": {
+        "active": true
+      },
+      "created_at": "2026-06-20T22:21:09.505Z"
+    },
+    {
+      "id": "21149e1fc871023f",
+      "module_name": "scanner",
+      "action": "activated",
+      "message": "Scanner Radar ativado",
+      "metadata": {
+        "active": true
+      },
+      "created_at": "2026-06-20T22:21:04.437Z"
+    },
     {
       "id": "e1da7887aee0baf6",
       "module_name": "scanner",
@@ -289,6 +429,486 @@
     }
   ],
   "activity_events": [
+    {
+      "id": "72f4cb775f999628",
+      "type": "module",
+      "text": "Marketing IA desativado",
+      "icon": "zap",
+      "color": "#FFB300",
+      "metadata": {
+        "module": "marketing",
+        "active": false
+      },
+      "created_at": "2026-06-20T23:00:56.775Z"
+    },
+    {
+      "id": "d2bfff405c6be7eb",
+      "type": "module",
+      "text": "Marketing IA ativado",
+      "icon": "zap",
+      "color": "#FFB300",
+      "metadata": {
+        "module": "marketing",
+        "active": true
+      },
+      "created_at": "2026-06-20T22:59:59.722Z"
+    },
+    {
+      "id": "fd29c5342c8caab7",
+      "type": "module",
+      "text": "Marketing IA desativado",
+      "icon": "zap",
+      "color": "#FFB300",
+      "metadata": {
+        "module": "marketing",
+        "active": false
+      },
+      "created_at": "2026-06-20T22:59:39.644Z"
+    },
+    {
+      "id": "7144aba486cc320d",
+      "type": "module",
+      "text": "Marketing IA ativado",
+      "icon": "zap",
+      "color": "#FFB300",
+      "metadata": {
+        "module": "marketing",
+        "active": true
+      },
+      "created_at": "2026-06-20T22:59:38.825Z"
+    },
+    {
+      "id": "bcfe82df56a856ec",
+      "type": "message",
+      "text": "JADE respondeu: \"Responder cliente\"",
+      "icon": "robot",
+      "color": "#FF0080",
+      "created_at": "2026-06-20T22:59:23.681Z"
+    },
+    {
+      "id": "65413d019f11c728",
+      "type": "message",
+      "text": "JADE respondeu: \"Responder cliente\"",
+      "icon": "robot",
+      "color": "#FF0080",
+      "created_at": "2026-06-20T22:59:22.929Z"
+    },
+    {
+      "id": "a6ff96eb5dec70a4",
+      "type": "message",
+      "text": "JADE respondeu a uma mensagem",
+      "icon": "robot",
+      "color": "#FF0080",
+      "metadata": {
+        "session_id": null
+      },
+      "created_at": "2026-06-20T22:59:22.808Z"
+    },
+    {
+      "id": "1aec25189ed5064a",
+      "type": "message",
+      "text": "JADE respondeu a uma mensagem",
+      "icon": "robot",
+      "color": "#FF0080",
+      "metadata": {
+        "session_id": "c7cdcf1e4fa10547"
+      },
+      "created_at": "2026-06-20T22:59:21.587Z"
+    },
+    {
+      "id": "03ab2c849b47b48f",
+      "type": "message",
+      "text": "JADE respondeu a uma mensagem",
+      "icon": "robot",
+      "color": "#FF0080",
+      "metadata": {},
+      "created_at": "2026-06-20T22:58:51.032Z"
+    },
+    {
+      "id": "302274ae9631995b",
+      "type": "message",
+      "text": "JADE respondeu a uma mensagem",
+      "icon": "robot",
+      "color": "#FF0080",
+      "metadata": {},
+      "created_at": "2026-06-20T22:57:21.246Z"
+    },
+    {
+      "id": "9ab26479b4d04546",
+      "type": "message",
+      "text": "JADE respondeu a uma mensagem",
+      "icon": "robot",
+      "color": "#FF0080",
+      "metadata": {},
+      "created_at": "2026-06-20T22:56:40.739Z"
+    },
+    {
+      "id": "faf15e94cf32a907",
+      "type": "message",
+      "text": "JADE respondeu a uma mensagem",
+      "icon": "robot",
+      "color": "#FF0080",
+      "metadata": {},
+      "created_at": "2026-06-20T22:55:12.273Z"
+    },
+    {
+      "id": "c4b886d5213253a3",
+      "type": "module",
+      "text": "CRM/Leads desativado",
+      "icon": "users",
+      "color": "#00D68F",
+      "metadata": {
+        "module": "leads",
+        "active": false
+      },
+      "created_at": "2026-06-20T22:51:48.514Z"
+    },
+    {
+      "id": "789742add1688d4e",
+      "type": "message",
+      "text": "JADE respondeu a uma mensagem",
+      "icon": "robot",
+      "color": "#FF0080",
+      "metadata": {},
+      "created_at": "2026-06-20T22:50:53.633Z"
+    },
+    {
+      "id": "bc8faae66c0e5fc8",
+      "type": "message",
+      "text": "JADE respondeu a uma mensagem",
+      "icon": "robot",
+      "color": "#FF0080",
+      "metadata": {},
+      "created_at": "2026-06-20T22:50:12.134Z"
+    },
+    {
+      "id": "83b9d5e9d2cf9098",
+      "type": "message",
+      "text": "JADE respondeu a uma mensagem",
+      "icon": "robot",
+      "color": "#FF0080",
+      "metadata": {},
+      "created_at": "2026-06-20T22:48:51.633Z"
+    },
+    {
+      "id": "c68ef271e2ad2851",
+      "type": "message",
+      "text": "JADE respondeu a uma mensagem",
+      "icon": "robot",
+      "color": "#FF0080",
+      "metadata": {},
+      "created_at": "2026-06-20T22:47:51.239Z"
+    },
+    {
+      "id": "cc34f6c9117c1b0f",
+      "type": "message",
+      "text": "JADE respondeu a uma mensagem",
+      "icon": "robot",
+      "color": "#FF0080",
+      "metadata": {},
+      "created_at": "2026-06-20T22:47:32.544Z"
+    },
+    {
+      "id": "9427b894bfa8cd33",
+      "type": "message",
+      "text": "JADE respondeu a uma mensagem",
+      "icon": "robot",
+      "color": "#FF0080",
+      "metadata": {},
+      "created_at": "2026-06-20T22:46:39.663Z"
+    },
+    {
+      "id": "6052be03b8bc69fe",
+      "type": "message",
+      "text": "JADE respondeu a uma mensagem",
+      "icon": "robot",
+      "color": "#FF0080",
+      "metadata": {},
+      "created_at": "2026-06-20T22:46:27.676Z"
+    },
+    {
+      "id": "b8accab2ca78a308",
+      "type": "message",
+      "text": "JADE respondeu a uma mensagem",
+      "icon": "robot",
+      "color": "#FF0080",
+      "metadata": {},
+      "created_at": "2026-06-20T22:46:15.974Z"
+    },
+    {
+      "id": "718c787cf1095aa7",
+      "type": "campaign",
+      "text": "Campanha criada: Story",
+      "icon": "zap",
+      "color": "#FFB300",
+      "created_at": "2026-06-20T22:45:39.582Z"
+    },
+    {
+      "id": "698d4a13951c722d",
+      "type": "campaign",
+      "text": "Campanha criada: Story para Instagram Stories",
+      "icon": "zap",
+      "color": "#FFB300",
+      "metadata": {
+        "campaign_id": "bd6b6394fd67462d",
+        "type": "story"
+      },
+      "created_at": "2026-06-20T22:45:39.264Z"
+    },
+    {
+      "id": "6d2d08b7895f164c",
+      "type": "campaign",
+      "text": "Campanha criada: Post Instagram",
+      "icon": "zap",
+      "color": "#FFB300",
+      "created_at": "2026-06-20T22:45:09.072Z"
+    },
+    {
+      "id": "ca7f2bcb7a903a1c",
+      "type": "campaign",
+      "text": "Campanha criada: Post Instagram para Instagram",
+      "icon": "zap",
+      "color": "#FFB300",
+      "metadata": {
+        "campaign_id": "3ddd76fd4b481b89",
+        "type": "instagram_post"
+      },
+      "created_at": "2026-06-20T22:45:08.775Z"
+    },
+    {
+      "id": "403c5c8a00924f34",
+      "type": "module",
+      "text": "CRM/Leads ativado",
+      "icon": "users",
+      "color": "#00D68F",
+      "metadata": {
+        "module": "leads",
+        "active": true
+      },
+      "created_at": "2026-06-20T22:44:19.727Z"
+    },
+    {
+      "id": "1952334d65dbfbea",
+      "type": "module",
+      "text": "JADE IA desativado",
+      "icon": "robot",
+      "color": "#FF0080",
+      "metadata": {
+        "module": "jade",
+        "active": false
+      },
+      "created_at": "2026-06-20T22:44:18.030Z"
+    },
+    {
+      "id": "906b4336c1ee3390",
+      "type": "module",
+      "text": "JADE IA ativado",
+      "icon": "robot",
+      "color": "#FF0080",
+      "metadata": {
+        "module": "jade",
+        "active": true
+      },
+      "created_at": "2026-06-20T22:44:11.244Z"
+    },
+    {
+      "id": "8a397f3227f6edd3",
+      "type": "module",
+      "text": "Scanner Radar desativado",
+      "icon": "crosshair",
+      "color": "#6C63FF",
+      "metadata": {
+        "module": "scanner",
+        "active": false
+      },
+      "created_at": "2026-06-20T22:44:09.070Z"
+    },
+    {
+      "id": "7e74d1004af0afc0",
+      "type": "lead",
+      "text": "Novo lead adicionado: Mariana Lima Pires (Minimercado Conveniência Mais)",
+      "icon": "user-plus",
+      "color": "#6C63FF",
+      "created_at": "2026-06-20T22:44:05.960Z"
+    },
+    {
+      "id": "2ca9c2d267589751",
+      "type": "lead",
+      "text": "Novo lead adicionado: Carlos Eduardo Souza (Loja de Roupas Vestir Bem)",
+      "icon": "user-plus",
+      "color": "#6C63FF",
+      "created_at": "2026-06-20T22:44:05.291Z"
+    },
+    {
+      "id": "c6a35f4239f9239e",
+      "type": "lead",
+      "text": "Novo lead adicionado: Ana Clara Bastos (Padaria Sabor do Povo)",
+      "icon": "user-plus",
+      "color": "#6C63FF",
+      "created_at": "2026-06-20T22:44:05.288Z"
+    },
+    {
+      "id": "b56c31ad34928624",
+      "type": "scan",
+      "text": "JADE encontrou 3 novos leads via radar em São Paulo",
+      "icon": "crosshair",
+      "color": "#6C63FF",
+      "metadata": {
+        "count": 3,
+        "cidade": "São Paulo"
+      },
+      "created_at": "2026-06-20T22:44:04.847Z"
+    },
+    {
+      "id": "893ed2f60f2cb94d",
+      "type": "module",
+      "text": "Scanner Radar ativado",
+      "icon": "crosshair",
+      "color": "#6C63FF",
+      "metadata": {
+        "module": "scanner",
+        "active": true
+      },
+      "created_at": "2026-06-20T22:43:57.423Z"
+    },
+    {
+      "id": "5b9918fa6d32667e",
+      "type": "message",
+      "text": "JADE respondeu a uma mensagem",
+      "icon": "robot",
+      "color": "#FF0080",
+      "metadata": {},
+      "created_at": "2026-06-20T22:41:31.605Z"
+    },
+    {
+      "id": "bf738dcf1253a4b6",
+      "type": "message",
+      "text": "JADE respondeu a uma mensagem",
+      "icon": "robot",
+      "color": "#FF0080",
+      "metadata": {},
+      "created_at": "2026-06-20T22:40:45.537Z"
+    },
+    {
+      "id": "049526aa848bbb84",
+      "type": "message",
+      "text": "JADE respondeu a uma mensagem",
+      "icon": "robot",
+      "color": "#FF0080",
+      "metadata": {},
+      "created_at": "2026-06-20T22:39:59.944Z"
+    },
+    {
+      "id": "597d974007484aa7",
+      "type": "message",
+      "text": "JADE respondeu a uma mensagem",
+      "icon": "robot",
+      "color": "#FF0080",
+      "metadata": {},
+      "created_at": "2026-06-20T22:39:52.559Z"
+    },
+    {
+      "id": "52bb3f5db1f00419",
+      "type": "message",
+      "text": "JADE respondeu a uma mensagem",
+      "icon": "robot",
+      "color": "#FF0080",
+      "metadata": {},
+      "created_at": "2026-06-20T22:38:41.279Z"
+    },
+    {
+      "id": "91acfdf46145d734",
+      "type": "message",
+      "text": "JADE respondeu a uma mensagem",
+      "icon": "robot",
+      "color": "#FF0080",
+      "metadata": {},
+      "created_at": "2026-06-20T22:38:31.467Z"
+    },
+    {
+      "id": "2484610b190fbe11",
+      "type": "module",
+      "text": "Scanner Radar desativado",
+      "icon": "crosshair",
+      "color": "#6C63FF",
+      "metadata": {
+        "module": "scanner",
+        "active": false
+      },
+      "created_at": "2026-06-20T22:21:24.956Z"
+    },
+    {
+      "id": "2d96a8015d9f6278",
+      "type": "lead",
+      "text": "Novo lead adicionado: Carolina Mendes (Boutique Charme Urbano)",
+      "icon": "user-plus",
+      "color": "#6C63FF",
+      "created_at": "2026-06-20T22:21:11.675Z"
+    },
+    {
+      "id": "d4a8c1471af1d264",
+      "type": "lead",
+      "text": "Novo lead adicionado: Roberto Costa (Livraria Caminhos da Leitura)",
+      "icon": "user-plus",
+      "color": "#6C63FF",
+      "created_at": "2026-06-20T22:21:11.037Z"
+    },
+    {
+      "id": "68b3956b69c92207",
+      "type": "lead",
+      "text": "Novo lead adicionado: Ana Lúcia Pereira (Empório Sabor & Grãos)",
+      "icon": "user-plus",
+      "color": "#6C63FF",
+      "created_at": "2026-06-20T22:21:11.034Z"
+    },
+    {
+      "id": "62f17d154a7f19df",
+      "type": "scan",
+      "text": "JADE encontrou 3 novos leads via radar em São Paulo",
+      "icon": "crosshair",
+      "color": "#6C63FF",
+      "metadata": {
+        "count": 3,
+        "cidade": "São Paulo"
+      },
+      "created_at": "2026-06-20T22:21:10.705Z"
+    },
+    {
+      "id": "ae5e1ddc14cb1d1a",
+      "type": "module",
+      "text": "Marketing IA desativado",
+      "icon": "zap",
+      "color": "#FFB300",
+      "metadata": {
+        "module": "marketing",
+        "active": false
+      },
+      "created_at": "2026-06-20T22:21:10.383Z"
+    },
+    {
+      "id": "1760911fd94f1d6c",
+      "type": "module",
+      "text": "Marketing IA ativado",
+      "icon": "zap",
+      "color": "#FFB300",
+      "metadata": {
+        "module": "marketing",
+        "active": true
+      },
+      "created_at": "2026-06-20T22:21:09.515Z"
+    },
+    {
+      "id": "2aeed579f5d75abe",
+      "type": "module",
+      "text": "Scanner Radar ativado",
+      "icon": "crosshair",
+      "color": "#6C63FF",
+      "metadata": {
+        "module": "scanner",
+        "active": true
+      },
+      "created_at": "2026-06-20T22:21:04.445Z"
+    },
     {
       "id": "701e9dd129cae92c",
       "type": "module",
@@ -1327,8 +1947,47 @@
       "created_at": "2026-06-20T09:04:51.291Z"
     }
   ],
-  "marketing_campaigns": [],
+  "marketing_campaigns": [
+    {
+      "id": "bd6b6394fd67462d",
+      "type_id": "story",
+      "type_title": "Story",
+      "channel": "Instagram Stories",
+      "context_input": "Carro",
+      "generated_content": "Aqui está um roteiro de 3 frames para o seu Story do Instagram, com foco em \"Carro\":\n\n---\n\n**ROTEIRO DE STORY DO INSTAGRAM: VIBE CARRO**\n\n**FRAME 1**\n\n*   **Texto:** A liberdade tem 4 rodas.\n*   **Impacto:** Curto, direto, evoca um sentimento poderoso.\n*   **Sugestão de Sticker/GIF:** GIF de estrada/carro em movimento (sutil, tipo um close no pneu girando ou um asfalto).\n*   **Visual Sugerido:** Foto ou vídeo curto de um carro na estrada (vista frontal ou lateral), ou um detalhe do carro (volante, painel), com foco em movimento/abertura.\n\n---\n\n**FRAME 2**\n\n*   **Texto:** Playlist no talo. Janela aberta. Sem destino.\n*   **Impacto:** Cria uma cena, convida a sentir a vibe, linguagem jovem.\n*   **Sugestão de Sticker/GIF:** Sticker de música (com batidas pulsando) ou emoji de vento 🌬️.\n*   **Visual Sugerido:** Vídeo curto com a janela do carro aberta, talvez o braço de fora, o som tocando (sem áudio na story, só o texto reforça). Pode ser um take de dentro do carro.\n\n---\n\n**FRAME 3**\n\n*   **Texto:** Pra você, qual é a melhor vibe?\n*   **Impacto:** Pergunta direta, convida à interação.\n*   **Sugestão de Sticker/Enquete:** ENQUETE!\n    *   **Opção 1:** Estrada infinita 🛣️\n    *   **Opção 2:** Rolê na city 🏙️\n*   **Visual Sugerido:** Uma imagem que misture elementos de estrada e cidade (pode ser uma montagem rápida ou uma foto mais genérica que remeta a \"dirigir\").\n\n---",
+      "status": "draft",
+      "created_at": "2026-06-20T22:45:39.262Z"
+    },
+    {
+      "id": "3ddd76fd4b481b89",
+      "type_id": "instagram_post",
+      "type_title": "Post Instagram",
+      "channel": "Instagram",
+      "context_input": "Carro",
+      "generated_content": "Aqui está uma sugestão de legenda:\n\nMais que um simples meio de transporte, meu carro é um parceiro de jornada que me leva a novas experiências. 🔑 Cada quilômetro percorrido é uma nova história, uma nova descoberta. Seja para aquela reunião importante 💼 ou para uma escapada de fim de semana ⛰️, ele está sempre pronto, garantindo conforto e segurança em cada trajeto.\n\nÉ a liberdade de ir e vir, de explorar novos horizontes e de criar memórias inesquecíveis.\n\nE você, qual a sua melhor memória a bordo? Compartilhe nos comentários! 👇\n\n#Carro #Automovel #VidaNaEstrada #Explorar #Aventura #Liberdade #Mobilidade #Transporte #PaixaoPorCarros #Jornada #Direcao #Conforto #Motor #MinhaViagem #Estrada",
+      "status": "draft",
+      "created_at": "2026-06-20T22:45:08.774Z"
+    }
+  ],
   "jade_sessions": [
+    {
+      "id": "c7cdcf1e4fa10547",
+      "title": "Responder cliente",
+      "messages": [
+        {
+          "role": "user",
+          "content": "Responder cliente",
+          "time": "2026-06-20T22:59:21.585Z"
+        },
+        {
+          "role": "model",
+          "content": "Olá! Para te ajudar a responder, preciso saber qual foi a mensagem do cliente.\n\nPode me enviar o que ele disse? Assim consigo te dar a melhor resposta, bem personalizada.",
+          "time": "2026-06-20T22:59:21.586Z"
+        }
+      ],
+      "created_at": "2026-06-20T22:59:19.733Z",
+      "updated_at": "2026-06-20T22:59:21.586Z"
+    },
     {
       "id": "9a14d3608d937488",
       "title": "Oi jade, to desanimado hoje para vender",
@@ -1350,11 +2009,11 @@
   ],
   "scanner_history": [],
   "company_config": {
-    "nome": "Ja delivery",
-    "produto": "Plataforma de delivery",
-    "segmento": "Alimentação",
-    "tom": "consultivo",
-    "planos": "",
-    "updated_at": "2026-06-20T19:25:20.613Z"
+    "nome": "Pereira imóvel",
+    "produto": "Casas",
+    "segmento": "Imóveis",
+    "tom": "descontraido",
+    "planos": "• Casas — R$Consultar",
+    "updated_at": "2026-06-20T22:51:29.401Z"
   }
 }

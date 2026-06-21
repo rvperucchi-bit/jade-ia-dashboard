@@ -66,113 +66,75 @@ export default function MaisScreen() {
 
   const tap = () => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
 
-  const isEnterprise = false;
+  const USER_PLAN = "pro" as "free" | "pro" | "enterprise";
+  const isEnterprise = USER_PLAN === "enterprise";
+
+  const navPro = (path: string) => {
+    tap();
+    if (USER_PLAN === "free") { router.push("/plano" as any); return; }
+    router.push(path as any);
+  };
+
+  const navEnterprise = (path: string) => {
+    tap();
+    if (!isEnterprise) { router.push("/plano" as any); return; }
+    router.push(path as any);
+  };
 
   const handleGestaoPress = () => {
     tap();
+    if (!isEnterprise) { router.push("/plano" as any); return; }
     router.push("/gestao" as any);
   };
 
   const MENU_SECTIONS: { title: string; items: MenuItem[] }[] = [
     {
-      title: "Ferramentas de Vendas",
+      title: "⚡ Ferramentas Rápidas",
       items: [
-        {
-          icon: "file-text", iconLib: "feather", label: "Roteiro de Vendas",
-          sub: "Script do contato ao fechamento",
-          onPress: () => router.push("/roteiro" as any),
-        },
-        {
-          icon: "clipboard", iconLib: "feather", label: "Briefing Pré-Reunião",
-          sub: "Chegue preparado para qualquer reunião",
-          onPress: () => router.push("/briefing" as any),
-        },
-        {
-          icon: "award", iconLib: "feather", label: "Laudo Executivo",
-          sub: "Diagnóstico de marketing do cliente",
-          onPress: () => router.push("/laudo" as any),
-        },
-        {
-          icon: "search", iconLib: "feather", label: "Scanner Radar",
-          sub: "Buscar novos estabelecimentos",
-          onPress: () => router.push("/scanner" as any),
-        },
-        {
-          icon: "zap", iconLib: "feather", label: "Marketing IA",
-          sub: "Posts, Stories, Tráfego pago...",
-          onPress: () => router.push("/marketing" as any),
-        },
-        {
-          icon: "navigation", iconLib: "feather", label: "Criar Rota",
-          sub: "Planejamento inteligente de visitas", badge: "PRO",
-          onPress: () => router.push("/criarrota" as any),
-        },
-        {
-          icon: "shield", iconLib: "feather", label: "Ajuda com Objeções",
-          sub: "Estratégias prontas para qualquer objeção", badge: "PRO",
-          onPress: () => router.push("/objecoes" as any),
-        },
-        {
-          icon: "calendar", iconLib: "feather", label: "Planejamento do Dia",
-          sub: "Organize e confirme sua agenda diária", badge: "PRO",
-          onPress: () => router.push("/planejamento" as any),
-        },
+        { icon: "file-text", iconLib: "feather", label: "Roteiro de Vendas", sub: "Script do contato ao fechamento", onPress: () => { tap(); router.push("/roteiro" as any); } },
+        { icon: "clipboard", iconLib: "feather", label: "Briefing Pré-Reunião", sub: "Chegue preparado para qualquer reunião", onPress: () => { tap(); router.push("/briefing" as any); } },
+        { icon: "shield", iconLib: "feather", label: "Ajuda com Objeções", sub: "Estratégias prontas para qualquer objeção", badge: "PRO", onPress: () => navPro("/objecoes") },
+        { icon: "search", iconLib: "feather", label: "Scanner Radar", sub: "Buscar novos estabelecimentos", onPress: () => { tap(); router.push("/scanner" as any); } },
       ],
     },
     {
-      title: "Performance",
+      title: "📋 Planejamento",
       items: [
-        {
-          icon: "bar-chart-2", iconLib: "feather", label: "Relatórios",
-          sub: "Métricas diárias e semanais", badge: "PRO",
-          onPress: () => router.push("/relatorios" as any),
-        },
+        { icon: "award", iconLib: "feather", label: "Laudo Executivo", sub: "Diagnóstico de marketing do cliente", onPress: () => { tap(); router.push("/laudo" as any); } },
+        { icon: "navigation", iconLib: "feather", label: "Criar Rota", sub: "Planejamento inteligente de visitas", badge: "PRO", onPress: () => navPro("/criarrota") },
+        { icon: "calendar", iconLib: "feather", label: "Planejamento do Dia", sub: "Organize e confirme sua agenda diária", badge: "PRO", onPress: () => navPro("/planejamento") },
       ],
     },
     {
-      title: "Treinamento",
+      title: "📣 Marketing",
       items: [
-        {
-          icon: "users", iconLib: "feather", label: "Roleplay de Vendas",
-          sub: "Treine com a JADE como cliente", badge: "Enterprise",
-          badgeColor: ENTERPRISE_PURPLE,
-          onPress: () => router.push("/roleplay" as any),
-        },
-        {
-          icon: "book-open", iconLib: "feather", label: "Biblioteca de Técnicas",
-          sub: "SPIN, AIDA, Gatilhos e mais",
-          onPress: () => router.push("/biblioteca" as any),
-        },
+        { icon: "zap", iconLib: "feather", label: "Marketing IA", sub: "Posts, Stories, Tráfego pago...", onPress: () => { tap(); router.push("/marketing" as any); } },
+        { icon: "book-open", iconLib: "feather", label: "Biblioteca de Conteúdo", sub: "Templates e técnicas de copywriting", onPress: () => { tap(); router.push("/biblioteca" as any); } },
       ],
     },
     {
-      title: "Configurações",
+      title: "📊 Performance",
       items: [
-        {
-          icon: "briefcase", iconLib: "feather", label: "Minha Empresa",
-          sub: "Configurar empresa e treinar JADE",
-          onPress: () => router.push("/empresa" as any),
-        },
-        {
-          icon: "user", iconLib: "feather", label: "Meu Perfil", sub: "Rodrigo",
-          onPress: () => router.push("/perfil" as any),
-        },
-        {
-          icon: "star", iconLib: "feather", label: "Meu Plano", sub: "Pro · R$247/mês", badge: "PRO",
-          onPress: () => router.push("/plano" as any),
-        },
-        {
-          icon: "bell", iconLib: "feather", label: "Notificações", sub: "3 não lidas",
-          onPress: () => router.push("/notificacoes" as any),
-        },
-        {
-          icon: "shield", iconLib: "feather", label: "Privacidade e Dados",
-          onPress: () => router.push("/privacidade" as any),
-        },
-        {
-          icon: "help-circle", iconLib: "feather", label: "Central de Ajuda",
-          onPress: () => router.push("/ajuda" as any),
-        },
+        { icon: "bar-chart-2", iconLib: "feather", label: "Relatórios", sub: "Métricas diárias e semanais", badge: "PRO", onPress: () => navPro("/relatorios") },
+        { icon: "award", iconLib: "feather", label: "Feedback JADE", sub: "Avalie sua performance de vendas", badge: "PRO", onPress: () => navPro("/feedbackexecutivo") },
+      ],
+    },
+    {
+      title: "🎓 Treinamento",
+      items: [
+        { icon: "users", iconLib: "feather", label: "Roleplay de Vendas", sub: "Treine com a JADE como cliente", badge: "Enterprise", badgeColor: ENTERPRISE_PURPLE, onPress: () => navEnterprise("/roleplay") },
+        { icon: "book-open", iconLib: "feather", label: "Biblioteca de Técnicas", sub: "SPIN, AIDA, Gatilhos e mais", onPress: () => { tap(); router.push("/biblioteca" as any); } },
+      ],
+    },
+    {
+      title: "⚙️ Conta",
+      items: [
+        { icon: "briefcase", iconLib: "feather", label: "Minha Empresa", sub: "Configurar empresa e treinar JADE", onPress: () => { tap(); router.push("/empresa" as any); } },
+        { icon: "user", iconLib: "feather", label: "Meu Perfil", sub: "Rodrigo", onPress: () => { tap(); router.push("/perfil" as any); } },
+        { icon: "star", iconLib: "feather", label: "Meu Plano", sub: "Pro · R$247/mês", badge: "PRO", onPress: () => { tap(); router.push("/plano" as any); } },
+        { icon: "bell", iconLib: "feather", label: "Notificações", sub: "3 não lidas", onPress: () => { tap(); router.push("/notificacoes" as any); } },
+        { icon: "shield", iconLib: "feather", label: "Privacidade e Dados", onPress: () => { tap(); router.push("/privacidade" as any); } },
+        { icon: "help-circle", iconLib: "feather", label: "Central de Ajuda", onPress: () => { tap(); router.push("/ajuda" as any); } },
       ],
     },
     {

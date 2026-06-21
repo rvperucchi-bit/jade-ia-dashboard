@@ -3,7 +3,6 @@ import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
   ActivityIndicator,
-  Alert,
   Platform,
   ScrollView,
   StyleSheet,
@@ -14,6 +13,8 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useColors } from "@/hooks/useColors";
+import { useJADE } from "@/hooks/useJADE";
+import { useApp } from "@/context/AppContext";
 
 const API_BASE =
   Platform.OS === "web"
@@ -75,65 +76,38 @@ export default function BriefingScreen() {
   const router = useRouter();
   const topPad = Platform.OS === "web" ? 67 : insets.top;
 
-  const [lead, setLead]       = useState("");
+  const { leads, addLeadActivity } = useApp();
+  const { loading, error, generate } = useJADE();
+
+  const [lead, setLead]         = useState("");
   const [segmento, setSegmento] = useState("");
-  const [origem, setOrigem]   = useState("Indicação");
+  const [origem, setOrigem]     = useState("Indicação");
   const [contexto, setContexto] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [result, setResult]   = useState<BriefingResult | null>(null);
+  const [result, setResult]     = useState<BriefingResult | null>(null);
 
   const gerar = async () => {
     if (!lead.trim()) return;
-    setLoading(true);
     setResult(null);
+    let empresaCtx = "";
     try {
-      let empresaCtx = "";
-      try {
-        const empresaRes = await fetch(`${API_BASE}/api/empresa`);
-        if (empresaRes.ok) {
-          const { config } = await empresaRes.json();
-          if (config?.nome) {
-            empresaCtx = `Empresa que está vendendo: ${config.nome}. Produto: ${config.produto || "não informado"}. Segmento: ${config.segmento || "B2B"}.`;
-          }
+      const empresaRes = await fetch(`${API_BASE}/api/empresa`);
+      if (empresaRes.ok) {
+        const { config } = await empresaRes.json();
+        if (config?.nome) {
+          empresaCtx = `Empresa que está vendendo: ${config.nome}. Produto: ${config.produto || "não informado"}. Segmento: ${config.segmento || "B2B"}.`;
         }
-      } catch {}
-
-      const prompt = `Responda de forma direta e objetiva em no máximo 300 palavras.\n\nGere um briefing pré-reunião completo e estruturado. ${empresaCtx}
-
-Dados do Lead:
-- Nome/Empresa: ${lead}
-- Segmento do lead: ${segmento || "Não informado"}
-- Origem: ${origem}
-- Contexto da reunião: ${contexto || "Primeira reunião comercial"}
-
-Estruture a resposta com estas seções exatas (use ** para os títulos):
-**Resumo do Perfil**: perfil resumido do lead em 2-3 linhas
-**Dores Prováveis**: principais dores do segmento, em bullet points
-**Argumentos de Venda**: 3 argumentos mais relevantes para esse lead
-**Perguntas-Chave**: 5 perguntas para fazer na reunião
-**Alertas de Objeções**: 2-3 objeções prováveis e como lidar`;
-
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 30000);
-      const res = await fetch(`${API_BASE}/api/jade/chat`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ messages: [{ role: "user", content: prompt }] }),
-        signal: controller.signal,
-      });
-      clearTimeout(timeoutId);
-      const data = await res.json();
-      setResult(parseResult(data.message ?? data.response ?? ""));
-    } catch (err: unknown) {
-      const isAbort = err instanceof Error && err.name === "AbortError";
-      Alert.alert(
-        "Erro",
-        isAbort
-          ? "A JADE demorou demais para responder. Tente novamente em instantes."
-          : "Não foi possível gerar o briefing. Verifique sua conexão.",
+      }
+    } catch {}
+    const text = await generate(`Responda de forma direta e objetiva em no máximo 300 palavras.\n\nGere um briefing pré-reunião completo e estruturado. ${empresaCtx}\n\nDados do Lead:\n- Nome/Empresa: ${lead}\n- Segmento do lead: ${segmento || "Não informado"}\n- Origem: ${origem}\n- Contexto da reunião: ${contexto || "Primeira reunião comercial"}\n\nEstruture a resposta com estas seções exatas (use ** para os títulos):\n**Resumo do Perfil**: perfil resumido do lead em 2-3 linhas\n**Dores Prováveis**: principais dores do segmento, em bullet points\n**Argumentos de Venda**: 3 argumentos mais relevantes para esse lead\n**Perguntas-Chave**: 5 perguntas para fazer na reunião\n**Alertas de Objeções**: 2-3 objeções prováveis e como lidar`);
+    if (text) {
+      setResult(parseResult(text));
+      const leadName = lead.trim().toLowerCase();
+      const matched = leads.find((l) =>
+        l.name.toLowerCase().includes(leadName) || l.company.toLowerCase().includes(leadName)
       );
-    } finally {
-      setLoading(false);
+      if (matched) {
+        addLeadActivity(matched.id, { channel: "jade", agent: "JADE IA", note: `Briefing pré-reunião gerado para ${lead.trim()}.` });
+      }
     }
   };
 
@@ -221,6 +195,12 @@ Estruture a resposta com estas seções exatas (use ** para os títulos):
               ? <ActivityIndicator color="#fff" />
               : <><Feather name="cpu" size={18} color="#fff" /><Text style={S.genBtnText}>Gerar Briefing</Text></>}
           </TouchableOpacity>
+          {!!error && (
+            <View style={S.errorBox}>
+              <Feather name="alert-circle" size={14} color="#FF6B6B" />
+              <Text style={S.errorText}>{error}</Text>
+            </View>
+          )}
         </View>
 
         {result && (
@@ -269,4 +249,6 @@ const S = StyleSheet.create({
   genBtnText: { fontSize: 16, fontFamily: "SpaceGrotesk_700Bold", color: "#fff" },
   results: { paddingHorizontal: 20, gap: 12, paddingBottom: 20 },
   resultsTitle: { fontSize: 17, fontFamily: "SpaceGrotesk_700Bold", marginBottom: 4 },
+  errorBox: { flexDirection: "row", alignItems: "center", gap: 8, padding: 12, borderRadius: 10, backgroundColor: "#FF6B6B18", borderWidth: 1, borderColor: "#FF6B6B40" },
+  errorText: { flex: 1, fontSize: 13, fontFamily: "SpaceGrotesk_400Regular", color: "#FF6B6B", lineHeight: 20 },
 });

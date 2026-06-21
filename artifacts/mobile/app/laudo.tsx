@@ -5,7 +5,6 @@ import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
   ActivityIndicator,
-  Alert,
   Platform,
   ScrollView,
   StyleSheet,
@@ -16,11 +15,9 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useColors } from "@/hooks/useColors";
+import { useJADE } from "@/hooks/useJADE";
+import { useApp } from "@/context/AppContext";
 
-const API_BASE =
-  Platform.OS === "web"
-    ? ""
-    : `https://${process.env.EXPO_PUBLIC_DOMAIN ?? ""}`;
 
 const TIPOS = [
   { id: "completo",  label: "Diagnóstico Completo",       icon: "layers",        color: "#6C63FF" },
@@ -34,70 +31,30 @@ export default function LaudoScreen() {
   const router  = useRouter();
   const topPad  = Platform.OS === "web" ? 67 : insets.top;
 
+  const { leads, addLeadActivity } = useApp();
+  const { loading, error, result, success, generate } = useJADE();
+
   const [negocio, setNegocio] = useState("");
   const [tipo, setTipo]       = useState("completo");
-  const [loading, setLoading] = useState(false);
-  const [result, setResult]   = useState("");
   const [copied, setCopied]   = useState(false);
 
   const gerar = async () => {
     if (!negocio.trim()) return;
-    setLoading(true);
-    setResult("");
-    try {
-      const tipoObj = TIPOS.find((t) => t.id === tipo)!;
-      const prompt = `Responda de forma direta e objetiva em no máximo 300 palavras.\n\nGere um laudo executivo de marketing profissional e detalhado.
-
-Negócio analisado: ${negocio}
-Tipo de análise: ${tipoObj.label}
-
-O laudo deve conter as seguintes seções claramente separadas:
-
-**DIAGNÓSTICO ATUAL**
-[Análise da situação atual do negócio, presença de mercado e posicionamento]
-
-**PONTOS FORTES**
-[Liste os principais diferenciais e forças identificados]
-
-**PONTOS DE MELHORIA**
-[Liste as principais fraquezas ou gaps]
-
-**OPORTUNIDADES IDENTIFICADAS**
-[Oportunidades de mercado e crescimento para o segmento]
-
-**RECOMENDAÇÕES ESTRATÉGICAS**
-[3 a 5 recomendações práticas e prioritárias]
-
-**SCORE DE POTENCIAL: [0-100]**
-[Justificativa do score em 1-2 linhas]
-
-Use linguagem executiva, direta e baseada no segmento/negócio descrito. Seja específico e acionável.`;
-
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 30000);
-      const res = await fetch(`${API_BASE}/api/jade/chat`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ messages: [{ role: "user", content: prompt }] }),
-        signal: controller.signal,
-      });
-      clearTimeout(timeoutId);
-      const data = await res.json();
-      setResult(data.message?.trim() || data.response?.trim() || "");
-    } catch (err: unknown) {
-      const isAbort = err instanceof Error && err.name === "AbortError";
-      Alert.alert(
-        "Erro",
-        isAbort
-          ? "A JADE demorou demais para responder. Tente novamente em instantes."
-          : "Não foi possível gerar o laudo. Verifique sua conexão.",
+    const tipoObj = TIPOS.find((t) => t.id === tipo)!;
+    const text = await generate(`Responda de forma direta e objetiva em no máximo 300 palavras.\n\nGere um laudo executivo de marketing profissional e detalhado.\n\nNegócio analisado: ${negocio}\nTipo de análise: ${tipoObj.label}\n\nO laudo deve conter as seguintes seções claramente separadas:\n\n**DIAGNÓSTICO ATUAL**\n[Análise da situação atual do negócio, presença de mercado e posicionamento]\n\n**PONTOS FORTES**\n[Liste os principais diferenciais e forças identificados]\n\n**PONTOS DE MELHORIA**\n[Liste as principais fraquezas ou gaps]\n\n**OPORTUNIDADES IDENTIFICADAS**\n[Oportunidades de mercado e crescimento para o segmento]\n\n**RECOMENDAÇÕES ESTRATÉGICAS**\n[3 a 5 recomendações práticas e prioritárias]\n\n**SCORE DE POTENCIAL: [0-100]**\n[Justificativa do score em 1-2 linhas]\n\nUse linguagem executiva, direta e baseada no segmento/negócio descrito. Seja específico e acionável.`);
+    if (text) {
+      const firstWord = negocio.trim().split(/\s+/)[0].toLowerCase();
+      const matched = leads.find((l) =>
+        l.name.toLowerCase().includes(firstWord) || l.company.toLowerCase().includes(firstWord)
       );
-    } finally {
-      setLoading(false);
+      if (matched) {
+        addLeadActivity(matched.id, { channel: "jade", agent: "JADE IA", note: `Laudo executivo gerado — ${tipoObj.label}.` });
+      }
     }
   };
 
   const copyAll = async () => {
+    if (!result) return;
     await Clipboard.setStringAsync(result);
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     setCopied(true);
@@ -158,15 +115,23 @@ Use linguagem executiva, direta e baseada no segmento/negócio descrito. Seja es
           </View>
 
           <TouchableOpacity
-            style={[S.genBtn, (!negocio.trim() || loading) && { opacity: 0.6 }]}
+            style={[S.genBtn, (!negocio.trim() || loading) && { opacity: 0.6 }, success && { backgroundColor: "#00D68F" }]}
             onPress={gerar}
             activeOpacity={0.85}
             disabled={!negocio.trim() || loading}
           >
             {loading
               ? <ActivityIndicator color="#fff" />
-              : <><Feather name="cpu" size={18} color="#fff" /><Text style={S.genBtnText}>Gerar Laudo</Text></>}
+              : success
+                ? <><Feather name="check" size={18} color="#fff" /><Text style={S.genBtnText}>Laudo Gerado!</Text></>
+                : <><Feather name="cpu" size={18} color="#fff" /><Text style={S.genBtnText}>Gerar Laudo</Text></>}
           </TouchableOpacity>
+          {!!error && (
+            <View style={S.errorBox}>
+              <Feather name="alert-circle" size={14} color="#FF6B6B" />
+              <Text style={S.errorText}>{error}</Text>
+            </View>
+          )}
         </View>
 
         {!!result && (
@@ -231,4 +196,6 @@ const S = StyleSheet.create({
   copyBtn: { flexDirection: "row", alignItems: "center", gap: 6, padding: 6 },
   copyText: { fontSize: 13, fontFamily: "SpaceGrotesk_500Medium" },
   resultText: { fontSize: 14, fontFamily: "SpaceGrotesk_400Regular", lineHeight: 22 },
+  errorBox: { flexDirection: "row", alignItems: "center", gap: 8, padding: 12, borderRadius: 10, backgroundColor: "#FF6B6B18", borderWidth: 1, borderColor: "#FF6B6B40" },
+  errorText: { flex: 1, fontSize: 13, fontFamily: "SpaceGrotesk_400Regular", color: "#FF6B6B", lineHeight: 20 },
 });
