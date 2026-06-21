@@ -19,6 +19,7 @@ import * as Haptics from "expo-haptics";
 
 import { useOnboarding } from "@/context/OnboardingContext";
 import { useApp } from "@/context/AppContext";
+import { JADE_SEGMENTS } from "@/constants/jade-segments";
 
 const PINK   = "#FF0080";
 const PURPLE = "#8400FF";
@@ -26,19 +27,6 @@ const BG     = "#0B0814";
 const CARD   = "#100C1C";
 const BORDER = "#1E1830";
 const { width: SW } = Dimensions.get("window");
-
-// ─── Segments ─────────────────────────────────────────────────────────────────
-const SEGMENTS = [
-  { id: "clinicas",    emoji: "🏥", label: "Clínicas & Saúde"     },
-  { id: "imobiliario", emoji: "🏠", label: "Imobiliário"           },
-  { id: "advocacia",   emoji: "⚖️", label: "Advocacia"             },
-  { id: "servicos",    emoji: "🔧", label: "Serviços & Construção" },
-  { id: "varejo",      emoji: "🛒", label: "Varejo & E-commerce"   },
-  { id: "consultoria", emoji: "💼", label: "Consultoria & B2B"     },
-  { id: "seguros",     emoji: "🛡️", label: "Seguros & Financeiro"  },
-  { id: "educacao",    emoji: "🎓", label: "Educação"              },
-  { id: "credito",     emoji: "💰", label: "Crédito & Consórcio"   },
-];
 
 // ─── First module options ──────────────────────────────────────────────────────
 const MODULE_OPTIONS = [
@@ -229,7 +217,7 @@ export default function OnboardingScreen() {
             <Text style={S.stepTitle}>Qual é o seu mercado?</Text>
             <Text style={S.stepSub}>A JADE vai se especializar no seu segmento</Text>
             <View style={S.segGrid}>
-              {SEGMENTS.map((seg) => {
+              {JADE_SEGMENTS.map((seg) => {
                 const sel = selectedSegment === seg.id;
                 return (
                   <TouchableOpacity

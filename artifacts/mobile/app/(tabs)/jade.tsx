@@ -172,6 +172,7 @@ export default function JADEScreen() {
   const [sessionId,     setSessionId]     = useState<string | null>(null);
   const [handoffAlert,  setHandoffAlert]  = useState(false);
   const [modoOp,        setModoOp]        = useState<string | null>(null);
+  const [segmento,      setSegmento]      = useState<string | null>(null);
 
   // ── Audio recording state ──────────────────────────────────────────────────
   const [recording,   setRecording]   = useState(false);
@@ -189,7 +190,11 @@ export default function JADEScreen() {
   useEffect(() => {
     AsyncStorage.getItem("@jade_ia:empresa_v2").then((raw) => {
       if (!raw) return;
-      try { const parsed = JSON.parse(raw); setModoOp(parsed.modoOperacao ?? null); } catch {}
+      try {
+        const parsed = JSON.parse(raw);
+        setModoOp(parsed.modoOperacao ?? null);
+        setSegmento(parsed.segmento ?? null);
+      } catch {}
     });
   }, []);
 
@@ -428,6 +433,13 @@ export default function JADEScreen() {
               <View style={[styles.modeBadge, { backgroundColor: colors.surface, borderColor: colors.border }]}>
                 <Text style={[styles.modeText, { color: colors.mutedForeground }]}>
                   {MODO_LABEL[modoOp] ?? modoOp}
+                </Text>
+              </View>
+            )}
+            {!!segmento && (
+              <View style={[styles.modeBadge, { backgroundColor: "#FF008012", borderColor: "#FF008033" }]}>
+                <Text style={[styles.modeText, { color: "#FF0080" }]}>
+                  Especialista em {segmento}
                 </Text>
               </View>
             )}

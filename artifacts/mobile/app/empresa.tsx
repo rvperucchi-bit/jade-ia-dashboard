@@ -17,6 +17,8 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import { JADE_SEGMENTS } from "@/constants/jade-segments";
+
 const CACHE_KEY = "@jade_ia:empresa_v2";
 
 const API_BASE =
@@ -36,11 +38,6 @@ const C = {
   purple: "#8400FF",
   success: "#00D68F",
 };
-
-const SEGMENTOS = [
-  "Varejo", "Imóveis", "SaaS", "Saúde", "Educação",
-  "Financeiro", "Alimentação", "Indústria", "Serviços", "Outro",
-];
 
 interface TomCard {
   id: string;
@@ -239,20 +236,26 @@ export default function EmpresaScreen() {
             activeOpacity={0.8}
           >
             <Feather name="tag" size={16} color={C.muted} style={S.inputIcon} />
-            <Text style={[S.input, { color: C.text }]}>{config.segmento}</Text>
+            <Text style={[S.input, { color: C.text }]}>
+              {JADE_SEGMENTS.find((s) => s.label === config.segmento)?.emoji
+                ? `${JADE_SEGMENTS.find((s) => s.label === config.segmento)!.emoji} ${config.segmento}`
+                : config.segmento}
+            </Text>
             <Feather name={showSegPicker ? "chevron-up" : "chevron-down"} size={16} color={C.muted} />
           </TouchableOpacity>
           {showSegPicker && (
             <View style={S.picker}>
-              {SEGMENTOS.map((seg) => (
+              {JADE_SEGMENTS.map((seg) => (
                 <TouchableOpacity
-                  key={seg}
-                  style={[S.pickerItem, seg === config.segmento && S.pickerItemActive]}
-                  onPress={() => { updateField("segmento")(seg); setShowSegPicker(false); }}
+                  key={seg.id}
+                  style={[S.pickerItem, seg.label === config.segmento && S.pickerItemActive]}
+                  onPress={() => { updateField("segmento")(seg.label); setShowSegPicker(false); }}
                   activeOpacity={0.8}
                 >
-                  <Text style={[S.pickerText, { color: seg === config.segmento ? C.primary : C.text }]}>{seg}</Text>
-                  {seg === config.segmento && <Feather name="check" size={14} color={C.primary} />}
+                  <Text style={[S.pickerText, { color: seg.label === config.segmento ? C.primary : C.text }]}>
+                    {seg.emoji}  {seg.label}
+                  </Text>
+                  {seg.label === config.segmento && <Feather name="check" size={14} color={C.primary} />}
                 </TouchableOpacity>
               ))}
             </View>
