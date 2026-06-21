@@ -43,11 +43,11 @@ interface AIMessage {
 }
 
 const CHIPS = [
-  "Qualificar lead",
-  "Criar proposta",
-  "Fazer follow-up",
-  "Ver análise",
-  "Responder cliente",
+  "Qualificar Leads",
+  "Criar Proposta",
+  "Fazer Follow-up",
+  "Analisar Funil",
+  "Responder Cliente",
 ];
 
 const API_BASE =
@@ -61,9 +61,21 @@ function nowTime() {
 
 const WELCOME_MSGS = (): AIMessage[] => {
   const t = nowTime();
+  const hour = new Date().getHours();
+  const greeting = hour < 12 ? "Bom dia" : hour < 18 ? "Boa tarde" : "Boa noite";
   return [
-    { id: "welcome-2", text: "Como posso te ajudar hoje?", sender: "jade", time: t },
-    { id: "welcome-1", text: "Bora para os negócios! 🚀", sender: "jade", time: t },
+    {
+      id: "welcome-2",
+      text: "Posso ajudar com qualificação de leads, propostas, follow-ups ou análise do funil. Como prefere começar?",
+      sender: "jade",
+      time: t,
+    },
+    {
+      id: "welcome-1",
+      text: `${greeting}, Rodrigo. Estou ativa e pronta para impulsionar suas vendas hoje.`,
+      sender: "jade",
+      time: t,
+    },
   ];
 };
 
@@ -481,7 +493,19 @@ export default function JADEScreen() {
         contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 12 }}
         keyboardDismissMode="interactive"
         keyboardShouldPersistTaps="handled"
-        ListFooterComponent={<View style={{ height: 8 }} />}
+        ListFooterComponent={
+          <View style={{ alignItems: "center", paddingTop: 24, paddingBottom: 16 }}>
+            <View style={[styles.jadeAvatar, { width: 52, height: 52, borderRadius: 26, backgroundColor: colors.primary + "18", borderWidth: 1, borderColor: colors.primary + "33", marginBottom: 10 }]}>
+              <MaterialCommunityIcons name="robot" size={26} color={colors.primary} />
+            </View>
+            <Text style={{ color: colors.text, fontSize: 15, fontFamily: "SpaceGrotesk_700Bold", marginBottom: 3 }}>JADE IA</Text>
+            <Text style={{ color: colors.mutedForeground, fontSize: 12, fontFamily: "SpaceGrotesk_400Regular" }}>Sua parceira comercial · IA generativa</Text>
+            <View style={{ flexDirection: "row", alignItems: "center", gap: 6, marginTop: 8 }}>
+              <View style={styles.greenDot} />
+              <Text style={{ color: colors.success, fontSize: 11, fontFamily: "SpaceGrotesk_500Medium" }}>Online agora</Text>
+            </View>
+          </View>
+        }
       />
 
       {/* Credits warning/empty banner */}

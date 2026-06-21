@@ -1,0 +1,237 @@
+REORGANIZAÇÃO DA TELA “MAIS” E REFORMULAÇÃO DA EXPERIÊNCIA DO CHAT JADE
+
+IMPORTANTE
+
+NÃO remover funcionalidades.
+NÃO remover módulos.
+NÃO remover botões.
+NÃO alterar permissões dos planos.
+NÃO alterar lógica do sistema.
+
+O objetivo é melhorar organização, clareza visual e experiência do usuário.
+
+==================================================
+TELA MAIS
+
+PROBLEMA
+
+Atualmente todos os módulos aparecem como uma lista única de ícones.
+
+Isso dificulta o entendimento do produto.
+
+Os módulos devem continuar existindo exatamente como estão, mas organizados em categorias.
+
+==================================================
+NOVA ESTRUTURA
+
+COMERCIAL
+
+* Roteiro
+* Briefing
+* Objeções
+* Roleplay
+
+==================================================
+
+INTELIGÊNCIA IA
+
+* Marketing IA
+* Análise IA
+* Relatórios
+
+==================================================
+
+GESTÃO
+
+* Metas
+* Carteira
+* Painel Executivo
+* Meu Time
+
+==================================================
+
+OPERAÇÃO
+
+* Criar Rota
+* Planejamento
+* Laudo
+
+==================================================
+
+SISTEMA
+
+* Biblioteca
+* Loja JADE
+
+==================================================
+
+REGRAS
+
+* Todos os botões continuam funcionando.
+* Nenhuma tela pode ser removida.
+* Nenhum módulo pode desaparecer.
+* Apenas reorganizar visualmente.
+* Manter ícones atuais.
+* Manter navegação atual.
+
+==================================================
+MÓDULOS BLOQUEADOS
+
+Manter cadeado.
+
+Porém melhorar a comunicação.
+
+Ao tocar em um módulo bloqueado:
+
+Mostrar:
+
+“Disponível no plano PRO”
+
+ou
+
+“Disponível no plano ENTERPRISE”
+
+Conforme a regra do sistema.
+
+Transformar o bloqueio em oportunidade de upgrade.
+
+==================================================
+CARD DE DEMONSTRAÇÃO GRATUITA
+
+Atualmente ocupa muito espaço vertical.
+
+Transformar em um banner mais compacto.
+
+Exemplo:
+
+🎁 Demonstração Pro Disponível
+
+Teste qualquer recurso avançado por 24 horas.
+
+Botão:
+
+“Experimentar Agora”
+
+Manter destaque visual.
+
+Reduzir altura.
+
+==================================================
+CHAT JADE
+
+OBJETIVO
+
+Transformar o chat na principal experiência do produto.
+
+Hoje a tela transmite sensação de espaço vazio.
+
+A JADE deve parecer ativa, inteligente e trabalhando para o usuário.
+
+==================================================
+NOVA EXPERIÊNCIA
+
+Ao abrir o chat:
+
+A JADE já deve iniciar a conversa.
+
+Exemplo:
+
+Bom dia, Rodrigo.
+
+Identifiquei oportunidades para hoje e atualizei seu painel.
+
+Posso ajudar com leads, propostas, follow-ups ou análises.
+
+==================================================
+AÇÕES RÁPIDAS
+
+Logo abaixo da primeira mensagem.
+
+Exemplos:
+
+* Qualificar Leads
+* Criar Proposta
+* Fazer Follow-up
+* Analisar Funil
+
+Botões rápidos modernos.
+
+==================================================
+CONVERSA PROATIVA
+
+A JADE não deve parecer um chat vazio.
+
+Exemplo:
+
+Usuário:
+Quais leads devo priorizar hoje?
+
+JADE:
+Separei as oportunidades com maior chance de conversão.
+
+Usuário:
+Crie uma abordagem para WhatsApp.
+
+JADE:
+Preparei uma mensagem consultiva baseada no segmento e histórico do lead.
+
+==================================================
+LAYOUT DO CHAT
+
+Reduzir espaço vazio entre topo e mensagens.
+
+Trazer conteúdo mais para cima.
+
+A tela deve parecer viva.
+
+==================================================
+IDENTIDADE DA JADE
+
+A JADE deve parecer:
+
+* Assistente executiva
+* Parceira comercial
+* Sistema inteligente
+* IA corporativa
+
+Evitar linguagem excessivamente informal.
+
+Evitar sensação de chatbot genérico.
+
+==================================================
+TELA RADAR
+
+Não realizar alterações estruturais.
+
+A tela Radar está bem posicionada.
+
+Apenas corrigir pequenos problemas visuais caso existam:
+
+* textos cortados
+* alinhamentos
+* espaçamentos
+* responsividade
+
+Sem mudanças de layout.
+
+==================================================
+RESULTADO ESPERADO
+
+Tela Mais:
+
+* Mais organizada
+* Mais profissional
+* Mais fácil de entender
+* Melhor para upgrades
+
+Chat JADE:
+
+* Mais inteligente
+* Mais ativo
+* Mais útil
+* Menos vazio
+* Experiência premium
+
+Sem remover funcionalidades.
+Sem quebrar telas existentes.
+Sem alterar regras dos planos.

@@ -2,12 +2,12 @@
   "modules": {
     "scanner": {
       "module_name": "scanner",
-      "is_active": false,
-      "status": "paused",
-      "last_started_at": "2026-06-21T04:10:06.437Z",
+      "is_active": true,
+      "status": "running",
+      "last_started_at": "2026-06-21T11:29:18.879Z",
       "last_stopped_at": "2026-06-21T04:10:56.755Z",
       "last_run_at": null,
-      "updated_at": "2026-06-21T04:10:56.755Z"
+      "updated_at": "2026-06-21T11:29:18.879Z"
     },
     "jade": {
       "module_name": "jade",
@@ -47,6 +47,16 @@
     }
   },
   "module_logs": [
+    {
+      "id": "902aeb7e4a8c87a9",
+      "module_name": "scanner",
+      "action": "activated",
+      "message": "Scanner Radar ativado",
+      "metadata": {
+        "active": true
+      },
+      "created_at": "2026-06-21T11:29:18.881Z"
+    },
     {
       "id": "98ea03e39bd89a1c",
       "module_name": "leads",
@@ -1059,6 +1069,162 @@
     }
   ],
   "activity_events": [
+    {
+      "id": "db4dbf002ef3ede5",
+      "type": "lead",
+      "text": "Novo lead adicionado: Ana Lúcia Gomes (Armarinhos da Vila)",
+      "icon": "user-plus",
+      "color": "#6C63FF",
+      "created_at": "2026-06-21T11:35:33.292Z"
+    },
+    {
+      "id": "670206c4f12b9ca4",
+      "type": "lead",
+      "text": "Novo lead adicionado: Ricardo Mendes (Pão Dourado Padaria e Confeitaria)",
+      "icon": "user-plus",
+      "color": "#6C63FF",
+      "created_at": "2026-06-21T11:35:33.281Z"
+    },
+    {
+      "id": "2c1706336da9dff1",
+      "type": "lead",
+      "text": "Novo lead adicionado: Patrícia Souza (Boutique Elegância Feminina)",
+      "icon": "user-plus",
+      "color": "#6C63FF",
+      "created_at": "2026-06-21T11:35:32.651Z"
+    },
+    {
+      "id": "5a9d937522cb2fcd",
+      "type": "scan",
+      "text": "JADE encontrou 3 novos leads via radar em São Paulo",
+      "icon": "crosshair",
+      "color": "#6C63FF",
+      "metadata": {
+        "count": 3,
+        "cidade": "São Paulo"
+      },
+      "created_at": "2026-06-21T11:35:32.244Z"
+    },
+    {
+      "id": "0dfdf2196df887d9",
+      "type": "lead",
+      "text": "Novo lead adicionado: Carlos Eduardo Ribeiro (Livraria Saberes)",
+      "icon": "user-plus",
+      "color": "#6C63FF",
+      "created_at": "2026-06-21T11:33:39.648Z"
+    },
+    {
+      "id": "599b68455ba63300",
+      "type": "lead",
+      "text": "Novo lead adicionado: Fernanda Oliveira Souza (Mundo Animal Pet Shop)",
+      "icon": "user-plus",
+      "color": "#6C63FF",
+      "created_at": "2026-06-21T11:33:39.613Z"
+    },
+    {
+      "id": "6414c9df9a3a4a6f",
+      "type": "lead",
+      "text": "Novo lead adicionado: Ana Paula Lima (Estilo Único Boutique)",
+      "icon": "user-plus",
+      "color": "#6C63FF",
+      "created_at": "2026-06-21T11:33:38.988Z"
+    },
+    {
+      "id": "6debfda81f34ac10",
+      "type": "scan",
+      "text": "JADE encontrou 3 novos leads via radar em São Paulo",
+      "icon": "crosshair",
+      "color": "#6C63FF",
+      "metadata": {
+        "count": 3,
+        "cidade": "São Paulo"
+      },
+      "created_at": "2026-06-21T11:33:38.653Z"
+    },
+    {
+      "id": "2caf653619396f45",
+      "type": "lead",
+      "text": "Novo lead adicionado: Patrícia Mendes (BoutiQ Fashion)",
+      "icon": "user-plus",
+      "color": "#6C63FF",
+      "created_at": "2026-06-21T11:31:56.643Z"
+    },
+    {
+      "id": "c49dafff0e77b8cd",
+      "type": "lead",
+      "text": "Novo lead adicionado: Ana Lúcia Silveira (Empório Naturalmente Zen)",
+      "icon": "user-plus",
+      "color": "#6C63FF",
+      "created_at": "2026-06-21T11:31:56.597Z"
+    },
+    {
+      "id": "1673e5ab008526f3",
+      "type": "lead",
+      "text": "Novo lead adicionado: Bruno Costa (Livraria Odisseia Literária)",
+      "icon": "user-plus",
+      "color": "#6C63FF",
+      "created_at": "2026-06-21T11:31:55.948Z"
+    },
+    {
+      "id": "e596adac07bc4cd8",
+      "type": "scan",
+      "text": "JADE encontrou 3 novos leads via radar em São Paulo",
+      "icon": "crosshair",
+      "color": "#6C63FF",
+      "metadata": {
+        "count": 3,
+        "cidade": "São Paulo"
+      },
+      "created_at": "2026-06-21T11:31:55.498Z"
+    },
+    {
+      "id": "530f0926ead9816e",
+      "type": "lead",
+      "text": "Novo lead adicionado: Ricardo Almeida (Livraria Leitura Certa)",
+      "icon": "user-plus",
+      "color": "#6C63FF",
+      "created_at": "2026-06-21T11:29:28.652Z"
+    },
+    {
+      "id": "79a162093bab9794",
+      "type": "lead",
+      "text": "Novo lead adicionado: Patrícia Costa (Boutique Elegância Urbana)",
+      "icon": "user-plus",
+      "color": "#6C63FF",
+      "created_at": "2026-06-21T11:29:28.645Z"
+    },
+    {
+      "id": "42dcd31be039f9b3",
+      "type": "lead",
+      "text": "Novo lead adicionado: Ana Lúcia Santos (Empório Sabor e Arte)",
+      "icon": "user-plus",
+      "color": "#6C63FF",
+      "created_at": "2026-06-21T11:29:28.234Z"
+    },
+    {
+      "id": "35bfc6de99f294e0",
+      "type": "scan",
+      "text": "JADE encontrou 3 novos leads via radar em São Paulo",
+      "icon": "crosshair",
+      "color": "#6C63FF",
+      "metadata": {
+        "count": 3,
+        "cidade": "São Paulo"
+      },
+      "created_at": "2026-06-21T11:29:27.678Z"
+    },
+    {
+      "id": "26b25d1f934f6b35",
+      "type": "module",
+      "text": "Scanner Radar ativado",
+      "icon": "crosshair",
+      "color": "#6C63FF",
+      "metadata": {
+        "module": "scanner",
+        "active": true
+      },
+      "created_at": "2026-06-21T11:29:18.966Z"
+    },
     {
       "id": "3ae3b2674b1367cf",
       "type": "message",
@@ -2917,187 +3083,6 @@
       "color": "#FF0080",
       "metadata": {},
       "created_at": "2026-06-21T01:27:55.906Z"
-    },
-    {
-      "id": "988fd0cc534c49ec",
-      "type": "message",
-      "text": "JADE respondeu a uma mensagem",
-      "icon": "robot",
-      "color": "#FF0080",
-      "metadata": {
-        "session_id": "68a5da972b09a04b"
-      },
-      "created_at": "2026-06-21T01:27:19.666Z"
-    },
-    {
-      "id": "626d49f7800aceca",
-      "type": "message",
-      "text": "JADE respondeu a uma mensagem",
-      "icon": "robot",
-      "color": "#FF0080",
-      "metadata": {
-        "session_id": "16ffc9c6090d363d"
-      },
-      "created_at": "2026-06-21T01:15:08.887Z"
-    },
-    {
-      "id": "754a4cf5bf4fefd4",
-      "type": "message",
-      "text": "JADE respondeu a uma mensagem",
-      "icon": "robot",
-      "color": "#FF0080",
-      "metadata": {
-        "session_id": "e450791e03bacd87"
-      },
-      "created_at": "2026-06-21T01:15:00.151Z"
-    },
-    {
-      "id": "381d591e41903401",
-      "type": "message",
-      "text": "JADE respondeu a uma mensagem",
-      "icon": "robot",
-      "color": "#FF0080",
-      "metadata": {
-        "session_id": "3cdd60ef64aa6f10"
-      },
-      "created_at": "2026-06-21T01:14:51.591Z"
-    },
-    {
-      "id": "a5af31ffe01ea0c9",
-      "type": "message",
-      "text": "JADE respondeu a uma mensagem",
-      "icon": "robot",
-      "color": "#FF0080",
-      "metadata": {},
-      "created_at": "2026-06-21T00:55:19.198Z"
-    },
-    {
-      "id": "7aa31dfb7d8d88a9",
-      "type": "module",
-      "text": "JADE IA desativado",
-      "icon": "robot",
-      "color": "#FF0080",
-      "metadata": {
-        "module": "jade",
-        "active": false
-      },
-      "created_at": "2026-06-21T00:38:21.916Z"
-    },
-    {
-      "id": "646505b7067fd313",
-      "type": "module",
-      "text": "JADE IA ativado",
-      "icon": "robot",
-      "color": "#FF0080",
-      "metadata": {
-        "module": "jade",
-        "active": true
-      },
-      "created_at": "2026-06-21T00:38:19.597Z"
-    },
-    {
-      "id": "68ed1a117b1a51ec",
-      "type": "message",
-      "text": "JADE respondeu a uma mensagem",
-      "icon": "robot",
-      "color": "#FF0080",
-      "metadata": {},
-      "created_at": "2026-06-21T00:37:21.715Z"
-    },
-    {
-      "id": "56d10423f8626a80",
-      "type": "message",
-      "text": "JADE respondeu a uma mensagem",
-      "icon": "robot",
-      "color": "#FF0080",
-      "metadata": {},
-      "created_at": "2026-06-21T00:36:47.122Z"
-    },
-    {
-      "id": "72f4cb775f999628",
-      "type": "module",
-      "text": "Marketing IA desativado",
-      "icon": "zap",
-      "color": "#FFB300",
-      "metadata": {
-        "module": "marketing",
-        "active": false
-      },
-      "created_at": "2026-06-20T23:00:56.775Z"
-    },
-    {
-      "id": "d2bfff405c6be7eb",
-      "type": "module",
-      "text": "Marketing IA ativado",
-      "icon": "zap",
-      "color": "#FFB300",
-      "metadata": {
-        "module": "marketing",
-        "active": true
-      },
-      "created_at": "2026-06-20T22:59:59.722Z"
-    },
-    {
-      "id": "fd29c5342c8caab7",
-      "type": "module",
-      "text": "Marketing IA desativado",
-      "icon": "zap",
-      "color": "#FFB300",
-      "metadata": {
-        "module": "marketing",
-        "active": false
-      },
-      "created_at": "2026-06-20T22:59:39.644Z"
-    },
-    {
-      "id": "7144aba486cc320d",
-      "type": "module",
-      "text": "Marketing IA ativado",
-      "icon": "zap",
-      "color": "#FFB300",
-      "metadata": {
-        "module": "marketing",
-        "active": true
-      },
-      "created_at": "2026-06-20T22:59:38.825Z"
-    },
-    {
-      "id": "bcfe82df56a856ec",
-      "type": "message",
-      "text": "JADE respondeu: \"Responder cliente\"",
-      "icon": "robot",
-      "color": "#FF0080",
-      "created_at": "2026-06-20T22:59:23.681Z"
-    },
-    {
-      "id": "65413d019f11c728",
-      "type": "message",
-      "text": "JADE respondeu: \"Responder cliente\"",
-      "icon": "robot",
-      "color": "#FF0080",
-      "created_at": "2026-06-20T22:59:22.929Z"
-    },
-    {
-      "id": "a6ff96eb5dec70a4",
-      "type": "message",
-      "text": "JADE respondeu a uma mensagem",
-      "icon": "robot",
-      "color": "#FF0080",
-      "metadata": {
-        "session_id": null
-      },
-      "created_at": "2026-06-20T22:59:22.808Z"
-    },
-    {
-      "id": "1aec25189ed5064a",
-      "type": "message",
-      "text": "JADE respondeu a uma mensagem",
-      "icon": "robot",
-      "color": "#FF0080",
-      "metadata": {
-        "session_id": "c7cdcf1e4fa10547"
-      },
-      "created_at": "2026-06-20T22:59:21.587Z"
     }
   ],
   "marketing_campaigns": [

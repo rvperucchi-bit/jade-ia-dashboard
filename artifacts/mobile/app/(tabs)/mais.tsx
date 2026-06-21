@@ -105,6 +105,40 @@ const GR = StyleSheet.create({
   label:    { fontSize: 10, fontFamily: "SpaceGrotesk_400Regular", color: "rgba(255,255,255,1)", marginTop: 6, textAlign: "center", maxWidth: 64 },
 });
 
+// ─── Category Section ─────────────────────────────────────────────────────────
+function CategorySection({ label, items }: {
+  label: string;
+  items: { label: string; iconNode: React.ReactNode; locked: boolean; onPress: () => void; }[];
+}) {
+  return (
+    <View style={CS.wrap}>
+      <View style={CS.labelRow}>
+        <Text style={CS.label}>{label}</Text>
+        <View style={CS.dividerLine} />
+      </View>
+      <View style={CS.grid}>
+        {items.map((item) => (
+          <GridItem
+            key={item.label}
+            label={item.label}
+            iconNode={item.iconNode}
+            locked={item.locked}
+            onPress={item.onPress}
+          />
+        ))}
+      </View>
+    </View>
+  );
+}
+
+const CS = StyleSheet.create({
+  wrap:       { marginBottom: 2 },
+  labelRow:   { flexDirection: "row", alignItems: "center", paddingHorizontal: 16, paddingTop: 18, paddingBottom: 2, gap: 10 },
+  label:      { fontSize: 10, fontFamily: "SpaceGrotesk_700Bold", color: "rgba(255,255,255,0.28)", letterSpacing: 1.6 },
+  dividerLine:{ flex: 1, height: 1, backgroundColor: "rgba(255,255,255,0.06)", borderRadius: 1 },
+  grid:       { flexDirection: "row", flexWrap: "wrap", paddingHorizontal: 8 },
+});
+
 // ─── MenuItem ─────────────────────────────────────────────────────────────────
 function MenuItem({
   icon, label, sub, badge, badgeColor, danger,
@@ -321,114 +355,131 @@ export default function MaisScreen() {
   const pinkIc  = PINK;
   const grayIc  = "rgba(255,255,255,0.25)";
 
-  // ─── Grid items definition ─────────────────────────────────────────────────
-  const GRID_ITEMS: {
+  // ─── Categorized module grid ────────────────────────────────────────────────
+  const CATEGORIES: {
     label: string;
-    iconNode: React.ReactNode;
-    locked: boolean;
-    onPress: () => void;
+    items: { label: string; iconNode: React.ReactNode; locked: boolean; onPress: () => void; }[];
   }[] = [
     {
-      label: "JADE Chat",
-      iconNode: <MaterialCommunityIcons name="robot" size={22} color={pinkIc} />,
-      locked: false,
-      onPress: () => { tap(); router.push("/(tabs)/jade" as any); },
+      label: "COMERCIAL",
+      items: [
+        {
+          label: "Roteiro",
+          iconNode: <Feather name="list" size={20} color={pinkIc} />,
+          locked: false,
+          onPress: () => { tap(); router.push("/roteiro" as any); },
+        },
+        {
+          label: "Briefing",
+          iconNode: <Feather name="clipboard" size={20} color={pinkIc} />,
+          locked: false,
+          onPress: () => { tap(); router.push("/briefing" as any); },
+        },
+        {
+          label: "Objeções",
+          iconNode: <Feather name="shield" size={20} color={canAccess("pro") ? pinkIc : grayIc} />,
+          locked: !canAccess("pro"),
+          onPress: () => navPro("/objecoes", "Objeções"),
+        },
+        {
+          label: "Roleplay",
+          iconNode: <Feather name="users" size={20} color={canAccess("pro") ? pinkIc : grayIc} />,
+          locked: !canAccess("pro"),
+          onPress: () => navPro("/roleplay", "Roleplay"),
+        },
+      ],
     },
     {
-      label: "Roteiro",
-      iconNode: <Feather name="list" size={20} color={pinkIc} />,
-      locked: false,
-      onPress: () => { tap(); router.push("/roteiro" as any); },
+      label: "INTELIGÊNCIA IA",
+      items: [
+        {
+          label: "Marketing IA",
+          iconNode: <Feather name="radio" size={20} color={canAccess("pro") ? pinkIc : grayIc} />,
+          locked: !canAccess("pro"),
+          onPress: () => navPro("/marketing", "Marketing IA"),
+        },
+        {
+          label: "Análise IA",
+          iconNode: <Feather name="cpu" size={20} color={canAccess("pro") ? pinkIc : grayIc} />,
+          locked: !canAccess("pro"),
+          onPress: () => navPro("/analise", "Análise IA"),
+        },
+        {
+          label: "Relatórios",
+          iconNode: <Feather name="bar-chart-2" size={20} color={pinkIc} />,
+          locked: false,
+          onPress: () => { tap(); router.push("/relatorios" as any); },
+        },
+      ],
     },
     {
-      label: "Briefing",
-      iconNode: <Feather name="clipboard" size={20} color={pinkIc} />,
-      locked: false,
-      onPress: () => { tap(); router.push("/briefing" as any); },
+      label: "GESTÃO",
+      items: [
+        {
+          label: "Metas",
+          iconNode: <Feather name="target" size={20} color={canAccess("enterprise") ? pinkIc : grayIc} />,
+          locked: !canAccess("enterprise"),
+          onPress: () => navEnterprise("/gestao", "Metas"),
+        },
+        {
+          label: "Carteira",
+          iconNode: <Feather name="briefcase" size={20} color={canAccess("enterprise") ? pinkIc : grayIc} />,
+          locked: !canAccess("enterprise"),
+          onPress: () => navEnterprise("/gestao", "Carteira"),
+        },
+        {
+          label: "Painel Exec.",
+          iconNode: <Feather name="grid" size={20} color={canAccess("enterprise") ? pinkIc : grayIc} />,
+          locked: !canAccess("enterprise"),
+          onPress: () => navEnterprise("/painelexecutivo", "Painel Executivo"),
+        },
+        {
+          label: "Meu Time",
+          iconNode: <Feather name="user-plus" size={20} color={canAccess("enterprise") ? pinkIc : grayIc} />,
+          locked: !canAccess("enterprise"),
+          onPress: () => navEnterprise("/gestao", "Meu Time"),
+        },
+      ],
     },
     {
-      label: "Objeções",
-      iconNode: <Feather name="shield" size={20} color={canAccess("pro") ? pinkIc : grayIc} />,
-      locked: !canAccess("pro"),
-      onPress: () => navPro("/objecoes", "Objeções"),
+      label: "OPERAÇÃO",
+      items: [
+        {
+          label: "Criar Rota",
+          iconNode: <Feather name="map-pin" size={20} color={canAccess("pro") ? pinkIc : grayIc} />,
+          locked: !canAccess("pro"),
+          onPress: () => navPro("/criarrota", "Criar Rota"),
+        },
+        {
+          label: "Planejamento",
+          iconNode: <Feather name="calendar" size={20} color={canAccess("pro") ? pinkIc : grayIc} />,
+          locked: !canAccess("pro"),
+          onPress: () => navPro("/planejamento", "Planejamento"),
+        },
+        {
+          label: "Laudo",
+          iconNode: <Feather name="award" size={20} color={pinkIc} />,
+          locked: false,
+          onPress: () => { tap(); router.push("/laudo" as any); },
+        },
+      ],
     },
     {
-      label: "Laudo",
-      iconNode: <Feather name="award" size={20} color={pinkIc} />,
-      locked: false,
-      onPress: () => { tap(); router.push("/laudo" as any); },
-    },
-    {
-      label: "Criar Rota",
-      iconNode: <Feather name="map-pin" size={20} color={canAccess("pro") ? pinkIc : grayIc} />,
-      locked: !canAccess("pro"),
-      onPress: () => navPro("/criarrota", "Criar Rota"),
-    },
-    {
-      label: "Planejamento",
-      iconNode: <Feather name="calendar" size={20} color={canAccess("pro") ? pinkIc : grayIc} />,
-      locked: !canAccess("pro"),
-      onPress: () => navPro("/planejamento", "Planejamento"),
-    },
-    {
-      label: "Roleplay",
-      iconNode: <Feather name="users" size={20} color={canAccess("pro") ? pinkIc : grayIc} />,
-      locked: !canAccess("pro"),
-      onPress: () => navPro("/roleplay", "Roleplay"),
-    },
-    {
-      label: "Marketing IA",
-      iconNode: <Feather name="radio" size={20} color={canAccess("pro") ? pinkIc : grayIc} />,
-      locked: !canAccess("pro"),
-      onPress: () => navPro("/marketing", "Marketing IA"),
-    },
-    {
-      label: "Relatórios",
-      iconNode: <Feather name="bar-chart-2" size={20} color={pinkIc} />,
-      locked: false,
-      onPress: () => { tap(); router.push("/relatorios" as any); },
-    },
-    {
-      label: "Análise IA",
-      iconNode: <Feather name="cpu" size={20} color={canAccess("pro") ? pinkIc : grayIc} />,
-      locked: !canAccess("pro"),
-      onPress: () => navPro("/analise", "Análise IA"),
-    },
-    {
-      label: "Meu Time",
-      iconNode: <Feather name="user-plus" size={20} color={canAccess("enterprise") ? pinkIc : grayIc} />,
-      locked: !canAccess("enterprise"),
-      onPress: () => navEnterprise("/gestao", "Meu Time"),
-    },
-    {
-      label: "Metas",
-      iconNode: <Feather name="target" size={20} color={canAccess("enterprise") ? pinkIc : grayIc} />,
-      locked: !canAccess("enterprise"),
-      onPress: () => navEnterprise("/gestao", "Metas"),
-    },
-    {
-      label: "Carteira",
-      iconNode: <Feather name="briefcase" size={20} color={canAccess("enterprise") ? pinkIc : grayIc} />,
-      locked: !canAccess("enterprise"),
-      onPress: () => navEnterprise("/gestao", "Carteira"),
-    },
-    {
-      label: "Painel Exec.",
-      iconNode: <Feather name="grid" size={20} color={canAccess("enterprise") ? pinkIc : grayIc} />,
-      locked: !canAccess("enterprise"),
-      onPress: () => navEnterprise("/painelexecutivo", "Painel Executivo"),
-    },
-    {
-      label: "Biblioteca",
-      iconNode: <Feather name="book-open" size={20} color={pinkIc} />,
-      locked: false,
-      onPress: () => { tap(); router.push("/biblioteca" as any); },
-    },
-    {
-      label: "Loja JADE",
-      iconNode: <Feather name="shopping-cart" size={20} color={pinkIc} />,
-      locked: false,
-      onPress: () => { tap(); router.push("/loja" as any); },
+      label: "SISTEMA",
+      items: [
+        {
+          label: "Biblioteca",
+          iconNode: <Feather name="book-open" size={20} color={pinkIc} />,
+          locked: false,
+          onPress: () => { tap(); router.push("/biblioteca" as any); },
+        },
+        {
+          label: "Loja JADE",
+          iconNode: <Feather name="shopping-cart" size={20} color={pinkIc} />,
+          locked: false,
+          onPress: () => { tap(); router.push("/loja" as any); },
+        },
+      ],
     },
   ];
 
@@ -547,29 +598,30 @@ export default function MaisScreen() {
         );
       })()}
 
-      {/* ── Demo gratuita banner (Start sem demo usada) ── */}
+      {/* ── Demo gratuita banner compacto ── */}
       {hasDemoAvailable && (
-        <View style={[S.demoBanner, { borderColor: PINK + "55" }]}>
+        <TouchableOpacity
+          style={[S.demoBanner, { borderColor: PINK + "55" }]}
+          onPress={() => { setDemoPending({ path: "/plano", label: "Demonstração Pro" }); setDemoModal(true); }}
+          activeOpacity={0.85}
+        >
           <View style={S.demoBannerInner}>
             <Text style={S.demoEmoji}>🎁</Text>
             <View style={{ flex: 1 }}>
-              <Text style={S.demoTitle}>Você tem 1 demonstração gratuita</Text>
-              <Text style={[S.demoSub, { color: colors.mutedForeground }]}>Experimente qualquer função Pro por 24 horas, sem custo</Text>
+              <Text style={S.demoTitle}>Demonstração Pro Disponível</Text>
+              <Text style={[S.demoSub, { color: colors.mutedForeground }]}>Teste qualquer recurso avançado por 24 horas</Text>
+            </View>
+            <View style={{ backgroundColor: PINK, borderRadius: 10, paddingHorizontal: 10, paddingVertical: 7 }}>
+              <Text style={{ color: "#fff", fontSize: 12, fontFamily: "SpaceGrotesk_700Bold" }}>Experimentar</Text>
             </View>
           </View>
-        </View>
+        </TouchableOpacity>
       )}
 
-      {/* ── Icon Grid (CapCut style — sem container card) ── */}
-      <View style={S.gridWrap}>
-        {GRID_ITEMS.map((item) => (
-          <GridItem
-            key={item.label}
-            label={item.label}
-            iconNode={item.iconNode}
-            locked={item.locked}
-            onPress={item.onPress}
-          />
+      {/* ── Módulos por categoria ── */}
+      <View style={{ marginBottom: 8 }}>
+        {CATEGORIES.map((cat) => (
+          <CategorySection key={cat.label} label={cat.label} items={cat.items} />
         ))}
       </View>
 
