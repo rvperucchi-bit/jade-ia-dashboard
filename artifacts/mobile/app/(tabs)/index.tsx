@@ -63,8 +63,8 @@ function ModuleButton({ icon, label, active, locked, onPress, onLongPress }: {
   return (
     <TouchableOpacity style={S.modCol} onPress={onPress} onLongPress={onLongPress} delayLongPress={500} activeOpacity={0.75}>
       <Animated.View style={[S.modBtn, {
-        backgroundColor: locked ? colors.surface + "80" : colors.surface,
-        borderColor: active ? PINK + "99" : locked ? colors.border + "50" : colors.border,
+        backgroundColor: locked ? colors.surface + "80" : active ? "rgba(255,0,128,0.30)" : "rgba(255,0,128,0.15)",
+        borderColor: active ? "rgba(255,0,128,0.80)" : locked ? colors.border + "50" : "rgba(255,0,128,0.30)",
         shadowColor: PINK,
         shadowRadius: glow.interpolate({ inputRange: [0,1], outputRange: [0, 8] }),
         shadowOpacity: glow.interpolate({ inputRange: [0,1], outputRange: [0, 0.5] }),
@@ -328,7 +328,7 @@ export default function HomeScreen() {
           <Text style={[S.greeting, { color: colors.mutedForeground }]}>Bom dia,</Text>
           <Text style={[S.name, { color: colors.text }]}>Rodrigo 👋</Text>
           {empresaNome ? (
-            <Text style={{ fontSize: 13, fontFamily: "SpaceGrotesk_400Regular", color: "rgba(255,255,255,0.45)", marginTop: 1 }}>
+            <Text style={{ fontSize: 13, fontFamily: "SpaceGrotesk_400Regular", color: "rgba(255,255,255,0.45)", marginTop: 4 }}>
               {empresaNome}
             </Text>
           ) : null}
@@ -364,7 +364,7 @@ export default function HomeScreen() {
           return (
             <ModuleButton
               key={m.name}
-              icon={m.icon(m.locked ? colors.mutedForeground : active ? PINK : colors.mutedForeground + "99")}
+              icon={m.icon(m.locked ? colors.mutedForeground : PINK)}
               label={m.label}
               active={active}
               locked={m.locked}
