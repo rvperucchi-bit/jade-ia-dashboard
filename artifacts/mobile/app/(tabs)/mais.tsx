@@ -623,7 +623,7 @@ export default function MaisScreen() {
               <Text style={[PC.footerPlan, { color: planColor }]}>{planLabel.toUpperCase()}</Text>
               <Text style={[PC.footerSub, { color: colors.mutedForeground }]}>Seu plano está ativo</Text>
               <View style={{ flex: 1 }} />
-              <Text style={[PC.footerRenewal, { color: colors.mutedForeground }]}>Renovação: {renewalStr}</Text>
+              <Text style={[PC.footerRenewal, { color: colors.mutedForeground }]}>Próxima renovação: {renewalStr}</Text>
               <Feather name="calendar" size={12} color={colors.mutedForeground} style={{ opacity: 0.5 }} />
             </View>
           </View>

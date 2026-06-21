@@ -29,29 +29,93 @@ const BORDER = "#1E1830";
 const { width: SW } = Dimensions.get("window");
 
 // ─── First module options ──────────────────────────────────────────────────────
-const MODULE_OPTIONS = [
+const MODULE_OPTIONS: {
+  id: string;
+  iconName: React.ComponentProps<typeof Feather>["name"];
+  title: string;
+  sub: string;
+  module: string;
+}[] = [
   {
     id: "scanner",
-    emoji: "🎯",
+    iconName: "target",
     title: "Quero prospectar leads",
     sub: "Ativa o Radar de Oportunidades",
     module: "scanner",
   },
   {
     id: "leads",
-    emoji: "💬",
+    iconName: "users",
     title: "Quero organizar meus clientes",
     sub: "Ativa o CRM de Leads",
     module: "leads",
   },
   {
     id: "marketing",
-    emoji: "📊",
+    iconName: "trending-up",
     title: "Quero acompanhar minhas vendas",
     sub: "Ativa o Pipeline de Vendas",
     module: "marketing",
   },
 ];
+
+// ─── Floating Label Input ─────────────────────────────────────────────────────
+function FloatingLabelInput({
+  label, value, onChangeText, keyboardType, autoCapitalize,
+}: {
+  label: string;
+  value: string;
+  onChangeText: (t: string) => void;
+  keyboardType?: "default" | "url" | "email-address";
+  autoCapitalize?: "none" | "words" | "sentences";
+}) {
+  const [focused, setFocused] = useState(false);
+  const floatAnim = React.useRef(new Animated.Value(value ? 1 : 0)).current;
+
+  const animate = (to: number) =>
+    Animated.timing(floatAnim, { toValue: to, duration: 150, useNativeDriver: false }).start();
+
+  return (
+    <View style={FL.wrap}>
+      <Animated.Text
+        style={[
+          FL.label,
+          {
+            top:       floatAnim.interpolate({ inputRange: [0, 1], outputRange: [15, -9] }),
+            fontSize:  floatAnim.interpolate({ inputRange: [0, 1], outputRange: [15, 11] }),
+            color:     focused ? PINK : "rgba(255,255,255,0.50)",
+          },
+        ]}
+      >
+        {label}
+      </Animated.Text>
+      <TextInput
+        style={[FL.input, focused && { borderColor: PINK + "66" }]}
+        value={value}
+        onChangeText={onChangeText}
+        onFocus={() => { setFocused(true); animate(1); }}
+        onBlur={() => { setFocused(false); if (!value) animate(0); }}
+        keyboardType={keyboardType ?? "default"}
+        autoCapitalize={autoCapitalize ?? "words"}
+        placeholderTextColor="transparent"
+      />
+    </View>
+  );
+}
+
+const FL = StyleSheet.create({
+  wrap:  { position: "relative", marginTop: 8 },
+  label: {
+    position: "absolute", left: 14, zIndex: 1,
+    fontFamily: "SpaceGrotesk_500Medium",
+    backgroundColor: BG, paddingHorizontal: 3,
+  },
+  input: {
+    backgroundColor: CARD, borderRadius: 12, borderWidth: 1, borderColor: BORDER,
+    height: 52, paddingHorizontal: 14, paddingTop: 10,
+    fontSize: 15, fontFamily: "SpaceGrotesk_400Regular", color: "#fff",
+  },
+});
 
 // ─── Step indicator ────────────────────────────────────────────────────────────
 function Steps({ current, total }: { current: number; total: number }) {
@@ -103,8 +167,8 @@ export default function OnboardingScreen() {
   const glow1 = useRef(new Animated.Value(0)).current;
   React.useEffect(() => {
     const loop = Animated.loop(Animated.sequence([
-      Animated.timing(glow1, { toValue: 1, duration: 1800, useNativeDriver: false }),
-      Animated.timing(glow1, { toValue: 0, duration: 1800, useNativeDriver: false }),
+      Animated.timing(glow1, { toValue: 1, duration: 2400, useNativeDriver: false }),
+      Animated.timing(glow1, { toValue: 0, duration: 2400, useNativeDriver: false }),
     ]));
     loop.start();
     return () => loop.stop();
@@ -155,8 +219,8 @@ export default function OnboardingScreen() {
           <View style={S.stepWrap}>
             {/* Animated logo glow */}
             <Animated.View style={[S.logoGlowWrap, {
-              shadowRadius: glow1.interpolate({ inputRange: [0, 1], outputRange: [20, 50] }),
-              shadowOpacity: glow1.interpolate({ inputRange: [0, 1], outputRange: [0.3, 0.7] }),
+              shadowRadius: glow1.interpolate({ inputRange: [0, 1], outputRange: [12, 28] }),
+              shadowOpacity: glow1.interpolate({ inputRange: [0, 1], outputRange: [0.10, 0.30] }),
             }]}>
               <Image
                 source={require("../assets/images/jade-logo.png")}
@@ -179,26 +243,11 @@ export default function OnboardingScreen() {
           <ScrollView style={{ flex: 1 }} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
             <Text style={S.stepTitle}>Conta pra mim sobre{"\n"}seu negócio</Text>
             <Text style={S.stepSub}>Essas informações personalizam a JADE para você.</Text>
-            <View style={{ gap: 12, marginTop: 24 }}>
-              {[
-                { label: "Nome da empresa *", value: companyName, set: setCompanyName, placeholder: "Ex: JÁ Delivery", keyboard: "default" as const },
-                { label: "Seu nome *",         value: userName,    set: setUserName,    placeholder: "Ex: Rodrigo",     keyboard: "default" as const },
-                { label: "Cidade/Estado",       value: city,        set: setCity,        placeholder: "Ex: São Paulo, SP", keyboard: "default" as const },
-                { label: "Site ou Instagram (opcional)", value: siteOrInsta, set: setSiteOrInsta, placeholder: "@sua_empresa", keyboard: "url" as const },
-              ].map((f) => (
-                <View key={f.label}>
-                  <Text style={S.fieldLabel}>{f.label}</Text>
-                  <TextInput
-                    style={S.field}
-                    value={f.value}
-                    onChangeText={f.set}
-                    placeholder={f.placeholder}
-                    placeholderTextColor="rgba(255,255,255,0.25)"
-                    keyboardType={f.keyboard}
-                    autoCapitalize="words"
-                  />
-                </View>
-              ))}
+            <View style={{ gap: 6, marginTop: 24 }}>
+              <FloatingLabelInput label="Nome da empresa *" value={companyName} onChangeText={setCompanyName} />
+              <FloatingLabelInput label="Seu nome *" value={userName} onChangeText={setUserName} />
+              <FloatingLabelInput label="Cidade / Estado" value={city} onChangeText={setCity} />
+              <FloatingLabelInput label="Site ou Instagram (opcional)" value={siteOrInsta} onChangeText={setSiteOrInsta} keyboardType="url" autoCapitalize="none" />
             </View>
             <TouchableOpacity
               style={[S.mainBtn, { marginTop: 28, opacity: companyName.trim() ? 1 : 0.4 }]}
@@ -271,7 +320,9 @@ export default function OnboardingScreen() {
                     }}
                     activeOpacity={0.75}
                   >
-                    <Text style={S.modEmoji}>{m.emoji}</Text>
+                    <View style={[S.modIconWrap, sel && { backgroundColor: PINK + "22" }]}>
+                      <Feather name={m.iconName} size={22} color={sel ? PINK : "rgba(255,255,255,0.50)"} />
+                    </View>
                     <View style={{ flex: 1 }}>
                       <Text style={[S.modTitle, sel && { color: "#fff" }]}>{m.title}</Text>
                       <Text style={S.modSub}>{m.sub}</Text>
@@ -400,29 +451,29 @@ const S = StyleSheet.create({
     marginTop: 20,
   },
   segCard: {
-    width: (SW - 48 - 20) / 3,
+    width: (SW - 48 - 10) / 2,
     backgroundColor: CARD,
     borderRadius: 14,
     borderWidth: 1,
-    borderColor: BORDER,
+    borderColor: "rgba(255,255,255,0.09)",
     alignItems: "center",
-    paddingVertical: 14,
-    paddingHorizontal: 6,
-    gap: 6,
+    paddingVertical: 16,
+    paddingHorizontal: 10,
+    gap: 8,
     position: "relative",
   },
   segCardActive: {
-    backgroundColor: "rgba(255,0,128,0.15)",
+    backgroundColor: "rgba(255,0,128,0.13)",
     borderColor: PINK,
     borderWidth: 1.5,
   },
-  segEmoji: { fontSize: 22 },
+  segEmoji: { fontSize: 24 },
   segLabel: {
-    fontSize: 10,
+    fontSize: 12,
     fontFamily: "SpaceGrotesk_500Medium",
-    color: "rgba(255,255,255,0.55)",
+    color: "rgba(255,255,255,0.78)",
     textAlign: "center",
-    lineHeight: 14,
+    lineHeight: 16,
   },
   segCheck: {
     position: "absolute",
@@ -444,25 +495,32 @@ const S = StyleSheet.create({
     backgroundColor: CARD,
     borderRadius: 16,
     borderWidth: 1,
-    borderColor: BORDER,
+    borderColor: "rgba(255,255,255,0.09)",
     padding: 18,
   },
   modCardActive: {
-    backgroundColor: "rgba(255,0,128,0.12)",
+    backgroundColor: "rgba(255,0,128,0.10)",
     borderColor: PINK,
     borderWidth: 1.5,
   },
-  modEmoji: { fontSize: 28 },
+  modIconWrap: {
+    width: 48,
+    height: 48,
+    borderRadius: 13,
+    backgroundColor: "rgba(255,255,255,0.06)",
+    alignItems: "center",
+    justifyContent: "center",
+  },
   modTitle: {
     fontSize: 15,
     fontFamily: "SpaceGrotesk_700Bold",
-    color: "rgba(255,255,255,0.75)",
+    color: "rgba(255,255,255,0.90)",
     marginBottom: 4,
   },
   modSub: {
     fontSize: 12,
     fontFamily: "SpaceGrotesk_400Regular",
-    color: "rgba(255,255,255,0.35)",
+    color: "rgba(255,255,255,0.55)",
   },
   modCheck: {
     width: 28,
@@ -477,16 +535,16 @@ const S = StyleSheet.create({
   mainBtn: {
     backgroundColor: PINK,
     borderRadius: 14,
-    height: 52,
+    height: 60,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
     gap: 8,
     shadowColor: PINK,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.4,
-    shadowRadius: 12,
-    elevation: 8,
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.22,
+    shadowRadius: 8,
+    elevation: 6,
   },
   mainBtnText: {
     fontSize: 16,

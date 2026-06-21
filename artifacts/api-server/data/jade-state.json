@@ -31,10 +31,10 @@
       "module_name": "whatsapp",
       "is_active": false,
       "status": "paused",
-      "last_started_at": "2026-06-21T04:10:01.588Z",
-      "last_stopped_at": "2026-06-21T04:10:02.279Z",
+      "last_started_at": "2026-06-21T13:40:21.376Z",
+      "last_stopped_at": "2026-06-21T13:40:24.707Z",
       "last_run_at": null,
-      "updated_at": "2026-06-21T04:10:02.279Z"
+      "updated_at": "2026-06-21T13:40:24.707Z"
     },
     "marketing": {
       "module_name": "marketing",
@@ -47,6 +47,26 @@
     }
   },
   "module_logs": [
+    {
+      "id": "872ecbc4ebd20ddf",
+      "module_name": "whatsapp",
+      "action": "deactivated",
+      "message": "WhatsApp desativado",
+      "metadata": {
+        "active": false
+      },
+      "created_at": "2026-06-21T13:40:24.709Z"
+    },
+    {
+      "id": "81b84934ca1c1806",
+      "module_name": "whatsapp",
+      "action": "activated",
+      "message": "WhatsApp ativado",
+      "metadata": {
+        "active": true
+      },
+      "created_at": "2026-06-21T13:40:21.383Z"
+    },
     {
       "id": "a19e71477f4164c7",
       "module_name": "scanner",
@@ -1079,6 +1099,30 @@
     }
   ],
   "activity_events": [
+    {
+      "id": "71e0920dcac500d4",
+      "type": "module",
+      "text": "WhatsApp desativado",
+      "icon": "message-circle",
+      "color": "#25D366",
+      "metadata": {
+        "module": "whatsapp",
+        "active": false
+      },
+      "created_at": "2026-06-21T13:40:24.711Z"
+    },
+    {
+      "id": "4e7ed49bc1ad364e",
+      "type": "module",
+      "text": "WhatsApp ativado",
+      "icon": "message-circle",
+      "color": "#25D366",
+      "metadata": {
+        "module": "whatsapp",
+        "active": true
+      },
+      "created_at": "2026-06-21T13:40:21.385Z"
+    },
     {
       "id": "8526bba26695f374",
       "type": "message",
@@ -3069,27 +3113,6 @@
         "active": true
       },
       "created_at": "2026-06-21T03:00:29.378Z"
-    },
-    {
-      "id": "84a6cf26dec2ec95",
-      "type": "module",
-      "text": "Scanner Radar ativado",
-      "icon": "crosshair",
-      "color": "#6C63FF",
-      "metadata": {
-        "module": "scanner",
-        "active": true
-      },
-      "created_at": "2026-06-21T03:00:21.939Z"
-    },
-    {
-      "id": "8190769a2f724c56",
-      "type": "message",
-      "text": "JADE respondeu a uma mensagem",
-      "icon": "robot",
-      "color": "#FF0080",
-      "metadata": {},
-      "created_at": "2026-06-21T02:17:58.225Z"
     }
   ],
   "marketing_campaigns": [

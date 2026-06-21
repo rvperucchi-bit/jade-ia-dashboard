@@ -1,0 +1,253 @@
+AUDITORIA PREMIUM JADE — REFINAMENTO FINAL DE UX/UI
+
+A primeira etapa de melhorias já foi concluída.
+
+Agora executar uma segunda rodada focada exclusivamente em refinamento visual, consistência de produto e percepção premium.
+
+IMPORTANTE
+
+Não alterar funcionalidades.
+
+Não alterar fluxos.
+
+Não criar telas novas.
+
+Não reinventar a identidade visual da JADE.
+
+Objetivo:
+
+Elevar o acabamento do produto para padrão SaaS premium.
+
+Referências:
+
+* Linear
+* Raycast
+* Stripe
+* OpenAI
+* Vercel
+
+================================================================
+
+1. LOGO E IDENTIDADE
+
+A logo ainda precisa transmitir mais valor percebido.
+
+Objetivos:
+
+* Melhorar aplicação da marca.
+* Garantir máxima nitidez.
+* Revisar proporções.
+* Revisar espaçamento interno.
+* Garantir contraste perfeito em fundo escuro.
+
+Requisitos:
+
+* J, D e E em branco puro.
+* A rosa oficial da JADE.
+* Glow extremamente discreto.
+* Sem aparência neon exagerada.
+* Sem aspecto gamer.
+
+A marca deve parecer uma empresa de tecnologia premium.
+
+================================================================
+
+2. ONBOARDING
+
+TELA DE BOAS-VINDAS
+
+O botão “Começar” está pequeno visualmente.
+
+Melhorias:
+
+* Aumentar aproximadamente 15% a 20%.
+* Melhorar proporção.
+* Melhorar área de toque.
+* Reduzir glow excessivo.
+* Dar mais peso visual ao logo e menos ao botão.
+
+O foco principal da tela deve ser a marca JADE.
+
+================================================================
+
+3. FORMULÁRIOS
+
+Revisar todas as telas de onboarding.
+
+Objetivo:
+
+Modernizar a experiência de preenchimento.
+
+Avaliar implementação de labels flutuantes.
+
+Exemplo:
+
+Ao clicar no campo:
+
+* Label sobe.
+* Campo permanece limpo.
+* Experiência mais moderna.
+
+Caso a implementação seja viável sem prejudicar usabilidade, aplicar.
+
+================================================================
+
+4. SELEÇÃO DE MÓDULOS
+
+Tela:
+
+“Ative seu primeiro módulo”
+
+Problema:
+
+Os emojis ainda transmitem sensação de template.
+
+Substituir:
+
+🎯
+💬
+📊
+
+por ícones proprietários da JADE.
+
+Características:
+
+* Mesmo estilo visual utilizado no restante do aplicativo.
+* Traço consistente.
+* Rosa JADE.
+* Dark premium.
+* Mesmo tamanho e proporção.
+
+Também:
+
+Os cards não selecionados estão visualmente apagados.
+
+Melhorias:
+
+* Aumentar contraste.
+* Melhorar percepção de clique.
+* Aumentar presença dos ícones.
+
+================================================================
+
+5. SEGMENTOS
+
+Tela:
+
+“A JADE entende do seu mercado”
+
+Problema:
+
+Existe excesso de espaço vertical.
+
+A leitura pode ficar cansativa.
+
+Objetivo:
+
+Transformar em um grid visual mais eficiente.
+
+Requisitos:
+
+* Duas colunas.
+* Melhor aproveitamento do espaço.
+* Manter responsividade.
+* Melhor alinhamento dos cards.
+* Uniformizar larguras.
+
+Resultado esperado:
+
+Visual mais organizado e profissional.
+
+================================================================
+
+6. TELA MAIS
+
+Executar refinamento do card executivo.
+
+Verificar:
+
+* Hierarquia visual.
+* Espaçamento interno.
+* Alinhamentos.
+* Peso dos títulos.
+* Consistência dos indicadores.
+
+Objetivo:
+
+Transformar a área em um painel executivo premium.
+
+Remover qualquer sensação de múltiplos cards colados.
+
+================================================================
+
+7. SISTEMA DE ÍCONES
+
+Executar auditoria completa.
+
+Todos os ícones devem seguir:
+
+* Mesmo peso visual.
+* Mesmo tamanho.
+* Mesmo raio.
+* Mesmo estilo.
+* Mesmo glow.
+
+Não misturar:
+
+* emojis
+* ícones outline aleatórios
+* ícones preenchidos
+* estilos diferentes
+
+Criar uma linguagem visual única da JADE.
+
+================================================================
+
+8. GLOW E EFEITOS
+
+Executar revisão global.
+
+Objetivo:
+
+Reduzir excesso de glow.
+
+Aumentar sensação premium.
+
+Princípio:
+
+Menos efeito.
+Mais sofisticação.
+
+O brilho deve complementar a interface, nunca competir com ela.
+
+================================================================
+
+9. CONSISTÊNCIA
+
+Revisar:
+
+* espaçamentos
+* margens
+* paddings
+* títulos
+* subtítulos
+* botões
+* cards
+* badges
+* inputs
+
+Todo o produto deve parecer ter sido desenhado por uma única equipe de design.
+
+================================================================
+
+RESULTADO FINAL
+
+A JADE deve parecer um produto SaaS premium pronto para comercialização nacional.
+
+O objetivo não é adicionar elementos.
+
+O objetivo é remover ruído visual e elevar a qualidade do acabamento.
+
+Antes de implementar, faça uma auditoria completa da interface e liste os ajustes identificados.
+
+Depois execute todas as melhorias necessárias.
