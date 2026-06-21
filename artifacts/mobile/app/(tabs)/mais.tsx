@@ -1,7 +1,6 @@
 import React, { useRef, useState } from "react";
 import {
   Alert,
-  Animated,
   Modal,
   Platform,
   ScrollView,
@@ -24,29 +23,33 @@ const PURPLE = "#8400FF";
 const GOLD   = "#FFB800";
 const PINK   = "#FF0080";
 const INDIGO = "#6C63FF";
+const GRID_SIZE = 48;
 
 const DEV_PLAN_KEY = "@jade_dev_plan";
 
 // ─── Plan Gate Modal ──────────────────────────────────────────────────────────
 function PlanGateModal({ visible, plan, featureName, onClose, onUpgrade }: {
-  visible: boolean; plan: "pro"; featureName: string;
+  visible: boolean; plan: "pro" | "enterprise"; featureName: string;
   onClose: () => void; onUpgrade: () => void;
 }) {
+  const color = plan === "enterprise" ? GOLD : PURPLE;
+  const label = plan === "enterprise" ? "Enterprise" : "Pro";
+  const price = plan === "enterprise" ? "R$697/mês" : "R$247/mês";
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
       <TouchableOpacity style={G.overlay} activeOpacity={1} onPress={onClose}>
         <View style={G.box} onStartShouldSetResponder={() => true}>
-          <View style={[G.iconWrap, { backgroundColor: PURPLE + "22", borderColor: PURPLE + "44" }]}>
-            <Feather name="lock" size={28} color={PURPLE} />
+          <View style={[G.iconWrap, { backgroundColor: color + "22", borderColor: color + "44" }]}>
+            <Feather name="lock" size={28} color={color} />
           </View>
-          <Text style={G.title}>Plano Pro necessário</Text>
+          <Text style={G.title}>Plano {label} necessário</Text>
           <Text style={G.sub}>
-            <Text style={{ color: PURPLE, fontFamily: "SpaceGrotesk_600SemiBold" }}>{featureName}</Text>
-            {" "}está disponível no plano Pro.{"\n"}Faça upgrade e desbloqueie todos os recursos avançados.
+            <Text style={{ color, fontFamily: "SpaceGrotesk_600SemiBold" }}>{featureName}</Text>
+            {" "}está disponível no plano {label}.{"\n"}Faça upgrade e desbloqueie todos os recursos avançados.
           </Text>
-          <TouchableOpacity style={[G.btn, { backgroundColor: PURPLE }]} onPress={onUpgrade} activeOpacity={0.85}>
+          <TouchableOpacity style={[G.btn, { backgroundColor: color }]} onPress={onUpgrade} activeOpacity={0.85}>
             <Feather name="zap" size={15} color="#fff" />
-            <Text style={G.btnText}>Ver plano Pro — R$247/mês</Text>
+            <Text style={G.btnText}>Ver plano {label} — {price}</Text>
           </TouchableOpacity>
           <TouchableOpacity style={G.cancel} onPress={onClose} activeOpacity={0.7}>
             <Text style={G.cancelText}>Agora não</Text>
@@ -69,39 +72,68 @@ const G = StyleSheet.create({
   cancelText: { fontSize: 13, fontFamily: "SpaceGrotesk_500Medium", color: "#7777AA" },
 });
 
-// ─── MenuItem ──────────────────────────────────────────────────────────────────
+// ─── Grid Item ────────────────────────────────────────────────────────────────
+function GridItem({ label, iconNode, locked, onPress }: {
+  label: string;
+  iconNode: React.ReactNode;
+  locked?: boolean;
+  onPress: () => void;
+}) {
+  return (
+    <TouchableOpacity style={GR.col} onPress={onPress} activeOpacity={0.65}>
+      <View style={{ position: "relative" }}>
+        <View style={[GR.circle, { opacity: locked ? 0.3 : 1 }]}>
+          {iconNode}
+        </View>
+        {locked && (
+          <View style={GR.lockBadge}>
+            <Feather name="lock" size={8} color="#fff" />
+          </View>
+        )}
+      </View>
+      <Text style={[GR.label, { opacity: locked ? 0.3 : 0.5 }]} numberOfLines={1}>{label}</Text>
+    </TouchableOpacity>
+  );
+}
+
+const GR = StyleSheet.create({
+  col:      { width: "25%", alignItems: "center", paddingVertical: 12, paddingHorizontal: 4 },
+  circle:   { width: GRID_SIZE, height: GRID_SIZE, borderRadius: GRID_SIZE / 2, backgroundColor: "rgba(255,255,255,0.07)", alignItems: "center", justifyContent: "center" },
+  lockBadge:{ position: "absolute", top: -3, right: -3, width: 16, height: 16, borderRadius: 8, backgroundColor: "#222235", alignItems: "center", justifyContent: "center", borderWidth: 1, borderColor: "#333355" },
+  label:    { fontSize: 10, fontFamily: "SpaceGrotesk_400Regular", color: "rgba(255,255,255,1)", marginTop: 6, textAlign: "center", maxWidth: 64 },
+});
+
+// ─── MenuItem ─────────────────────────────────────────────────────────────────
 function MenuItem({
-  icon, label, sub, badge, badgeColor, danger, locked,
+  icon, label, sub, badge, badgeColor, danger,
   onPress, colors, divider,
 }: {
   icon: string; label: string; sub?: string; badge?: string; badgeColor?: string;
-  danger?: boolean; locked?: boolean;
-  onPress?: () => void; colors: ReturnType<typeof useColors>; divider?: boolean;
+  danger?: boolean; onPress?: () => void; colors: ReturnType<typeof useColors>; divider?: boolean;
 }) {
-  const iconColor = danger ? colors.destructive : locked ? "#444466" : colors.primary;
-  const textColor = danger ? colors.destructive : locked ? "#444466" : colors.text;
+  const iconColor = danger ? colors.destructive : colors.primary;
+  const textColor = danger ? colors.destructive : colors.text;
   return (
     <>
       <TouchableOpacity
-        style={[M.item, { opacity: locked ? 0.45 : 1 }]}
+        style={M.item}
         onPress={onPress}
         activeOpacity={0.7}
         disabled={!onPress}
       >
-        <View style={[M.iconWrap, { backgroundColor: danger ? colors.destructive + "22" : locked ? "#1A1A2E" : colors.surface }]}>
+        <View style={[M.iconWrap, { backgroundColor: danger ? colors.destructive + "22" : colors.surface }]}>
           <Feather name={icon as any} size={20} color={iconColor} />
         </View>
         <View style={{ flex: 1 }}>
           <Text style={[M.label, { color: textColor }]}>{label}</Text>
-          {sub && <Text style={[M.sub, { color: locked ? "#333355" : colors.mutedForeground }]}>{sub}</Text>}
+          {sub && <Text style={[M.sub, { color: colors.mutedForeground }]}>{sub}</Text>}
         </View>
-        {locked && <Feather name="lock" size={13} color="#444466" style={{ marginRight: 2 }} />}
-        {badge && !locked && (
+        {badge && (
           <View style={[M.badge, { backgroundColor: (badgeColor ?? colors.primary) + "22" }]}>
             <Text style={[M.badgeText, { color: badgeColor ?? colors.primary }]}>{badge}</Text>
           </View>
         )}
-        {!danger && !locked && (
+        {!danger && (
           <Feather name="chevron-right" size={15} color={colors.mutedForeground} />
         )}
       </TouchableOpacity>
@@ -194,7 +226,7 @@ const DV = StyleSheet.create({
 });
 
 // ─── Screen ───────────────────────────────────────────────────────────────────
-const REAL_PLAN: Plan = "start"; // change this to the real paid plan for production
+const REAL_PLAN: Plan = "start";
 
 export default function MaisScreen() {
   const colors  = useColors();
@@ -205,18 +237,17 @@ export default function MaisScreen() {
 
   const [gateVisible, setGateVisible] = useState(false);
   const [gateFeature, setGateFeature] = useState("");
+  const [gatePlan,    setGatePlan]    = useState<"pro" | "enterprise">("pro");
   const [devModal,    setDevModal]    = useState(false);
   const [demoModal,   setDemoModal]   = useState(false);
   const [demoPending, setDemoPending] = useState<{ path: string; label: string } | null>(null);
 
-  // ── Dev mode: 7 quick taps ────────────────────────────────────────────────
-  const tapCount    = useRef(0);
-  const tapTimer    = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const tapCount = useRef(0);
+  const tapTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const onVersionTap = () => {
     tapCount.current += 1;
     if (tapTimer.current) clearTimeout(tapTimer.current);
-
     if (tapCount.current >= 7) {
       tapCount.current = 0;
       setDevMode(true);
@@ -224,8 +255,6 @@ export default function MaisScreen() {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       return;
     }
-
-    // reset tap count after 3 seconds of inactivity
     tapTimer.current = setTimeout(() => { tapCount.current = 0; }, 2500);
   };
 
@@ -243,17 +272,27 @@ export default function MaisScreen() {
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
   };
 
-  const tap   = () => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+  const tap = () => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+
+  // Navigate to PRO feature (handles demo logic)
   const navPro = (path: string, label: string) => {
     tap();
     if (canAccess("pro") || isDemoActiveFor(label)) { router.push(path as any); return; }
-    // Start plan: check if demo is available
     if (hasDemoAvailable) {
       setDemoPending({ path, label });
       setDemoModal(true);
       return;
     }
-    // Demo already used for different feature or not available
+    setGatePlan("pro");
+    setGateFeature(label);
+    setGateVisible(true);
+  };
+
+  // Navigate to Enterprise feature
+  const navEnterprise = (path: string, label: string) => {
+    tap();
+    if (canAccess("enterprise")) { router.push(path as any); return; }
+    setGatePlan("enterprise");
     setGateFeature(label);
     setGateVisible(true);
   };
@@ -271,130 +310,192 @@ export default function MaisScreen() {
   const planLabel = userPlan === "enterprise" ? "Enterprise" : userPlan === "pro" ? "Pro" : "Start";
   const planColor = userPlan === "enterprise" ? GOLD : userPlan === "pro" ? PURPLE : INDIGO;
 
+  const ic = (color: string) => color; // shorthand
+  const pinkIc  = PINK;
+  const grayIc  = "rgba(255,255,255,0.25)";
+
+  // ─── Grid items definition ─────────────────────────────────────────────────
+  const GRID_ITEMS: {
+    label: string;
+    iconNode: React.ReactNode;
+    locked: boolean;
+    onPress: () => void;
+  }[] = [
+    {
+      label: "JADE Chat",
+      iconNode: <MaterialCommunityIcons name="robot" size={22} color={pinkIc} />,
+      locked: false,
+      onPress: () => { tap(); router.push("/(tabs)/jade" as any); },
+    },
+    {
+      label: "Roteiro",
+      iconNode: <Feather name="list" size={20} color={pinkIc} />,
+      locked: false,
+      onPress: () => { tap(); router.push("/roteiro" as any); },
+    },
+    {
+      label: "Briefing",
+      iconNode: <Feather name="clipboard" size={20} color={pinkIc} />,
+      locked: false,
+      onPress: () => { tap(); router.push("/briefing" as any); },
+    },
+    {
+      label: "Objeções",
+      iconNode: <Feather name="shield" size={20} color={canAccess("pro") ? pinkIc : grayIc} />,
+      locked: !canAccess("pro"),
+      onPress: () => navPro("/objecoes", "Objeções"),
+    },
+    {
+      label: "Laudo",
+      iconNode: <Feather name="award" size={20} color={pinkIc} />,
+      locked: false,
+      onPress: () => { tap(); router.push("/laudo" as any); },
+    },
+    {
+      label: "Criar Rota",
+      iconNode: <Feather name="map-pin" size={20} color={canAccess("pro") ? pinkIc : grayIc} />,
+      locked: !canAccess("pro"),
+      onPress: () => navPro("/criarrota", "Criar Rota"),
+    },
+    {
+      label: "Planejamento",
+      iconNode: <Feather name="calendar" size={20} color={canAccess("pro") ? pinkIc : grayIc} />,
+      locked: !canAccess("pro"),
+      onPress: () => navPro("/planejamento", "Planejamento"),
+    },
+    {
+      label: "Roleplay",
+      iconNode: <Feather name="users" size={20} color={canAccess("pro") ? pinkIc : grayIc} />,
+      locked: !canAccess("pro"),
+      onPress: () => navPro("/roleplay", "Roleplay"),
+    },
+    {
+      label: "Marketing IA",
+      iconNode: <Feather name="radio" size={20} color={canAccess("pro") ? pinkIc : grayIc} />,
+      locked: !canAccess("pro"),
+      onPress: () => navPro("/marketing", "Marketing IA"),
+    },
+    {
+      label: "Relatórios",
+      iconNode: <Feather name="bar-chart-2" size={20} color={pinkIc} />,
+      locked: false,
+      onPress: () => { tap(); router.push("/relatorios" as any); },
+    },
+    {
+      label: "Análise IA",
+      iconNode: <Feather name="cpu" size={20} color={canAccess("pro") ? pinkIc : grayIc} />,
+      locked: !canAccess("pro"),
+      onPress: () => navPro("/analise", "Análise IA"),
+    },
+    {
+      label: "Meu Time",
+      iconNode: <Feather name="user-plus" size={20} color={canAccess("enterprise") ? pinkIc : grayIc} />,
+      locked: !canAccess("enterprise"),
+      onPress: () => navEnterprise("/gestao", "Meu Time"),
+    },
+    {
+      label: "Metas",
+      iconNode: <Feather name="target" size={20} color={canAccess("enterprise") ? pinkIc : grayIc} />,
+      locked: !canAccess("enterprise"),
+      onPress: () => navEnterprise("/gestao", "Metas"),
+    },
+    {
+      label: "Carteira",
+      iconNode: <Feather name="briefcase" size={20} color={canAccess("enterprise") ? pinkIc : grayIc} />,
+      locked: !canAccess("enterprise"),
+      onPress: () => navEnterprise("/gestao", "Carteira"),
+    },
+    {
+      label: "Painel Exec.",
+      iconNode: <Feather name="grid" size={20} color={canAccess("enterprise") ? pinkIc : grayIc} />,
+      locked: !canAccess("enterprise"),
+      onPress: () => navEnterprise("/painelexecutivo", "Painel Executivo"),
+    },
+    {
+      label: "Biblioteca",
+      iconNode: <Feather name="book-open" size={20} color={pinkIc} />,
+      locked: false,
+      onPress: () => { tap(); router.push("/biblioteca" as any); },
+    },
+  ];
+
   return (
     <ScrollView
-      style={[styles.container, { backgroundColor: colors.background }]}
+      style={[S.container, { backgroundColor: colors.background }]}
       contentContainerStyle={{ paddingBottom: bottomPad }}
       showsVerticalScrollIndicator={false}
     >
       {/* ── Header ── */}
-      <View style={[styles.header, { paddingTop: topPad + 4 }]}>
-        <Text style={[styles.title, { color: colors.text }]}>Mais</Text>
+      <View style={[S.header, { paddingTop: topPad + 4 }]}>
+        <Text style={[S.title, { color: colors.text }]}>Mais</Text>
         {isDevMode && (
-          <TouchableOpacity style={[styles.devBadge, { backgroundColor: PINK + "22" }]} onPress={() => setDevModal(true)}>
+          <TouchableOpacity style={[S.devBadge, { backgroundColor: PINK + "22" }]} onPress={() => setDevModal(true)}>
             <Feather name="terminal" size={11} color={PINK} />
-            <Text style={[styles.devBadgeText, { color: PINK }]}>DEV • {planLabel}</Text>
+            <Text style={[S.devBadgeText, { color: PINK }]}>DEV • {planLabel}</Text>
           </TouchableOpacity>
         )}
       </View>
 
       {/* ── Profile Card ── */}
-      <View style={[styles.profileCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
-        <View style={[styles.profileAvatar, { backgroundColor: planColor }]}>
-          <Text style={styles.profileInitials}>R</Text>
+      <View style={[S.profileCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+        <View style={[S.profileAvatar, { backgroundColor: planColor }]}>
+          <Text style={S.profileInitials}>R</Text>
         </View>
         <View style={{ flex: 1 }}>
-          <Text style={[styles.profileName, { color: colors.text }]}>Rodrigo</Text>
-          <Text style={[styles.profileRole, { color: colors.mutedForeground }]}>Fundador · JÁ Delivery</Text>
-          <View style={[styles.proBadge, { backgroundColor: planColor + "22" }]}>
-            <Text style={[styles.proBadgeText, { color: planColor }]}>✦ Plano {planLabel}</Text>
+          <Text style={[S.profileName, { color: colors.text }]}>Rodrigo</Text>
+          <Text style={[S.profileRole, { color: colors.mutedForeground }]}>Fundador · JÁ Delivery</Text>
+          <View style={[S.proBadge, { backgroundColor: planColor + "22" }]}>
+            <Text style={[S.proBadgeText, { color: planColor }]}>✦ Plano {planLabel}</Text>
           </View>
         </View>
-        <TouchableOpacity style={[styles.editBtn, { backgroundColor: colors.surface }]}
+        <TouchableOpacity style={[S.editBtn, { backgroundColor: colors.surface }]}
           onPress={() => router.push("/perfil" as any)} activeOpacity={0.8}>
           <Feather name="edit-2" size={16} color={colors.primary} />
         </TouchableOpacity>
       </View>
 
       {/* ── Stats ── */}
-      <View style={styles.statsRow}>
+      <View style={S.statsRow}>
         {[{ label: "Leads", value: "124" }, { label: "Fechados", value: "38" }, { label: "Receita", value: "R$92k" }].map((s, i) => (
-          <View key={i} style={[styles.statBox, { backgroundColor: colors.card, borderColor: colors.border }]}>
-            <Text style={[styles.statValue, { color: colors.text }]}>{s.value}</Text>
-            <Text style={[styles.statLabel, { color: colors.mutedForeground }]}>{s.label}</Text>
+          <View key={i} style={[S.statBox, { backgroundColor: colors.card, borderColor: colors.border }]}>
+            <Text style={[S.statValue, { color: colors.text }]}>{s.value}</Text>
+            <Text style={[S.statLabel, { color: colors.mutedForeground }]}>{s.label}</Text>
           </View>
         ))}
       </View>
 
-      {/* ── Gestão Enterprise (Enterprise only — prominent card) ── */}
-      {canAccess("enterprise") && (
-        <View style={styles.section}>
-          <Text style={[styles.sectionTitle, { color: colors.mutedForeground }]}>👑 GESTÃO ENTERPRISE</Text>
-          <TouchableOpacity
-            style={[styles.enterpriseCard, { borderColor: GOLD + "55" }]}
-            onPress={() => { tap(); router.push("/gestao" as any); }}
-            activeOpacity={0.85}
-          >
-            <View style={styles.enterpriseInner}>
-              <View style={[styles.enterpriseIcon, { backgroundColor: GOLD + "22" }]}>
-                <MaterialCommunityIcons name="crown" size={26} color={GOLD} />
-              </View>
-              <View style={{ flex: 1 }}>
-                <Text style={styles.enterpriseLabel}>Central de Gestão</Text>
-                <Text style={styles.enterpriseSub}>Time, Metas, Carteira, Planejamento, Painel Executivo</Text>
-              </View>
-              <Feather name="arrow-right" size={18} color={GOLD} />
-            </View>
-          </TouchableOpacity>
-        </View>
-      )}
-
       {/* ── Demo gratuita banner (Start sem demo usada) ── */}
       {hasDemoAvailable && (
-        <View style={[styles.demoBanner, { borderColor: PINK + "55" }]}>
-          <View style={styles.demoBannerInner}>
-            <Text style={styles.demoEmoji}>🎁</Text>
+        <View style={[S.demoBanner, { borderColor: PINK + "55" }]}>
+          <View style={S.demoBannerInner}>
+            <Text style={S.demoEmoji}>🎁</Text>
             <View style={{ flex: 1 }}>
-              <Text style={styles.demoTitle}>Você tem 1 demonstração gratuita</Text>
-              <Text style={[styles.demoSub, { color: colors.mutedForeground }]}>Experimente qualquer função Pro por 24 horas, sem custo</Text>
+              <Text style={S.demoTitle}>Você tem 1 demonstração gratuita</Text>
+              <Text style={[S.demoSub, { color: colors.mutedForeground }]}>Experimente qualquer função Pro por 24 horas, sem custo</Text>
             </View>
           </View>
         </View>
       )}
 
-      {/* ── Ferramentas ── */}
-      <View style={styles.section}>
-        <Text style={[styles.sectionTitle, { color: colors.mutedForeground }]}>⚡ FERRAMENTAS</Text>
-        <View style={[styles.sectionBox, { backgroundColor: colors.card, borderColor: colors.border }]}>
-          <MenuItem colors={colors} icon="file-text" label="Roteiro de Vendas" sub="Script do contato ao fechamento" divider onPress={() => { tap(); router.push("/roteiro" as any); }} />
-          <MenuItem colors={colors} icon="clipboard" label="Briefing Pré-Reunião" sub="Chegue preparado para qualquer reunião" divider onPress={() => { tap(); router.push("/briefing" as any); }} />
-          <MenuItem colors={colors} icon="award" label="Laudo Executivo" sub="Diagnóstico de marketing do cliente" divider onPress={() => { tap(); router.push("/laudo" as any); }} />
-          <MenuItem colors={colors} icon="shield" label="Ajuda com Objeções" sub="Estratégias prontas" badge="PRO" badgeColor={PURPLE} locked={!canAccess("pro")} divider onPress={() => navPro("/objecoes", "Ajuda com Objeções")} />
-          <MenuItem colors={colors} icon="navigation" label="Criar Rota" sub="Planejamento inteligente de visitas" badge="PRO" badgeColor={PURPLE} locked={!canAccess("pro")} onPress={() => navPro("/criarrota", "Criar Rota")} />
+      {/* ── Icon Grid (CapCut style) ── */}
+      <View style={[S.gridCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+        <View style={S.grid}>
+          {GRID_ITEMS.map((item) => (
+            <GridItem
+              key={item.label}
+              label={item.label}
+              iconNode={item.iconNode}
+              locked={item.locked}
+              onPress={item.onPress}
+            />
+          ))}
         </View>
       </View>
 
-      {/* ── Marketing ── */}
-      <View style={styles.section}>
-        <Text style={[styles.sectionTitle, { color: colors.mutedForeground }]}>📣 MARKETING</Text>
-        <View style={[styles.sectionBox, { backgroundColor: colors.card, borderColor: colors.border }]}>
-          <MenuItem colors={colors} icon="zap" label="JADE Marketing IA" sub={canAccess("pro") ? "Campanhas, criativos e relatórios" : "Disponível no plano Pro"} badge={!canAccess("pro") ? "PRO" : undefined} badgeColor={PURPLE} locked={!canAccess("pro")} divider onPress={() => navPro("/marketing", "JADE Marketing IA")} />
-          <MenuItem colors={colors} icon="bar-chart-2" label="Análise Estratégica" sub="IA analisa dados e sugere ações" badge="PRO" badgeColor={PURPLE} locked={!canAccess("pro")} onPress={() => navPro("/analise", "Análise Estratégica")} />
-        </View>
-      </View>
-
-      {/* ── Performance ── */}
-      <View style={styles.section}>
-        <Text style={[styles.sectionTitle, { color: colors.mutedForeground }]}>📊 PERFORMANCE</Text>
-        <View style={[styles.sectionBox, { backgroundColor: colors.card, borderColor: colors.border }]}>
-          <MenuItem colors={colors} icon="trending-up" label="Relatórios" sub="Métricas diárias e semanais" divider onPress={() => { tap(); router.push("/relatorios" as any); }} />
-          <MenuItem colors={colors} icon="bar-chart-2" label="Relatório Gestor" sub="Exportar para diretoria" badge="PRO" badgeColor={PURPLE} locked={!canAccess("pro")} onPress={() => navPro("/relatoriogestor", "Relatório Gestor")} />
-        </View>
-      </View>
-
-      {/* ── Treinamento ── */}
-      <View style={styles.section}>
-        <Text style={[styles.sectionTitle, { color: colors.mutedForeground }]}>🎓 TREINAMENTO</Text>
-        <View style={[styles.sectionBox, { backgroundColor: colors.card, borderColor: colors.border }]}>
-          <MenuItem colors={colors} icon="book-open" label="Biblioteca de Técnicas" sub="SPIN, AIDA, Gatilhos e mais" divider onPress={() => { tap(); router.push("/biblioteca" as any); }} />
-          <MenuItem colors={colors} icon="users" label="Roleplay de Vendas" sub="Treine com a JADE como cliente" badge="PRO" badgeColor={PURPLE} locked={!canAccess("pro")} onPress={() => navPro("/roleplay", "Roleplay de Vendas")} />
-        </View>
-      </View>
-
-      {/* ── Conta ── */}
-      <View style={styles.section}>
-        <Text style={[styles.sectionTitle, { color: colors.mutedForeground }]}>⚙️ CONTA</Text>
-        <View style={[styles.sectionBox, { backgroundColor: colors.card, borderColor: colors.border }]}>
+      {/* ── Seção CONTA (lista, igual antes) ── */}
+      <View style={S.section}>
+        <Text style={[S.sectionTitle, { color: colors.mutedForeground }]}>⚙️ CONTA</Text>
+        <View style={[S.sectionBox, { backgroundColor: colors.card, borderColor: colors.border }]}>
           <MenuItem colors={colors} icon="briefcase" label="Minha Empresa" sub="Configurar empresa e treinar JADE" divider onPress={() => { tap(); router.push("/empresa" as any); }} />
           <MenuItem colors={colors} icon="user" label="Meu Perfil" divider onPress={() => { tap(); router.push("/perfil" as any); }} />
           <MenuItem colors={colors} icon="star" label="Meu Plano" sub={`${planLabel} · ${userPlan === "enterprise" ? "R$697" : userPlan === "pro" ? "R$247" : "R$97"}/mês`} badge={planLabel} badgeColor={planColor} divider onPress={() => { tap(); router.push("/plano" as any); }} />
@@ -405,13 +506,18 @@ export default function MaisScreen() {
       </View>
 
       {/* ── Logout ── */}
-      <View style={[styles.sectionBox, { backgroundColor: colors.card, borderColor: colors.border, marginHorizontal: 16, marginBottom: 20 }]}>
-        <MenuItem colors={colors} icon="log-out" label="Sair da Conta" danger onPress={handleLogout} />
+      <View style={[S.sectionBox, { backgroundColor: colors.card, borderColor: colors.border, marginHorizontal: 16, marginBottom: 20 }]}>
+        <TouchableOpacity style={M.item} onPress={handleLogout} activeOpacity={0.7}>
+          <View style={[M.iconWrap, { backgroundColor: colors.destructive + "22" }]}>
+            <Feather name="log-out" size={20} color={colors.destructive} />
+          </View>
+          <Text style={[M.label, { color: colors.destructive, flex: 1 }]}>Sair da Conta</Text>
+        </TouchableOpacity>
       </View>
 
       {/* ── Version / Dev trigger (7 taps) ── */}
       <TouchableOpacity onPress={onVersionTap} activeOpacity={0.8} style={{ alignItems: "center", paddingVertical: 14 }}>
-        <Text style={[styles.version, { color: colors.mutedForeground }]}>
+        <Text style={[S.version, { color: colors.mutedForeground }]}>
           {isDevMode ? "⚙ DEV MODE  ·  " : ""}JADE IA v1.0.0
         </Text>
         {isDevMode ? (
@@ -419,13 +525,13 @@ export default function MaisScreen() {
             <Text style={{ color: PINK, fontSize: 11, fontFamily: "SpaceGrotesk_600SemiBold" }}>Abrir Dev Tools</Text>
           </TouchableOpacity>
         ) : (
-          <Text style={[styles.versionHint, { color: colors.mutedForeground }]}>toque 7× para dev tools</Text>
+          <Text style={[S.versionHint, { color: colors.mutedForeground }]}>toque 7× para dev tools</Text>
         )}
       </TouchableOpacity>
 
       {/* ── Modals ── */}
       <PlanGateModal
-        visible={gateVisible} plan="pro" featureName={gateFeature}
+        visible={gateVisible} plan={gatePlan} featureName={gateFeature}
         onClose={() => setGateVisible(false)}
         onUpgrade={() => { setGateVisible(false); router.push("/plano" as any); }}
       />
@@ -472,12 +578,13 @@ export default function MaisScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const S = StyleSheet.create({
   container:    { flex: 1 },
   header:       { paddingHorizontal: 20, paddingBottom: 12, flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
   title:        { fontSize: 26, fontFamily: "SpaceGrotesk_700Bold" },
   devBadge:     { flexDirection: "row", alignItems: "center", gap: 5, paddingHorizontal: 9, paddingVertical: 4, borderRadius: 10 },
   devBadgeText: { fontSize: 11, fontFamily: "SpaceGrotesk_700Bold", letterSpacing: 0.4 },
+
   profileCard:  { flexDirection: "row", alignItems: "center", marginHorizontal: 16, marginBottom: 12, padding: 16, borderRadius: 16, borderWidth: 1, gap: 14 },
   profileAvatar:{ width: 56, height: 56, borderRadius: 28, alignItems: "center", justifyContent: "center" },
   profileInitials: { color: "#fff", fontSize: 22, fontFamily: "SpaceGrotesk_700Bold" },
@@ -486,23 +593,25 @@ const styles = StyleSheet.create({
   proBadge:     { alignSelf: "flex-start", paddingHorizontal: 8, paddingVertical: 3, borderRadius: 8, marginTop: 6 },
   proBadgeText: { fontSize: 11, fontFamily: "SpaceGrotesk_600SemiBold" },
   editBtn:      { width: 36, height: 36, borderRadius: 18, alignItems: "center", justifyContent: "center" },
-  statsRow:     { flexDirection: "row", marginHorizontal: 16, marginBottom: 20, gap: 10 },
+
+  statsRow:     { flexDirection: "row", marginHorizontal: 16, marginBottom: 16, gap: 10 },
   statBox:      { flex: 1, alignItems: "center", paddingVertical: 14, borderRadius: 12, borderWidth: 1 },
   statValue:    { fontSize: 18, fontFamily: "SpaceGrotesk_700Bold" },
   statLabel:    { fontSize: 11, fontFamily: "SpaceGrotesk_400Regular", marginTop: 2, opacity: 0.7 },
-  section:      { marginBottom: 16 },
-  sectionTitle: { fontSize: 10, fontFamily: "SpaceGrotesk_600SemiBold", letterSpacing: 1, marginHorizontal: 20, marginBottom: 8 },
-  sectionBox:   { marginHorizontal: 16, borderRadius: 14, borderWidth: 1, overflow: "hidden" },
-  enterpriseCard: { marginHorizontal: 16, borderRadius: 16, borderWidth: 1.5, overflow: "hidden" },
-  enterpriseInner: { flexDirection: "row", alignItems: "center", gap: 14, padding: 16, backgroundColor: GOLD + "0C" },
-  enterpriseIcon: { width: 50, height: 50, borderRadius: 14, alignItems: "center", justifyContent: "center" },
-  enterpriseLabel: { fontSize: 16, fontFamily: "SpaceGrotesk_700Bold", color: "#fff" },
-  enterpriseSub: { fontSize: 11, fontFamily: "SpaceGrotesk_400Regular", marginTop: 3, color: "#AAAACC" },
-  version:      { textAlign: "center", fontSize: 11, fontFamily: "SpaceGrotesk_400Regular" },
-  versionHint:  { textAlign: "center", fontSize: 9, fontFamily: "SpaceGrotesk_400Regular", marginTop: 2, opacity: 0.3 },
-  demoBanner:   { marginHorizontal: 16, marginBottom: 16, borderRadius: 14, borderWidth: 1.5, overflow: "hidden" },
+
+  demoBanner:   { marginHorizontal: 16, marginBottom: 14, borderRadius: 14, borderWidth: 1.5, overflow: "hidden" },
   demoBannerInner: { flexDirection: "row", alignItems: "center", gap: 12, padding: 14, backgroundColor: "#FF008012" },
   demoEmoji:    { fontSize: 28 },
   demoTitle:    { fontSize: 14, fontFamily: "SpaceGrotesk_700Bold", color: "#fff" },
   demoSub:      { fontSize: 12, fontFamily: "SpaceGrotesk_400Regular", marginTop: 3, lineHeight: 17 },
+
+  gridCard:     { marginHorizontal: 16, marginBottom: 20, borderRadius: 16, borderWidth: 1, paddingVertical: 4 },
+  grid:         { flexDirection: "row", flexWrap: "wrap" },
+
+  section:      { marginBottom: 16 },
+  sectionTitle: { fontSize: 10, fontFamily: "SpaceGrotesk_600SemiBold", letterSpacing: 1, marginHorizontal: 20, marginBottom: 8 },
+  sectionBox:   { marginHorizontal: 16, borderRadius: 14, borderWidth: 1, overflow: "hidden" },
+
+  version:      { textAlign: "center", fontSize: 11, fontFamily: "SpaceGrotesk_400Regular" },
+  versionHint:  { textAlign: "center", fontSize: 9, fontFamily: "SpaceGrotesk_400Regular", marginTop: 2, opacity: 0.3 },
 });
