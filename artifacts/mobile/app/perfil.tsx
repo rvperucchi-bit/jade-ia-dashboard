@@ -1,10 +1,12 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Feather } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
+import * as ImagePicker from "expo-image-picker";
 import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
+  Image,
   Platform,
   ScrollView,
   StyleSheet,
@@ -14,6 +16,7 @@ import {
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useProfile } from "@/context/ProfileContext";
 
 const PROFILE_KEY = "@jade_ia:profile";
 const COLORS = {
@@ -41,11 +44,12 @@ const DEFAULT: Profile = {
 };
 
 export default function PerfilScreen() {
-  const router = useRouter();
-  const insets = useSafeAreaInsets();
+  const router  = useRouter();
+  const insets  = useSafeAreaInsets();
+  const { photoUri, setPhotoUri, setDisplayName } = useProfile();
   const [profile, setProfile] = useState<Profile>(DEFAULT);
-  const [saving, setSaving] = useState(false);
-  const [saved, setSaved] = useState(false);
+  const [saving,  setSaving]  = useState(false);
+  const [saved,   setSaved]   = useState(false);
 
   useEffect(() => {
     AsyncStorage.getItem(PROFILE_KEY).then((raw) => {
@@ -55,12 +59,41 @@ export default function PerfilScreen() {
     });
   }, []);
 
+  const pickPhoto = async () => {
+    if (Platform.OS === "web") {
+      Alert.alert("Upload de foto", "Disponível apenas no app mobile.");
+      return;
+    }
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== "granted") {
+      Alert.alert("Permissão necessária", "Precisamos de acesso à sua galeria.");
+      return;
+    }
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ["images"],
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.85,
+    });
+    if (!result.canceled && result.assets[0]) {
+      await setPhotoUri(result.assets[0].uri);
+    }
+  };
+
+  const removePhoto = () => {
+    Alert.alert("Remover foto", "Deseja remover sua foto de perfil?", [
+      { text: "Cancelar", style: "cancel" },
+      { text: "Remover", style: "destructive", onPress: () => setPhotoUri(null) },
+    ]);
+  };
+
   const update = (key: keyof Profile) => (val: string) =>
     setProfile((prev) => ({ ...prev, [key]: val }));
 
   const save = async () => {
     setSaving(true);
     await AsyncStorage.setItem(PROFILE_KEY, JSON.stringify(profile));
+    await setDisplayName(profile.nome);
     await new Promise((r) => setTimeout(r, 500));
     setSaving(false);
     setSaved(true);
@@ -98,19 +131,26 @@ export default function PerfilScreen() {
         {/* Avatar */}
         <View style={S.avatarSection}>
           <View style={S.avatarWrap}>
-            <View style={S.avatar}>
-              <Text style={S.avatarText}>{initials || "R"}</Text>
-            </View>
-            <TouchableOpacity
-              style={S.avatarEdit}
-              activeOpacity={0.8}
-              onPress={() => Alert.alert("Em breve", "Upload de foto estará disponível em breve.")}
-            >
+            {photoUri ? (
+              <Image source={{ uri: photoUri }} style={S.avatarImg} />
+            ) : (
+              <View style={S.avatar}>
+                <Text style={S.avatarText}>{initials || "R"}</Text>
+              </View>
+            )}
+            <TouchableOpacity style={S.avatarEdit} activeOpacity={0.8} onPress={pickPhoto}>
               <Feather name="camera" size={14} color="#fff" />
             </TouchableOpacity>
           </View>
           <Text style={S.avatarName}>{profile.nome}</Text>
           <Text style={S.avatarRole}>{profile.cargo} · {profile.empresa}</Text>
+          {photoUri && (
+            <TouchableOpacity onPress={removePhoto} style={{ marginTop: 8 }} activeOpacity={0.7}>
+              <Text style={{ fontSize: 12, color: "rgba(255,60,100,0.7)", fontFamily: "SpaceGrotesk_400Regular" }}>
+                Remover foto
+              </Text>
+            </TouchableOpacity>
+          )}
           <View style={S.proBadge}>
             <Text style={S.proBadgeText}>✦ Plano Pro</Text>
           </View>
@@ -183,6 +223,7 @@ const S = StyleSheet.create({
 
   avatarSection: { alignItems: "center", marginBottom: 32 },
   avatarWrap: { position: "relative", marginBottom: 14 },
+  avatarImg:  { width: 90, height: 90, borderRadius: 45 },
   avatar: {
     width: 90,
     height: 90,

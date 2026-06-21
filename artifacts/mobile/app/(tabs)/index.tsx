@@ -2,6 +2,8 @@ import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
   Animated,
   Easing,
+  Image,
+  PanResponder,
   Platform,
   RefreshControl,
   ScrollView,
@@ -21,6 +23,7 @@ import { useColors } from "@/hooks/useColors";
 import { useApp } from "@/context/AppContext";
 import { usePlan, type Plan } from "@/context/PlanContext";
 import { useAuth } from "@/context/AuthContext";
+import { useProfile } from "@/context/ProfileContext";
 
 const API_BASE = Platform.OS === "web" ? "" : `https://${process.env.EXPO_PUBLIC_DOMAIN ?? ""}`;
 const PINK   = "#FF0080";
@@ -54,15 +57,7 @@ const DRAWER_CATEGORIES: DrawerCategory[] = [
       { iconName: "bar-chart-2", label: "Relatórios",   route: "/relatorios"                                  },
     ],
   },
-  {
-    label: "GESTÃO",
-    items: [
-      { iconName: "target",      label: "Metas",           route: "/metas",          requiresPlan: "pro"        },
-      { iconName: "briefcase",   label: "Carteira",         route: "/carteira",       requiresPlan: "pro"        },
-      { iconName: "trending-up", label: "Painel Executivo", route: "/painelexecutivo",requiresPlan: "enterprise" },
-      { iconName: "users",       label: "Meu Time",         route: "/meutime",        requiresPlan: "enterprise" },
-    ],
-  },
+  { label: "GESTÃO", items: [] },
   {
     label: "OPERAÇÃO",
     items: [
@@ -90,6 +85,13 @@ const DRAWER_CATEGORIES: DrawerCategory[] = [
       { iconName: "help-circle",  label: "Central de Ajuda",   route: "/ajuda"         },
     ],
   },
+];
+
+const GESTAO_SUBITEMS: DrawerItem[] = [
+  { iconName: "target",      label: "Metas",            route: "/metas",           requiresPlan: "pro"        },
+  { iconName: "briefcase",   label: "Carteira",          route: "/carteira",        requiresPlan: "pro"        },
+  { iconName: "trending-up", label: "Painel Executivo",  route: "/painelexecutivo", requiresPlan: "enterprise" },
+  { iconName: "users",       label: "Meu Time",          route: "/meutime",         requiresPlan: "enterprise" },
 ];
 
 // ─── CrosshairIcon ────────────────────────────────────────────────────────────
@@ -273,35 +275,64 @@ function JADEActivityFeed({ anyModuleActive, scannerActive, whatsappActive }: {
 }
 
 // ─── DrawerMenu ───────────────────────────────────────────────────────────────
-function DrawerMenu({
-  visible, onClose,
-}: {
-  visible: boolean;
-  onClose: () => void;
-}) {
+function DrawerMenu({ visible, onClose }: { visible: boolean; onClose: () => void }) {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { logout } = useAuth();
+  const { logout }  = useAuth();
   const { userPlan, canAccess } = usePlan();
+  const { photoUri, displayName } = useProfile();
+  const [gestaoExpanded, setGestaoExpanded] = useState(false);
+
   const slideAnim   = useRef(new Animated.Value(-DRAWER_W)).current;
   const overlayAnim = useRef(new Animated.Value(0)).current;
 
   const planLabel = userPlan === "enterprise" ? "Enterprise" : userPlan === "pro" ? "Pro" : "Start";
   const planColor = userPlan === "enterprise" ? "#FFB800" : userPlan === "pro" ? PURPLE : PINK;
+  const initials  = displayName.split(" ").slice(0, 2).map((w) => w[0]?.toUpperCase() ?? "").join("");
+
+  const doClose = () => {
+    Animated.parallel([
+      Animated.timing(slideAnim,   { toValue: -DRAWER_W, duration: 200, easing: Easing.in(Easing.cubic), useNativeDriver: true }),
+      Animated.timing(overlayAnim, { toValue: 0,          duration: 180, useNativeDriver: true }),
+    ]).start(() => onClose());
+  };
 
   useEffect(() => {
     if (visible) {
       Animated.parallel([
-        Animated.timing(slideAnim,   { toValue: 0,          duration: 220, easing: Easing.out(Easing.cubic), useNativeDriver: true }),
-        Animated.timing(overlayAnim, { toValue: 1,          duration: 200, useNativeDriver: true }),
+        Animated.timing(slideAnim,   { toValue: 0,         duration: 220, easing: Easing.out(Easing.cubic), useNativeDriver: true }),
+        Animated.timing(overlayAnim, { toValue: 1,         duration: 200, useNativeDriver: true }),
       ]).start();
     } else {
+      setGestaoExpanded(false);
       Animated.parallel([
-        Animated.timing(slideAnim,   { toValue: -DRAWER_W,  duration: 200, easing: Easing.in(Easing.cubic), useNativeDriver: true }),
-        Animated.timing(overlayAnim, { toValue: 0,          duration: 180, useNativeDriver: true }),
+        Animated.timing(slideAnim,   { toValue: -DRAWER_W, duration: 200, easing: Easing.in(Easing.cubic), useNativeDriver: true }),
+        Animated.timing(overlayAnim, { toValue: 0,         duration: 180, useNativeDriver: true }),
       ]).start();
     }
   }, [visible]);
+
+  // Swipe-to-close gesture
+  const swipePan = useRef(
+    PanResponder.create({
+      onMoveShouldSetPanResponder: (_, gs) => gs.dx < -6 && Math.abs(gs.dy) < Math.abs(gs.dx),
+      onPanResponderGrant: () => { slideAnim.stopAnimation(); overlayAnim.stopAnimation(); },
+      onPanResponderMove: (_, gs) => {
+        const v = Math.min(0, gs.dx);
+        slideAnim.setValue(v);
+        overlayAnim.setValue(Math.max(0, 1 + v / DRAWER_W));
+      },
+      onPanResponderRelease: (_, gs) => {
+        if (gs.dx < -60 || gs.vx < -0.25) { doClose(); }
+        else {
+          Animated.parallel([
+            Animated.spring(slideAnim,   { toValue: 0, useNativeDriver: true }),
+            Animated.timing(overlayAnim, { toValue: 1, duration: 100, useNativeDriver: true }),
+          ]).start();
+        }
+      },
+    })
+  ).current;
 
   if (!visible && (slideAnim as any).__getValue() === -DRAWER_W) return null;
 
@@ -315,31 +346,34 @@ function DrawerMenu({
   return (
     <View style={StyleSheet.absoluteFillObject} pointerEvents={visible ? "auto" : "none"}>
       {/* Overlay */}
-      <Animated.View
-        style={[S.drawerOverlay, { opacity: overlayAnim }]}
-        pointerEvents={visible ? "auto" : "none"}
-      >
-        <TouchableOpacity style={StyleSheet.absoluteFillObject} activeOpacity={1} onPress={onClose} />
+      <Animated.View style={[S.drawerOverlay, { opacity: overlayAnim }]} pointerEvents={visible ? "auto" : "none"}>
+        <TouchableOpacity style={StyleSheet.absoluteFillObject} activeOpacity={1} onPress={doClose} />
       </Animated.View>
 
       {/* Drawer panel */}
       <Animated.View
-        style={[S.drawer, {
-          paddingTop: insets.top + 20,
-          paddingBottom: insets.bottom + 16,
-          transform: [{ translateX: slideAnim }],
-        }]}
+        style={[S.drawer, { paddingTop: insets.top + 20, paddingBottom: insets.bottom + 16, transform: [{ translateX: slideAnim }] }]}
+        {...swipePan.panHandlers}
       >
-        {/* Compact header */}
+        {/* Header: photo + name + plan */}
         <View style={S.drawerHeader}>
+          <View style={S.drawerPhotoWrap}>
+            {photoUri ? (
+              <Image source={{ uri: photoUri }} style={S.drawerPhoto} />
+            ) : (
+              <View style={S.drawerPhotoDefault}>
+                <Text style={S.drawerPhotoLetter}>{initials || "R"}</Text>
+              </View>
+            )}
+          </View>
           <View style={{ flex: 1 }}>
-            <Text style={S.drawerName}>Rodrigo</Text>
+            <Text style={S.drawerName}>{displayName}</Text>
             <View style={[S.drawerPlanBadge, { backgroundColor: planColor + "20" }]}>
               <Text style={[S.drawerPlanText, { color: planColor }]}>Plano {planLabel}</Text>
             </View>
           </View>
-          <TouchableOpacity onPress={onClose} style={S.drawerClose} activeOpacity={0.7}>
-            <Feather name="x" size={16} color="rgba(255,255,255,0.40)" />
+          <TouchableOpacity onPress={doClose} style={S.drawerClose} activeOpacity={0.7}>
+            <Feather name="x" size={16} color="rgba(255,255,255,0.38)" />
           </TouchableOpacity>
         </View>
 
@@ -347,33 +381,66 @@ function DrawerMenu({
 
         {/* Categorized navigation */}
         <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 8 }}>
-          {DRAWER_CATEGORIES.map((cat) => (
-            <View key={cat.label}>
-              <Text style={S.drawerCatLabel}>{cat.label}</Text>
-              {cat.items.map((item) => {
-                const locked = item.requiresPlan ? !canAccess(item.requiresPlan) : false;
-                return (
+          {DRAWER_CATEGORIES.map((cat) => {
+            if (cat.label === "GESTÃO") {
+              return (
+                <View key="GESTÃO">
+                  <Text style={S.drawerCatLabel}>GESTÃO</Text>
                   <TouchableOpacity
-                    key={item.label}
-                    style={[S.drawerItem, locked && { opacity: 0.35 }]}
-                    onPress={() => navigate(item.route, locked)}
-                    activeOpacity={locked ? 1 : 0.65}
+                    style={S.drawerItem}
+                    onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); setGestaoExpanded((v) => !v); }}
+                    activeOpacity={0.7}
                   >
-                    <Feather name={item.iconName} size={16} color="rgba(255,255,255,0.52)" />
-                    <Text style={S.drawerItemLabel}>{item.label}</Text>
-                    {locked && <Feather name="lock" size={10} color="rgba(255,255,255,0.28)" />}
+                    <Feather name="users" size={16} color="rgba(255,255,255,0.52)" />
+                    <Text style={S.drawerItemLabel}>Meu Time</Text>
+                    <Feather name={gestaoExpanded ? "chevron-down" : "chevron-right"} size={14} color="rgba(255,255,255,0.28)" />
                   </TouchableOpacity>
-                );
-              })}
-              <View style={[S.drawerCatDivider, { backgroundColor: "#FFFFFF0A" }]} />
-            </View>
-          ))}
+                  {gestaoExpanded && GESTAO_SUBITEMS.map((item) => {
+                    const locked = item.requiresPlan ? !canAccess(item.requiresPlan) : false;
+                    return (
+                      <TouchableOpacity
+                        key={item.label}
+                        style={[S.drawerSubItem, locked && { opacity: 0.35 }]}
+                        onPress={() => navigate(item.route, locked)}
+                        activeOpacity={locked ? 1 : 0.65}
+                      >
+                        <Feather name={item.iconName} size={15} color="rgba(255,255,255,0.42)" />
+                        <Text style={[S.drawerItemLabel, { fontSize: 13, color: "rgba(255,255,255,0.70)" }]}>{item.label}</Text>
+                        {locked && <Feather name="lock" size={10} color="rgba(255,255,255,0.25)" />}
+                      </TouchableOpacity>
+                    );
+                  })}
+                  <View style={[S.drawerCatDivider, { backgroundColor: "#FFFFFF0A" }]} />
+                </View>
+              );
+            }
+            return (
+              <View key={cat.label}>
+                <Text style={S.drawerCatLabel}>{cat.label}</Text>
+                {cat.items.map((item) => {
+                  const locked = item.requiresPlan ? !canAccess(item.requiresPlan) : false;
+                  return (
+                    <TouchableOpacity
+                      key={item.label}
+                      style={[S.drawerItem, locked && { opacity: 0.35 }]}
+                      onPress={() => navigate(item.route, locked)}
+                      activeOpacity={locked ? 1 : 0.65}
+                    >
+                      <Feather name={item.iconName} size={16} color="rgba(255,255,255,0.52)" />
+                      <Text style={S.drawerItemLabel}>{item.label}</Text>
+                      {locked && <Feather name="lock" size={10} color="rgba(255,255,255,0.28)" />}
+                    </TouchableOpacity>
+                  );
+                })}
+                <View style={[S.drawerCatDivider, { backgroundColor: "#FFFFFF0A" }]} />
+              </View>
+            );
+          })}
         </ScrollView>
 
-        {/* Sair */}
         <TouchableOpacity
           style={S.drawerSair}
-          onPress={async () => { onClose(); setTimeout(() => logout(), 200); }}
+          onPress={() => { doClose(); setTimeout(() => logout(), 220); }}
           activeOpacity={0.85}
         >
           <Feather name="log-out" size={14} color="rgba(255,0,128,0.80)" />
@@ -428,9 +495,8 @@ export default function HomeScreen() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [scannerActive]);
 
-  const TAB_H     = Platform.OS === "web" ? 84 : 60;
   const topPad    = Platform.OS === "web" ? 67 : insets.top;
-  const bottomPad = insets.bottom + TAB_H + 64 + 16; // tab + chat bar + gap
+  const bottomPad = insets.bottom + 64 + 24; // chat bar + gap
   const unread    = conversations.filter((c) => c.unread > 0).length;
 
   const fechadoLeads = leads.filter((l) => l.column === "fechado");
@@ -473,8 +539,17 @@ export default function HomeScreen() {
     router.push("/(tabs)/jade" as any);
   };
 
+  // Edge swipe to open drawer (left 28px zone)
+  const edgeSwipePan = useRef(
+    PanResponder.create({
+      onStartShouldSetPanResponder: (evt) => evt.nativeEvent.pageX < 28,
+      onMoveShouldSetPanResponder:  (_, gs) => gs.dx > 8 && Math.abs(gs.dy) < Math.abs(gs.dx),
+      onPanResponderRelease:        (_, gs) => { if (gs.dx > 40) { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); setDrawerOpen(true); } },
+    })
+  ).current;
+
   return (
-    <View style={[S.root, { backgroundColor: colors.background }]}>
+    <View style={[S.root, { backgroundColor: colors.background }]} {...edgeSwipePan.panHandlers}>
       <ScrollView
         style={{ flex: 1 }}
         contentContainerStyle={{ paddingBottom: bottomPad }}
@@ -583,8 +658,8 @@ export default function HomeScreen() {
         </View>
       </ScrollView>
 
-      {/* ── Fale com a JADE bar (fixed above tab bar) ── */}
-      <View style={[S.chatBarWrap, { bottom: insets.bottom + TAB_H + 10 }]}>
+      {/* ── Fale com a JADE bar ── */}
+      <View style={[S.chatBarWrap, { bottom: insets.bottom + 12 }]}>
         <TouchableOpacity style={[S.chatBar, { backgroundColor: colors.card, borderColor: colors.border }]} onPress={openJadeChat} activeOpacity={0.85}>
           <Feather name="message-circle" size={18} color="rgba(255,255,255,0.35)" />
           <Text style={[S.chatPlaceholder, { color: "rgba(255,255,255,0.35)" }]}>Fale com a JADE...</Text>
@@ -662,18 +737,23 @@ const S = StyleSheet.create({
   micBtn:     { width: 38, height: 38, borderRadius: 19, backgroundColor: "rgba(255,255,255,0.06)", alignItems: "center", justifyContent: "center" },
 
   // ── Drawer ──
-  drawerOverlay:   { ...StyleSheet.absoluteFillObject, backgroundColor: "rgba(0,0,0,0.60)" },
-  drawer:          { position: "absolute", left: 0, top: 0, bottom: 0, width: DRAWER_W, backgroundColor: "#0D0918", paddingHorizontal: 18 },
-  drawerHeader:    { flexDirection: "row", alignItems: "flex-start", marginBottom: 14 },
-  drawerName:      { fontSize: 16, fontFamily: "SpaceGrotesk_700Bold", color: "#fff", marginBottom: 5 },
-  drawerPlanBadge: { alignSelf: "flex-start", paddingHorizontal: 8, paddingVertical: 3, borderRadius: 6 },
-  drawerPlanText:  { fontSize: 11, fontFamily: "SpaceGrotesk_600SemiBold" },
-  drawerClose:     { width: 28, height: 28, borderRadius: 14, alignItems: "center", justifyContent: "center", backgroundColor: "rgba(255,255,255,0.06)", marginTop: 2 },
-  drawerDivider:   { height: 1, marginHorizontal: -18 },
-  drawerCatLabel:  { fontSize: 9, fontFamily: "SpaceGrotesk_700Bold", color: "rgba(255,255,255,0.25)", letterSpacing: 1.4, paddingTop: 14, paddingBottom: 4 },
-  drawerCatDivider:{ height: 1, marginTop: 4, marginHorizontal: -18 },
-  drawerItem:      { flexDirection: "row", alignItems: "center", gap: 11, paddingVertical: 10 },
-  drawerItemLabel: { flex: 1, fontSize: 14, fontFamily: "SpaceGrotesk_500Medium", color: "rgba(255,255,255,0.78)" },
-  drawerSair:      { flexDirection: "row", alignItems: "center", gap: 9, paddingVertical: 11, paddingHorizontal: 12, backgroundColor: "rgba(255,0,128,0.08)", borderRadius: 10, borderWidth: 1, borderColor: "rgba(255,0,128,0.16)" },
-  drawerSairText:  { fontSize: 14, fontFamily: "SpaceGrotesk_600SemiBold", color: "rgba(255,0,128,0.85)" },
+  drawerOverlay:      { ...StyleSheet.absoluteFillObject, backgroundColor: "rgba(0,0,0,0.65)" },
+  drawer:             { position: "absolute", left: 0, top: 0, bottom: 0, width: DRAWER_W, backgroundColor: "#0D0918", paddingHorizontal: 18 },
+  drawerHeader:       { flexDirection: "row", alignItems: "center", gap: 12, marginBottom: 14 },
+  drawerPhotoWrap:    { width: 44, height: 44 },
+  drawerPhoto:        { width: 44, height: 44, borderRadius: 22 },
+  drawerPhotoDefault: { width: 44, height: 44, borderRadius: 22, backgroundColor: "#3A1060", alignItems: "center", justifyContent: "center" },
+  drawerPhotoLetter:  { fontSize: 17, fontFamily: "SpaceGrotesk_700Bold", color: "#fff" },
+  drawerName:         { fontSize: 15, fontFamily: "SpaceGrotesk_700Bold", color: "#fff", marginBottom: 4 },
+  drawerPlanBadge:    { alignSelf: "flex-start", paddingHorizontal: 7, paddingVertical: 3, borderRadius: 6 },
+  drawerPlanText:     { fontSize: 10, fontFamily: "SpaceGrotesk_600SemiBold" },
+  drawerClose:        { width: 28, height: 28, borderRadius: 14, alignItems: "center", justifyContent: "center", backgroundColor: "rgba(255,255,255,0.06)" },
+  drawerDivider:      { height: 1, marginHorizontal: -18 },
+  drawerCatLabel:     { fontSize: 9, fontFamily: "SpaceGrotesk_700Bold", color: "rgba(255,255,255,0.24)", letterSpacing: 1.4, paddingTop: 14, paddingBottom: 3 },
+  drawerCatDivider:   { height: 1, marginTop: 3, marginHorizontal: -18 },
+  drawerItem:         { flexDirection: "row", alignItems: "center", gap: 11, paddingVertical: 10 },
+  drawerSubItem:      { flexDirection: "row", alignItems: "center", gap: 11, paddingVertical: 9, paddingLeft: 28 },
+  drawerItemLabel:    { flex: 1, fontSize: 14, fontFamily: "SpaceGrotesk_500Medium", color: "rgba(255,255,255,0.78)" },
+  drawerSair:         { flexDirection: "row", alignItems: "center", gap: 9, paddingVertical: 11, paddingHorizontal: 12, backgroundColor: "rgba(255,0,128,0.08)", borderRadius: 10, borderWidth: 1, borderColor: "rgba(255,0,128,0.16)" },
+  drawerSairText:     { fontSize: 14, fontFamily: "SpaceGrotesk_600SemiBold", color: "rgba(255,0,128,0.85)" },
 });

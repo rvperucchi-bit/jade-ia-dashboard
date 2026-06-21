@@ -1,0 +1,161 @@
+AJUSTE FINAL DE NAVEGAÇÃO DA JADE
+
+IMPORTANTE
+
+Esta tarefa NÃO deve alterar a Home.
+
+Não alterar:
+
+- Módulos
+- Meta do mês
+- Status da JADE
+- Pipeline
+- Barra "Fale com a JADE"
+- Layout principal da Home
+
+A Home já está aprovada.
+
+Objetivo desta tarefa:
+Finalizar a navegação e simplificar a estrutura do aplicativo.
+
+==================================================
+
+REMOVER COMPLETAMENTE A BARRA INFERIOR
+
+Remover toda a navegação inferior.
+
+Remover:
+
+- Radar
+- Leads
+- Conversas
+- JADE
+- Mais
+
+A barra inferior não deve mais existir.
+
+O novo menu lateral passa a ser o centro de navegação do aplicativo.
+
+==================================================
+
+MENU LATERAL
+
+O menu lateral passa a ser responsável por toda a navegação.
+
+Implementar comportamento premium:
+
+ABRIR
+
+- Toque no ícone do menu
+- Swipe da esquerda para direita
+
+FECHAR
+
+- Toque fora do menu
+- Botão X
+- Arrastar o menu para a esquerda com o dedo (swipe para fechar)
+
+O menu deve acompanhar o dedo do usuário durante o gesto.
+
+Comportamento semelhante aos aplicativos modernos de iOS e Android.
+
+==================================================
+
+TOPO DO MENU
+
+Substituir o cabeçalho atual.
+
+Adicionar:
+
+- Foto do usuário
+- Nome do usuário
+- Plano atual
+
+Exemplo:
+
+(Foto redonda)
+
+Rodrigo
+Plano Pro
+
+A foto deve ser:
+
+- Pequena
+- Circular
+- Elegante
+- Sem avatar gigante
+- Sem card grande
+
+Visual premium e discreto.
+
+==================================================
+
+FOTO DE PERFIL
+
+Adicionar suporte para foto personalizada.
+
+Fluxo:
+
+Meu Perfil
+→ Alterar foto
+
+O usuário poderá:
+
+- Fazer upload de imagem
+- Trocar foto
+- Remover foto
+
+Quando não existir foto:
+
+- Mostrar avatar padrão
+
+Quando existir foto:
+
+- Mostrar foto real do usuário
+
+A foto deve aparecer automaticamente no topo do menu lateral.
+
+==================================================
+
+ESTRUTURA
+
+Manter toda a estrutura atual do menu lateral.
+
+Comercial
+Inteligência IA
+Gestão
+Operação
+Sistema
+Conta
+
+Sem alterar a organização.
+
+==================================================
+
+MEU TIME
+
+O item "Meu Time" passa a ser a entrada da área de Gestão.
+
+Ao tocar:
+
+Abrir:
+
+- Metas
+- Carteira
+- Painel Executivo
+- Meu Time
+
+Itens bloqueados continuam respeitando as regras do plano.
+
+==================================================
+
+RESULTADO ESPERADO
+
+✓ Sem barra inferior
+✓ Navegação centralizada no menu lateral
+✓ Menu abre e fecha com swipe
+✓ Foto circular do usuário no topo
+✓ Nome + plano abaixo da foto
+✓ Estrutura atual preservada
+✓ Home permanece exatamente como está
+✓ Visual mais limpo, moderno e premium
