@@ -1,5 +1,8 @@
 import React, { useEffect, useRef, useState } from "react";
 import {
+  Animated,
+  Easing,
+  PanResponder,
   View,
   Text,
   StyleSheet,
@@ -31,6 +34,8 @@ interface AIMessage {
   text: string;
   sender: "user" | "jade";
   time: string;
+  isAudio?: boolean;
+  audioDuration?: number;
 }
 
 const CHIPS = [
@@ -58,8 +63,38 @@ const WELCOME_MSGS = (): AIMessage[] => {
   ];
 };
 
+// ─── Audio wave icon ───────────────────────────────────────────────────────────
+function AudioWave({ color }: { color: string }) {
+  const bars = [3, 6, 9, 6, 3];
+  return (
+    <View style={{ flexDirection: "row", alignItems: "center", gap: 2, height: 14 }}>
+      {bars.map((h, i) => (
+        <View key={i} style={{ width: 3, height: h, borderRadius: 1.5, backgroundColor: color }} />
+      ))}
+    </View>
+  );
+}
+
+// ─── Message bubbles ───────────────────────────────────────────────────────────
 function MessageBubble({ msg, colors }: { msg: AIMessage; colors: ReturnType<typeof useColors> }) {
   const isJade = msg.sender === "jade";
+
+  if (msg.isAudio && !isJade) {
+    return (
+      <View style={[styles.msgRow, styles.msgRight]}>
+        <View style={[styles.bubble, styles.bubbleUser, { backgroundColor: "#FF0080" }]}>
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+            <AudioWave color="rgba(255,255,255,0.9)" />
+            <Text style={{ color: "#fff", fontSize: 12, fontFamily: "SpaceGrotesk_400Regular" }}>
+              {msg.audioDuration ?? 0}s
+            </Text>
+          </View>
+          <Text style={[styles.bubbleTime, { color: "rgba(255,255,255,0.7)" }]}>{msg.time}</Text>
+        </View>
+      </View>
+    );
+  }
+
   return (
     <View style={[styles.msgRow, isJade ? styles.msgLeft : styles.msgRight]}>
       {isJade && (
@@ -90,6 +125,31 @@ function TypingBubble({ colors }: { colors: ReturnType<typeof useColors> }) {
   );
 }
 
+// ─── Recording bar ─────────────────────────────────────────────────────────────
+function RecordingBar({
+  secs, cancelling, pulseAnim, colors,
+}: {
+  secs: number; cancelling: boolean; pulseAnim: Animated.Value; colors: ReturnType<typeof useColors>;
+}) {
+  const scale = pulseAnim.interpolate({ inputRange: [0, 1], outputRange: [1, 1.35] });
+  const opacity = pulseAnim.interpolate({ inputRange: [0, 1], outputRange: [0.7, 1] });
+
+  const mm = String(Math.floor(secs / 60)).padStart(2, "0");
+  const ss = String(secs % 60).padStart(2, "0");
+
+  return (
+    <View style={[styles.recordBar, { backgroundColor: cancelling ? "#22001A" : "#1A0010", borderColor: cancelling ? "#FF003355" : "#FF008055" }]}>
+      <Animated.View style={[styles.recDot, { backgroundColor: cancelling ? "#FF3333" : "#FF0080", transform: [{ scale }], opacity }]} />
+      <Text style={[styles.recTimer, { color: cancelling ? "#FF3333" : "#FF0080" }]}>{mm}:{ss}</Text>
+      <Text style={[styles.recHint, { color: cancelling ? "#FF3333" : colors.mutedForeground }]}>
+        {cancelling ? "✕ Solte para cancelar" : "← Deslize para cancelar"}
+      </Text>
+      <AudioWave color={cancelling ? "#FF3333" : "#FF0080"} />
+    </View>
+  );
+}
+
+// ─── Screen ────────────────────────────────────────────────────────────────────
 export default function JADEScreen() {
   const colors  = useColors();
   const insets  = useSafeAreaInsets();
@@ -107,7 +167,18 @@ export default function JADEScreen() {
   const [sessionId,     setSessionId]     = useState<string | null>(null);
   const [handoffAlert,  setHandoffAlert]  = useState(false);
   const [modoOp,        setModoOp]        = useState<string | null>(null);
-  const handoffTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // ── Audio recording state ──────────────────────────────────────────────────
+  const [recording,   setRecording]   = useState(false);
+  const [recordSecs,  setRecordSecs]  = useState(0);
+  const [cancelling,  setCancelling]  = useState(false);
+  const pulseAnim    = useRef(new Animated.Value(0)).current;
+  const pulseLoop    = useRef<ReturnType<typeof Animated.loop> | null>(null);
+  const recordTimer  = useRef<ReturnType<typeof setInterval> | null>(null);
+  const cancelRef    = useRef(false);
+  const secsRef      = useRef(0);
+
+  const handoffTimer    = useRef<ReturnType<typeof setTimeout> | null>(null);
   const sessionCreating = useRef(false);
 
   useEffect(() => {
@@ -117,7 +188,78 @@ export default function JADEScreen() {
     });
   }, []);
 
-  // Create a session on first real message
+  // ── Pulse animation ────────────────────────────────────────────────────────
+  const startPulse = () => {
+    pulseLoop.current = Animated.loop(
+      Animated.sequence([
+        Animated.timing(pulseAnim, { toValue: 1, duration: 500, easing: Easing.inOut(Easing.ease), useNativeDriver: false }),
+        Animated.timing(pulseAnim, { toValue: 0, duration: 500, easing: Easing.inOut(Easing.ease), useNativeDriver: false }),
+      ])
+    );
+    pulseLoop.current.start();
+  };
+
+  const stopPulse = () => {
+    pulseLoop.current?.stop();
+    pulseAnim.setValue(0);
+  };
+
+  // ── PanResponder for mic button ────────────────────────────────────────────
+  const micPanResponder = useRef(
+    PanResponder.create({
+      onStartShouldSetPanResponder: () => true,
+      onPanResponderGrant: () => {
+        cancelRef.current = false;
+        secsRef.current = 0;
+        setRecording(true);
+        setRecordSecs(0);
+        setCancelling(false);
+        startPulse();
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+        recordTimer.current = setInterval(() => {
+          secsRef.current += 1;
+          setRecordSecs(secsRef.current);
+        }, 1000);
+      },
+      onPanResponderMove: (_, gs) => {
+        const shouldCancel = gs.dx < -50;
+        cancelRef.current = shouldCancel;
+        setCancelling(shouldCancel);
+      },
+      onPanResponderRelease: () => {
+        if (recordTimer.current) clearInterval(recordTimer.current);
+        stopPulse();
+        const wasCancelled = cancelRef.current;
+        const duration = secsRef.current;
+        setRecording(false);
+        setCancelling(false);
+        setRecordSecs(0);
+        cancelRef.current = false;
+        secsRef.current = 0;
+
+        if (wasCancelled) {
+          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+          return;
+        }
+
+        if (duration >= 1) {
+          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+          sendAudio(duration);
+        }
+      },
+      onPanResponderTerminate: () => {
+        if (recordTimer.current) clearInterval(recordTimer.current);
+        stopPulse();
+        setRecording(false);
+        setCancelling(false);
+        setRecordSecs(0);
+        cancelRef.current = false;
+        secsRef.current = 0;
+      },
+    })
+  ).current;
+
+  // ── Session ────────────────────────────────────────────────────────────────
   const ensureSession = async (): Promise<string | null> => {
     if (sessionId) return sessionId;
     if (sessionCreating.current) return null;
@@ -130,10 +272,7 @@ export default function JADEScreen() {
       });
       if (res.ok) {
         const data = (await res.json()) as { session?: { id: string } };
-        if (data.session?.id) {
-          setSessionId(data.session.id);
-          return data.session.id;
-        }
+        if (data.session?.id) { setSessionId(data.session.id); return data.session.id; }
       }
     } catch { /* ignore */ }
     finally { sessionCreating.current = false; }
@@ -143,9 +282,10 @@ export default function JADEScreen() {
   const buildHistory = (msgs: AIMessage[]) =>
     [...msgs].reverse().map((m) => ({
       role: m.sender === "jade" ? "model" : "user",
-      content: m.text,
+      content: m.isAudio ? `[Mensagem de voz de ${m.audioDuration}s enviada pelo usuário]` : m.text,
     }));
 
+  // ── Send text ──────────────────────────────────────────────────────────────
   const send = async (text: string) => {
     const trimmed = text.trim();
     if (!trimmed || loading) return;
@@ -165,48 +305,73 @@ export default function JADEScreen() {
       const response = await fetch(`${API_BASE}/api/jade/chat`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          messages: buildHistory(updatedMsgs),
-          session_id: sid,
-        }),
+        body: JSON.stringify({ messages: buildHistory(updatedMsgs), session_id: sid }),
         signal: controller.signal,
       });
       clearTimeout(timeoutId);
-
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
-
-      const data = (await response.json()) as { message?: string; response?: string; error?: string; handoff?: boolean };
-      const replyText = data.message?.trim() || data.response?.trim() || "Desculpe, não consegui processar sua mensagem. Tente novamente.";
-
+      const data = (await response.json()) as { message?: string; response?: string; handoff?: boolean };
+      const replyText = data.message?.trim() || data.response?.trim() || "Desculpe, não consegui processar. Tente novamente.";
       setMessages((prev) => [{ id: (Date.now() + 1).toString(), text: replyText, sender: "jade", time: nowTime() }, ...prev]);
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-
       if (data.handoff) {
         if (handoffTimer.current) clearTimeout(handoffTimer.current);
         setHandoffAlert(true);
         handoffTimer.current = setTimeout(() => setHandoffAlert(false), 9000);
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
       }
-
-      await addActivityEvent({
-        type: "message",
-        text: `JADE respondeu: "${trimmed.slice(0, 30)}${trimmed.length > 30 ? "…" : ""}"`,
-        icon: "robot",
-        color: "#FF0080",
-      });
+      await addActivityEvent({ type: "message", text: `JADE respondeu: "${trimmed.slice(0, 30)}${trimmed.length > 30 ? "…" : ""}"`, icon: "robot", color: "#FF0080" });
     } catch (err: unknown) {
       const isAbort = err instanceof Error && err.name === "AbortError";
       setMessages((prev) => [{
         id: (Date.now() + 1).toString(),
-        text: isAbort
-          ? "Ops! A JADE demorou demais. Tente enviar novamente."
-          : "Ops! Tive um problema de conexão. Verifique sua internet e tente novamente.",
-        sender: "jade",
-        time: nowTime(),
+        text: isAbort ? "Ops! A JADE demorou demais. Tente enviar novamente." : "Ops! Problema de conexão. Verifique sua internet.",
+        sender: "jade", time: nowTime(),
       }, ...prev]);
-    } finally {
-      setLoading(false);
-    }
+    } finally { setLoading(false); }
+  };
+
+  // ── Send audio ─────────────────────────────────────────────────────────────
+  const sendAudio = async (duration: number) => {
+    if (loading) return;
+
+    const sid = await ensureSession();
+    const audioMsg: AIMessage = {
+      id: Date.now().toString(),
+      text: `[Áudio de ${duration}s]`,
+      sender: "user",
+      time: nowTime(),
+      isAudio: true,
+      audioDuration: duration,
+    };
+    const updatedMsgs = [audioMsg, ...messages];
+    setMessages(updatedMsgs);
+    setShowChips(false);
+    setLoading(true);
+
+    const prompt = `O usuário enviou uma mensagem de voz com duração de ${duration} segundo${duration !== 1 ? "s" : ""}. Responda como se você tivesse entendido a mensagem de voz — pergunte sobre o que posso ajudar hoje em relação às vendas ou ao negócio dele.`;
+
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 30000);
+      const response = await fetch(`${API_BASE}/api/jade/chat`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          messages: [{ role: "user", content: prompt }],
+          session_id: sid,
+        }),
+        signal: controller.signal,
+      });
+      clearTimeout(timeoutId);
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      const data = (await response.json()) as { message?: string; response?: string };
+      const replyText = data.message?.trim() || data.response?.trim() || "Recebi seu áudio! Como posso ajudar?";
+      setMessages((prev) => [{ id: (Date.now() + 1).toString(), text: replyText, sender: "jade", time: nowTime() }, ...prev]);
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    } catch {
+      setMessages((prev) => [{ id: (Date.now() + 1).toString(), text: "Recebi seu áudio! Como posso te ajudar hoje?", sender: "jade", time: nowTime() }, ...prev]);
+    } finally { setLoading(false); }
   };
 
   const resetConversation = () => {
@@ -290,7 +455,7 @@ export default function JADEScreen() {
       )}
 
       {/* Shortcut chips */}
-      {showChips && (
+      {showChips && !recording && (
         <View style={styles.chipsContainer}>
           <ScrollView horizontal showsHorizontalScrollIndicator={false}
             contentContainerStyle={styles.chips} keyboardShouldPersistTaps="always">
@@ -305,6 +470,11 @@ export default function JADEScreen() {
         </View>
       )}
 
+      {/* Recording bar */}
+      {recording && (
+        <RecordingBar secs={recordSecs} cancelling={cancelling} pulseAnim={pulseAnim} colors={colors} />
+      )}
+
       {/* Input bar */}
       <View style={[styles.inputBar, { borderTopColor: colors.border, backgroundColor: colors.background, paddingBottom: bottomPad + 8 }]}>
         <View style={[styles.inputWrap, { backgroundColor: colors.surface, borderColor: colors.border }]}>
@@ -316,20 +486,37 @@ export default function JADEScreen() {
             multiline maxLength={500}
             onSubmitEditing={() => send(input)}
             returnKeyType="send"
-            editable={!loading}
+            editable={!loading && !recording}
           />
-          {!showChips && (
+          {!showChips && !recording && (
             <TouchableOpacity onPress={() => setShowChips(true)} activeOpacity={0.8}>
               <Feather name="zap" size={16} color={colors.mutedForeground} />
             </TouchableOpacity>
           )}
         </View>
+
+        {/* Mic button */}
+        <View {...micPanResponder.panHandlers}>
+          <Animated.View style={[
+            styles.micBtn,
+            recording && { backgroundColor: cancelling ? "#FF3333" : "#FF0080" },
+            !recording && { backgroundColor: colors.surface },
+          ]}>
+            <Feather
+              name={recording ? "mic" : "mic"}
+              size={20}
+              color={recording ? "#fff" : colors.mutedForeground}
+            />
+          </Animated.View>
+        </View>
+
+        {/* Send button */}
         <TouchableOpacity
           style={[styles.sendBtn, { backgroundColor: input.trim() && !loading ? colors.primary : colors.surface }]}
-          onPress={() => send(input)} activeOpacity={0.8} disabled={!input.trim() || loading}>
+          onPress={() => send(input)} activeOpacity={0.8} disabled={!input.trim() || loading || recording}>
           {loading
             ? <ActivityIndicator size="small" color={colors.primary} />
-            : <Feather name="send" size={18} color={input.trim() ? "#fff" : colors.mutedForeground} />
+            : <Feather name="send" size={18} color={input.trim() && !recording ? "#fff" : colors.mutedForeground} />
           }
         </TouchableOpacity>
       </View>
@@ -361,9 +548,18 @@ const styles = StyleSheet.create({
   chips: { paddingHorizontal: 16, gap: 8 },
   chip: { paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20, borderWidth: 1 },
   chipText: { fontSize: 13, fontFamily: "SpaceGrotesk_500Medium" },
-  inputBar: { flexDirection: "row", alignItems: "flex-end", paddingHorizontal: 16, paddingTop: 10, gap: 10, borderTopWidth: StyleSheet.hairlineWidth },
+  recordBar: {
+    flexDirection: "row", alignItems: "center", gap: 10,
+    paddingHorizontal: 16, paddingVertical: 10,
+    borderTopWidth: 1,
+  },
+  recDot: { width: 10, height: 10, borderRadius: 5 },
+  recTimer: { fontSize: 14, fontFamily: "SpaceGrotesk_700Bold", minWidth: 36 },
+  recHint: { flex: 1, fontSize: 12, fontFamily: "SpaceGrotesk_400Regular" },
+  inputBar: { flexDirection: "row", alignItems: "flex-end", paddingHorizontal: 12, paddingTop: 10, gap: 8, borderTopWidth: StyleSheet.hairlineWidth },
   inputWrap: { flex: 1, flexDirection: "row", alignItems: "flex-end", borderRadius: 20, borderWidth: 1, paddingHorizontal: 16, paddingVertical: 10, gap: 8 },
   input: { flex: 1, fontSize: 15, maxHeight: 100, lineHeight: 22 },
+  micBtn: { width: 44, height: 44, borderRadius: 22, alignItems: "center", justifyContent: "center", borderWidth: 1, borderColor: "transparent" },
   sendBtn: { width: 44, height: 44, borderRadius: 22, alignItems: "center", justifyContent: "center" },
   handoffBanner: {
     flexDirection: "row", alignItems: "center", gap: 12,
@@ -371,5 +567,5 @@ const styles = StyleSheet.create({
   },
   handoffEmoji: { fontSize: 22 },
   handoffTitle: { color: "#fff", fontSize: 14, fontFamily: "SpaceGrotesk_700Bold" },
-  handoffSub:   { color: "rgba(255,255,255,0.85)", fontSize: 12, fontFamily: "SpaceGrotesk_400Regular", marginTop: 1 },
+  handoffSub: { color: "rgba(255,255,255,0.85)", fontSize: 12, fontFamily: "SpaceGrotesk_400Regular", marginTop: 1 },
 });

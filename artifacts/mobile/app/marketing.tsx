@@ -1,912 +1,749 @@
-import { Feather } from "@expo/vector-icons";
-import * as Clipboard from "expo-clipboard";
-import * as Haptics from "expo-haptics";
-import { useRouter } from "expo-router";
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import {
-  ActivityIndicator,
+  Animated,
+  Easing,
+  Modal,
   Platform,
   ScrollView,
   StyleSheet,
+  Switch,
   Text,
-  TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
+import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-
+import { useRouter } from "expo-router";
+import * as Haptics from "expo-haptics";
 import { useColors } from "@/hooks/useColors";
-import { useApp, type MarketingCampaign } from "@/context/AppContext";
 
-const API_BASE =
-  Platform.OS === "web"
-    ? ""
-    : `https://${process.env.EXPO_PUBLIC_DOMAIN ?? ""}`;
+const PINK   = "#FF0080";
+const PURPLE = "#8400FF";
+const GREEN  = "#00D68F";
+const YELLOW = "#FFB300";
+const BG     = "#0B0814";
 
-// ─── Content type definitions ─────────────────────────────────────────────────
-interface ContentType {
+type TabId = "campanhas" | "criativos" | "relatorios";
+type AutoLevel = "assistido" | "semi" | "automatico";
+type FiltCamp = "todas" | "ativas" | "pausadas" | "revisao";
+type FiltCriat = "todos" | "video" | "imagem" | "carrossel";
+
+// ─── Mock data ─────────────────────────────────────────────────────────────────
+interface Campaign {
   id: string;
-  title: string;
-  description: string;
-  icon: string;
-  color: string;
-  placeholder: string;
-  systemContext: string;
-  channel: string;
-}
-
-const GERAR_TYPES: ContentType[] = [
-  {
-    id: "instagram_post", title: "Post Instagram", description: "Legenda com CTA e hashtags",
-    icon: "instagram", color: "#E1306C", channel: "Instagram",
-    placeholder: "Descreva o assunto do post: promoção, produto, evento...",
-    systemContext: "Crie uma legenda profissional para Instagram. Use emojis estrategicamente, inclua CTA claro e hashtags relevantes (máx 15). Tom: próximo e autêntico. Máximo 150 palavras.",
-  },
-  {
-    id: "story", title: "Story", description: "Texto direto para Stories",
-    icon: "image", color: "#FF6B35", channel: "Instagram Stories",
-    placeholder: "Tema do story: urgência, bastidores, oferta relâmpago...",
-    systemContext: "Crie um roteiro de texto para Story do Instagram. Máximo 3 frames. Cada frame: texto curto, impactante. Use linguagem jovem e direta. Inclua sugestão de sticker ou enquete.",
-  },
-  {
-    id: "whatsapp", title: "WhatsApp Broadcast", description: "Mensagem para lista de transmissão",
-    icon: "message-circle", color: "#25D366", channel: "WhatsApp",
-    placeholder: "Contexto da mensagem: oferta, novidade, lembrete...",
-    systemContext: "Crie uma mensagem de WhatsApp para broadcast. Máximo 4 linhas. Use [NOME] para personalização. Tom: informal, direto. Termine com pergunta ou CTA de resposta fácil.",
-  },
-  {
-    id: "tiktok", title: "Roteiro TikTok", description: "Script para vídeo de até 60s",
-    icon: "video", color: "#FF0050", channel: "TikTok",
-    placeholder: "Tema do vídeo: tutorial, bastidores, depoimento...",
-    systemContext: "Crie um roteiro de TikTok. Duração: 30-60 segundos. Estrutura: gancho (0-3s), desenvolvimento, CTA final. Inclua: falas, texto na tela, música sugerida. Tom: autêntico, trends.",
-  },
-  {
-    id: "google_review", title: "Responder Avaliação", description: "Resposta profissional a review Google",
-    icon: "star", color: "#FFB300", channel: "Google Reviews",
-    placeholder: "Cole aqui a avaliação do cliente que deseja responder...",
-    systemContext: "Você é gerente de relacionamento. Escreva uma resposta profissional e calorosa para a avaliação. Se positiva: agradeça e reforce o diferencial. Se negativa: acolha, peça desculpas sem admitir culpa, ofereça solução. Máximo 3 linhas.",
-  },
-];
-
-const POSTS_TYPES: ContentType[] = [
-  {
-    id: "linkedin_post", title: "Post LinkedIn", description: "Conteúdo profissional com storytelling",
-    icon: "linkedin", color: "#0077B5", channel: "LinkedIn",
-    placeholder: "Tema: conquista, aprendizado, insight de negócio...",
-    systemContext: "Crie um post de LinkedIn impactante. Estrutura: gancho forte na 1ª linha (sem 'Hoje aprendi'), desenvolvimento com storytelling pessoal ou profissional, CTA genuíno. Tom: autêntico, inspirador, sem corporativês. Máximo 250 palavras. Use quebras de linha para legibilidade.",
-  },
-  {
-    id: "instagram_carousel", title: "Carrossel Instagram", description: "Roteiro de slides educativos",
-    icon: "layers", color: "#833AB4", channel: "Instagram Carrossel",
-    placeholder: "Tema do carrossel: dica, lista, tutorial, processo...",
-    systemContext: "Crie um roteiro de carrossel do Instagram. Slide 1: título forte que para o scroll. Slides 2-7: conteúdo em tópicos curtos (máx 30 palavras por slide). Último slide: CTA claro. Inclua sugestão de visual para cada slide.",
-  },
-  {
-    id: "x_post", title: "Post X (Twitter)", description: "Thread ou post único impactante",
-    icon: "twitter", color: "#1DA1F2", channel: "X / Twitter",
-    placeholder: "Assunto: opinião, insight, notícia do seu mercado...",
-    systemContext: "Crie um post para X (Twitter). Opção 1: post único de até 280 caracteres com gancho forte. Opção 2: thread de 3-5 tweets numerados. Tom: direto, opinativo, sem rodeios. Use dados ou exemplos concretos quando possível.",
-  },
-  {
-    id: "whatsapp_status", title: "Status WhatsApp", description: "Conteúdo visual para Status",
-    icon: "circle", color: "#25D366", channel: "WhatsApp Status",
-    placeholder: "Tema do status: promoção relâmpago, novidade, bastidor...",
-    systemContext: "Crie um roteiro de Status do WhatsApp. Máximo 5 slides. Cada slide: texto muito curto (máx 15 palavras), emoji relevante, cor de fundo sugerida. Tom: urgente, informal, visual. Foque em engajamento e resposta imediata.",
-  },
-];
-
-const TRAFEGO_TYPES: ContentType[] = [
-  {
-    id: "google_ads_title", title: "Títulos Google Ads", description: "Headlines para campanhas de busca",
-    icon: "search", color: "#4285F4", channel: "Google Ads",
-    placeholder: "Produto/serviço, palavra-chave principal, diferencial...",
-    systemContext: "Crie 5 títulos para Google Ads (máx 30 caracteres cada). Regras: inclua a palavra-chave principal, destaque o benefício ou diferencial, use números quando possível, crie urgência sutil. Forneça também 3 descrições (máx 90 caracteres cada) com CTA claro.",
-  },
-  {
-    id: "meta_ads_copy", title: "Copy Meta Ads", description: "Texto para Facebook e Instagram Ads",
-    icon: "facebook", color: "#1877F2", channel: "Meta Ads",
-    placeholder: "Produto, público-alvo, oferta, objetivo da campanha...",
-    systemContext: "Crie uma copy completa para Meta Ads. Estrutura: AIDA (Atenção, Interesse, Desejo, Ação). Headline: máx 40 caracteres. Corpo do anúncio: máx 125 caracteres (preview). Texto completo: até 300 palavras. Inclua também 3 variações de headline para teste A/B.",
-  },
-  {
-    id: "cta_variations", title: "Variações de CTA", description: "Botões e chamadas para ação",
-    icon: "mouse-pointer", color: "#FF0080", channel: "Múltiplos canais",
-    placeholder: "Objetivo: compra, cadastro, ligação, mensagem, download...",
-    systemContext: "Crie 10 variações de CTA (Call to Action) para diferentes contextos. Categorize por: urgência (3 variações), benefício (3 variações), facilidade (2 variações), exclusividade (2 variações). Cada CTA: máx 5 palavras. Indique o melhor contexto de uso para cada um.",
-  },
-  {
-    id: "email_marketing", title: "E-mail Marketing", description: "Campanha completa de e-mail",
-    icon: "mail", color: "#FFB300", channel: "E-mail",
-    placeholder: "Objetivo do e-mail: venda, nurturing, reativação, novidade...",
-    systemContext: "Crie um e-mail de marketing completo. Assunto: 3 opções (máx 60 caracteres cada, inclua emoji em pelo menos um). Pré-header: 1 opção (máx 90 caracteres). Corpo: abertura personalizada, proposta de valor, prova social (placeholder), CTA claro. Tom: conversacional, focado no benefício do leitor.",
-  },
-];
-
-// ─── Biblioteca de técnicas ───────────────────────────────────────────────────
-interface Technique {
-  id: string;
-  icon: string;
-  color: string;
   name: string;
-  tag: string;
-  summary: string;
-  steps: string[];
-  example: string;
+  platform: "Meta Ads" | "Google Ads";
+  tipo: string;
+  status: "ativa" | "pausada" | "revisao";
+  investido: number;
+  limite: number;
+  leads: number;
+  cpl: number;
+  roas: number;
 }
 
-const TECNICAS: Technique[] = [
-  {
-    id: "spin", icon: "target", color: "#FF0080", name: "SPIN Selling", tag: "Qualificação",
-    summary: "Faça perguntas estratégicas antes de apresentar sua solução. Descubra a dor antes de oferecer o remédio.",
-    steps: [
-      "S — Situação: Como está o processo de delivery hoje?",
-      "P — Problema: Quais são as maiores dificuldades?",
-      "I — Implicação: O que isso custa ao negócio?",
-      "N — Necessidade: O que seria ideal para resolver?",
-    ],
-    example: "\"Você usa algum app de delivery hoje? ... E como está a taxa deles? ... Isso impacta sua margem?\"",
-  },
-  {
-    id: "aida", icon: "trending-up", color: "#6C63FF", name: "AIDA", tag: "Abordagem",
-    summary: "Estrutura clássica para capturar atenção e conduzir ao fechamento em qualquer canal.",
-    steps: [
-      "A — Atenção: Gancho que para o lojista",
-      "I — Interesse: Dado ou benefício relevante",
-      "D — Desejo: Conecte ao sonho/dor do lojista",
-      "A — Ação: CTA claro e de baixo esforço",
-    ],
-    example: "\"Vi que tem 4,8 no Google (Atenção). Restaurantes como o seu faturam 30% a mais com entrega própria (Interesse)...\"",
-  },
-  {
-    id: "gatilhos", icon: "zap", color: "#FFB300", name: "Gatilhos Mentais", tag: "Persuasão",
-    summary: "Use com critério. Gatilhos funcionam quando apoiados em fatos reais — nunca como manipulação.",
-    steps: [
-      "Escassez: \"Só temos 3 vagas abertas em Criciúma\"",
-      "Prova social: \"37 restaurantes já usam\" (dado real)",
-      "Autoridade: Estatísticas do mercado de delivery",
-      "Reciprocidade: Ofereça valor antes de pedir",
-    ],
-    example: "\"Estamos aceitando apenas mais 5 parceiros no bairro — para manter exclusividade de entrega rápida.\"",
-  },
-  {
-    id: "rapport", icon: "heart", color: "#00D68F", name: "Rapport", tag: "Conexão",
-    summary: "Construa confiança genuína antes de vender. Pessoas compram de quem gostam e confiam.",
-    steps: [
-      "Espelhe o vocabulário e ritmo do lojista",
-      "Mencione algo específico do negócio dele",
-      "Encontre um ponto em comum (localidade, história)",
-      "Ouça mais do que fala nos primeiros minutos",
-    ],
-    example: "\"Vi nas avaliações que vocês têm o melhor açaí do bairro — o pessoal adora! Há quanto tempo estão aqui?\"",
-  },
-  {
-    id: "objecoes", icon: "shield", color: "#4ECDC4", name: "Tratamento de Objeções", tag: "Fechamento",
-    summary: "Acolha antes de responder. Nunca contradiga diretamente — redirecione com perguntas.",
-    steps: [
-      "\"Já tenho\" → Pergunte sobre a experiência atual",
-      "\"Muito caro\" → Mostre o custo do problema atual",
-      "\"Vou pensar\" → Identifique a objeção real",
-      "\"Não é pra mim\" → Valide e use prova social do segmento",
-    ],
-    example: "\"Faz todo sentido querer pensar — é uma decisão importante. O que ainda ficou sem resposta para você?\"",
-  },
-  {
-    id: "fechamento", icon: "check-circle", color: "#FF6B35", name: "Técnicas de Fechamento", tag: "Fechamento",
-    summary: "Leia os sinais de compra. Quando o interesse é genuíno, avance — não espere o lojista pedir.",
-    steps: [
-      "Pergunta alternativa: \"Prefere começar semana que vem ou já na segunda?\"",
-      "Fechamento por assunção: \"Vou te mandar o contrato hoje\"",
-      "Urgência real: Prazo de campanha, vagas limitadas",
-      "Resumo de benefícios: Recapitule antes de pedir o sim",
-    ],
-    example: "\"Você já mencionou que a taxa alta incomoda. Quer que eu te mande os detalhes para decidir ainda hoje?\"",
-  },
-  {
-    id: "followup", icon: "refresh-cw", color: "#AB47BC", name: "Follow-up Estratégico", tag: "Reativação",
-    summary: "A maioria das vendas acontece no 5º contato. Não desista no primeiro silêncio.",
-    steps: [
-      "Dia 0: Primeira abordagem — gancho de curiosidade",
-      "Dia 2: Follow-up com dado ou prova social nova",
-      "Dia 5: Última tentativa — tom leve, deixa a porta aberta",
-      "Dia 15: Reativação com novidade ou oferta especial",
-    ],
-    example: "\"Fala, [NOME]! Só passando pra deixar um dado que achei relevante para restaurantes do bairro...\"",
-  },
-  {
-    id: "social_proof", icon: "users", color: "#00BCD4", name: "Prova Social", tag: "Credibilidade",
-    summary: "Mostre que outros já decidiram e tiveram resultados. Reduza o risco percebido.",
-    steps: [
-      "Use números específicos (\"37 parceiros em Criciúma\")",
-      "Cite segmentos similares ao do lead",
-      "Compartilhe histórias de sucesso (com permissão)",
-      "Avaliações Google/Reclame Aqui são prova poderosa",
-    ],
-    example: "\"Temos 8 pizzarias parceiras só no Centro — posso te conectar com um deles para contar a experiência.\"",
-  },
+interface Creative {
+  id: string;
+  name: string;
+  type: "video" | "imagem" | "carrossel";
+  performance: "top" | "medio" | "baixo";
+  campaign: string;
+  impressions: string;
+}
+
+const CAMPAIGNS: Campaign[] = [
+  { id: "1", name: "Delivery Verão", platform: "Meta Ads",   tipo: "Conversão",  status: "ativa",   investido: 320, limite: 500,  leads: 18, cpl: 17.8, roas: 3.2 },
+  { id: "2", name: "Brand Awareness", platform: "Google Ads", tipo: "Alcance",    status: "ativa",   investido: 195, limite: 300,  leads: 9,  cpl: 21.7, roas: 2.1 },
+  { id: "3", name: "Remarketing Q2",  platform: "Meta Ads",   tipo: "Remarketing",status: "pausada", investido: 95,  limite: 200,  leads: 5,  cpl: 19.0, roas: 1.8 },
+  { id: "4", name: "Promoção Junho",  platform: "Meta Ads",   tipo: "Conversão",  status: "revisao", investido: 0,   limite: 400,  leads: 0,  cpl: 0,    roas: 0   },
 ];
 
-type MainTab = "gerar" | "posts" | "trafego" | "historico";
+const CREATIVES: Creative[] = [
+  { id: "1", name: "Vídeo hambúrguer", type: "video",    performance: "top",   campaign: "Delivery Verão",  impressions: "12.4k" },
+  { id: "2", name: "Card promoção",    type: "imagem",   performance: "top",   campaign: "Delivery Verão",  impressions: "9.8k"  },
+  { id: "3", name: "Carrossel menu",   type: "carrossel",performance: "medio", campaign: "Brand Awareness", impressions: "7.2k"  },
+  { id: "4", name: "Story oferta",     type: "imagem",   performance: "medio", campaign: "Delivery Verão",  impressions: "5.1k"  },
+  { id: "5", name: "Reels bastidores", type: "video",    performance: "baixo", campaign: "Brand Awareness", impressions: "3.3k"  },
+  { id: "6", name: "Card produto",     type: "imagem",   performance: "baixo", campaign: "Remarketing Q2",  impressions: "2.8k"  },
+];
 
-function formatDate(iso: string): string {
-  return new Date(iso).toLocaleDateString("pt-BR", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" });
+const DIAS = ["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"];
+const LEADS_DIA = [4, 7, 5, 9, 12, 6, 3];
+const BEST_DAY = 4; // Sexta
+
+const AUTO_FEED = [
+  { dot: GREEN,  text: "Campanha 'Delivery Verão' aumentou em R$20/dia — CTR subiu 18%" },
+  { dot: PINK,   text: "Novo criativo 'Card promoção' ativado automaticamente" },
+  { dot: PURPLE, text: "Orçamento redistribuído: Meta +15%, Google -15%" },
+  { dot: GREEN,  text: "5 leads convertidos via campanha de remarketing" },
+  { dot: "#FFB300", text: "Alerta: CPL acima da meta em 'Brand Awareness'" },
+];
+
+// ─── Helpers ───────────────────────────────────────────────────────────────────
+function StatusPill({ status }: { status: Campaign["status"] }) {
+  const map = {
+    ativa:   { label: "Ativa",      bg: GREEN  + "22", fg: GREEN  },
+    pausada: { label: "Pausada",    bg: YELLOW + "22", fg: YELLOW },
+    revisao: { label: "Em revisão", bg: PINK   + "22", fg: PINK   },
+  };
+  const c = map[status];
+  return (
+    <View style={[T.pill, { backgroundColor: c.bg }]}>
+      <Text style={[T.pillText, { color: c.fg }]}>{c.label}</Text>
+    </View>
+  );
 }
 
-// ─── Media Planner ────────────────────────────────────────────────────────────
-function MediaPlanner({
-  colors, campaigns, addCampaign, addActivityEvent,
-}: {
-  colors: any;
-  campaigns: MarketingCampaign[];
-  addCampaign: (c: MarketingCampaign) => void;
-  addActivityEvent: (e: any) => Promise<void>;
-}) {
-  const [orcamento, setOrcamento] = useState("");
-  const [objetivo, setObjetivo]   = useState("leads");
-  const [periodo, setPeriodo]     = useState("30");
-  const [segmento, setSegmento]   = useState("");
-  const [loading, setLoading]     = useState(false);
-  const [result, setResult]       = useState("");
-  const [copied, setCopied]       = useState(false);
-  const [showPecas, setShowPecas] = useState(false);
+function PerfBadge({ p }: { p: Creative["performance"] }) {
+  const map = {
+    top:   { label: "Acima da média", bg: GREEN  + "22", fg: GREEN  },
+    medio: { label: "Médio",          bg: YELLOW + "22", fg: YELLOW },
+    baixo: { label: "Abaixo",         bg: "#FF3B5C22",   fg: "#FF3B5C" },
+  };
+  const c = map[p];
+  return (
+    <View style={[T.pill, { backgroundColor: c.bg }]}>
+      <Text style={[T.pillText, { color: c.fg }]}>{c.label}</Text>
+    </View>
+  );
+}
+
+function typeIcon(type: Creative["type"]) {
+  if (type === "video")    return <Feather name="video"  size={16} color={PINK} />;
+  if (type === "carrossel") return <Feather name="layers" size={16} color={PURPLE} />;
+  return <Feather name="image" size={16} color={YELLOW} />;
+}
+
+// ─── TABS ──────────────────────────────────────────────────────────────────────
+function CampanhasTab({ colors }: { colors: any }) {
+  const [filtro, setFiltro] = useState<FiltCamp>("todas");
+  const [novaCampModal, setNovaCampModal] = useState(false);
+  const [selectedObj, setSelectedObj] = useState<string | null>(null);
+
+  const filtered = CAMPAIGNS.filter((c) => {
+    if (filtro === "todas") return true;
+    if (filtro === "ativas")  return c.status === "ativa";
+    if (filtro === "pausadas") return c.status === "pausada";
+    return c.status === "revisao";
+  });
 
   const OBJETIVOS = [
-    { id: "leads",      label: "Gerar Leads",           emoji: "🎯", color: "#FF0080" },
-    { id: "venda",      label: "Vender Produto",         emoji: "💰", color: "#00D68F" },
-    { id: "seguidores", label: "Aumentar Seguidores",   emoji: "👥", color: "#6C63FF" },
-    { id: "awareness",  label: "Awareness de Marca",    emoji: "📢", color: "#FFB300" },
+    { id: "conversao",    emoji: "💰", title: "Quero vender agora",           sub: "Campanha de conversão",  color: GREEN  },
+    { id: "alcance",      emoji: "📢", title: "Quero aparecer mais",          sub: "Campanha de alcance",    color: PURPLE },
+    { id: "remarketing",  emoji: "🔄", title: "Quero recuperar quem sumiu",   sub: "Campanha de remarketing", color: YELLOW },
   ];
-
-  const PERIODOS = [
-    { id: "15", label: "15 dias" },
-    { id: "30", label: "30 dias" },
-    { id: "60", label: "60 dias" },
-  ];
-
-  const gerarEstrategia = async () => {
-    if (!orcamento.trim()) return;
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    setLoading(true);
-    setResult("");
-    const obj = OBJETIVOS.find((o) => o.id === objetivo)!;
-    const prompt = `Você é especialista em mídia paga brasileira. Crie uma estratégia completa de tráfego pago:\n- Orçamento: R$ ${orcamento}/mês\n- Objetivo: ${obj.label}\n- Período: ${periodo} dias\n- Segmento: ${segmento || "geral"}\n\nEstruture exatamente assim:\n\n## DISTRIBUIÇÃO DO ORÇAMENTO\nPara cada plataforma relevante (Meta Ads, Google Ads, TikTok Ads), informe: valor em R$ e % do total. Use valores baseados no orçamento de R$ ${orcamento}.\n\n## ESTRATÉGIA POR PLATAFORMA\nPara cada plataforma: público-alvo, formato de anúncio, investimento diário, meta de resultado esperada.\n\n## CRONOGRAMA ${periodo} DIAS\nO que fazer em cada semana.\n\n## COPIES PRONTAS\nForneça 3 textos de anúncio prontos para usar (separe por ---).\n\n## KPIs PARA ACOMPANHAR\n4-5 métricas para monitorar diariamente.\n\nSeja específico com valores em R$ e metas numéricas.`;
-    try {
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 30000);
-      const res = await fetch(`${API_BASE}/api/jade/chat`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ messages: [{ role: "user", content: prompt }] }),
-        signal: controller.signal,
-      });
-      clearTimeout(timeoutId);
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const data = await res.json();
-      setResult(data.message?.trim() || data.response?.trim() || "Estratégia gerada!");
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    } catch (err: unknown) {
-      const isAbort = err instanceof Error && err.name === "AbortError";
-      setResult(isAbort
-        ? "A JADE demorou demais para responder. Tente novamente em instantes."
-        : "Não foi possível gerar a estratégia. Verifique sua conexão e tente novamente.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const copy = async (text: string) => {
-    await Clipboard.setStringAsync(text);
-    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2500);
-  };
 
   return (
-    <View style={mp.container}>
-      <View style={[mp.header, { backgroundColor: colors.card, borderColor: "#FF008030" }]}>
-        <Feather name="trending-up" size={20} color="#FF0080" />
-        <View>
-          <Text style={[mp.headerTitle, { color: colors.text }]}>Media Planner IA</Text>
-          <Text style={[mp.headerSub, { color: colors.mutedForeground }]}>Estratégia completa de mídia paga</Text>
-        </View>
+    <View>
+      {/* Filtros */}
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={T.filterRow}>
+        {(["todas","ativas","pausadas","revisao"] as FiltCamp[]).map((f) => (
+          <TouchableOpacity
+            key={f}
+            style={[T.filterPill, filtro === f && { backgroundColor: PINK, borderColor: PINK }]}
+            onPress={() => setFiltro(f)}
+            activeOpacity={0.8}
+          >
+            <Text style={[T.filterText, { color: filtro === f ? "#fff" : colors.mutedForeground }]}>
+              {f === "todas" ? "Todas" : f === "ativas" ? "Ativas" : f === "pausadas" ? "Pausadas" : "Em revisão"}
+            </Text>
+          </TouchableOpacity>
+        ))}
+      </ScrollView>
+
+      {/* Campaign cards */}
+      <View style={{ gap: 12, paddingHorizontal: 16 }}>
+        {filtered.map((camp) => (
+          <View key={camp.id} style={[T.campCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+            <View style={T.campCardHead}>
+              <View style={{ flex: 1 }}>
+                <Text style={[T.campName, { color: colors.text }]}>{camp.name}</Text>
+                <View style={{ flexDirection: "row", gap: 8, marginTop: 4, alignItems: "center" }}>
+                  <View style={[T.platformBadge, { backgroundColor: camp.platform === "Meta Ads" ? "#1877F222" : "#4285F422" }]}>
+                    <Text style={[T.platformText, { color: camp.platform === "Meta Ads" ? "#1877F2" : "#4285F4" }]}>
+                      {camp.platform}
+                    </Text>
+                  </View>
+                  <Text style={[T.tipoText, { color: colors.mutedForeground }]}>{camp.tipo}</Text>
+                </View>
+              </View>
+              <StatusPill status={camp.status} />
+            </View>
+
+            {camp.status !== "revisao" && (
+              <>
+                <View style={T.statsGrid}>
+                  <View style={T.statItem}>
+                    <Text style={[T.statLabel, { color: colors.mutedForeground }]}>Investido</Text>
+                    <Text style={[T.statVal, { color: colors.text }]}>R${camp.investido}</Text>
+                  </View>
+                  <View style={T.statItem}>
+                    <Text style={[T.statLabel, { color: colors.mutedForeground }]}>Leads</Text>
+                    <Text style={[T.statVal, { color: colors.text }]}>{camp.leads}</Text>
+                  </View>
+                  <View style={T.statItem}>
+                    <Text style={[T.statLabel, { color: colors.mutedForeground }]}>CPL</Text>
+                    <Text style={[T.statVal, { color: colors.text }]}>R${camp.cpl.toFixed(0)}</Text>
+                  </View>
+                  <View style={T.statItem}>
+                    <Text style={[T.statLabel, { color: colors.mutedForeground }]}>ROAS</Text>
+                    <Text style={[T.statVal, { color: colors.text }]}>{camp.roas}x</Text>
+                  </View>
+                </View>
+                <View style={T.budgetRow}>
+                  <View style={[T.budgetBar, { backgroundColor: colors.surface }]}>
+                    <View style={[T.budgetFill, { width: `${Math.round((camp.investido / camp.limite) * 100)}%` as any, backgroundColor: PINK }]} />
+                  </View>
+                  <Text style={[T.budgetLabel, { color: colors.mutedForeground }]}>
+                    R${camp.investido} / R${camp.limite}
+                  </Text>
+                </View>
+              </>
+            )}
+
+            {camp.status === "revisao" && (
+              <View style={[T.revisaoNote, { backgroundColor: PINK + "11" }]}>
+                <Feather name="clock" size={13} color={PINK} />
+                <Text style={[T.revisaoText, { color: PINK }]}>Em revisão pela equipe de anúncios</Text>
+              </View>
+            )}
+          </View>
+        ))}
       </View>
 
-      <View style={mp.field}>
-        <Text style={[mp.label, { color: colors.mutedForeground }]}>ORÇAMENTO DO MÊS (R$) *</Text>
-        <View style={[mp.inputWrap, { backgroundColor: colors.card, borderColor: orcamento ? "#FF008060" : colors.border }]}>
-          <Text style={[mp.currency, { color: colors.mutedForeground }]}>R$</Text>
-          <TextInput
-            style={[mp.input, { color: colors.text }]}
-            placeholder="Ex: 500"
-            placeholderTextColor={colors.mutedForeground}
-            value={orcamento}
-            onChangeText={setOrcamento}
-            keyboardType="numeric"
-            returnKeyType="done"
-          />
-        </View>
-      </View>
-
-      <View style={mp.field}>
-        <Text style={[mp.label, { color: colors.mutedForeground }]}>OBJETIVO DA CAMPANHA</Text>
-        <View style={mp.objetivosGrid}>
-          {OBJETIVOS.map((obj) => (
-            <TouchableOpacity
-              key={obj.id}
-              style={[mp.objCard, { backgroundColor: colors.card, borderColor: objetivo === obj.id ? obj.color : colors.border, borderWidth: objetivo === obj.id ? 2 : 1 }]}
-              onPress={() => { Haptics.selectionAsync(); setObjetivo(obj.id); }}
-              activeOpacity={0.8}
-            >
-              <Text style={mp.objEmoji}>{obj.emoji}</Text>
-              <Text style={[mp.objLabel, { color: objetivo === obj.id ? obj.color : colors.text }]}>{obj.label}</Text>
-            </TouchableOpacity>
-          ))}
-        </View>
-      </View>
-
-      <View style={mp.field}>
-        <Text style={[mp.label, { color: colors.mutedForeground }]}>PERÍODO</Text>
-        <View style={mp.periodoRow}>
-          {PERIODOS.map((p) => (
-            <TouchableOpacity
-              key={p.id}
-              style={[mp.periodoBtn, { backgroundColor: periodo === p.id ? "#FF0080" : colors.card, borderColor: periodo === p.id ? "#FF0080" : colors.border }]}
-              onPress={() => setPeriodo(p.id)}
-              activeOpacity={0.8}
-            >
-              <Text style={[mp.periodoBtnText, { color: periodo === p.id ? "#fff" : colors.text }]}>{p.label}</Text>
-            </TouchableOpacity>
-          ))}
-        </View>
-      </View>
-
-      <View style={mp.field}>
-        <Text style={[mp.label, { color: colors.mutedForeground }]}>SEGMENTO / NEGÓCIO (opcional)</Text>
-        <View style={[mp.inputWrap, { backgroundColor: colors.card, borderColor: colors.border }]}>
-          <TextInput
-            style={[mp.input, { color: colors.text }]}
-            placeholder="Ex: Restaurante, SaaS, Academia..."
-            placeholderTextColor={colors.mutedForeground}
-            value={segmento}
-            onChangeText={setSegmento}
-            returnKeyType="done"
-          />
-        </View>
-      </View>
-
+      {/* Nova campanha FAB */}
       <TouchableOpacity
-        style={[mp.gerarBtn, (!orcamento.trim() || loading) && { opacity: 0.6 }]}
-        onPress={gerarEstrategia}
-        disabled={!orcamento.trim() || loading}
+        style={T.fab}
+        onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium); setNovaCampModal(true); }}
         activeOpacity={0.85}
       >
-        {loading
-          ? <><ActivityIndicator color="#fff" size="small" /><Text style={mp.gerarBtnText}>JADE planejando...</Text></>
-          : <><Feather name="zap" size={18} color="#fff" /><Text style={mp.gerarBtnText}>Criar Estratégia de Mídia</Text></>
-        }
+        <Feather name="plus" size={20} color="#fff" />
+        <Text style={T.fabText}>Nova campanha</Text>
       </TouchableOpacity>
 
-      {!!result && !loading && (
-        <View style={[mp.resultBox, { backgroundColor: colors.card, borderColor: colors.border }]}>
-          <View style={mp.resultHeader}>
-            <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
-              <View style={[mp.dot, { backgroundColor: "#00D68F" }]} />
-              <Text style={[mp.resultLabel, { color: "#00D68F" }]}>Estratégia criada pela JADE</Text>
+      {/* Objetivo modal */}
+      <Modal visible={novaCampModal} transparent animationType="slide" onRequestClose={() => setNovaCampModal(false)}>
+        <TouchableOpacity style={T.overlay} activeOpacity={1} onPress={() => setNovaCampModal(false)}>
+          <View style={[T.sheet, { backgroundColor: colors.card }]} onStartShouldSetResponder={() => true}>
+            <View style={T.sheetHandle} />
+            <Text style={[T.sheetTitle, { color: colors.text }]}>Qual o objetivo da campanha?</Text>
+            <Text style={[T.sheetSub, { color: colors.mutedForeground }]}>
+              A JADE vai criar e otimizar a campanha automaticamente
+            </Text>
+            <View style={{ gap: 12, marginTop: 8 }}>
+              {OBJETIVOS.map((obj) => (
+                <TouchableOpacity
+                  key={obj.id}
+                  style={[T.objCard, {
+                    backgroundColor: selectedObj === obj.id ? obj.color + "18" : colors.surface,
+                    borderColor: selectedObj === obj.id ? obj.color : colors.border,
+                    borderWidth: selectedObj === obj.id ? 1.5 : 1,
+                  }]}
+                  onPress={() => { Haptics.selectionAsync(); setSelectedObj(obj.id); }}
+                  activeOpacity={0.85}
+                >
+                  <Text style={T.objEmoji}>{obj.emoji}</Text>
+                  <View style={{ flex: 1 }}>
+                    <Text style={[T.objTitle, { color: colors.text }]}>{obj.title}</Text>
+                    <Text style={[T.objSub, { color: colors.mutedForeground }]}>{obj.sub}</Text>
+                  </View>
+                  {selectedObj === obj.id && <Feather name="check-circle" size={20} color={obj.color} />}
+                </TouchableOpacity>
+              ))}
             </View>
-            <TouchableOpacity onPress={() => copy(result)} activeOpacity={0.8} style={mp.copyBtn}>
-              <Feather name={copied ? "check" : "copy"} size={16} color={copied ? "#00D68F" : colors.mutedForeground} />
-              <Text style={[mp.copyText, { color: copied ? "#00D68F" : colors.mutedForeground }]}>{copied ? "Copiado!" : "Copiar"}</Text>
+            <TouchableOpacity
+              style={[T.sheetBtn, { opacity: selectedObj ? 1 : 0.5 }]}
+              onPress={() => { if (selectedObj) { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success); setNovaCampModal(false); setSelectedObj(null); }}}
+              activeOpacity={0.85}
+              disabled={!selectedObj}
+            >
+              <Feather name="zap" size={18} color="#fff" />
+              <Text style={T.sheetBtnText}>Criar com JADE</Text>
             </TouchableOpacity>
           </View>
-          <Text style={[mp.resultText, { color: colors.text }]}>{result}</Text>
-          <TouchableOpacity style={[mp.regenBtn, { borderColor: colors.border }]} onPress={gerarEstrategia} activeOpacity={0.8}>
-            <Feather name="refresh-cw" size={14} color="#FF0080" />
-            <Text style={[mp.regenText, { color: "#FF0080" }]}>Refinar Estratégia</Text>
+        </TouchableOpacity>
+      </Modal>
+    </View>
+  );
+}
+
+function CriativosTab({ colors }: { colors: any }) {
+  const [filtro, setFiltro] = useState<FiltCriat>("todos");
+
+  const top = CREATIVES.filter((c) => c.performance === "top");
+  const filtered = CREATIVES.filter((c) =>
+    filtro === "todos" ? true : c.type === filtro
+  );
+
+  return (
+    <View>
+      {/* Filtros */}
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={T.filterRow}>
+        {(["todos","video","imagem","carrossel"] as FiltCriat[]).map((f) => (
+          <TouchableOpacity
+            key={f}
+            style={[T.filterPill, filtro === f && { backgroundColor: PINK, borderColor: PINK }]}
+            onPress={() => setFiltro(f)}
+            activeOpacity={0.8}
+          >
+            <Text style={[T.filterText, { color: filtro === f ? "#fff" : colors.mutedForeground }]}>
+              {f === "todos" ? "Todos" : f === "video" ? "Vídeo" : f === "imagem" ? "Imagem" : "Carrossel"}
+            </Text>
           </TouchableOpacity>
-        </View>
-      )}
+        ))}
+      </ScrollView>
 
-      <TouchableOpacity
-        style={[mp.pecasToggle, { borderColor: colors.border }]}
-        onPress={() => setShowPecas((v) => !v)}
-        activeOpacity={0.8}
-      >
-        <Text style={[mp.pecasLabel, { color: colors.mutedForeground }]}>Gerar peças avulsas</Text>
-        <Feather name={showPecas ? "chevron-up" : "chevron-down"} size={16} color={colors.mutedForeground} />
-      </TouchableOpacity>
-
-      {showPecas && (
-        <ContentGenerator
-          types={TRAFEGO_TYPES} colors={colors}
-          campaigns={campaigns} addCampaign={addCampaign} addActivityEvent={addActivityEvent}
-        />
-      )}
-    </View>
-  );
-}
-
-// ─── Shared: Content Generator ────────────────────────────────────────────────
-function ContentGenerator({
-  types, colors, campaigns, addCampaign, addActivityEvent,
-}: {
-  types: ContentType[];
-  colors: any;
-  campaigns: MarketingCampaign[];
-  addCampaign: (c: MarketingCampaign) => void;
-  addActivityEvent: (e: any) => Promise<void>;
-}) {
-  const [selected, setSelected] = useState<ContentType | null>(null);
-  const [context, setContext]   = useState("");
-  const [loading, setLoading]   = useState(false);
-  const [result, setResult]     = useState("");
-  const [copied, setCopied]     = useState(false);
-
-  const generate = async () => {
-    if (!selected || !context.trim()) return;
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    setLoading(true);
-    setResult("");
-
-    try {
-      const res = await fetch(`${API_BASE}/api/marketing/generate`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          type_id: selected.id,
-          type_title: selected.title,
-          channel: selected.channel,
-          context_input: context.trim(),
-          system_context: selected.systemContext,
-        }),
-      });
-
-      const data = await res.json() as { message?: string; campaign?: MarketingCampaign; error?: string };
-
-      if (data.campaign) {
-        addCampaign(data.campaign);
-        setResult(data.message?.trim() ?? data.campaign.generated_content);
-        await addActivityEvent({ type: "campaign", text: `Campanha criada: ${selected.title}`, icon: "zap", color: "#FFB300" });
-      } else {
-        setResult(data.message?.trim() ?? "Erro ao gerar. Tente novamente.");
-      }
-    } catch {
-      setResult("Erro de conexão. Verifique sua internet.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const copy = async (text: string) => {
-    await Clipboard.setStringAsync(text);
-    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
-
-  const reset = () => { setSelected(null); setContext(""); setResult(""); setCopied(false); };
-
-  if (selected) {
-    return (
-      <View style={gen.formSection}>
-        <TouchableOpacity style={gen.backLink} onPress={reset} activeOpacity={0.7}>
-          <Feather name="arrow-left" size={14} color={colors.primary} />
-          <Text style={[gen.backLinkText, { color: colors.primary }]}>Escolher outro formato</Text>
-        </TouchableOpacity>
-
-        <View style={[gen.selectedBadge, { backgroundColor: selected.color + "18", borderColor: selected.color + "44" }]}>
-          <Feather name={selected.icon as any} size={14} color={selected.color} />
-          <Text style={[gen.selectedBadgeText, { color: selected.color }]}>{selected.title}</Text>
-        </View>
-
-        <View style={[gen.textareaWrap, { backgroundColor: colors.card, borderColor: colors.border }]}>
-          <TextInput
-            style={[gen.textarea, { color: colors.text }]}
-            placeholder={selected.placeholder}
-            placeholderTextColor={colors.mutedForeground}
-            value={context} onChangeText={setContext}
-            multiline numberOfLines={4} textAlignVertical="top"
-          />
-        </View>
-
-        <TouchableOpacity
-          style={[gen.generateBtn, (!context.trim() || loading) && { opacity: 0.6 }]}
-          onPress={generate} activeOpacity={0.85} disabled={!context.trim() || loading}
-        >
-          {loading
-            ? <ActivityIndicator color="#fff" size="small" />
-            : <><Feather name="zap" size={16} color="#fff" /><Text style={gen.generateBtnText}>Gerar com JADE</Text></>
-          }
-        </TouchableOpacity>
-
-        {loading && (
-          <View style={[gen.loadingBox, { backgroundColor: colors.card, borderColor: colors.border }]}>
-            <ActivityIndicator color="#FF0080" />
-            <Text style={[gen.loadingText, { color: colors.mutedForeground }]}>JADE está criando o conteúdo...</Text>
+      <View style={{ paddingHorizontal: 16, gap: 16 }}>
+        {/* Melhores performers */}
+        {filtro === "todos" && (
+          <View>
+            <Text style={[T.sectionLabel, { color: colors.text }]}>⭐ Melhores performers</Text>
+            <View style={T.topGrid}>
+              {top.map((c) => (
+                <View key={c.id} style={[T.topCard, { backgroundColor: colors.card, borderColor: GREEN + "44" }]}>
+                  <View style={[T.topIcon, { backgroundColor: PINK + "22" }]}>{typeIcon(c.type)}</View>
+                  <Text style={[T.topName, { color: colors.text }]} numberOfLines={1}>{c.name}</Text>
+                  <Text style={[T.topImpr, { color: colors.mutedForeground }]}>{c.impressions} impressões</Text>
+                  <PerfBadge p={c.performance} />
+                </View>
+              ))}
+            </View>
           </View>
         )}
 
-        {!!result && !loading && (
-          <View style={[gen.resultBox, { backgroundColor: colors.card, borderColor: colors.border }]}>
-            <View style={gen.resultHeader}>
-              <View style={gen.resultBadge}>
-                <View style={[gen.greenDot, { backgroundColor: colors.success }]} />
-                <Text style={[gen.resultLabel, { color: colors.success }]}>Gerado por JADE</Text>
-              </View>
-              <TouchableOpacity onPress={() => copy(result)} activeOpacity={0.8} style={gen.copyBtn}>
-                <Feather name={copied ? "check" : "copy"} size={16} color={copied ? colors.success : colors.mutedForeground} />
-                <Text style={[gen.copyText, { color: copied ? colors.success : colors.mutedForeground }]}>
-                  {copied ? "Copiado!" : "Copiar"}
-                </Text>
-              </TouchableOpacity>
-            </View>
-            <Text style={[gen.resultText, { color: colors.text }]}>{result}</Text>
-            <TouchableOpacity style={[gen.regenBtn, { borderColor: colors.border }]} onPress={generate} activeOpacity={0.8}>
-              <Feather name="refresh-cw" size={14} color={colors.primary} />
-              <Text style={[gen.regenText, { color: colors.primary }]}>Gerar novamente</Text>
-            </TouchableOpacity>
-          </View>
-        )}
-      </View>
-    );
-  }
-
-  return (
-    <View style={gen.list}>
-      {types.map((ct) => (
-        <TouchableOpacity
-          key={ct.id}
-          style={[gen.card, { backgroundColor: colors.card, borderColor: colors.border }]}
-          onPress={() => { setSelected(ct); setContext(""); setResult(""); }}
-          activeOpacity={0.8}
-        >
-          <View style={[gen.cardIcon, { backgroundColor: ct.color + "22" }]}>
-            <Feather name={ct.icon as any} size={22} color={ct.color} />
-          </View>
-          <View style={{ flex: 1 }}>
-            <Text style={[gen.cardTitle, { color: colors.text }]}>{ct.title}</Text>
-            <Text style={[gen.cardDesc, { color: colors.mutedForeground }]}>{ct.description}</Text>
-          </View>
-          <Feather name="chevron-right" size={18} color={colors.mutedForeground} />
-        </TouchableOpacity>
-      ))}
-    </View>
-  );
-}
-
-// ─── Biblioteca card ──────────────────────────────────────────────────────────
-function TechCard({ t, colors }: { t: Technique; colors: any }) {
-  const [open, setOpen] = useState(false);
-  return (
-    <TouchableOpacity
-      style={[lib.card, { backgroundColor: colors.card, borderColor: open ? t.color + "66" : colors.border }]}
-      onPress={() => { Haptics.selectionAsync(); setOpen((v) => !v); }}
-      activeOpacity={0.85}
-    >
-      <View style={lib.cardHeader}>
-        <View style={[lib.cardIcon, { backgroundColor: t.color + "22" }]}>
-          <Feather name={t.icon as any} size={20} color={t.color} />
-        </View>
-        <View style={{ flex: 1 }}>
-          <View style={lib.nameRow}>
-            <Text style={[lib.cardName, { color: colors.text }]}>{t.name}</Text>
-            <View style={[lib.tagBadge, { backgroundColor: t.color + "22" }]}>
-              <Text style={[lib.tagText, { color: t.color }]}>{t.tag}</Text>
-            </View>
-          </View>
-          <Text style={[lib.cardSummary, { color: colors.mutedForeground }]} numberOfLines={open ? undefined : 2}>
-            {t.summary}
+        {/* JADE sugere */}
+        <View style={[T.jadeSuggestion, { backgroundColor: PURPLE + "18", borderColor: PURPLE + "44" }]}>
+          <MaterialCommunityIcons name="robot" size={18} color={PURPLE} />
+          <Text style={[T.jadeSuggText, { color: "#CCAAFF" }]}>
+            <Text style={{ fontFamily: "SpaceGrotesk_700Bold" }}>JADE sugere:</Text> pausar "Reels bastidores" e duplicar "Card promoção" com novo público
           </Text>
         </View>
-        <Feather name={open ? "chevron-up" : "chevron-down"} size={16} color={colors.mutedForeground} />
-      </View>
-      {open && (
-        <View style={lib.detail}>
-          <View style={[lib.divider, { backgroundColor: colors.border }]} />
-          <Text style={[lib.stepsTitle, { color: colors.mutedForeground }]}>PASSOS</Text>
-          {t.steps.map((step, i) => (
-            <View key={i} style={lib.step}>
-              <View style={[lib.stepDot, { backgroundColor: t.color }]} />
-              <Text style={[lib.stepText, { color: colors.text }]}>{step}</Text>
-            </View>
+
+        {/* Grid geral */}
+        <Text style={[T.sectionLabel, { color: colors.text }]}>Todos os criativos</Text>
+        <View style={T.criatGrid}>
+          {/* + Novo criativo card */}
+          <TouchableOpacity
+            style={[T.novoCriatCard, { borderColor: PINK + "60" }]}
+            onPress={() => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium)}
+            activeOpacity={0.8}
+          >
+            <Feather name="plus-circle" size={28} color={PINK} />
+            <Text style={[T.novoCriatText, { color: PINK }]}>Novo criativo</Text>
+          </TouchableOpacity>
+
+          {filtered.map((c) => (
+            <TouchableOpacity
+              key={c.id}
+              style={[T.criatCard, { backgroundColor: colors.card, borderColor: colors.border }]}
+              onPress={() => Haptics.selectionAsync()}
+              activeOpacity={0.85}
+            >
+              <View style={[T.criatIcon, { backgroundColor: colors.surface }]}>{typeIcon(c.type)}</View>
+              <Text style={[T.criatName, { color: colors.text }]} numberOfLines={2}>{c.name}</Text>
+              <Text style={[T.criatCamp, { color: colors.mutedForeground }]} numberOfLines={1}>{c.campaign}</Text>
+              <PerfBadge p={c.performance} />
+            </TouchableOpacity>
           ))}
-          <View style={[lib.exampleBox, { backgroundColor: t.color + "10", borderColor: t.color + "30" }]}>
-            <Text style={[lib.exampleLabel, { color: t.color }]}>EXEMPLO NA PRÁTICA</Text>
-            <Text style={[lib.exampleText, { color: colors.text }]}>{t.example}</Text>
-          </View>
         </View>
-      )}
-    </TouchableOpacity>
+      </View>
+    </View>
   );
 }
 
-// ─── Main screen ──────────────────────────────────────────────────────────────
-export default function MarketingScreen() {
-  const colors = useColors();
-  const insets = useSafeAreaInsets();
-  const router = useRouter();
-  const { campaigns, addCampaign, addActivityEvent } = useApp();
-  const [tab, setTab] = useState<MainTab>("gerar");
-  const [activeCampaign, setActiveCampaign] = useState<MarketingCampaign | null>(null);
-  const [copied, setCopied] = useState(false);
+function RelatoriosTab({ colors }: { colors: any }) {
+  const maxLeads = Math.max(...LEADS_DIA);
 
-  const topPad = Platform.OS === "web" ? 67 : insets.top;
-
-  const TABS: { id: MainTab; label: string; icon: string }[] = [
-    { id: "gerar",     label: "Gerar",     icon: "zap" },
-    { id: "posts",     label: "Posts",     icon: "grid" },
-    { id: "trafego",   label: "Tráfego",   icon: "trending-up" },
-    { id: "historico", label: "Histórico", icon: "clock" },
+  const METRICS = [
+    { label: "Total Investido", value: "R$610",   change: "+12%",  up: true  },
+    { label: "Leads",           value: "29",       change: "+31%",  up: true  },
+    { label: "CPL",             value: "R$21",     change: "-8%",   up: false },
+    { label: "ROAS",            value: "2.7x",     change: "+5%",   up: true  },
+    { label: "CTR",             value: "3.4%",     change: "+0.8%", up: true  },
+    { label: "Conversões",      value: "12",       change: "+25%",  up: true  },
   ];
 
-  const copy = async (text: string) => {
-    await Clipboard.setStringAsync(text);
-    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
+  const TOP_CRIAT = [
+    { pos: 1, color: GREEN,  name: "Vídeo hambúrguer", result: "12 leads" },
+    { pos: 2, color: PINK,   name: "Card promoção",    result: "8 leads"  },
+    { pos: 3, color: PURPLE, name: "Story oferta",     result: "5 leads"  },
+  ];
 
   return (
-    <View style={[sty.container, { backgroundColor: colors.background }]}>
-      {/* Header */}
-      <View style={[sty.header, { paddingTop: topPad, borderBottomColor: colors.border }]}>
-        <TouchableOpacity
-          style={[sty.backBtn, { backgroundColor: colors.surface }]}
-          onPress={() => router.back()}
-          activeOpacity={0.8}
-        >
-          <Feather name="arrow-left" size={20} color={colors.text} />
-        </TouchableOpacity>
-        <View style={{ flex: 1 }}>
-          <Text style={[sty.headerTitle, { color: colors.text }]}>Marketing IA</Text>
-          <Text style={[sty.headerSub, { color: colors.mutedForeground }]}>Conteúdo gerado pela JADE</Text>
+    <View style={{ paddingHorizontal: 16, gap: 16 }}>
+      {/* Hero resumo */}
+      <View style={[T.heroCard, { backgroundColor: "#3D0020" }]}>
+        <View style={[T.heroBadge, { backgroundColor: PINK + "33" }]}>
+          <MaterialCommunityIcons name="robot" size={14} color={PINK} />
+          <Text style={[T.heroBadgeText, { color: PINK }]}>Resumo da JADE</Text>
+        </View>
+        <Text style={[T.heroText, { color: "#fff" }]}>
+          Você investiu{" "}
+          <Text style={{ fontFamily: "SpaceGrotesk_700Bold", color: PINK }}>R$610</Text>
+          {" "}e gerou{" "}
+          <Text style={{ fontFamily: "SpaceGrotesk_700Bold" }}>29 leads</Text>
+          {" "}este mês. Seu CPL caiu 8% e o criativo "Vídeo hambúrguer" está dominando o feed. Quinta-feira é seu melhor dia — considere aumentar o orçamento nesse dia.
+        </Text>
+      </View>
+
+      {/* Métricas 2x3 */}
+      <View style={T.metricsGrid}>
+        {METRICS.map((m, i) => (
+          <View key={i} style={[T.metCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+            <Text style={[T.metValue, { color: colors.text }]}>{m.value}</Text>
+            <Text style={[T.metLabel, { color: colors.mutedForeground }]}>{m.label}</Text>
+            <View style={[T.metChange, { backgroundColor: m.up ? GREEN + "22" : "#FF3B5C22" }]}>
+              <Feather name={m.up ? "trending-up" : "trending-down"} size={10} color={m.up ? GREEN : "#FF3B5C"} />
+              <Text style={[T.metChangeText, { color: m.up ? GREEN : "#FF3B5C" }]}>{m.change}</Text>
+            </View>
+          </View>
+        ))}
+      </View>
+
+      {/* Gráfico de barras leads/dia */}
+      <View style={[T.chartCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+        <Text style={[T.chartTitle, { color: colors.text }]}>Leads por dia da semana</Text>
+        <View style={T.chartBars}>
+          {LEADS_DIA.map((v, i) => (
+            <View key={i} style={T.barCol}>
+              <Text style={[T.barValue, { color: i === BEST_DAY ? PINK : colors.mutedForeground }]}>{v}</Text>
+              <View style={T.barTrack}>
+                <View style={[T.barFill, {
+                  height: `${Math.round((v / maxLeads) * 100)}%` as any,
+                  backgroundColor: i === BEST_DAY ? PINK : colors.surface,
+                  borderWidth: i === BEST_DAY ? 0 : 1,
+                  borderColor: colors.border,
+                }]} />
+              </View>
+              <Text style={[T.barDay, { color: i === BEST_DAY ? PINK : colors.mutedForeground }]}>{DIAS[i]}</Text>
+            </View>
+          ))}
         </View>
       </View>
 
-      {/* Tabs */}
-      {!activeCampaign && (
-        <ScrollView
-          horizontal showsHorizontalScrollIndicator={false}
-          style={[sty.tabsScroll, { borderBottomColor: colors.border }]}
-          contentContainerStyle={sty.tabsRow}
-        >
+      {/* Top criativos */}
+      <View style={[T.rankCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+        <Text style={[T.rankTitle, { color: colors.text }]}>🏆 Top criativos do mês</Text>
+        {TOP_CRIAT.map((item) => (
+          <View key={item.pos} style={T.rankRow}>
+            <View style={[T.rankNum, { backgroundColor: item.color + "22" }]}>
+              <Text style={[T.rankNumText, { color: item.color }]}>#{item.pos}</Text>
+            </View>
+            <View style={[T.rankDot, { backgroundColor: item.color }]} />
+            <Text style={[T.rankName, { color: colors.text }]} numberOfLines={1}>{item.name}</Text>
+            <Text style={[T.rankResult, { color: item.color }]}>{item.result}</Text>
+          </View>
+        ))}
+      </View>
+
+      {/* Export button */}
+      <TouchableOpacity style={T.exportBtn} onPress={() => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium)} activeOpacity={0.85}>
+        <Feather name="file-text" size={18} color="#fff" />
+        <Text style={T.exportBtnText}>Exportar PDF</Text>
+      </TouchableOpacity>
+
+      <View style={{ height: 40 }} />
+    </View>
+  );
+}
+
+// ─── Modo Automático ───────────────────────────────────────────────────────────
+function ModoAutomaticoView({ colors }: { colors: any }) {
+  const [level, setLevel] = useState<AutoLevel>("semi");
+  const [alertas, setAlertas]   = useState(true);
+  const [aprovar, setAprovar]   = useState(false);
+
+  const LEVELS: { id: AutoLevel; label: string; desc: string }[] = [
+    { id: "assistido",   label: "Nível 1\nAssistido",   desc: "JADE sugere, você aprova" },
+    { id: "semi",        label: "Nível 2\nSemi-auto",   desc: "JADE age em limites pré-definidos" },
+    { id: "automatico",  label: "Nível 3\nAutomático",  desc: "JADE gerencia tudo autonomamente" },
+  ];
+
+  return (
+    <View style={{ paddingHorizontal: 16, gap: 16 }}>
+      {/* Nível de automação */}
+      <View style={[T.autoSection, { backgroundColor: colors.card, borderColor: colors.border }]}>
+        <Text style={[T.autoSectionTitle, { color: colors.text }]}>Nível de automação</Text>
+        <View style={T.levelRow}>
+          {LEVELS.map((l) => (
+            <TouchableOpacity
+              key={l.id}
+              style={[T.levelPill, {
+                backgroundColor: level === l.id ? PURPLE + "22" : colors.surface,
+                borderColor: level === l.id ? PURPLE : colors.border,
+                borderWidth: level === l.id ? 1.5 : 1,
+              }]}
+              onPress={() => { Haptics.selectionAsync(); setLevel(l.id); }}
+              activeOpacity={0.85}
+            >
+              <Text style={[T.levelLabel, { color: level === l.id ? PURPLE : colors.text }]}>{l.label}</Text>
+              <Text style={[T.levelDesc, { color: colors.mutedForeground }]}>{l.desc}</Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+      </View>
+
+      {/* Feed de ações */}
+      <View style={[T.autoSection, { backgroundColor: colors.card, borderColor: colors.border }]}>
+        <Text style={[T.autoSectionTitle, { color: colors.text }]}>O que a JADE está fazendo</Text>
+        <View style={{ gap: 10, marginTop: 4 }}>
+          {AUTO_FEED.map((item, i) => (
+            <View key={i} style={T.feedRow}>
+              <View style={[T.feedDot, { backgroundColor: item.dot }]} />
+              <Text style={[T.feedText, { color: colors.mutedForeground }]}>{item.text}</Text>
+            </View>
+          ))}
+        </View>
+      </View>
+
+      {/* Limites */}
+      <View style={[T.autoSection, { backgroundColor: colors.card, borderColor: colors.border }]}>
+        <Text style={[T.autoSectionTitle, { color: colors.text }]}>Limites da JADE</Text>
+        <View style={[T.limitRow, { borderColor: colors.border }]}>
+          <Feather name="dollar-sign" size={16} color={colors.mutedForeground} />
+          <Text style={[T.limitLabel, { color: colors.text }]}>Orçamento máximo / dia</Text>
+          <Text style={[T.limitValue, { color: PINK }]}>R$50</Text>
+        </View>
+        <View style={T.toggleRow}>
+          <View style={{ flex: 1 }}>
+            <Text style={[T.toggleLabel, { color: colors.text }]}>Alertas automáticos</Text>
+            <Text style={[T.toggleSub, { color: colors.mutedForeground }]}>Notificar quando CPL sair da meta</Text>
+          </View>
+          <Switch value={alertas} onValueChange={setAlertas} trackColor={{ true: PURPLE }} thumbColor="#fff" />
+        </View>
+        <View style={T.toggleRow}>
+          <View style={{ flex: 1 }}>
+            <Text style={[T.toggleLabel, { color: colors.text }]}>Aprovar antes de escalar</Text>
+            <Text style={[T.toggleSub, { color: colors.mutedForeground }]}>Pedir confirmação para aumentar orçamento</Text>
+          </View>
+          <Switch value={aprovar} onValueChange={setAprovar} trackColor={{ true: PURPLE }} thumbColor="#fff" />
+        </View>
+      </View>
+
+      <View style={{ height: 40 }} />
+    </View>
+  );
+}
+
+// ─── Screen ────────────────────────────────────────────────────────────────────
+export default function MarketingScreen() {
+  const colors  = useColors();
+  const insets  = useSafeAreaInsets();
+  const router  = useRouter();
+
+  const topPad    = Platform.OS === "web" ? 67 : insets.top;
+  const bottomPad = Platform.OS === "web" ? 84 : insets.bottom + 60;
+
+  const [activeTab, setActiveTab] = useState<TabId>("campanhas");
+  const [modoAuto, setModoAuto]   = useState(false);
+
+  const TABS: { id: TabId; label: string }[] = [
+    { id: "campanhas",  label: "Campanhas"  },
+    { id: "criativos",  label: "Criativos"  },
+    { id: "relatorios", label: "Relatórios" },
+  ];
+
+  return (
+    <View style={[R.container, { backgroundColor: BG }]}>
+      {/* Header */}
+      <View style={[R.header, { paddingTop: topPad + 8, borderBottomColor: "#1E1E2E" }]}>
+        <TouchableOpacity onPress={() => router.back()} activeOpacity={0.8} style={R.backBtn}>
+          <Feather name="arrow-left" size={20} color="#fff" />
+        </TouchableOpacity>
+        <View style={{ flex: 1 }}>
+          <View style={R.titleRow}>
+            <Text style={R.title}>JADE Marketing</Text>
+            <View style={R.badge}>
+              <Feather name="zap" size={11} color={PINK} />
+              <Text style={R.badgeText}>Marketing IA</Text>
+            </View>
+          </View>
+        </View>
+        <View style={R.autoToggleRow}>
+          <Text style={[R.autoLabel, { color: modoAuto ? PURPLE : "#555577" }]}>Auto</Text>
+          <Switch
+            value={modoAuto}
+            onValueChange={(v) => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium); setModoAuto(v); }}
+            trackColor={{ false: "#222233", true: PURPLE }}
+            thumbColor={modoAuto ? "#fff" : "#888899"}
+          />
+        </View>
+      </View>
+
+      {/* Tabs — only in Manual mode */}
+      {!modoAuto && (
+        <View style={[R.tabBar, { borderBottomColor: "#1E1E2E" }]}>
           {TABS.map((t) => (
             <TouchableOpacity
               key={t.id}
-              style={[sty.tab, tab === t.id && sty.tabActive]}
-              onPress={() => setTab(t.id)}
+              style={[R.tab, activeTab === t.id && R.tabActive]}
+              onPress={() => { Haptics.selectionAsync(); setActiveTab(t.id); }}
               activeOpacity={0.8}
             >
-              <Feather name={t.icon as any} size={14} color={tab === t.id ? "#FF0080" : colors.mutedForeground} />
-              <Text style={[sty.tabText, { color: tab === t.id ? "#FF0080" : colors.mutedForeground,
-                fontFamily: tab === t.id ? "SpaceGrotesk_600SemiBold" : "SpaceGrotesk_400Regular" }]}>
-                {t.label}{t.id === "historico" && campaigns.length > 0 ? ` (${campaigns.length})` : ""}
-              </Text>
-              {tab === t.id && <View style={[sty.tabUnderline, { backgroundColor: "#FF0080" }]} />}
+              <Text style={[R.tabText, { color: activeTab === t.id ? PINK : "#555577" }]}>{t.label}</Text>
+              {activeTab === t.id && <View style={R.tabIndicator} />}
             </TouchableOpacity>
           ))}
-        </ScrollView>
+        </View>
       )}
 
-      <ScrollView showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled" contentContainerStyle={{ paddingBottom: 120 }}>
-        {/* ─── Gerar ─── */}
-        {tab === "gerar" && !activeCampaign && (
-          <ContentGenerator
-            types={GERAR_TYPES} colors={colors}
-            campaigns={campaigns} addCampaign={addCampaign} addActivityEvent={addActivityEvent}
-          />
+      {/* Content */}
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingTop: 16, paddingBottom: bottomPad }}
+        keyboardShouldPersistTaps="handled"
+      >
+        {modoAuto ? (
+          <ModoAutomaticoView colors={colors} />
+        ) : (
+          <>
+            {activeTab === "campanhas"  && <CampanhasTab  colors={colors} />}
+            {activeTab === "criativos"  && <CriativosTab  colors={colors} />}
+            {activeTab === "relatorios" && <RelatoriosTab colors={colors} />}
+          </>
         )}
-
-        {/* ─── Posts ─── */}
-        {tab === "posts" && !activeCampaign && (
-          <ContentGenerator
-            types={POSTS_TYPES} colors={colors}
-            campaigns={campaigns} addCampaign={addCampaign} addActivityEvent={addActivityEvent}
-          />
-        )}
-
-        {/* ─── Tráfego Pago → Media Planner ─── */}
-        {tab === "trafego" && !activeCampaign && (
-          <MediaPlanner
-            colors={colors}
-            campaigns={campaigns} addCampaign={addCampaign} addActivityEvent={addActivityEvent}
-          />
-        )}
-
-        {/* ─── Histórico ─── */}
-        {tab === "historico" && !activeCampaign && (
-          <View style={gen.list}>
-            {campaigns.length === 0 ? (
-              <View style={gen.emptyState}>
-                <Feather name="inbox" size={40} color={colors.mutedForeground} />
-                <Text style={[gen.emptyText, { color: colors.mutedForeground }]}>
-                  Nenhuma campanha gerada ainda.{"\n"}Use as abas Gerar, Posts ou Tráfego para criar conteúdo.
-                </Text>
-              </View>
-            ) : (
-              campaigns.map((camp) => {
-                const allTypes = [...GERAR_TYPES, ...POSTS_TYPES, ...TRAFEGO_TYPES];
-                const ct = allTypes.find((c) => c.id === camp.type_id);
-                return (
-                  <TouchableOpacity
-                    key={camp.id}
-                    style={[gen.campCard, { backgroundColor: colors.card, borderColor: colors.border }]}
-                    onPress={() => setActiveCampaign(camp)}
-                    activeOpacity={0.8}
-                  >
-                    <View style={[gen.campIcon, { backgroundColor: (ct?.color ?? "#FF0080") + "22" }]}>
-                      <Feather name={(ct?.icon ?? "zap") as any} size={18} color={ct?.color ?? "#FF0080"} />
-                    </View>
-                    <View style={{ flex: 1 }}>
-                      <Text style={[gen.campTitle, { color: colors.text }]}>{camp.type_title}</Text>
-                      <Text style={[gen.campChannel, { color: colors.primary }]}>{camp.channel}</Text>
-                      <Text style={[gen.campPreview, { color: colors.mutedForeground }]} numberOfLines={1}>
-                        {camp.generated_content}
-                      </Text>
-                      <Text style={[gen.campDate, { color: colors.mutedForeground }]}>
-                        {formatDate(camp.created_at)}
-                      </Text>
-                    </View>
-                    <Feather name="chevron-right" size={16} color={colors.mutedForeground} />
-                  </TouchableOpacity>
-                );
-              })
-            )}
-          </View>
-        )}
-
-        {/* ─── Campaign Detail ─── */}
-        {activeCampaign && (
-          <View style={gen.formSection}>
-            <TouchableOpacity onPress={() => setActiveCampaign(null)} style={gen.backLink} activeOpacity={0.7}>
-              <Feather name="arrow-left" size={14} color={colors.primary} />
-              <Text style={[gen.backLinkText, { color: colors.primary }]}>Voltar ao histórico</Text>
-            </TouchableOpacity>
-            <View style={[gen.campDetailHeader, { backgroundColor: colors.card, borderColor: colors.border }]}>
-              <Text style={[gen.campTitle, { color: colors.text, fontSize: 16 }]}>{activeCampaign.type_title}</Text>
-              <Text style={[gen.campChannel, { color: colors.primary }]}>{activeCampaign.channel}</Text>
-              <Text style={[gen.campDate, { color: colors.mutedForeground }]}>{formatDate(activeCampaign.created_at)}</Text>
-            </View>
-            <View style={[gen.resultBox, { backgroundColor: colors.card, borderColor: colors.border }]}>
-              <View style={gen.resultHeader}>
-                <View style={gen.resultBadge}>
-                  <View style={[gen.greenDot, { backgroundColor: colors.success }]} />
-                  <Text style={[gen.resultLabel, { color: colors.success }]}>Conteúdo salvo</Text>
-                </View>
-                <TouchableOpacity onPress={() => copy(activeCampaign.generated_content)} activeOpacity={0.8} style={gen.copyBtn}>
-                  <Feather name={copied ? "check" : "copy"} size={16} color={copied ? colors.success : colors.mutedForeground} />
-                  <Text style={[gen.copyText, { color: copied ? colors.success : colors.mutedForeground }]}>
-                    {copied ? "Copiado!" : "Copiar"}
-                  </Text>
-                </TouchableOpacity>
-              </View>
-              <Text style={[gen.resultText, { color: colors.text }]}>{activeCampaign.generated_content}</Text>
-            </View>
-          </View>
-        )}
-
-        <View style={{ height: 40 }} />
       </ScrollView>
     </View>
   );
 }
 
-// ─── StyleSheets ──────────────────────────────────────────────────────────────
-const sty = StyleSheet.create({
+// ─── Styles ────────────────────────────────────────────────────────────────────
+const R = StyleSheet.create({
   container: { flex: 1 },
-  header: {
-    flexDirection: "row", alignItems: "center", gap: 14,
-    paddingHorizontal: 20, paddingBottom: 14,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-  },
-  backBtn: { width: 40, height: 40, borderRadius: 20, alignItems: "center", justifyContent: "center" },
-  headerTitle: { fontSize: 18, fontFamily: "SpaceGrotesk_700Bold" },
-  headerSub: { fontSize: 12, fontFamily: "SpaceGrotesk_400Regular", marginTop: 2 },
-  tabsScroll: { borderBottomWidth: StyleSheet.hairlineWidth },
-  tabsRow: { paddingHorizontal: 8, flexDirection: "row" },
-  tab: { flexDirection: "row", alignItems: "center", paddingHorizontal: 14, paddingVertical: 12, gap: 6, position: "relative" },
+  header: { flexDirection: "row", alignItems: "center", paddingHorizontal: 16, paddingBottom: 14, gap: 12, borderBottomWidth: StyleSheet.hairlineWidth },
+  backBtn: { width: 36, height: 36, borderRadius: 18, alignItems: "center", justifyContent: "center", backgroundColor: "#1A1A2E" },
+  titleRow: { flexDirection: "row", alignItems: "center", gap: 8, flexWrap: "wrap" },
+  title: { fontSize: 18, fontFamily: "SpaceGrotesk_700Bold", color: "#fff" },
+  badge: { flexDirection: "row", alignItems: "center", gap: 4, backgroundColor: PINK + "22", paddingHorizontal: 8, paddingVertical: 3, borderRadius: 8 },
+  badgeText: { fontSize: 11, fontFamily: "SpaceGrotesk_600SemiBold", color: PINK },
+  autoToggleRow: { flexDirection: "row", alignItems: "center", gap: 6 },
+  autoLabel: { fontSize: 12, fontFamily: "SpaceGrotesk_600SemiBold" },
+  tabBar: { flexDirection: "row", borderBottomWidth: StyleSheet.hairlineWidth },
+  tab: { flex: 1, alignItems: "center", paddingVertical: 14, position: "relative" },
   tabActive: {},
-  tabText: { fontSize: 13 },
-  tabUnderline: { position: "absolute", bottom: 0, left: 8, right: 8, height: 2, borderRadius: 1 },
-  trafegoHeader: {
-    flexDirection: "row", alignItems: "center", gap: 12,
-    padding: 16, margin: 20, borderRadius: 14, borderWidth: 1, borderColor: "#FF008030",
+  tabText: { fontSize: 13, fontFamily: "SpaceGrotesk_600SemiBold" },
+  tabIndicator: { position: "absolute", bottom: 0, left: "15%", right: "15%", height: 2, backgroundColor: PINK, borderRadius: 1 },
+});
+
+const T = StyleSheet.create({
+  filterRow: { paddingHorizontal: 16, gap: 8, marginBottom: 16, flexDirection: "row" },
+  filterPill: { paddingHorizontal: 14, paddingVertical: 7, borderRadius: 20, borderWidth: 1, borderColor: "#2A2A3E" },
+  filterText: { fontSize: 13, fontFamily: "SpaceGrotesk_500Medium" },
+
+  pill: { alignSelf: "flex-start", paddingHorizontal: 8, paddingVertical: 3, borderRadius: 8 },
+  pillText: { fontSize: 11, fontFamily: "SpaceGrotesk_700Bold" },
+
+  campCard: { borderRadius: 16, borderWidth: 1, padding: 16, gap: 12 },
+  campCardHead: { flexDirection: "row", alignItems: "flex-start", gap: 10 },
+  campName: { fontSize: 15, fontFamily: "SpaceGrotesk_700Bold" },
+  platformBadge: { alignSelf: "flex-start", paddingHorizontal: 7, paddingVertical: 2, borderRadius: 6 },
+  platformText: { fontSize: 11, fontFamily: "SpaceGrotesk_600SemiBold" },
+  tipoText: { fontSize: 12, fontFamily: "SpaceGrotesk_400Regular" },
+  statsGrid: { flexDirection: "row", gap: 8 },
+  statItem: { flex: 1, alignItems: "center", gap: 2 },
+  statLabel: { fontSize: 10, fontFamily: "SpaceGrotesk_400Regular" },
+  statVal: { fontSize: 15, fontFamily: "SpaceGrotesk_700Bold" },
+  budgetRow: { gap: 6 },
+  budgetBar: { height: 6, borderRadius: 3, overflow: "hidden" },
+  budgetFill: { height: "100%", borderRadius: 3 },
+  budgetLabel: { fontSize: 11, fontFamily: "SpaceGrotesk_400Regular", textAlign: "right" },
+  revisaoNote: { flexDirection: "row", alignItems: "center", gap: 6, padding: 8, borderRadius: 8 },
+  revisaoText: { fontSize: 12, fontFamily: "SpaceGrotesk_500Medium" },
+
+  fab: {
+    flexDirection: "row", alignItems: "center", gap: 8,
+    backgroundColor: PINK, borderRadius: 28,
+    paddingVertical: 14, paddingHorizontal: 24,
+    alignSelf: "center", marginTop: 20, marginBottom: 12,
+    shadowColor: PINK, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.4, shadowRadius: 12, elevation: 8,
   },
-  trafegoTitle: { fontSize: 16, fontFamily: "SpaceGrotesk_700Bold" },
-  trafegoSub: { fontSize: 12, fontFamily: "SpaceGrotesk_400Regular" },
-  libContainer: { padding: 16, gap: 10 },
-  libHeader: {
-    flexDirection: "row", alignItems: "center", gap: 12,
-    padding: 14, borderRadius: 14, borderWidth: 1, marginBottom: 4,
+  fabText: { color: "#fff", fontSize: 15, fontFamily: "SpaceGrotesk_700Bold" },
+
+  overlay: { flex: 1, backgroundColor: "rgba(0,0,0,0.75)", justifyContent: "flex-end" },
+  sheet: { borderTopLeftRadius: 28, borderTopRightRadius: 28, padding: 24, gap: 12, paddingBottom: 40 },
+  sheetHandle: { width: 40, height: 4, borderRadius: 2, backgroundColor: "#3A3A4E", alignSelf: "center", marginBottom: 8 },
+  sheetTitle: { fontSize: 20, fontFamily: "SpaceGrotesk_700Bold" },
+  sheetSub: { fontSize: 13, fontFamily: "SpaceGrotesk_400Regular" },
+  objCard: { flexDirection: "row", alignItems: "center", gap: 14, padding: 16, borderRadius: 14 },
+  objEmoji: { fontSize: 26 },
+  objTitle: { fontSize: 15, fontFamily: "SpaceGrotesk_700Bold" },
+  objSub: { fontSize: 12, fontFamily: "SpaceGrotesk_400Regular", marginTop: 2 },
+  sheetBtn: {
+    flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8,
+    backgroundColor: PINK, borderRadius: 14, height: 52, marginTop: 8,
   },
-  libTitle: { fontSize: 15, fontFamily: "SpaceGrotesk_700Bold" },
-  libSub: { fontSize: 12, fontFamily: "SpaceGrotesk_400Regular" },
-});
+  sheetBtnText: { color: "#fff", fontSize: 16, fontFamily: "SpaceGrotesk_700Bold" },
 
-const gen = StyleSheet.create({
-  formSection: { padding: 20, gap: 16 },
-  backLink: { flexDirection: "row", alignItems: "center", gap: 6 },
-  backLinkText: { fontSize: 14, fontFamily: "SpaceGrotesk_500Medium" },
-  list: { padding: 16, gap: 10 },
-  card: { flexDirection: "row", alignItems: "center", gap: 14, padding: 16, borderRadius: 14, borderWidth: 1 },
-  cardIcon: { width: 46, height: 46, borderRadius: 12, alignItems: "center", justifyContent: "center" },
-  cardTitle: { fontSize: 15, fontFamily: "SpaceGrotesk_600SemiBold" },
-  cardDesc: { fontSize: 12, fontFamily: "SpaceGrotesk_400Regular", marginTop: 2 },
-  selectedBadge: { flexDirection: "row", alignItems: "center", gap: 8, alignSelf: "flex-start", paddingHorizontal: 12, paddingVertical: 6, borderRadius: 20, borderWidth: 1 },
-  selectedBadgeText: { fontSize: 13, fontFamily: "SpaceGrotesk_600SemiBold" },
-  textareaWrap: { borderRadius: 12, borderWidth: 1, padding: 14, minHeight: 100 },
-  textarea: { fontSize: 15, fontFamily: "SpaceGrotesk_400Regular", lineHeight: 22 },
-  generateBtn: { backgroundColor: "#FF0080", flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 10, height: 52, borderRadius: 14, shadowColor: "#FF0080", shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 10, elevation: 6 },
-  generateBtnText: { fontSize: 16, fontFamily: "SpaceGrotesk_700Bold", color: "#fff" },
-  loadingBox: { flexDirection: "row", alignItems: "center", gap: 12, padding: 16, borderRadius: 12, borderWidth: 1 },
-  loadingText: { fontSize: 14, fontFamily: "SpaceGrotesk_400Regular" },
-  resultBox: { borderRadius: 14, borderWidth: 1, padding: 16, gap: 14 },
-  resultHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
-  resultBadge: { flexDirection: "row", alignItems: "center", gap: 6 },
-  greenDot: { width: 7, height: 7, borderRadius: 4 },
-  resultLabel: { fontSize: 12, fontFamily: "SpaceGrotesk_600SemiBold" },
-  copyBtn: { flexDirection: "row", alignItems: "center", gap: 6, padding: 6 },
-  copyText: { fontSize: 13, fontFamily: "SpaceGrotesk_500Medium" },
-  resultText: { fontSize: 14, fontFamily: "SpaceGrotesk_400Regular", lineHeight: 22 },
-  regenBtn: { flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8, paddingVertical: 10, borderRadius: 10, borderWidth: 1 },
-  regenText: { fontSize: 13, fontFamily: "SpaceGrotesk_600SemiBold" },
-  emptyState: { padding: 40, alignItems: "center", gap: 12 },
-  emptyText: { fontSize: 14, fontFamily: "SpaceGrotesk_400Regular", textAlign: "center", lineHeight: 22 },
-  campCard: { flexDirection: "row", alignItems: "center", gap: 14, padding: 16, borderRadius: 14, borderWidth: 1 },
-  campIcon: { width: 40, height: 40, borderRadius: 10, alignItems: "center", justifyContent: "center" },
-  campTitle: { fontSize: 14, fontFamily: "SpaceGrotesk_600SemiBold" },
-  campChannel: { fontSize: 12, fontFamily: "SpaceGrotesk_500Medium", marginTop: 2 },
-  campPreview: { fontSize: 12, fontFamily: "SpaceGrotesk_400Regular", marginTop: 3 },
-  campDate: { fontSize: 11, fontFamily: "SpaceGrotesk_400Regular", marginTop: 3 },
-  campDetailHeader: { padding: 16, borderRadius: 14, borderWidth: 1, gap: 4 },
-});
+  sectionLabel: { fontSize: 15, fontFamily: "SpaceGrotesk_700Bold", marginBottom: 10 },
+  topGrid: { flexDirection: "row", gap: 10 },
+  topCard: { flex: 1, borderRadius: 14, borderWidth: 1, padding: 12, gap: 6, alignItems: "flex-start" },
+  topIcon: { width: 36, height: 36, borderRadius: 10, alignItems: "center", justifyContent: "center", marginBottom: 2 },
+  topName: { fontSize: 13, fontFamily: "SpaceGrotesk_600SemiBold" },
+  topImpr: { fontSize: 11, fontFamily: "SpaceGrotesk_400Regular" },
 
-const mp = StyleSheet.create({
-  container: { padding: 16, gap: 14 },
-  header: { flexDirection: "row", alignItems: "center", gap: 12, padding: 16, borderRadius: 14, borderWidth: 1 },
-  headerTitle: { fontSize: 16, fontFamily: "SpaceGrotesk_700Bold" },
-  headerSub: { fontSize: 12, fontFamily: "SpaceGrotesk_400Regular", marginTop: 2 },
-  field: { gap: 8 },
-  label: { fontSize: 11, fontFamily: "SpaceGrotesk_700Bold", letterSpacing: 1 },
-  inputWrap: { flexDirection: "row", alignItems: "center", borderRadius: 12, borderWidth: 1, paddingHorizontal: 14, height: 50 },
-  currency: { fontSize: 15, fontFamily: "SpaceGrotesk_500Medium", marginRight: 6 },
-  input: { flex: 1, fontSize: 15, fontFamily: "SpaceGrotesk_400Regular" },
-  objetivosGrid: { flexDirection: "row", flexWrap: "wrap", gap: 10 },
-  objCard: { width: "47%", flexGrow: 1, borderRadius: 14, padding: 14, gap: 6, alignItems: "flex-start" },
-  objEmoji: { fontSize: 22 },
-  objLabel: { fontSize: 13, fontFamily: "SpaceGrotesk_600SemiBold" },
-  periodoRow: { flexDirection: "row", gap: 10 },
-  periodoBtn: { flex: 1, paddingVertical: 12, borderRadius: 12, borderWidth: 1, alignItems: "center", justifyContent: "center" },
-  periodoBtnText: { fontSize: 14, fontFamily: "SpaceGrotesk_600SemiBold" },
-  gerarBtn: { backgroundColor: "#FF0080", flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 10, height: 54, borderRadius: 14, shadowColor: "#FF0080", shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.35, shadowRadius: 14, elevation: 8 },
-  gerarBtnText: { fontSize: 16, fontFamily: "SpaceGrotesk_700Bold", color: "#fff" },
-  resultBox: { borderRadius: 14, borderWidth: 1, padding: 16, gap: 14 },
-  resultHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
-  dot: { width: 7, height: 7, borderRadius: 4 },
-  resultLabel: { fontSize: 12, fontFamily: "SpaceGrotesk_600SemiBold" },
-  copyBtn: { flexDirection: "row", alignItems: "center", gap: 6, padding: 6 },
-  copyText: { fontSize: 13, fontFamily: "SpaceGrotesk_500Medium" },
-  resultText: { fontSize: 14, fontFamily: "SpaceGrotesk_400Regular", lineHeight: 22 },
-  regenBtn: { flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8, paddingVertical: 10, borderRadius: 10, borderWidth: 1 },
-  regenText: { fontSize: 13, fontFamily: "SpaceGrotesk_600SemiBold" },
-  pecasToggle: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingVertical: 14, paddingHorizontal: 4, borderTopWidth: StyleSheet.hairlineWidth, marginTop: 4 },
-  pecasLabel: { fontSize: 14, fontFamily: "SpaceGrotesk_500Medium" },
-});
+  jadeSuggestion: { flexDirection: "row", alignItems: "flex-start", gap: 10, padding: 14, borderRadius: 14, borderWidth: 1 },
+  jadeSuggText: { flex: 1, fontSize: 13, fontFamily: "SpaceGrotesk_400Regular", lineHeight: 19 },
 
-const lib = StyleSheet.create({
-  card: { borderRadius: 14, borderWidth: 1, padding: 14, gap: 0 },
-  cardHeader: { flexDirection: "row", gap: 12, alignItems: "flex-start" },
-  cardIcon: { width: 40, height: 40, borderRadius: 12, alignItems: "center", justifyContent: "center", marginTop: 2 },
-  nameRow: { flexDirection: "row", alignItems: "center", gap: 8, flexWrap: "wrap", marginBottom: 4 },
-  cardName: { fontSize: 15, fontFamily: "SpaceGrotesk_700Bold" },
-  tagBadge: { paddingHorizontal: 8, paddingVertical: 2, borderRadius: 8 },
-  tagText: { fontSize: 10, fontFamily: "SpaceGrotesk_700Bold" },
-  cardSummary: { fontSize: 13, fontFamily: "SpaceGrotesk_400Regular", lineHeight: 19, flex: 1 },
-  detail: { marginTop: 14, gap: 10 },
-  divider: { height: StyleSheet.hairlineWidth, marginBottom: 4 },
-  stepsTitle: { fontSize: 10, fontFamily: "SpaceGrotesk_700Bold", letterSpacing: 1 },
-  step: { flexDirection: "row", alignItems: "flex-start", gap: 10 },
-  stepDot: { width: 6, height: 6, borderRadius: 3, marginTop: 7 },
-  stepText: { flex: 1, fontSize: 13, fontFamily: "SpaceGrotesk_400Regular", lineHeight: 20 },
-  exampleBox: { borderRadius: 10, borderWidth: 1, padding: 12, gap: 6, marginTop: 4 },
-  exampleLabel: { fontSize: 10, fontFamily: "SpaceGrotesk_700Bold", letterSpacing: 1 },
-  exampleText: { fontSize: 13, fontFamily: "SpaceGrotesk_400Regular", lineHeight: 20, fontStyle: "italic" },
+  criatGrid: { flexDirection: "row", flexWrap: "wrap", gap: 10 },
+  novoCriatCard: {
+    width: "47%", aspectRatio: 0.9, borderRadius: 14, borderWidth: 2, borderStyle: "dashed",
+    alignItems: "center", justifyContent: "center", gap: 8,
+  },
+  novoCriatText: { fontSize: 13, fontFamily: "SpaceGrotesk_600SemiBold" },
+  criatCard: { width: "47%", borderRadius: 14, borderWidth: 1, padding: 12, gap: 6 },
+  criatIcon: { width: 36, height: 36, borderRadius: 10, alignItems: "center", justifyContent: "center" },
+  criatName: { fontSize: 13, fontFamily: "SpaceGrotesk_600SemiBold" },
+  criatCamp: { fontSize: 11, fontFamily: "SpaceGrotesk_400Regular" },
+
+  heroCard: { borderRadius: 20, padding: 20, gap: 12 },
+  heroBadge: { flexDirection: "row", alignItems: "center", gap: 6, alignSelf: "flex-start", paddingHorizontal: 10, paddingVertical: 4, borderRadius: 10 },
+  heroBadgeText: { fontSize: 12, fontFamily: "SpaceGrotesk_600SemiBold" },
+  heroText: { fontSize: 14, fontFamily: "SpaceGrotesk_400Regular", lineHeight: 21 },
+
+  metricsGrid: { flexDirection: "row", flexWrap: "wrap", gap: 10 },
+  metCard: { width: "30.5%", borderRadius: 12, borderWidth: 1, padding: 12, gap: 4, alignItems: "flex-start", flexGrow: 1 },
+  metValue: { fontSize: 18, fontFamily: "SpaceGrotesk_700Bold" },
+  metLabel: { fontSize: 10, fontFamily: "SpaceGrotesk_400Regular" },
+  metChange: { flexDirection: "row", alignItems: "center", gap: 3, paddingHorizontal: 6, paddingVertical: 2, borderRadius: 6, marginTop: 2 },
+  metChangeText: { fontSize: 10, fontFamily: "SpaceGrotesk_600SemiBold" },
+
+  chartCard: { borderRadius: 16, borderWidth: 1, padding: 16 },
+  chartTitle: { fontSize: 14, fontFamily: "SpaceGrotesk_600SemiBold", marginBottom: 12 },
+  chartBars: { flexDirection: "row", gap: 6, height: 120, alignItems: "flex-end" },
+  barCol: { flex: 1, alignItems: "center", gap: 4, height: "100%" },
+  barValue: { fontSize: 11, fontFamily: "SpaceGrotesk_600SemiBold" },
+  barTrack: { flex: 1, width: "100%", justifyContent: "flex-end" },
+  barFill: { width: "100%", borderRadius: 4, minHeight: 4 },
+  barDay: { fontSize: 10, fontFamily: "SpaceGrotesk_400Regular" },
+
+  rankCard: { borderRadius: 16, borderWidth: 1, padding: 16, gap: 12 },
+  rankTitle: { fontSize: 14, fontFamily: "SpaceGrotesk_600SemiBold" },
+  rankRow: { flexDirection: "row", alignItems: "center", gap: 10 },
+  rankNum: { width: 28, height: 28, borderRadius: 8, alignItems: "center", justifyContent: "center" },
+  rankNumText: { fontSize: 12, fontFamily: "SpaceGrotesk_700Bold" },
+  rankDot: { width: 8, height: 8, borderRadius: 4 },
+  rankName: { flex: 1, fontSize: 13, fontFamily: "SpaceGrotesk_500Medium" },
+  rankResult: { fontSize: 12, fontFamily: "SpaceGrotesk_700Bold" },
+
+  exportBtn: {
+    flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8,
+    backgroundColor: PURPLE, borderRadius: 14, height: 52,
+  },
+  exportBtnText: { color: "#fff", fontSize: 15, fontFamily: "SpaceGrotesk_700Bold" },
+
+  autoSection: { borderRadius: 16, borderWidth: 1, padding: 16, gap: 12 },
+  autoSectionTitle: { fontSize: 15, fontFamily: "SpaceGrotesk_700Bold" },
+  levelRow: { flexDirection: "row", gap: 8 },
+  levelPill: { flex: 1, borderRadius: 12, padding: 12, alignItems: "center", gap: 4 },
+  levelLabel: { fontSize: 12, fontFamily: "SpaceGrotesk_700Bold", textAlign: "center" },
+  levelDesc: { fontSize: 10, fontFamily: "SpaceGrotesk_400Regular", textAlign: "center" },
+  feedRow: { flexDirection: "row", gap: 10, alignItems: "flex-start" },
+  feedDot: { width: 8, height: 8, borderRadius: 4, marginTop: 5 },
+  feedText: { flex: 1, fontSize: 13, fontFamily: "SpaceGrotesk_400Regular", lineHeight: 19 },
+  limitRow: { flexDirection: "row", alignItems: "center", gap: 10, paddingVertical: 10, borderBottomWidth: StyleSheet.hairlineWidth },
+  limitLabel: { flex: 1, fontSize: 14, fontFamily: "SpaceGrotesk_400Regular" },
+  limitValue: { fontSize: 14, fontFamily: "SpaceGrotesk_700Bold" },
+  toggleRow: { flexDirection: "row", alignItems: "center", gap: 12 },
+  toggleLabel: { fontSize: 14, fontFamily: "SpaceGrotesk_500Medium" },
+  toggleSub: { fontSize: 11, fontFamily: "SpaceGrotesk_400Regular", marginTop: 1 },
 });
