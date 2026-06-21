@@ -40,7 +40,14 @@ export default function MaisScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { logout } = useAuth();
-  const [upgradeModal, setUpgradeModal] = React.useState(false);
+  const [upgradeModal,  setUpgradeModal]  = React.useState(false);
+  const [gateVisible,   setGateVisible]   = React.useState(false);
+  const [gatePlan,      setGatePlan]      = React.useState<"PRO" | "Enterprise">("PRO");
+  const [gateFeature,   setGateFeature]   = React.useState("");
+
+  const openGate = (plan: "PRO" | "Enterprise", feature: string) => {
+    tap(); setGatePlan(plan); setGateFeature(feature); setGateVisible(true);
+  };
 
   const topPad    = Platform.OS === "web" ? 67 : insets.top;
   const bottomPad = Platform.OS === "web" ? 84 : insets.bottom + 60;
@@ -69,22 +76,21 @@ export default function MaisScreen() {
   const USER_PLAN = "pro" as "free" | "pro" | "enterprise";
   const isEnterprise = USER_PLAN === "enterprise";
 
-  const navPro = (path: string) => {
+  const navPro = (path: string, label: string) => {
     tap();
-    if (USER_PLAN === "free") { router.push("/plano" as any); return; }
+    if (USER_PLAN === "free") { openGate("PRO", label); return; }
     router.push(path as any);
   };
 
-  const navEnterprise = (path: string) => {
+  const navEnterprise = (path: string, label: string) => {
     tap();
-    if (!isEnterprise) { router.push("/plano" as any); return; }
+    if (!isEnterprise) { openGate("Enterprise", label); return; }
     router.push(path as any);
   };
 
   const handleGestaoPress = () => {
-    tap();
-    if (!isEnterprise) { router.push("/plano" as any); return; }
-    router.push("/gestao" as any);
+    if (!isEnterprise) { openGate("Enterprise", "Gestão Comercial"); return; }
+    tap(); router.push("/gestao" as any);
   };
 
   const MENU_SECTIONS: { title: string; items: MenuItem[] }[] = [
@@ -93,7 +99,7 @@ export default function MaisScreen() {
       items: [
         { icon: "file-text", iconLib: "feather", label: "Roteiro de Vendas", sub: "Script do contato ao fechamento", onPress: () => { tap(); router.push("/roteiro" as any); } },
         { icon: "clipboard", iconLib: "feather", label: "Briefing Pré-Reunião", sub: "Chegue preparado para qualquer reunião", onPress: () => { tap(); router.push("/briefing" as any); } },
-        { icon: "shield", iconLib: "feather", label: "Ajuda com Objeções", sub: "Estratégias prontas para qualquer objeção", badge: "PRO", onPress: () => navPro("/objecoes") },
+        { icon: "shield", iconLib: "feather", label: "Ajuda com Objeções", sub: "Estratégias prontas para qualquer objeção", badge: "PRO", onPress: () => navPro("/objecoes", "Ajuda com Objeções") },
         { icon: "search", iconLib: "feather", label: "Scanner Radar", sub: "Buscar novos estabelecimentos", onPress: () => { tap(); router.push("/scanner" as any); } },
       ],
     },
@@ -101,8 +107,8 @@ export default function MaisScreen() {
       title: "📋 Planejamento",
       items: [
         { icon: "award", iconLib: "feather", label: "Laudo Executivo", sub: "Diagnóstico de marketing do cliente", onPress: () => { tap(); router.push("/laudo" as any); } },
-        { icon: "navigation", iconLib: "feather", label: "Criar Rota", sub: "Planejamento inteligente de visitas", badge: "PRO", onPress: () => navPro("/criarrota") },
-        { icon: "calendar", iconLib: "feather", label: "Planejamento do Dia", sub: "Organize e confirme sua agenda diária", badge: "PRO", onPress: () => navPro("/planejamento") },
+        { icon: "navigation", iconLib: "feather", label: "Criar Rota", sub: "Planejamento inteligente de visitas", badge: "PRO", onPress: () => navPro("/criarrota", "Criar Rota") },
+        { icon: "calendar", iconLib: "feather", label: "Planejamento do Dia", sub: "Organize e confirme sua agenda diária", badge: "PRO", onPress: () => navPro("/planejamento", "Planejamento do Dia") },
       ],
     },
     {
@@ -115,14 +121,14 @@ export default function MaisScreen() {
     {
       title: "📊 Performance",
       items: [
-        { icon: "bar-chart-2", iconLib: "feather", label: "Relatórios", sub: "Métricas diárias e semanais", badge: "PRO", onPress: () => navPro("/relatorios") },
-        { icon: "award", iconLib: "feather", label: "Feedback JADE", sub: "Avalie sua performance de vendas", badge: "PRO", onPress: () => navPro("/feedbackexecutivo") },
+        { icon: "bar-chart-2", iconLib: "feather", label: "Relatórios", sub: "Métricas diárias e semanais", badge: "PRO", onPress: () => navPro("/relatorios", "Relatórios") },
+        { icon: "award", iconLib: "feather", label: "Feedback JADE", sub: "Avalie sua performance de vendas", badge: "PRO", onPress: () => navPro("/feedbackexecutivo", "Feedback JADE") },
       ],
     },
     {
       title: "🎓 Treinamento",
       items: [
-        { icon: "users", iconLib: "feather", label: "Roleplay de Vendas", sub: "Treine com a JADE como cliente", badge: "Enterprise", badgeColor: ENTERPRISE_PURPLE, onPress: () => navEnterprise("/roleplay") },
+        { icon: "users", iconLib: "feather", label: "Roleplay de Vendas", sub: "Treine com a JADE como cliente", badge: "Enterprise", badgeColor: ENTERPRISE_PURPLE, onPress: () => navEnterprise("/roleplay", "Roleplay de Vendas") },
         { icon: "book-open", iconLib: "feather", label: "Biblioteca de Técnicas", sub: "SPIN, AIDA, Gatilhos e mais", onPress: () => { tap(); router.push("/biblioteca" as any); } },
       ],
     },
@@ -262,7 +268,38 @@ export default function MaisScreen() {
 
       <Text style={[styles.version, { color: colors.mutedForeground }]}>JADE IA v1.0.0</Text>
 
-      {/* ── Upgrade modal ── */}
+      {/* ── Plan Gate Modal (PRO / Enterprise) ── */}
+      <Modal visible={gateVisible} transparent animationType="fade" onRequestClose={() => setGateVisible(false)}>
+        <TouchableOpacity style={styles.modalOverlay} activeOpacity={1} onPress={() => setGateVisible(false)}>
+          <View style={[styles.modalBox, { backgroundColor: colors.card }]} onStartShouldSetResponder={() => true}>
+            <View style={[styles.modalIcon, { backgroundColor: (gatePlan === "Enterprise" ? "#FFB800" : ENTERPRISE_PURPLE) + "22" }]}>
+              <Feather name="lock" size={32} color={gatePlan === "Enterprise" ? "#FFB800" : ENTERPRISE_PURPLE} />
+            </View>
+            <Text style={[styles.modalTitle, { color: colors.text }]}>
+              Função exclusiva do plano {gatePlan}
+            </Text>
+            <Text style={[styles.modalSub, { color: colors.mutedForeground }]}>
+              <Text style={{ color: gatePlan === "Enterprise" ? "#FFB800" : ENTERPRISE_PURPLE, fontFamily: "SpaceGrotesk_600SemiBold" }}>
+                {gateFeature}
+              </Text>
+              {" "}está disponível para assinantes {gatePlan}.{"\n"}Desbloqueie e venda mais.
+            </Text>
+            <TouchableOpacity
+              style={[styles.upgradeBtn, { backgroundColor: gatePlan === "Enterprise" ? "#FFB800" : ENTERPRISE_PURPLE }]}
+              onPress={() => { setGateVisible(false); router.push("/plano" as any); }}
+              activeOpacity={0.85}
+            >
+              <Feather name="zap" size={15} color="#fff" />
+              <Text style={styles.upgradeBtnText}>Atualizar agora</Text>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => setGateVisible(false)} activeOpacity={0.7}>
+              <Text style={[styles.cancelText, { color: colors.mutedForeground }]}>Agora não</Text>
+            </TouchableOpacity>
+          </View>
+        </TouchableOpacity>
+      </Modal>
+
+      {/* ── Enterprise Feature modal ── */}
       <Modal visible={upgradeModal} transparent animationType="fade" onRequestClose={() => setUpgradeModal(false)}>
         <TouchableOpacity style={styles.modalOverlay} activeOpacity={1} onPress={() => setUpgradeModal(false)}>
           <View style={[styles.modalBox, { backgroundColor: colors.card }]}>

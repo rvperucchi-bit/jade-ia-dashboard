@@ -450,6 +450,26 @@
   ],
   "activity_events": [
     {
+      "id": "b47d0cb02f305214",
+      "type": "message",
+      "text": "JADE respondeu a uma mensagem",
+      "icon": "robot",
+      "color": "#FF0080",
+      "metadata": {},
+      "created_at": "2026-06-21T01:27:55.906Z"
+    },
+    {
+      "id": "988fd0cc534c49ec",
+      "type": "message",
+      "text": "JADE respondeu a uma mensagem",
+      "icon": "robot",
+      "color": "#FF0080",
+      "metadata": {
+        "session_id": "68a5da972b09a04b"
+      },
+      "created_at": "2026-06-21T01:27:19.666Z"
+    },
+    {
       "id": "626d49f7800aceca",
       "type": "message",
       "text": "JADE respondeu a uma mensagem",
@@ -2074,6 +2094,24 @@
     }
   ],
   "jade_sessions": [
+    {
+      "id": "68a5da972b09a04b",
+      "title": "O usuário enviou uma mensagem de voz com…",
+      "messages": [
+        {
+          "role": "user",
+          "content": "O usuário enviou uma mensagem de voz com duração de 2 segundos. Responda como se você tivesse entendido a mensagem de voz — pergunte sobre o que posso ajudar hoje em relação às vendas ou ao negócio dele.",
+          "time": "2026-06-21T01:27:19.663Z"
+        },
+        {
+          "role": "model",
+          "content": "Olá! 👋 Tudo bem?\n\nSou a JADE, sua parceira de trabalho na Pereira Imóvel. Como posso te ajudar hoje com suas vendas ou com seu negócio?",
+          "time": "2026-06-21T01:27:19.664Z"
+        }
+      ],
+      "created_at": "2026-06-21T01:27:17.587Z",
+      "updated_at": "2026-06-21T01:27:19.664Z"
+    },
     {
       "id": "16ffc9c6090d363d",
       "title": "O usuário enviou uma mensagem de voz com…",

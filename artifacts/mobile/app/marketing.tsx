@@ -2,12 +2,14 @@ import React, { useRef, useState } from "react";
 import {
   Animated,
   Easing,
+  Linking,
   Modal,
   Platform,
   ScrollView,
   StyleSheet,
   Switch,
   Text,
+  TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
@@ -23,7 +25,7 @@ const GREEN  = "#00D68F";
 const YELLOW = "#FFB300";
 const BG     = "#0B0814";
 
-type TabId = "campanhas" | "criativos" | "relatorios";
+type TabId = "campanhas" | "criativos" | "agenda" | "relatorios";
 type AutoLevel = "assistido" | "semi" | "automatico";
 type FiltCamp = "todas" | "ativas" | "pausadas" | "revisao";
 type FiltCriat = "todos" | "video" | "imagem" | "carrossel";
@@ -525,6 +527,258 @@ function ModoAutomaticoView({ colors }: { colors: any }) {
   );
 }
 
+// ─── Agenda Tab ────────────────────────────────────────────────────────────────
+type Platform_ = "Instagram" | "Facebook" | "LinkedIn";
+
+interface ScheduledPost {
+  id: string;
+  platform: Platform_;
+  content: string;
+  dateLabel: string;
+  dateIso: string;
+  generated: boolean;
+}
+
+const PLAT_META: Record<Platform_, { color: string; icon: string; deeplink: string }> = {
+  Instagram: { color: "#E1306C", icon: "instagram",  deeplink: "instagram://camera"       },
+  Facebook:  { color: "#1877F2", icon: "facebook",   deeplink: "fb://composer/"            },
+  LinkedIn:  { color: "#0A66C2", icon: "linkedin",   deeplink: "linkedin://messaging/new"  },
+};
+
+const SEED_POSTS: ScheduledPost[] = [
+  {
+    id: "p1", platform: "Instagram",
+    content: "🚀 Promoção especial de julho! Aproveite 20% de desconto em todos os produtos até sexta-feira. Não perca essa chance — quantidade limitada! #delivery #promoção",
+    dateLabel: "Sex 25/07 às 12:00", dateIso: "2025-07-25T12:00:00", generated: true,
+  },
+  {
+    id: "p2", platform: "Facebook",
+    content: "Você sabia que 87% dos clientes pesquisam online antes de comprar? Esteja presente onde seus clientes estão. Fale conosco e comece hoje!",
+    dateLabel: "Sáb 26/07 às 10:00", dateIso: "2025-07-26T10:00:00", generated: false,
+  },
+];
+
+const API_BASE_MKT = Platform.OS === "web" ? "" : `https://${process.env.EXPO_PUBLIC_DOMAIN ?? ""}`;
+
+function AgendaTab({ colors }: { colors: any }) {
+  const [posts,      setPosts]      = useState<ScheduledPost[]>(SEED_POSTS);
+  const [platform,   setPlatform]   = useState<Platform_>("Instagram");
+  const [content,    setContent]    = useState("");
+  const [dateLabel,  setDateLabel]  = useState("");
+  const [generating, setGenerating] = useState(false);
+  const [saved,      setSaved]      = useState(false);
+
+  const generateContent = async () => {
+    setGenerating(true);
+    try {
+      const res = await fetch(`${API_BASE_MKT}/api/jade/chat`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          messages: [{
+            role: "user",
+            content: `Crie um post para ${platform} para um negócio brasileiro. Deve ser envolvente, com emojis relevantes, call-to-action e hashtags. Máximo 200 palavras. Retorne somente o texto do post, sem explicações.`,
+          }],
+        }),
+      });
+      const data = (await res.json()) as { message?: string; response?: string };
+      const text = data.message?.trim() || data.response?.trim() || "";
+      if (text) setContent(text);
+    } catch {
+      setContent("✨ Promoção especial! Aproveite nossa oferta exclusiva hoje. Quantidade limitada — entre em contato agora e garanta o seu! 🔥 #promoção #negócio");
+    } finally { setGenerating(false); }
+  };
+
+  const savePost = () => {
+    if (!content.trim() || !dateLabel.trim()) return;
+    const newPost: ScheduledPost = {
+      id: Date.now().toString(),
+      platform,
+      content: content.trim(),
+      dateLabel: dateLabel.trim(),
+      dateIso: new Date().toISOString(),
+      generated: generating,
+    };
+    setPosts((prev) => [newPost, ...prev]);
+    setContent(""); setDateLabel(""); setSaved(true);
+    setTimeout(() => setSaved(false), 2000);
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+  };
+
+  const openApp = (p: Platform_) => {
+    const deeplink = PLAT_META[p].deeplink;
+    Linking.openURL(deeplink).catch(() => {
+      const fallback = p === "Instagram" ? "https://instagram.com" : p === "Facebook" ? "https://facebook.com" : "https://linkedin.com";
+      Linking.openURL(fallback);
+    });
+  };
+
+  const PLATFORMS: Platform_[] = ["Instagram", "Facebook", "LinkedIn"];
+
+  return (
+    <View style={{ paddingHorizontal: 16, gap: 16 }}>
+      {/* ─ Create new post ─ */}
+      <View style={[AG.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
+        <Text style={[AG.cardTitle, { color: colors.text }]}>📅 Agendar novo post</Text>
+
+        {/* Platform picker */}
+        <View style={AG.platRow}>
+          {PLATFORMS.map((p) => {
+            const m = PLAT_META[p];
+            const sel = platform === p;
+            return (
+              <TouchableOpacity
+                key={p}
+                style={[AG.platPill, { backgroundColor: sel ? m.color + "22" : colors.surface, borderColor: sel ? m.color : colors.border, borderWidth: sel ? 1.5 : 1 }]}
+                onPress={() => { Haptics.selectionAsync(); setPlatform(p); }}
+                activeOpacity={0.8}
+              >
+                <Feather name={m.icon as any} size={14} color={sel ? m.color : colors.mutedForeground} />
+                <Text style={[AG.platLabel, { color: sel ? m.color : colors.mutedForeground }]}>{p}</Text>
+              </TouchableOpacity>
+            );
+          })}
+        </View>
+
+        {/* Content area */}
+        <TextInput
+          style={[AG.contentInput, { backgroundColor: colors.surface, borderColor: colors.border, color: colors.text }]}
+          placeholder="Conteúdo do post (ou clique em JADE para gerar)"
+          placeholderTextColor={colors.mutedForeground}
+          multiline
+          numberOfLines={5}
+          value={content}
+          onChangeText={setContent}
+          maxLength={600}
+        />
+
+        {/* JADE generate button */}
+        <TouchableOpacity
+          style={[AG.jadeGenBtn, { opacity: generating ? 0.7 : 1 }]}
+          onPress={generateContent}
+          disabled={generating}
+          activeOpacity={0.85}
+        >
+          <MaterialCommunityIcons name="robot" size={16} color="#fff" />
+          <Text style={AG.jadeGenText}>{generating ? "Gerando…" : "JADE gerar conteúdo"}</Text>
+        </TouchableOpacity>
+
+        {/* Date/time */}
+        <TextInput
+          style={[AG.dateInput, { backgroundColor: colors.surface, borderColor: colors.border, color: colors.text }]}
+          placeholder="Data e hora (ex: Sex 25/07 às 18:00)"
+          placeholderTextColor={colors.mutedForeground}
+          value={dateLabel}
+          onChangeText={setDateLabel}
+        />
+
+        {/* Info reminder */}
+        <View style={[AG.infoRow, { backgroundColor: YELLOW + "18", borderColor: YELLOW + "44" }]}>
+          <Feather name="info" size={13} color={YELLOW} />
+          <Text style={[AG.infoText, { color: "#CCAA44" }]}>
+            Você será notificado no horário para postar manualmente — ou toque em "Postar agora" para abrir o app.
+          </Text>
+        </View>
+
+        {/* Save */}
+        <TouchableOpacity
+          style={[AG.saveBtn, { backgroundColor: saved ? "#00D68F" : PINK, opacity: (!content.trim() || !dateLabel.trim()) ? 0.5 : 1 }]}
+          onPress={savePost}
+          disabled={!content.trim() || !dateLabel.trim()}
+          activeOpacity={0.85}
+        >
+          <Feather name={saved ? "check" : "calendar"} size={16} color="#fff" />
+          <Text style={AG.saveBtnText}>{saved ? "Agendado!" : "Agendar post"}</Text>
+        </TouchableOpacity>
+      </View>
+
+      {/* ─ Scheduled posts list ─ */}
+      <Text style={[AG.listTitle, { color: colors.text }]}>📋 Posts agendados ({posts.length})</Text>
+      {posts.map((post) => {
+        const m = PLAT_META[post.platform];
+        return (
+          <View key={post.id} style={[AG.postCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+            <View style={AG.postHeader}>
+              <View style={[AG.platTag, { backgroundColor: m.color + "22" }]}>
+                <Feather name={m.icon as any} size={12} color={m.color} />
+                <Text style={[AG.platTagText, { color: m.color }]}>{post.platform}</Text>
+              </View>
+              {post.generated && (
+                <View style={AG.aiTag}>
+                  <MaterialCommunityIcons name="robot" size={11} color={PURPLE} />
+                  <Text style={[AG.aiTagText, { color: PURPLE }]}>IA</Text>
+                </View>
+              )}
+              <View style={{ flex: 1 }} />
+              <View style={[AG.dateTag, { backgroundColor: colors.surface }]}>
+                <Feather name="clock" size={11} color={colors.mutedForeground} />
+                <Text style={[AG.dateTagText, { color: colors.mutedForeground }]}>{post.dateLabel}</Text>
+              </View>
+            </View>
+            <Text style={[AG.postContent, { color: colors.text }]} numberOfLines={3}>{post.content}</Text>
+            <View style={AG.postActions}>
+              <TouchableOpacity
+                style={[AG.actionBtn, { backgroundColor: m.color }]}
+                onPress={() => openApp(post.platform)}
+                activeOpacity={0.85}
+              >
+                <Feather name="external-link" size={13} color="#fff" />
+                <Text style={AG.actionBtnText}>Postar agora</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[AG.deleteBtn, { borderColor: colors.border }]}
+                onPress={() => { setPosts((prev) => prev.filter((p) => p.id !== post.id)); Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); }}
+                activeOpacity={0.7}
+              >
+                <Feather name="trash-2" size={13} color="#FF3B5C" />
+              </TouchableOpacity>
+            </View>
+          </View>
+        );
+      })}
+
+      {posts.length === 0 && (
+        <View style={{ alignItems: "center", paddingVertical: 30, gap: 8 }}>
+          <Feather name="calendar" size={26} color={colors.mutedForeground} />
+          <Text style={{ color: colors.mutedForeground, fontSize: 13, fontFamily: "SpaceGrotesk_400Regular" }}>Nenhum post agendado</Text>
+        </View>
+      )}
+
+      <View style={{ height: 40 }} />
+    </View>
+  );
+}
+
+const AG = StyleSheet.create({
+  card:         { borderRadius: 16, borderWidth: 1, padding: 16, gap: 12 },
+  cardTitle:    { fontSize: 15, fontFamily: "SpaceGrotesk_700Bold" },
+  platRow:      { flexDirection: "row", gap: 8 },
+  platPill:     { flexDirection: "row", alignItems: "center", gap: 5, paddingHorizontal: 10, paddingVertical: 7, borderRadius: 10 },
+  platLabel:    { fontSize: 12, fontFamily: "SpaceGrotesk_600SemiBold" },
+  contentInput: { borderRadius: 12, borderWidth: 1, padding: 12, fontSize: 13, fontFamily: "SpaceGrotesk_400Regular", minHeight: 110, textAlignVertical: "top" },
+  jadeGenBtn:   { flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 7, backgroundColor: PURPLE, borderRadius: 12, height: 42 },
+  jadeGenText:  { color: "#fff", fontSize: 13, fontFamily: "SpaceGrotesk_700Bold" },
+  dateInput:    { borderRadius: 12, borderWidth: 1, padding: 12, fontSize: 13, fontFamily: "SpaceGrotesk_400Regular", height: 44 },
+  infoRow:      { flexDirection: "row", alignItems: "flex-start", gap: 8, padding: 10, borderRadius: 10, borderWidth: 1 },
+  infoText:     { flex: 1, fontSize: 11, fontFamily: "SpaceGrotesk_400Regular", lineHeight: 16 },
+  saveBtn:      { flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8, borderRadius: 12, height: 46 },
+  saveBtnText:  { color: "#fff", fontSize: 14, fontFamily: "SpaceGrotesk_700Bold" },
+  listTitle:    { fontSize: 15, fontFamily: "SpaceGrotesk_700Bold" },
+  postCard:     { borderRadius: 14, borderWidth: 1, padding: 14, gap: 10 },
+  postHeader:   { flexDirection: "row", alignItems: "center", gap: 6, flexWrap: "wrap" },
+  platTag:      { flexDirection: "row", alignItems: "center", gap: 4, paddingHorizontal: 7, paddingVertical: 3, borderRadius: 7 },
+  platTagText:  { fontSize: 11, fontFamily: "SpaceGrotesk_600SemiBold" },
+  aiTag:        { flexDirection: "row", alignItems: "center", gap: 3, paddingHorizontal: 6, paddingVertical: 3, borderRadius: 7, backgroundColor: PURPLE + "22" },
+  aiTagText:    { fontSize: 10, fontFamily: "SpaceGrotesk_700Bold" },
+  dateTag:      { flexDirection: "row", alignItems: "center", gap: 4, paddingHorizontal: 7, paddingVertical: 3, borderRadius: 7 },
+  dateTagText:  { fontSize: 10, fontFamily: "SpaceGrotesk_400Regular" },
+  postContent:  { fontSize: 13, fontFamily: "SpaceGrotesk_400Regular", lineHeight: 19 },
+  postActions:  { flexDirection: "row", gap: 8 },
+  actionBtn:    { flexDirection: "row", alignItems: "center", gap: 5, flex: 1, justifyContent: "center", borderRadius: 9, height: 36 },
+  actionBtnText:{ color: "#fff", fontSize: 12, fontFamily: "SpaceGrotesk_600SemiBold" },
+  deleteBtn:    { width: 36, height: 36, borderRadius: 9, borderWidth: 1, alignItems: "center", justifyContent: "center" },
+});
+
 // ─── Screen ────────────────────────────────────────────────────────────────────
 export default function MarketingScreen() {
   const colors  = useColors();
@@ -540,6 +794,7 @@ export default function MarketingScreen() {
   const TABS: { id: TabId; label: string }[] = [
     { id: "campanhas",  label: "Campanhas"  },
     { id: "criativos",  label: "Criativos"  },
+    { id: "agenda",     label: "Agenda"     },
     { id: "relatorios", label: "Relatórios" },
   ];
 
@@ -599,6 +854,7 @@ export default function MarketingScreen() {
           <>
             {activeTab === "campanhas"  && <CampanhasTab  colors={colors} />}
             {activeTab === "criativos"  && <CriativosTab  colors={colors} />}
+            {activeTab === "agenda"     && <AgendaTab     colors={colors} />}
             {activeTab === "relatorios" && <RelatoriosTab colors={colors} />}
           </>
         )}
