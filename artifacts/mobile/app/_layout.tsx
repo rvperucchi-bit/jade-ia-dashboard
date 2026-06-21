@@ -19,6 +19,7 @@ import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { AuthProvider } from "@/context/AuthContext";
 import { AppProvider } from "@/context/AppContext";
 import { PlanProvider } from "@/context/PlanContext";
+import { CreditsProvider } from "@/context/CreditsContext";
 import { initializeDatabase } from "@/db/init";
 
 SplashScreen.preventAutoHideAsync();
@@ -193,9 +194,11 @@ export default function RootLayout() {
             <AuthProvider>
               <AppProvider>
                 <PlanProvider>
-                  <GestureHandlerRootView style={{ flex: 1 }}>
-                    <RootLayoutNav />
-                  </GestureHandlerRootView>
+                  <CreditsProvider>
+                    <GestureHandlerRootView style={{ flex: 1 }}>
+                      <RootLayoutNav />
+                    </GestureHandlerRootView>
+                  </CreditsProvider>
                 </PlanProvider>
               </AppProvider>
             </AuthProvider>

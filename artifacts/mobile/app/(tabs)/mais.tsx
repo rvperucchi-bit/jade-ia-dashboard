@@ -18,6 +18,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useColors } from "@/hooks/useColors";
 import { useAuth } from "@/context/AuthContext";
 import { usePlan, type Plan } from "@/context/PlanContext";
+import { useCredits } from "@/context/CreditsContext";
 
 const PURPLE = "#8400FF";
 const GOLD   = "#FFB800";
@@ -239,8 +240,10 @@ export default function MaisScreen() {
   const [gateFeature, setGateFeature] = useState("");
   const [gatePlan,    setGatePlan]    = useState<"pro" | "enterprise">("pro");
   const [devModal,    setDevModal]    = useState(false);
-  const [demoModal,   setDemoModal]   = useState(false);
-  const [demoPending, setDemoPending] = useState<{ path: string; label: string } | null>(null);
+  const [demoModal,     setDemoModal]     = useState(false);
+  const [demoPending,   setDemoPending]   = useState<{ path: string; label: string } | null>(null);
+  const [creditsModal,  setCreditsModal]  = useState(false);
+  const credits = useCredits();
 
   const tapCount = useRef(0);
   const tapTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -461,10 +464,33 @@ export default function MaisScreen() {
           <Text style={[S.statValue, { color: planColor }]}>{planLabel}</Text>
           <Text style={[S.statLabel, { color: colors.mutedForeground }]}>Plano atual</Text>
         </View>
-        <View style={[S.statBox, { backgroundColor: colors.card, borderColor: colors.border }]}>
-          <Text style={[S.statValue, { color: colors.text }]}>47</Text>
-          <Text style={[S.statLabel, { color: colors.mutedForeground }]}>Gerações IA</Text>
-        </View>
+        <TouchableOpacity
+          style={[S.statBox, {
+            backgroundColor: colors.card,
+            borderColor: credits.warnLevel !== "ok"
+              ? (credits.warnLevel === "empty" ? "#FF3B5C55" : "#FFB30055")
+              : colors.border,
+          }]}
+          onPress={() => { tap(); setCreditsModal(true); }}
+          activeOpacity={0.8}
+        >
+          <Text style={[S.statValue, {
+            color: credits.warnLevel === "empty" ? "#FF3B5C"
+                 : credits.warnLevel === "warn"  ? "#FFB300"
+                 : colors.text,
+          }]}>
+            {credits.remaining}
+          </Text>
+          <Text style={[S.statLabel, { color: colors.mutedForeground }]}>Mensagens</Text>
+          <View style={{ width: "100%", height: 3, backgroundColor: colors.border, borderRadius: 2, marginTop: 5, overflow: "hidden" }}>
+            <View style={{
+              position: "absolute", top: 0, left: 0, bottom: 0,
+              width: `${credits.total > 0 ? Math.round((credits.remaining / credits.total) * 100) : 0}%` as any,
+              backgroundColor: credits.warnLevel === "empty" ? "#FF3B5C" : credits.warnLevel === "warn" ? "#FFB300" : "#00D68F",
+              borderRadius: 2,
+            }} />
+          </View>
+        </TouchableOpacity>
         <View style={[S.statBox, { backgroundColor: colors.card, borderColor: colors.border }]}>
           <Text style={[S.statValue, { color: PINK }]}>R$51k</Text>
           <Text style={[S.statLabel, { color: colors.mutedForeground }]}>Próxima meta</Text>
@@ -546,6 +572,65 @@ export default function MaisScreen() {
         onChangePlan={handleChangePlan}
         onExitDev={handleExitDev}
       />
+
+      {/* Credits modal */}
+      <Modal visible={creditsModal} transparent animationType="slide" onRequestClose={() => setCreditsModal(false)}>
+        <TouchableOpacity style={G.overlay} activeOpacity={1} onPress={() => setCreditsModal(false)}>
+          <View style={[G.box, { alignItems: "stretch" }]} onStartShouldSetResponder={() => true}>
+            <View style={{ width: 40, height: 4, borderRadius: 2, backgroundColor: "#3A3A4E", alignSelf: "center", marginBottom: 14 }} />
+            <View style={{ flexDirection: "row", alignItems: "center", gap: 10, marginBottom: 14 }}>
+              <Feather name="message-circle" size={20} color={PINK} />
+              <Text style={[G.title, { flex: 1, textAlign: "left", fontSize: 16 }]}>Créditos WhatsApp</Text>
+            </View>
+            {/* Usage bar */}
+            <View style={{ backgroundColor: "#070710", borderRadius: 12, padding: 14, gap: 8, borderWidth: 1, borderColor: "#1E1E2E", marginBottom: 14 }}>
+              <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
+                <Text style={{ color: "#AAAACC", fontSize: 12, fontFamily: "SpaceGrotesk_400Regular" }}>Usados este mês</Text>
+                <Text style={{ color: "#fff", fontSize: 12, fontFamily: "SpaceGrotesk_700Bold" }}>{credits.used} / {credits.total}</Text>
+              </View>
+              <View style={{ height: 8, backgroundColor: "#1E1E2E", borderRadius: 4, overflow: "hidden" }}>
+                <View style={{
+                  position: "absolute", top: 0, left: 0, bottom: 0,
+                  width: `${credits.total > 0 ? Math.round((credits.remaining / credits.total) * 100) : 0}%` as any,
+                  backgroundColor: credits.warnLevel === "empty" ? "#FF3B5C" : credits.warnLevel === "warn" ? "#FFB300" : "#00D68F",
+                  borderRadius: 4,
+                }} />
+              </View>
+              <Text style={{ fontSize: 12, fontFamily: "SpaceGrotesk_600SemiBold", color: credits.warnLevel === "ok" ? "#00D68F" : credits.warnLevel === "warn" ? "#FFB300" : "#FF3B5C" }}>
+                {credits.remaining} mensagens restantes
+              </Text>
+            </View>
+            {/* Store */}
+            <Text style={{ fontSize: 14, fontFamily: "SpaceGrotesk_700Bold", color: "#fff", marginBottom: 10 }}>Comprar créditos extras</Text>
+            {([
+              { amount: 100,  price: "R$19,90",  label: "Pacote Básico" },
+              { amount: 500,  price: "R$69,90",  label: "Pacote Pro"   },
+              { amount: 2000, price: "R$199,90", label: "Pacote Max"   },
+            ] as const).map((pkg) => (
+              <TouchableOpacity
+                key={pkg.amount}
+                style={{ flexDirection: "row", alignItems: "center", backgroundColor: "#070710", borderRadius: 12, padding: 14, gap: 10, borderWidth: 1, borderColor: "#1E1E2E", marginBottom: 8 }}
+                onPress={async () => {
+                  await credits.addExtra(pkg.amount);
+                  Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+                  Alert.alert("✅ Créditos adicionados!", `+${pkg.amount} mensagens WhatsApp adicionadas à sua conta.`);
+                }}
+                activeOpacity={0.8}
+              >
+                <View style={{ flex: 1 }}>
+                  <Text style={{ color: "#fff", fontSize: 14, fontFamily: "SpaceGrotesk_700Bold" }}>+{pkg.amount} mensagens</Text>
+                  <Text style={{ color: "#7777AA", fontSize: 11, fontFamily: "SpaceGrotesk_400Regular", marginTop: 2 }}>{pkg.label}</Text>
+                </View>
+                <Text style={{ color: PINK, fontSize: 14, fontFamily: "SpaceGrotesk_700Bold" }}>{pkg.price}</Text>
+                <Feather name="shopping-cart" size={15} color={PINK} />
+              </TouchableOpacity>
+            ))}
+            <TouchableOpacity style={[DV.closeBtn, { marginTop: 4 }]} onPress={() => setCreditsModal(false)} activeOpacity={0.85}>
+              <Text style={DV.closeBtnText}>Fechar</Text>
+            </TouchableOpacity>
+          </View>
+        </TouchableOpacity>
+      </Modal>
 
       {/* Demo offer modal */}
       <Modal visible={demoModal} transparent animationType="fade" onRequestClose={() => setDemoModal(false)}>

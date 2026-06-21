@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Platform } from "react-native";
 import * as Haptics from "expo-haptics";
+import { stripMarkdown } from "@/utils/stripMarkdown";
 
 const API_BASE =
   Platform.OS === "web"
@@ -59,11 +60,12 @@ export function useJADE(): UseJADEReturn {
         await new Promise<void>((r) => setTimeout(r, 1500));
         text = await callJADE(prompt);
       }
-      setResult(text);
+      const clean = stripMarkdown(text);
+      setResult(clean);
       setSuccess(true);
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       setTimeout(() => setSuccess(false), 2000);
-      return text;
+      return clean;
     } catch (err: unknown) {
       const isAbort = err instanceof Error && err.name === "AbortError";
       const msg = isAbort

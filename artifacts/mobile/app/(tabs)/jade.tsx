@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
+  Alert,
   Animated,
   Easing,
   PanResponder,
@@ -22,7 +23,9 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 
 import { useColors } from "@/hooks/useColors";
 import { useApp } from "@/context/AppContext";
+import { useCredits } from "@/context/CreditsContext";
 import { takePendingVoice } from "@/utils/voiceContext";
+import { stripMarkdown } from "@/utils/stripMarkdown";
 
 const MODO_LABEL: Record<string, string> = {
   fechamento:             "Fechamento",
@@ -156,6 +159,7 @@ export default function JADEScreen() {
   const insets  = useSafeAreaInsets();
   const router  = useRouter();
   const { addActivityEvent } = useApp();
+  const { remaining, warnLevel, useCredit } = useCredits();
 
   const topPad    = Platform.OS === "web" ? 67 : insets.top;
   const TAB_BAR_H = Platform.OS === "web" ? 84 : 60;
@@ -312,7 +316,9 @@ export default function JADEScreen() {
       clearTimeout(timeoutId);
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
       const data = (await response.json()) as { message?: string; response?: string; handoff?: boolean };
-      const replyText = data.message?.trim() || data.response?.trim() || "Desculpe, não consegui processar. Tente novamente.";
+      const raw = data.message?.trim() || data.response?.trim() || "Desculpe, não consegui processar. Tente novamente.";
+      const replyText = stripMarkdown(raw);
+      useCredit();
       setMessages((prev) => [{ id: (Date.now() + 1).toString(), text: replyText, sender: "jade", time: nowTime() }, ...prev]);
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
       if (data.handoff) {
@@ -367,7 +373,9 @@ export default function JADEScreen() {
       clearTimeout(timeoutId);
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
       const data = (await response.json()) as { message?: string; response?: string };
-      const replyText = data.message?.trim() || data.response?.trim() || "Recebi seu áudio! Como posso ajudar?";
+      const raw = data.message?.trim() || data.response?.trim() || "Recebi seu áudio! Como posso ajudar?";
+      const replyText = stripMarkdown(raw);
+      useCredit();
       setMessages((prev) => [{ id: (Date.now() + 1).toString(), text: replyText, sender: "jade", time: nowTime() }, ...prev]);
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     } catch {
@@ -428,6 +436,19 @@ export default function JADEScreen() {
             )}
           </View>
         </View>
+        <TouchableOpacity
+          style={[styles.creditsPill, {
+            backgroundColor: warnLevel === "empty" ? "#FF3B5C22" : warnLevel === "warn" ? "#FFB30022" : colors.surface,
+            borderColor: warnLevel === "empty" ? "#FF3B5C55" : warnLevel === "warn" ? "#FFB30055" : colors.border,
+          }]}
+          onPress={() => router.push("/mais" as any)}
+          activeOpacity={0.8}
+        >
+          <Text style={{ fontSize: 11, fontFamily: "SpaceGrotesk_700Bold", color: warnLevel === "empty" ? "#FF3B5C" : warnLevel === "warn" ? "#FFB300" : colors.mutedForeground }}>
+            {remaining}
+          </Text>
+          <Text style={{ fontSize: 9, fontFamily: "SpaceGrotesk_400Regular", color: colors.mutedForeground, marginTop: -1 }}>msg</Text>
+        </TouchableOpacity>
         <TouchableOpacity style={[styles.iconBtn, { backgroundColor: colors.surface }]}
           onPress={() => router.push("/marketing" as any)} activeOpacity={0.8}>
           <Feather name="zap" size={16} color={colors.primary} />
@@ -453,6 +474,22 @@ export default function JADEScreen() {
         keyboardShouldPersistTaps="handled"
         ListFooterComponent={<View style={{ height: 8 }} />}
       />
+
+      {/* Credits warning/empty banner */}
+      {warnLevel !== "ok" && (
+        <TouchableOpacity
+          style={[styles.creditBanner, { backgroundColor: warnLevel === "empty" ? "#FF3B5C" : "#FFB300" }]}
+          onPress={() => router.push("/mais" as any)}
+          activeOpacity={0.9}
+        >
+          <Feather name={warnLevel === "empty" ? "x-circle" : "alert-triangle"} size={14} color="#fff" />
+          <Text style={styles.creditBannerText}>
+            {warnLevel === "empty"
+              ? "Créditos esgotados — toque para recarregar"
+              : `Créditos acabando! ${remaining} mensagens restantes`}
+          </Text>
+        </TouchableOpacity>
+      )}
 
       {/* 🔥 Handoff alert banner */}
       {handoffAlert && (
@@ -529,7 +566,7 @@ export default function JADEScreen() {
         {/* Send button */}
         <TouchableOpacity
           style={[styles.sendBtn, { backgroundColor: input.trim() && !loading ? colors.primary : colors.surface }]}
-          onPress={() => send(input)} activeOpacity={0.8} disabled={!input.trim() || loading || recording}>
+          onPress={() => send(input)} activeOpacity={0.8} disabled={!input.trim() || loading || recording || warnLevel === "empty"}>
           {loading
             ? <ActivityIndicator size="small" color={colors.primary} />
             : <Feather name="send" size={18} color={input.trim() && !recording ? "#fff" : colors.mutedForeground} />
@@ -577,6 +614,9 @@ const styles = StyleSheet.create({
   input: { flex: 1, fontSize: 15, maxHeight: 100, lineHeight: 22 },
   micBtn: { width: 44, height: 44, borderRadius: 22, alignItems: "center", justifyContent: "center", borderWidth: 1, borderColor: "transparent" },
   sendBtn: { width: 44, height: 44, borderRadius: 22, alignItems: "center", justifyContent: "center" },
+  creditsPill: { paddingHorizontal: 8, paddingVertical: 5, borderRadius: 8, borderWidth: 1, alignItems: "center" },
+  creditBanner: { flexDirection: "row", alignItems: "center", gap: 8, paddingHorizontal: 16, paddingVertical: 10 },
+  creditBannerText: { color: "#fff", fontSize: 12, fontFamily: "SpaceGrotesk_600SemiBold", flex: 1 },
   handoffBanner: {
     flexDirection: "row", alignItems: "center", gap: 12,
     backgroundColor: "#FF0080", paddingHorizontal: 16, paddingVertical: 12,

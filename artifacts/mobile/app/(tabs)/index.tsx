@@ -13,6 +13,8 @@ import {
 import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import * as Haptics from "expo-haptics";
 
 import { useColors } from "@/hooks/useColors";
 import { useApp, type ActivityEvent } from "@/context/AppContext";
@@ -41,8 +43,9 @@ function CrosshairIcon({ size, color }: { size: number; color: string }) {
 // ─── ModuleButton ─────────────────────────────────────────────────────────────
 const MOD_SIZE = 52;
 
-function ModuleButton({ icon, label, active, locked, onPress }: {
-  icon: React.ReactNode; label: string; active?: boolean; locked?: boolean; onPress: () => void;
+function ModuleButton({ icon, label, active, locked, onPress, onLongPress }: {
+  icon: React.ReactNode; label: string; active?: boolean; locked?: boolean;
+  onPress: () => void; onLongPress?: () => void;
 }) {
   const colors = useColors();
   const glow = useRef(new Animated.Value(0)).current;
@@ -58,7 +61,7 @@ function ModuleButton({ icon, label, active, locked, onPress }: {
   }, [active]);
 
   return (
-    <TouchableOpacity style={S.modCol} onPress={onPress} activeOpacity={0.75}>
+    <TouchableOpacity style={S.modCol} onPress={onPress} onLongPress={onLongPress} delayLongPress={500} activeOpacity={0.75}>
       <Animated.View style={[S.modBtn, {
         backgroundColor: locked ? colors.surface + "80" : colors.surface,
         borderColor: active ? PINK + "99" : locked ? colors.border + "50" : colors.border,
@@ -227,6 +230,14 @@ export default function HomeScreen() {
   const { canAccess } = usePlan();
 
   const [refreshing, setRefreshing] = useState(false);
+  const [empresaNome, setEmpresaNome] = useState<string | null>(null);
+
+  useEffect(() => {
+    AsyncStorage.getItem("@jade_ia:empresa_v2").then((raw) => {
+      if (!raw) return;
+      try { const d = JSON.parse(raw); if (d.nomeEmpresa) setEmpresaNome(d.nomeEmpresa); } catch {}
+    });
+  }, []);
 
   // Scanner autonomous mode
   const existingLeadIds = useRef<string[]>([]);
@@ -282,10 +293,19 @@ export default function HomeScreen() {
   ] as const;
 
   const handleModPress = (name: string) => {
-    if (name === "scanner")   toggleModule("scanner");
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    toggleModule(name);
+  };
+
+  const handleModLongPress = (name: string) => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    if (name === "scanner")   router.push("/scanner" as any);
     else if (name === "leads") router.push("/leads" as any);
-    else if (name === "whatsapp") toggleModule("whatsapp");
-    else if (name === "marketing") router.push("/marketing" as any);
+    else if (name === "whatsapp") router.push("/(tabs)/conversas" as any);
+    else if (name === "marketing") {
+      if (!canAccess("pro")) { router.push("/mais" as any); return; }
+      router.push("/marketing" as any);
+    }
     else if (name === "rota") {
       if (!canAccess("pro")) { router.push("/mais" as any); return; }
       router.push("/criarrota" as any);
@@ -307,6 +327,11 @@ export default function HomeScreen() {
         <View>
           <Text style={[S.greeting, { color: colors.mutedForeground }]}>Bom dia,</Text>
           <Text style={[S.name, { color: colors.text }]}>Rodrigo 👋</Text>
+          {empresaNome ? (
+            <Text style={{ fontSize: 13, fontFamily: "SpaceGrotesk_400Regular", color: "rgba(255,255,255,0.45)", marginTop: 1 }}>
+              {empresaNome}
+            </Text>
+          ) : null}
         </View>
         <View style={S.headerRight}>
           {unread > 0 && (
@@ -339,11 +364,12 @@ export default function HomeScreen() {
           return (
             <ModuleButton
               key={m.name}
-              icon={m.icon(m.locked ? colors.mutedForeground : PINK)}
+              icon={m.icon(m.locked ? colors.mutedForeground : active ? PINK : colors.mutedForeground + "99")}
               label={m.label}
               active={active}
               locked={m.locked}
               onPress={() => handleModPress(m.name)}
+              onLongPress={() => handleModLongPress(m.name)}
             />
           );
         })}

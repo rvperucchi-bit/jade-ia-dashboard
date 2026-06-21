@@ -4,10 +4,10 @@
       "module_name": "scanner",
       "is_active": false,
       "status": "paused",
-      "last_started_at": "2026-06-21T01:42:27.200Z",
-      "last_stopped_at": "2026-06-21T01:42:27.831Z",
+      "last_started_at": "2026-06-21T03:00:21.926Z",
+      "last_stopped_at": "2026-06-21T03:00:30.587Z",
       "last_run_at": null,
-      "updated_at": "2026-06-21T01:42:27.831Z"
+      "updated_at": "2026-06-21T03:00:30.587Z"
     },
     "jade": {
       "module_name": "jade",
@@ -31,10 +31,10 @@
       "module_name": "whatsapp",
       "is_active": false,
       "status": "paused",
-      "last_started_at": "2026-06-20T21:02:46.888Z",
-      "last_stopped_at": "2026-06-20T21:02:49.219Z",
+      "last_started_at": "2026-06-21T03:00:29.373Z",
+      "last_stopped_at": "2026-06-21T03:00:31.170Z",
       "last_run_at": null,
-      "updated_at": "2026-06-20T21:02:49.219Z"
+      "updated_at": "2026-06-21T03:00:31.170Z"
     },
     "marketing": {
       "module_name": "marketing",
@@ -47,6 +47,46 @@
     }
   },
   "module_logs": [
+    {
+      "id": "33914fa39e3eda18",
+      "module_name": "whatsapp",
+      "action": "deactivated",
+      "message": "WhatsApp desativado",
+      "metadata": {
+        "active": false
+      },
+      "created_at": "2026-06-21T03:00:31.172Z"
+    },
+    {
+      "id": "9b30c488e9446851",
+      "module_name": "scanner",
+      "action": "deactivated",
+      "message": "Scanner Radar desativado",
+      "metadata": {
+        "active": false
+      },
+      "created_at": "2026-06-21T03:00:30.588Z"
+    },
+    {
+      "id": "0a94971a0a00c34d",
+      "module_name": "whatsapp",
+      "action": "activated",
+      "message": "WhatsApp ativado",
+      "metadata": {
+        "active": true
+      },
+      "created_at": "2026-06-21T03:00:29.376Z"
+    },
+    {
+      "id": "6f22af0749815ceb",
+      "module_name": "scanner",
+      "action": "activated",
+      "message": "Scanner Radar ativado",
+      "metadata": {
+        "active": true
+      },
+      "created_at": "2026-06-21T03:00:21.928Z"
+    },
     {
       "id": "f16b2294cf425608",
       "module_name": "scanner",
@@ -469,6 +509,72 @@
     }
   ],
   "activity_events": [
+    {
+      "id": "f08bab7aec0ab45c",
+      "type": "message",
+      "text": "JADE respondeu a uma mensagem",
+      "icon": "robot",
+      "color": "#FF0080",
+      "metadata": {},
+      "created_at": "2026-06-21T03:02:48.391Z"
+    },
+    {
+      "id": "88893fbc376e4dca",
+      "type": "message",
+      "text": "JADE respondeu a uma mensagem",
+      "icon": "robot",
+      "color": "#FF0080",
+      "metadata": {},
+      "created_at": "2026-06-21T03:01:52.158Z"
+    },
+    {
+      "id": "e3de8e9929b8d983",
+      "type": "module",
+      "text": "WhatsApp desativado",
+      "icon": "message-circle",
+      "color": "#25D366",
+      "metadata": {
+        "module": "whatsapp",
+        "active": false
+      },
+      "created_at": "2026-06-21T03:00:31.173Z"
+    },
+    {
+      "id": "ab0cc9dfdd023654",
+      "type": "module",
+      "text": "Scanner Radar desativado",
+      "icon": "crosshair",
+      "color": "#6C63FF",
+      "metadata": {
+        "module": "scanner",
+        "active": false
+      },
+      "created_at": "2026-06-21T03:00:30.589Z"
+    },
+    {
+      "id": "fa9dfe2c53b988ab",
+      "type": "module",
+      "text": "WhatsApp ativado",
+      "icon": "message-circle",
+      "color": "#25D366",
+      "metadata": {
+        "module": "whatsapp",
+        "active": true
+      },
+      "created_at": "2026-06-21T03:00:29.378Z"
+    },
+    {
+      "id": "84a6cf26dec2ec95",
+      "type": "module",
+      "text": "Scanner Radar ativado",
+      "icon": "crosshair",
+      "color": "#6C63FF",
+      "metadata": {
+        "module": "scanner",
+        "active": true
+      },
+      "created_at": "2026-06-21T03:00:21.939Z"
+    },
     {
       "id": "8190769a2f724c56",
       "type": "message",
