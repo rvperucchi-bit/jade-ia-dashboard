@@ -1,0 +1,167 @@
+AJUSTE DE NAVEGAÇÃO DA JADE
+
+ATENÇÃO
+
+Antes de implementar qualquer alteração:
+
+1. Analise todas as imagens anexadas.
+2. Entenda que a Home já foi aprovada.
+3. NÃO alterar componentes da Home que não fazem parte desta tarefa.
+4. NÃO criar novas interpretações visuais.
+5. NÃO redesenhar a Home.
+6. NÃO substituir elementos existentes por soluções próprias.
+7. Implementar exatamente o fluxo descrito abaixo.
+8. Preservar totalmente a identidade visual atual da JADE.
+9. Objetivo desta tarefa é reorganizar a navegação, não redesenhar o aplicativo.
+
+IMPORTANTE
+
+Não mexer em:
+
+- Layout da Home
+- Módulos
+- Meta do mês
+- Status da JADE
+- Pipeline
+- Barra "Fale com a JADE"
+
+Essas áreas já estão aprovadas.
+
+OBJETIVO
+
+Substituir a aba "Mais" pelo novo menu lateral.
+
+A referência visual é a imagem do menu lateral anexada.
+
+MENU INFERIOR
+
+Remover:
+
+- Aba "Mais"
+
+O item "Mais" não deve mais existir na navegação inferior.
+
+BOTÃO FLUTUANTE
+
+Remover completamente:
+
+- Botão flutuante da JADE
+
+Ele não será mais utilizado.
+
+A interação com a JADE já acontece pela nova barra de comando da Home.
+
+NOVO MENU LATERAL
+
+Utilizar o menu lateral da referência enviada.
+
+Visual:
+
+- Dark premium
+- Fundo translúcido
+- Sem glow rosa exagerado
+- Sem botões rosas chamativos
+- Ícones discretos
+- Visual limpo para uso diário
+
+CABEÇALHO DO MENU
+
+Mostrar apenas:
+
+- Rodrigo
+- Plano Pro
+
+Pequeno e discreto.
+
+Não criar card grande.
+Não usar avatar gigante.
+Não ocupar muito espaço vertical.
+
+TRANSFERIR CONTEÚDO DA ABA MAIS
+
+Tudo o que hoje existe na aba Mais deve migrar para o novo menu lateral.
+
+COMERCIAL
+
+- Roteiro
+- Briefing
+- Objeções
+- Roleplay
+
+INTELIGÊNCIA IA
+
+- Marketing IA
+- Análise IA
+- Relatórios
+
+GESTÃO
+
+- Metas
+- Carteira
+- Painel Executivo
+- Meu Time
+
+Itens bloqueados:
+
+- aparência apagada
+- cadeado discreto
+
+OPERAÇÃO
+
+- Criar Rota
+- Planejamento
+- Laudo
+
+SISTEMA
+
+- Biblioteca
+- Loja JADE
+
+CONTA
+
+- Minha Empresa
+- Meu Perfil
+- Meu Plano
+- Uso
+- Notificações
+- Privacidade e Dados
+- Central de Ajuda
+
+TELA "USO"
+
+Criar a tela "Uso".
+
+Mover para essa tela:
+
+- Mensagens disponíveis
+- Buscas Radar disponíveis
+- Informações de consumo
+- Renovação do plano
+
+Essas informações não devem ficar em destaque no menu principal.
+
+VALIDAÇÃO OBRIGATÓRIA
+
+Antes de concluir, verificar:
+
+- Aba "Mais" removida do menu inferior.
+- Botão flutuante removido.
+- Novo menu lateral funcionando.
+- Todo conteúdo da aba Mais migrado.
+- Tela Uso criada.
+- Itens bloqueados permanecem bloqueados.
+- Home não foi alterada.
+- Pipeline não foi alterado.
+- Módulos não foram alterados.
+- Meta do mês não foi alterada.
+- Barra "Fale com a JADE" não foi alterada.
+- Nenhum componente aprovado anteriormente foi redesenhado.
+
+RESULTADO ESPERADO
+
+- Menu inferior mais limpo.
+- Sem aba Mais.
+- Sem botão flutuante.
+- Novo menu lateral centralizando toda a navegação secundária.
+- Estrutura semelhante à referência enviada.
+- Home permanece exatamente como já foi aprovada.

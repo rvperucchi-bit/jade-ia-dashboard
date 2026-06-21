@@ -19,14 +19,78 @@ import * as Haptics from "expo-haptics";
 
 import { useColors } from "@/hooks/useColors";
 import { useApp } from "@/context/AppContext";
-import { usePlan } from "@/context/PlanContext";
+import { usePlan, type Plan } from "@/context/PlanContext";
 import { useAuth } from "@/context/AuthContext";
 
 const API_BASE = Platform.OS === "web" ? "" : `https://${process.env.EXPO_PUBLIC_DOMAIN ?? ""}`;
 const PINK   = "#FF0080";
 const PURPLE = "#8400FF";
 const META_GOAL = 51000;
-const DRAWER_W = 270;
+const DRAWER_W = 272;
+
+type DrawerItem = {
+  iconName: React.ComponentProps<typeof Feather>["name"];
+  label: string;
+  route: string;
+  requiresPlan?: "pro" | "enterprise";
+};
+type DrawerCategory = { label: string; items: DrawerItem[] };
+
+const DRAWER_CATEGORIES: DrawerCategory[] = [
+  {
+    label: "COMERCIAL",
+    items: [
+      { iconName: "map",         label: "Roteiro",     route: "/roteiro"   },
+      { iconName: "clipboard",   label: "Briefing",    route: "/briefing"  },
+      { iconName: "shield",      label: "Objeções",    route: "/objecoes"  },
+      { iconName: "activity",    label: "Roleplay",    route: "/roleplay"  },
+    ],
+  },
+  {
+    label: "INTELIGÊNCIA IA",
+    items: [
+      { iconName: "zap",         label: "Marketing IA", route: "/marketing",      requiresPlan: "pro"        },
+      { iconName: "cpu",         label: "Análise IA",   route: "/analise",         requiresPlan: "pro"        },
+      { iconName: "bar-chart-2", label: "Relatórios",   route: "/relatorios"                                  },
+    ],
+  },
+  {
+    label: "GESTÃO",
+    items: [
+      { iconName: "target",      label: "Metas",           route: "/metas",          requiresPlan: "pro"        },
+      { iconName: "briefcase",   label: "Carteira",         route: "/carteira",       requiresPlan: "pro"        },
+      { iconName: "trending-up", label: "Painel Executivo", route: "/painelexecutivo",requiresPlan: "enterprise" },
+      { iconName: "users",       label: "Meu Time",         route: "/meutime",        requiresPlan: "enterprise" },
+    ],
+  },
+  {
+    label: "OPERAÇÃO",
+    items: [
+      { iconName: "navigation",  label: "Criar Rota",   route: "/criarrota",   requiresPlan: "pro" },
+      { iconName: "calendar",    label: "Planejamento", route: "/planejamento"                      },
+      { iconName: "file-text",   label: "Laudo",        route: "/laudo",       requiresPlan: "pro" },
+    ],
+  },
+  {
+    label: "SISTEMA",
+    items: [
+      { iconName: "book-open",     label: "Biblioteca", route: "/biblioteca" },
+      { iconName: "shopping-bag",  label: "Loja JADE",  route: "/loja"       },
+    ],
+  },
+  {
+    label: "CONTA",
+    items: [
+      { iconName: "home",         label: "Minha Empresa",     route: "/empresa"       },
+      { iconName: "user",         label: "Meu Perfil",         route: "/perfil"        },
+      { iconName: "credit-card",  label: "Meu Plano",          route: "/plano"         },
+      { iconName: "pie-chart",    label: "Uso",                route: "/uso"           },
+      { iconName: "bell",         label: "Notificações",       route: "/notificacoes"  },
+      { iconName: "lock",         label: "Privacidade e Dados",route: "/privacidade"   },
+      { iconName: "help-circle",  label: "Central de Ajuda",   route: "/ajuda"         },
+    ],
+  },
+];
 
 // ─── CrosshairIcon ────────────────────────────────────────────────────────────
 function CrosshairIcon({ size, color }: { size: number; color: string }) {
@@ -209,50 +273,40 @@ function JADEActivityFeed({ anyModuleActive, scannerActive, whatsappActive }: {
 }
 
 // ─── DrawerMenu ───────────────────────────────────────────────────────────────
-const DRAWER_ITEMS: { iconName: React.ComponentProps<typeof Feather>["name"]; label: string; route: string }[] = [
-  { iconName: "target",       label: "Radar",       route: "/scanner"            },
-  { iconName: "users",        label: "Leads",        route: "/leads"              },
-  { iconName: "message-circle", label: "Conversas", route: "/(tabs)/conversas"   },
-  { iconName: "zap",          label: "Mkt IA",       route: "/marketing"          },
-  { iconName: "map",          label: "Rota",         route: "/criarrota"          },
-  { iconName: "bar-chart-2",  label: "Relatórios",   route: "/relatorios"         },
-  { iconName: "settings",     label: "Ajustes",      route: "/empresa"            },
-  { iconName: "link-2",       label: "Integrações",  route: "/mais"               },
-  { iconName: "credit-card",  label: "Planos",       route: "/plano"              },
-  { iconName: "help-circle",  label: "Ajuda",        route: "/ajuda"              },
-];
-
 function DrawerMenu({
-  visible, onClose, empresaNome,
+  visible, onClose,
 }: {
   visible: boolean;
   onClose: () => void;
-  empresaNome: string;
 }) {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const colors = useColors();
   const { logout } = useAuth();
-  const slideAnim = useRef(new Animated.Value(-DRAWER_W)).current;
+  const { userPlan, canAccess } = usePlan();
+  const slideAnim   = useRef(new Animated.Value(-DRAWER_W)).current;
   const overlayAnim = useRef(new Animated.Value(0)).current;
+
+  const planLabel = userPlan === "enterprise" ? "Enterprise" : userPlan === "pro" ? "Pro" : "Start";
+  const planColor = userPlan === "enterprise" ? "#FFB800" : userPlan === "pro" ? PURPLE : PINK;
 
   useEffect(() => {
     if (visible) {
       Animated.parallel([
-        Animated.timing(slideAnim, { toValue: 0, duration: 220, easing: Easing.out(Easing.cubic), useNativeDriver: true }),
-        Animated.timing(overlayAnim, { toValue: 1, duration: 200, useNativeDriver: true }),
+        Animated.timing(slideAnim,   { toValue: 0,          duration: 220, easing: Easing.out(Easing.cubic), useNativeDriver: true }),
+        Animated.timing(overlayAnim, { toValue: 1,          duration: 200, useNativeDriver: true }),
       ]).start();
     } else {
       Animated.parallel([
-        Animated.timing(slideAnim, { toValue: -DRAWER_W, duration: 200, easing: Easing.in(Easing.cubic), useNativeDriver: true }),
-        Animated.timing(overlayAnim, { toValue: 0, duration: 180, useNativeDriver: true }),
+        Animated.timing(slideAnim,   { toValue: -DRAWER_W,  duration: 200, easing: Easing.in(Easing.cubic), useNativeDriver: true }),
+        Animated.timing(overlayAnim, { toValue: 0,          duration: 180, useNativeDriver: true }),
       ]).start();
     }
   }, [visible]);
 
   if (!visible && (slideAnim as any).__getValue() === -DRAWER_W) return null;
 
-  const navigate = (route: string) => {
+  const navigate = (route: string, locked: boolean) => {
+    if (locked) return;
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     onClose();
     setTimeout(() => router.push(route as any), 180);
@@ -271,45 +325,50 @@ function DrawerMenu({
       {/* Drawer panel */}
       <Animated.View
         style={[S.drawer, {
-          paddingTop: insets.top + 16,
-          paddingBottom: insets.bottom + 20,
+          paddingTop: insets.top + 20,
+          paddingBottom: insets.bottom + 16,
           transform: [{ translateX: slideAnim }],
         }]}
       >
-        {/* Profile */}
-        <View style={S.drawerProfile}>
-          <View style={S.drawerAvatar}>
-            <Text style={S.drawerAvatarLetter}>R</Text>
-          </View>
+        {/* Compact header */}
+        <View style={S.drawerHeader}>
           <View style={{ flex: 1 }}>
             <Text style={S.drawerName}>Rodrigo</Text>
-            {empresaNome ? <Text style={S.drawerCompany}>{empresaNome}</Text> : null}
+            <View style={[S.drawerPlanBadge, { backgroundColor: planColor + "20" }]}>
+              <Text style={[S.drawerPlanText, { color: planColor }]}>Plano {planLabel}</Text>
+            </View>
           </View>
           <TouchableOpacity onPress={onClose} style={S.drawerClose} activeOpacity={0.7}>
-            <Feather name="x" size={18} color="rgba(255,255,255,0.50)" />
+            <Feather name="x" size={16} color="rgba(255,255,255,0.40)" />
           </TouchableOpacity>
         </View>
 
-        <View style={[S.drawerDivider, { backgroundColor: "#FFFFFF0D" }]} />
+        <View style={[S.drawerDivider, { backgroundColor: "#FFFFFF0C", marginBottom: 4 }]} />
 
-        {/* Navigation items */}
-        <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
-          {DRAWER_ITEMS.map((item) => (
-            <TouchableOpacity
-              key={item.label}
-              style={S.drawerItem}
-              onPress={() => navigate(item.route)}
-              activeOpacity={0.7}
-            >
-              <View style={S.drawerItemIcon}>
-                <Feather name={item.iconName} size={18} color="rgba(255,255,255,0.55)" />
-              </View>
-              <Text style={S.drawerItemLabel}>{item.label}</Text>
-            </TouchableOpacity>
+        {/* Categorized navigation */}
+        <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 8 }}>
+          {DRAWER_CATEGORIES.map((cat) => (
+            <View key={cat.label}>
+              <Text style={S.drawerCatLabel}>{cat.label}</Text>
+              {cat.items.map((item) => {
+                const locked = item.requiresPlan ? !canAccess(item.requiresPlan) : false;
+                return (
+                  <TouchableOpacity
+                    key={item.label}
+                    style={[S.drawerItem, locked && { opacity: 0.35 }]}
+                    onPress={() => navigate(item.route, locked)}
+                    activeOpacity={locked ? 1 : 0.65}
+                  >
+                    <Feather name={item.iconName} size={16} color="rgba(255,255,255,0.52)" />
+                    <Text style={S.drawerItemLabel}>{item.label}</Text>
+                    {locked && <Feather name="lock" size={10} color="rgba(255,255,255,0.28)" />}
+                  </TouchableOpacity>
+                );
+              })}
+              <View style={[S.drawerCatDivider, { backgroundColor: "#FFFFFF0A" }]} />
+            </View>
           ))}
         </ScrollView>
-
-        <View style={[S.drawerDivider, { backgroundColor: "#FFFFFF0D", marginBottom: 12 }]} />
 
         {/* Sair */}
         <TouchableOpacity
@@ -317,7 +376,7 @@ function DrawerMenu({
           onPress={async () => { onClose(); setTimeout(() => logout(), 200); }}
           activeOpacity={0.85}
         >
-          <Feather name="log-out" size={15} color={PINK} />
+          <Feather name="log-out" size={14} color="rgba(255,0,128,0.80)" />
           <Text style={S.drawerSairText}>Sair</Text>
         </TouchableOpacity>
       </Animated.View>
@@ -542,7 +601,7 @@ export default function HomeScreen() {
       </View>
 
       {/* ── Drawer ── */}
-      <DrawerMenu visible={drawerOpen} onClose={() => setDrawerOpen(false)} empresaNome={empresaNome} />
+      <DrawerMenu visible={drawerOpen} onClose={() => setDrawerOpen(false)} />
     </View>
   );
 }
@@ -603,18 +662,18 @@ const S = StyleSheet.create({
   micBtn:     { width: 38, height: 38, borderRadius: 19, backgroundColor: "rgba(255,255,255,0.06)", alignItems: "center", justifyContent: "center" },
 
   // ── Drawer ──
-  drawerOverlay: { ...StyleSheet.absoluteFillObject, backgroundColor: "rgba(0,0,0,0.60)" },
-  drawer:        { position: "absolute", left: 0, top: 0, bottom: 0, width: DRAWER_W, backgroundColor: "#0E0A1A", paddingHorizontal: 20 },
-  drawerProfile: { flexDirection: "row", alignItems: "center", gap: 12, marginBottom: 16 },
-  drawerAvatar:  { width: 42, height: 42, borderRadius: 21, backgroundColor: "#3A1060", alignItems: "center", justifyContent: "center" },
-  drawerAvatarLetter: { fontSize: 18, fontFamily: "SpaceGrotesk_700Bold", color: "#fff" },
-  drawerName:    { fontSize: 16, fontFamily: "SpaceGrotesk_700Bold", color: "#fff" },
-  drawerCompany: { fontSize: 12, fontFamily: "SpaceGrotesk_400Regular", color: "rgba(255,255,255,0.45)", marginTop: 1 },
-  drawerClose:   { width: 32, height: 32, borderRadius: 16, alignItems: "center", justifyContent: "center", backgroundColor: "rgba(255,255,255,0.06)" },
-  drawerDivider: { height: 1, marginHorizontal: -20, marginBottom: 10 },
-  drawerItem:    { flexDirection: "row", alignItems: "center", gap: 14, paddingVertical: 13 },
-  drawerItemIcon:{ width: 32, height: 32, borderRadius: 9, backgroundColor: "rgba(255,255,255,0.06)", alignItems: "center", justifyContent: "center" },
-  drawerItemLabel: { fontSize: 15, fontFamily: "SpaceGrotesk_500Medium", color: "rgba(255,255,255,0.80)" },
-  drawerSair:    { flexDirection: "row", alignItems: "center", gap: 10, paddingVertical: 13, paddingHorizontal: 14, backgroundColor: "rgba(255,0,128,0.10)", borderRadius: 12, borderWidth: 1, borderColor: "rgba(255,0,128,0.20)" },
-  drawerSairText:{ fontSize: 15, fontFamily: "SpaceGrotesk_600SemiBold", color: PINK },
+  drawerOverlay:   { ...StyleSheet.absoluteFillObject, backgroundColor: "rgba(0,0,0,0.60)" },
+  drawer:          { position: "absolute", left: 0, top: 0, bottom: 0, width: DRAWER_W, backgroundColor: "#0D0918", paddingHorizontal: 18 },
+  drawerHeader:    { flexDirection: "row", alignItems: "flex-start", marginBottom: 14 },
+  drawerName:      { fontSize: 16, fontFamily: "SpaceGrotesk_700Bold", color: "#fff", marginBottom: 5 },
+  drawerPlanBadge: { alignSelf: "flex-start", paddingHorizontal: 8, paddingVertical: 3, borderRadius: 6 },
+  drawerPlanText:  { fontSize: 11, fontFamily: "SpaceGrotesk_600SemiBold" },
+  drawerClose:     { width: 28, height: 28, borderRadius: 14, alignItems: "center", justifyContent: "center", backgroundColor: "rgba(255,255,255,0.06)", marginTop: 2 },
+  drawerDivider:   { height: 1, marginHorizontal: -18 },
+  drawerCatLabel:  { fontSize: 9, fontFamily: "SpaceGrotesk_700Bold", color: "rgba(255,255,255,0.25)", letterSpacing: 1.4, paddingTop: 14, paddingBottom: 4 },
+  drawerCatDivider:{ height: 1, marginTop: 4, marginHorizontal: -18 },
+  drawerItem:      { flexDirection: "row", alignItems: "center", gap: 11, paddingVertical: 10 },
+  drawerItemLabel: { flex: 1, fontSize: 14, fontFamily: "SpaceGrotesk_500Medium", color: "rgba(255,255,255,0.78)" },
+  drawerSair:      { flexDirection: "row", alignItems: "center", gap: 9, paddingVertical: 11, paddingHorizontal: 12, backgroundColor: "rgba(255,0,128,0.08)", borderRadius: 10, borderWidth: 1, borderColor: "rgba(255,0,128,0.16)" },
+  drawerSairText:  { fontSize: 14, fontFamily: "SpaceGrotesk_600SemiBold", color: "rgba(255,0,128,0.85)" },
 });

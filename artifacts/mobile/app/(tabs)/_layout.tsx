@@ -4,7 +4,6 @@ import React from "react";
 import { Platform, View } from "react-native";
 
 import { useColors } from "@/hooks/useColors";
-import { JADEFab } from "@/components/JADEFab";
 import { useOnboarding } from "@/context/OnboardingContext";
 
 export default function TabLayout() {
@@ -14,7 +13,6 @@ export default function TabLayout() {
 
   const { onboardingDone, onboardingLoaded } = useOnboarding();
 
-  // Wait until AsyncStorage is checked before deciding
   if (!onboardingLoaded) return null;
   if (!onboardingDone) return <Redirect href={"/onboarding" as any} />;
 
@@ -81,15 +79,9 @@ export default function TabLayout() {
         />
         <Tabs.Screen
           name="mais"
-          options={{
-            title: "Mais",
-            tabBarIcon: ({ color }) => (
-              <Feather name="more-horizontal" size={22} color={color} />
-            ),
-          }}
+          options={{ href: null }}
         />
       </Tabs>
-      <JADEFab />
     </View>
   );
 }
