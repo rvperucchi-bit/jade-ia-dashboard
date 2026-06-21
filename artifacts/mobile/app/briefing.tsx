@@ -98,7 +98,7 @@ export default function BriefingScreen() {
         }
       }
     } catch {}
-    const text = await generate(`Responda de forma direta e objetiva em no máximo 300 palavras.\n\nGere um briefing pré-reunião completo e estruturado. ${empresaCtx}\n\nDados do Lead:\n- Nome/Empresa: ${lead}\n- Segmento do lead: ${segmento || "Não informado"}\n- Origem: ${origem}\n- Contexto da reunião: ${contexto || "Primeira reunião comercial"}\n\nEstruture a resposta com estas seções exatas (use ** para os títulos):\n**Resumo do Perfil**: perfil resumido do lead em 2-3 linhas\n**Dores Prováveis**: principais dores do segmento, em bullet points\n**Argumentos de Venda**: 3 argumentos mais relevantes para esse lead\n**Perguntas-Chave**: 5 perguntas para fazer na reunião\n**Alertas de Objeções**: 2-3 objeções prováveis e como lidar`);
+    const text = await generate(`Gere um briefing pré-reunião completo e estruturado. ${empresaCtx}\n\nDados do Lead:\n- Nome/Empresa: ${lead}\n- Segmento do lead: ${segmento || "Não informado"}\n- Origem: ${origem}\n- Contexto da reunião: ${contexto || "Primeira reunião comercial"}\n\nEstruture a resposta com estas seções exatas (use ** para os títulos):\n**Resumo do Perfil**: perfil resumido do lead em 2-3 linhas\n**Dores Prováveis**: principais dores do segmento, em bullet points\n**Argumentos de Venda**: 3 argumentos mais relevantes para esse lead\n**Perguntas-Chave**: 5 perguntas para fazer na reunião\n**Alertas de Objeções**: 2-3 objeções prováveis e como lidar`);
     if (text) {
       setResult(parseResult(text));
       const leadName = lead.trim().toLowerCase();

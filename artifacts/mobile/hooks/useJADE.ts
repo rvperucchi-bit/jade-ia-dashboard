@@ -9,7 +9,7 @@ const API_BASE =
 
 async function callJADE(prompt: string): Promise<string> {
   const controller = new AbortController();
-  const tid = setTimeout(() => controller.abort(), 30000);
+  const tid = setTimeout(() => controller.abort(), 90000);
   try {
     const res = await fetch(`${API_BASE}/api/jade/chat`, {
       method: "POST",

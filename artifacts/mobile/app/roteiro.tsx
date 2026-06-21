@@ -124,7 +124,7 @@ export default function RoteiroScreen() {
         }
       }
     } catch {}
-    await generate(`Responda de forma direta e objetiva em no máximo 300 palavras.\n\nVocê é a JADE, especialista em vendas. Gere um roteiro de vendas completo e personalizado.\n\nContexto: ${contexto}\n\nO roteiro deve cobrir as 5 etapas: Abertura, Qualificação (SPIN), Apresentação, Objeções e Fechamento. Para cada etapa forneça: script pronto para usar, adaptado ao produto/serviço e segmento. Use linguagem brasileira natural e direta.`);
+    await generate(`Você é a JADE, especialista em vendas. Gere um roteiro de vendas completo e personalizado.\n\nContexto: ${contexto}\n\nO roteiro deve cobrir as 5 etapas: Abertura, Qualificação (SPIN), Apresentação, Objeções e Fechamento. Para cada etapa forneça: script pronto para usar, adaptado ao produto/serviço e segmento. Use linguagem brasileira natural e direta.`);
   };
 
   return (

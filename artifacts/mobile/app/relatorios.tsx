@@ -74,8 +74,8 @@ export default function RelatoriosScreen() {
     setAnalysis("");
     const isDiario = tab === "diario";
     const prompt = isDiario
-      ? `Com base nas métricas do dia (8 leads abordados, 5 conversas, 2 propostas, 1 fechamento), gere uma análise executiva resumida do dia comercial. Inclua: o que foi bem, o que melhorar amanhã e a principal ação para o dia seguinte. Seja direto e prático. Máximo 200 palavras.`
-      : `Com base nas métricas semanais (42 leads, 31 conversas, 14 propostas, 6 fechamentos, crescimento de ~10% vs semana anterior), gere um relatório semanal executivo. Inclua: desempenho geral, destaque positivo, ponto de melhoria e meta da próxima semana. Direto e acionável. Máximo 250 palavras.`;
+      ? `Com base nas métricas do dia (8 leads abordados, 5 conversas, 2 propostas, 1 fechamento), gere uma análise executiva completa do dia comercial. Inclua: resumo do dia, o que foi bem, o que melhorar amanhã, principais ações para o dia seguinte e motivação final. Seja direto, prático e estruturado.`
+      : `Com base nas métricas semanais (42 leads, 31 conversas, 14 propostas, 6 fechamentos, crescimento de ~10% vs semana anterior), gere um relatório semanal executivo completo. Inclua: desempenho geral, destaques positivos, pontos de melhoria, análise de tendência e meta da próxima semana. Seja direto, acionável e bem estruturado.`;
     try {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 30000);

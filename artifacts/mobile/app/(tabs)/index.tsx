@@ -45,7 +45,7 @@ function CrosshairIcon({ size, color }: { size: number; color: string }) {
   );
 }
 
-// ─── Module button (small) ────────────────────────────────────────────────────
+// ─── Module button ─────────────────────────────────────────────────────────────
 const BTN_SIZE  = 65;
 const WRAP_SIZE = 79;
 
@@ -108,6 +108,150 @@ const M = StyleSheet.create({
   lockOverlay: { position: "absolute", top: 4, right: 4, width: 20, height: 20, borderRadius: 10, backgroundColor: "#1E1E2E", alignItems: "center", justifyContent: "center", borderWidth: 1, borderColor: "#2E2E3E" },
 });
 
+// ─── JADE Compact Button with energizing rings ────────────────────────────────
+const JADE_BTN = 68;
+
+function JADECompactButton({ onTap, onHoldEnd }: {
+  onTap: () => void;
+  onHoldEnd: () => void;
+}) {
+  const ring1      = useRef(new Animated.Value(0)).current;
+  const ring2      = useRef(new Animated.Value(0)).current;
+  const ring3      = useRef(new Animated.Value(0)).current;
+  const btnScale   = useRef(new Animated.Value(1)).current;
+  const borderGlow = useRef(new Animated.Value(0)).current;
+
+  const isHoldingRef  = useRef(false);
+  const holdTimerRef  = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const holdStuff     = useRef<{
+    timers: ReturnType<typeof setTimeout>[];
+    loops:  ReturnType<typeof Animated.loop>[];
+  }>({ timers: [], loops: [] });
+
+  const panResponder = useRef(
+    PanResponder.create({
+      onStartShouldSetPanResponder: () => true,
+      onPanResponderGrant: () => {
+        isHoldingRef.current = false;
+        holdTimerRef.current = setTimeout(() => {
+          isHoldingRef.current = true;
+
+          const startRing = (anim: Animated.Value, delay: number) => {
+            const t = setTimeout(() => {
+              if (!isHoldingRef.current) return;
+              anim.setValue(0);
+              const loop = Animated.loop(
+                Animated.timing(anim, {
+                  toValue: 1, duration: 1200,
+                  easing: Easing.out(Easing.ease),
+                  useNativeDriver: false,
+                })
+              );
+              loop.start();
+              holdStuff.current.loops.push(loop);
+            }, delay);
+            holdStuff.current.timers.push(t);
+          };
+
+          startRing(ring1, 0);
+          startRing(ring2, 380);
+          startRing(ring3, 760);
+
+          const pulseLoop = Animated.loop(
+            Animated.sequence([
+              Animated.timing(btnScale, { toValue: 1.09, duration: 420, useNativeDriver: false }),
+              Animated.timing(btnScale, { toValue: 1.0,  duration: 420, useNativeDriver: false }),
+            ])
+          );
+          pulseLoop.start();
+          holdStuff.current.loops.push(pulseLoop);
+
+          Animated.timing(borderGlow, { toValue: 1, duration: 280, useNativeDriver: false }).start();
+        }, 400);
+      },
+      onPanResponderRelease: () => {
+        if (holdTimerRef.current) clearTimeout(holdTimerRef.current);
+        const wasHolding = isHoldingRef.current;
+        isHoldingRef.current = false;
+
+        holdStuff.current.timers.forEach(clearTimeout);
+        holdStuff.current.loops.forEach((l) => l.stop());
+        holdStuff.current = { timers: [], loops: [] };
+        ring1.setValue(0);
+        ring2.setValue(0);
+        ring3.setValue(0);
+        Animated.timing(btnScale,   { toValue: 1, duration: 160, useNativeDriver: false }).start();
+        Animated.timing(borderGlow, { toValue: 0, duration: 160, useNativeDriver: false }).start();
+
+        if (wasHolding) {
+          onHoldEnd();
+        } else {
+          onTap();
+        }
+      },
+      onPanResponderTerminate: () => {
+        if (holdTimerRef.current) clearTimeout(holdTimerRef.current);
+        isHoldingRef.current = false;
+        holdStuff.current.timers.forEach(clearTimeout);
+        holdStuff.current.loops.forEach((l) => l.stop());
+        holdStuff.current = { timers: [], loops: [] };
+        ring1.setValue(0);
+        ring2.setValue(0);
+        ring3.setValue(0);
+        Animated.timing(btnScale,   { toValue: 1, duration: 160, useNativeDriver: false }).start();
+        Animated.timing(borderGlow, { toValue: 0, duration: 160, useNativeDriver: false }).start();
+      },
+    })
+  ).current;
+
+  const makeRingStyle = (anim: Animated.Value) => ({
+    transform: [{ scale: anim.interpolate({ inputRange: [0, 1], outputRange: [1, 3.2] }) }],
+    opacity:   anim.interpolate({ inputRange: [0, 0.4, 1], outputRange: [0.55, 0.25, 0] }),
+  });
+
+  const btnBorderColor = borderGlow.interpolate({
+    inputRange: [0, 1], outputRange: [PINK + "55", PINK + "EE"],
+  });
+
+  return (
+    <View style={{ alignItems: "center", justifyContent: "center", width: JADE_BTN * 3.4, height: JADE_BTN * 3.4 }}>
+      {/* Energizing rings — positioned absolutely, centered */}
+      <Animated.View style={[JB.ring, makeRingStyle(ring1)]} />
+      <Animated.View style={[JB.ring, makeRingStyle(ring2)]} />
+      <Animated.View style={[JB.ring, makeRingStyle(ring3)]} />
+
+      {/* Button */}
+      <View {...panResponder.panHandlers} style={{ alignItems: "center", justifyContent: "center" }}>
+        <Animated.View style={[JB.btn, {
+          transform: [{ scale: btnScale }],
+          borderColor: btnBorderColor,
+          shadowColor: PINK,
+          shadowOffset: { width: 0, height: 0 },
+          shadowOpacity: 0.45,
+          shadowRadius: 12,
+          elevation: 8,
+        }]}>
+          <MaterialCommunityIcons name="robot" size={30} color={PINK} />
+        </Animated.View>
+      </View>
+    </View>
+  );
+}
+
+const JB = StyleSheet.create({
+  ring: {
+    position: "absolute",
+    width: JADE_BTN, height: JADE_BTN, borderRadius: JADE_BTN / 2,
+    borderWidth: 1.5, borderColor: PINK,
+  },
+  btn: {
+    width: JADE_BTN, height: JADE_BTN, borderRadius: JADE_BTN / 2,
+    backgroundColor: "#12061e",
+    borderWidth: 1.5,
+    alignItems: "center", justifyContent: "center",
+  },
+});
+
 // ─── Activity helpers ─────────────────────────────────────────────────────────
 function activityColor(type: ActivityEvent["type"], colors: ReturnType<typeof useColors>) {
   switch (type) {
@@ -125,14 +269,14 @@ function activityColor(type: ActivityEvent["type"], colors: ReturnType<typeof us
 function ActivityIcon({ type, color }: { type: ActivityEvent["type"]; color: string }) {
   const size = 14;
   switch (type) {
-    case "lead":     return <Feather name="user-plus" size={size} color={color} />;
-    case "deal":     return <Feather name="briefcase" size={size} color={color} />;
+    case "lead":     return <Feather name="user-plus"     size={size} color={color} />;
+    case "deal":     return <Feather name="briefcase"     size={size} color={color} />;
     case "message":  return <MaterialCommunityIcons name="robot" size={size} color={color} />;
-    case "task":     return <Feather name="calendar" size={size} color={color} />;
-    case "scan":     return <Feather name="crosshair" size={size} color={color} />;
-    case "campaign": return <Feather name="zap" size={size} color={color} />;
-    case "module":   return <Feather name="settings" size={size} color={color} />;
-    default:         return <Feather name="activity" size={size} color={color} />;
+    case "task":     return <Feather name="calendar"      size={size} color={color} />;
+    case "scan":     return <Feather name="crosshair"     size={size} color={color} />;
+    case "campaign": return <Feather name="zap"           size={size} color={color} />;
+    case "module":   return <Feather name="settings"      size={size} color={color} />;
+    default:         return <Feather name="activity"      size={size} color={color} />;
   }
 }
 
@@ -146,213 +290,25 @@ function timeAgo(isoString: string): string {
   return `${Math.floor(h / 24)}d atrás`;
 }
 
-// ─── Module definitions (without jade — jade is the hero button) ──────────────
+// ─── Module definitions ───────────────────────────────────────────────────────
 const MODULE_DEFS = [
-  { name: "jade",       label: "JADE IA",  locked: false, plan: "", onMsg: "JADE ativa e respondendo leads automaticamente.", offMsg: "JADE pausada." },
-  { name: "scanner",    label: "Radar",    locked: false, plan: "", onMsg: "JADE está buscando novos estabelecimentos próximos.", offMsg: "Scanner pausado." },
-  { name: "leads",      label: "Leads",    locked: false, plan: "", onMsg: "Sincronização automática de leads ativada.", offMsg: "CRM em modo manual." },
-  { name: "whatsapp",   label: "WhatsApp", locked: false, plan: "", onMsg: "WhatsApp configurado.", offMsg: "WhatsApp pausado." },
-  { name: "marketing",  label: "Mkt",      locked: false, plan: "", onMsg: "Campanhas ativadas.", offMsg: "Marketing pausado." },
-  { name: "gestao",     label: "Gestão",   locked: true,  plan: "Enterprise", onMsg: "", offMsg: "" },
-  { name: "relatorios", label: "Relatórios", locked: true, plan: "Enterprise", onMsg: "", offMsg: "" },
+  { name: "scanner",    label: "Radar",      locked: false, plan: "" },
+  { name: "leads",      label: "Leads",      locked: false, plan: "" },
+  { name: "whatsapp",   label: "WhatsApp",   locked: false, plan: "" },
+  { name: "marketing",  label: "Mkt",        locked: false, plan: "" },
+  { name: "gestao",     label: "Gestão",     locked: true,  plan: "Enterprise" },
+  { name: "relatorios", label: "Relatórios", locked: true,  plan: "Enterprise" },
 ];
 
-// Module defs for the small button grid (excludes jade hero)
-const GRID_MODULES = MODULE_DEFS.filter((d) => d.name !== "jade");
-
-// ─── Voice Overlay ────────────────────────────────────────────────────────────
-function VoiceOverlay({ visible, onClose }: { visible: boolean; onClose: () => void }) {
-  const pulseAnim = useRef(new Animated.Value(0)).current;
-  const [secs, setSecs] = useState(0);
-  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const secsRef  = useRef(0);
-  const router   = useRouter();
-
-  useEffect(() => {
-    if (visible) {
-      secsRef.current = 0;
-      setSecs(0);
-      timerRef.current = setInterval(() => {
-        secsRef.current += 1;
-        setSecs(secsRef.current);
-      }, 1000);
-      Animated.loop(
-        Animated.sequence([
-          Animated.timing(pulseAnim, { toValue: 1, duration: 700, easing: Easing.inOut(Easing.ease), useNativeDriver: false }),
-          Animated.timing(pulseAnim, { toValue: 0, duration: 700, easing: Easing.inOut(Easing.ease), useNativeDriver: false }),
-        ])
-      ).start();
-    } else {
-      if (timerRef.current) clearInterval(timerRef.current);
-      pulseAnim.setValue(0);
-      setSecs(0);
-      secsRef.current = 0;
-    }
-    return () => { if (timerRef.current) clearInterval(timerRef.current); };
-  }, [visible]);
-
-  const ringScale = pulseAnim.interpolate({ inputRange: [0, 1], outputRange: [1, 1.4] });
-  const ringOpacity = pulseAnim.interpolate({ inputRange: [0, 1], outputRange: [0.5, 0] });
-  const mm = String(Math.floor(secs / 60)).padStart(2, "0");
-  const ss = String(secs % 60).padStart(2, "0");
-
-  return (
-    <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
-      <View style={VO.overlay}>
-        <View style={VO.content}>
-          <Text style={VO.title}>Falando com a JADE...</Text>
-          <Text style={VO.sub}>Solte para enviar · Deslize para cancelar</Text>
-
-          <View style={VO.micWrap}>
-            <Animated.View style={[VO.ring, { transform: [{ scale: ringScale }], opacity: ringOpacity }]} />
-            <View style={VO.micCircle}>
-              <Feather name="mic" size={42} color="#fff" />
-            </View>
-          </View>
-
-          <Text style={VO.timer}>{mm}:{ss}</Text>
-
-          <View style={VO.waveRow}>
-            {[3, 7, 12, 8, 14, 6, 11, 5, 9, 4, 13, 7].map((h, i) => (
-              <View key={i} style={[VO.wave, { height: h * 2.5 }]} />
-            ))}
-          </View>
-
-          <TouchableOpacity style={VO.cancelBtn} onPress={onClose} activeOpacity={0.8}>
-            <Feather name="x" size={20} color="#fff" />
-            <Text style={VO.cancelText}>Cancelar</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
-    </Modal>
-  );
-}
-
-const VO = StyleSheet.create({
-  overlay: { flex: 1, backgroundColor: "rgba(0,0,0,0.92)", alignItems: "center", justifyContent: "center" },
-  content: { alignItems: "center", gap: 20, paddingHorizontal: 40 },
-  title: { fontSize: 22, fontFamily: "SpaceGrotesk_700Bold", color: "#fff", textAlign: "center" },
-  sub: { fontSize: 13, fontFamily: "SpaceGrotesk_400Regular", color: "#AAAACC", textAlign: "center" },
-  micWrap: { position: "relative", width: 120, height: 120, alignItems: "center", justifyContent: "center" },
-  ring: { position: "absolute", width: 120, height: 120, borderRadius: 60, borderWidth: 2, borderColor: PINK },
-  micCircle: { width: 90, height: 90, borderRadius: 45, backgroundColor: PINK, alignItems: "center", justifyContent: "center",
-    shadowColor: PINK, shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.8, shadowRadius: 20, elevation: 12 },
-  timer: { fontSize: 28, fontFamily: "SpaceGrotesk_700Bold", color: PINK },
-  waveRow: { flexDirection: "row", alignItems: "center", gap: 4, height: 40 },
-  wave: { width: 4, borderRadius: 2, backgroundColor: PINK + "99" },
-  cancelBtn: { flexDirection: "row", alignItems: "center", gap: 8, paddingHorizontal: 24, paddingVertical: 12, borderRadius: 28, backgroundColor: "#222233" },
-  cancelText: { color: "#fff", fontSize: 15, fontFamily: "SpaceGrotesk_500Medium" },
-});
-
-// ─── JADE Hero Button ─────────────────────────────────────────────────────────
-function JADEHeroButton({ onPress, onVoiceStart, onVoiceEnd, colors }: {
-  onPress: () => void;
-  onVoiceStart: () => void;
-  onVoiceEnd: () => void;
-  colors: ReturnType<typeof useColors>;
-}) {
-  const glowAnim = useRef(new Animated.Value(0)).current;
-
-  useEffect(() => {
-    Animated.loop(
-      Animated.sequence([
-        Animated.timing(glowAnim, { toValue: 1, duration: 2000, easing: Easing.inOut(Easing.ease), useNativeDriver: false }),
-        Animated.timing(glowAnim, { toValue: 0, duration: 2000, easing: Easing.inOut(Easing.ease), useNativeDriver: false }),
-      ])
-    ).start();
-  }, []);
-
-  const borderColor = glowAnim.interpolate({ inputRange: [0, 1], outputRange: [PINK + "44", PINK + "AA"] });
-  const shadowRadius = glowAnim.interpolate({ inputRange: [0, 1], outputRange: [8, 20] });
-
-  const voiceHoldRef = useRef(false);
-
-  const panResponder = useRef(
-    PanResponder.create({
-      onStartShouldSetPanResponder: () => true,
-      onPanResponderGrant: () => {
-        voiceHoldRef.current = false;
-      },
-      onPanResponderRelease: (_, gs) => {
-        const isLongPress = gs.numberActiveTouches === 0;
-        if (voiceHoldRef.current) {
-          onVoiceEnd();
-          voiceHoldRef.current = false;
-        }
-      },
-      onPanResponderTerminate: () => {
-        if (voiceHoldRef.current) {
-          onVoiceEnd();
-          voiceHoldRef.current = false;
-        }
-      },
-    })
-  ).current;
-
-  return (
-    <TouchableOpacity
-      onPress={onPress}
-      onLongPress={() => { onVoiceStart(); voiceHoldRef.current = true; }}
-      delayLongPress={500}
-      activeOpacity={0.85}
-      style={H.heroWrap}
-    >
-      <Animated.View style={[H.heroBtn, { borderColor, shadowColor: PINK, shadowOpacity: 0.5, shadowRadius, shadowOffset: { width: 0, height: 0 }, elevation: 10 }]}>
-        {/* gradient layers */}
-        <View style={[H.heroGrad1, { backgroundColor: PURPLE + "18" }]} />
-        <View style={[H.heroGrad2, { backgroundColor: PINK + "10" }]} />
-
-        {/* content */}
-        <View style={H.heroContent}>
-          <View style={H.heroLeft}>
-            <View style={[H.heroIconWrap, { backgroundColor: PINK + "22" }]}>
-              <MaterialCommunityIcons name="robot" size={28} color={PINK} />
-            </View>
-            <View>
-              <Text style={H.heroLabel}>JADE</Text>
-              <Text style={H.heroSub}>Toque para conversar</Text>
-            </View>
-          </View>
-          <View style={H.heroRight}>
-            <View style={[H.micHint, { backgroundColor: PINK + "15", borderColor: PINK + "40" }]}>
-              <Feather name="mic" size={14} color={PINK} />
-              <Text style={[H.micHintText, { color: PINK }]}>Segure</Text>
-            </View>
-          </View>
-        </View>
-      </Animated.View>
-    </TouchableOpacity>
-  );
-}
-
-const H = StyleSheet.create({
-  heroWrap: { marginHorizontal: 16, marginBottom: 4 },
-  heroBtn: {
-    borderRadius: 22, borderWidth: 1.5, overflow: "hidden",
-    backgroundColor: "#12091E",
-  },
-  heroGrad1: { position: "absolute", top: 0, left: 0, right: "40%", bottom: 0 },
-  heroGrad2: { position: "absolute", top: 0, left: "40%", right: 0, bottom: 0 },
-  heroContent: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", padding: 18, gap: 12 },
-  heroLeft: { flexDirection: "row", alignItems: "center", gap: 14 },
-  heroIconWrap: { width: 54, height: 54, borderRadius: 17, alignItems: "center", justifyContent: "center" },
-  heroLabel: { fontSize: 22, fontFamily: "SpaceGrotesk_700Bold", color: "#fff" },
-  heroSub: { fontSize: 12, fontFamily: "SpaceGrotesk_400Regular", color: "#AAAACC", marginTop: 2 },
-  heroRight: { alignItems: "flex-end", gap: 6 },
-  micHint: { flexDirection: "row", alignItems: "center", gap: 5, paddingHorizontal: 10, paddingVertical: 6, borderRadius: 12, borderWidth: 1 },
-  micHintText: { fontSize: 12, fontFamily: "SpaceGrotesk_600SemiBold" },
-});
-
 // ─── Screen ───────────────────────────────────────────────────────────────────
-export default function RadarScreen() {
+export default function HomeScreen() {
   const colors  = useColors();
   const insets  = useSafeAreaInsets();
   const router  = useRouter();
   const { leads, conversations, moduleStates, activityEvents, toggleModule, refreshDashboard, addLead } = useApp();
-  const [refreshing, setRefreshing]         = useState(false);
-  const [lockModal, setLockModal]           = useState(false);
+  const [refreshing, setRefreshing]             = useState(false);
+  const [lockModal, setLockModal]               = useState(false);
   const [lockedModuleName, setLockedModuleName] = useState("");
-  const [voiceOverlay, setVoiceOverlay]     = useState(false);
 
   // ── Scanner autonomous mode ────────────────────────────────────────────────
   const [scannerRunning, setScannerRunning] = useState(false);
@@ -388,7 +344,10 @@ export default function RadarScreen() {
       };
       doProspectar();
       scannerIntervalRef.current = setInterval(doProspectar, 60000);
-      return () => { if (scannerIntervalRef.current) clearInterval(scannerIntervalRef.current); setScannerRunning(false); };
+      return () => {
+        if (scannerIntervalRef.current) clearInterval(scannerIntervalRef.current);
+        setScannerRunning(false);
+      };
     } else {
       if (scannerIntervalRef.current) clearInterval(scannerIntervalRef.current);
       setScannerRunning(false);
@@ -401,11 +360,11 @@ export default function RadarScreen() {
   const unread    = conversations.filter((c) => c.unread > 0).length;
 
   // ── Metrics ────────────────────────────────────────────────────────────────
-  const totalLeads    = leads.length;
-  const novoLeads     = leads.filter((l) => l.column === "novo").length;
-  const fechadoLeads  = leads.filter((l) => l.column === "fechado");
-  const txConversao   = totalLeads > 0 ? Math.round((fechadoLeads.length / totalLeads) * 100) : 0;
-  const receitaMes    = fechadoLeads.reduce((sum, l) => sum + l.value, 0);
+  const totalLeads      = leads.length;
+  const novoLeads       = leads.filter((l) => l.column === "novo").length;
+  const fechadoLeads    = leads.filter((l) => l.column === "fechado");
+  const txConversao     = totalLeads > 0 ? Math.round((fechadoLeads.length / totalLeads) * 100) : 0;
+  const receitaMes      = fechadoLeads.reduce((sum, l) => sum + l.value, 0);
   const conversasAtivas = conversations.filter((c) => c.unread > 0).length;
 
   function formatCurrency(v: number) {
@@ -414,10 +373,10 @@ export default function RadarScreen() {
   }
 
   const METRICS = [
-    { label: "Leads Ativos",       value: String(novoLeads),          change: `${totalLeads} total`,             positive: true,               icon: "users",          iconColor: "#6C63FF" },
-    { label: "Conv. não lidas",    value: String(conversasAtivas),    change: `${conversations.length} total`,   positive: conversasAtivas > 0, icon: "message-circle", iconColor: PINK },
-    { label: "Tx. Conversão",      value: `${txConversao}%`,          change: `${fechadoLeads.length} fechados`, positive: txConversao > 20,    icon: "trending-up",    iconColor: "#00D68F" },
-    { label: "Receita Fechada",    value: formatCurrency(receitaMes), change: `${fechadoLeads.length} contratos`, positive: true,              icon: "dollar-sign",    iconColor: "#FFB300" },
+    { label: "Leads Ativos",    value: String(novoLeads),          change: `${totalLeads} total`,             positive: true,               icon: "users",          iconColor: "#6C63FF" },
+    { label: "Conv. não lidas", value: String(conversasAtivas),    change: `${conversations.length} total`,   positive: conversasAtivas > 0, icon: "message-circle", iconColor: PINK },
+    { label: "Tx. Conversão",   value: `${txConversao}%`,          change: `${fechadoLeads.length} fechados`, positive: txConversao > 20,    icon: "trending-up",    iconColor: "#00D68F" },
+    { label: "Receita Fechada", value: formatCurrency(receitaMes), change: `${fechadoLeads.length} contratos`, positive: true,              icon: "dollar-sign",    iconColor: "#FFB300" },
   ] as const;
 
   const activeModuleNames = Object.values(moduleStates)
@@ -439,9 +398,7 @@ export default function RadarScreen() {
   }, [refreshDashboard]);
 
   const lockedDef = MODULE_DEFS.find((d) => d.name === lockedModuleName);
-
-  // ── Navigate to JADE tab ───────────────────────────────────────────────────
-  const goToJade = () => router.push("/(tabs)/jade" as any);
+  const goToJade  = () => router.push("/(tabs)/jade" as any);
 
   return (
     <>
@@ -475,30 +432,14 @@ export default function RadarScreen() {
           </View>
         </View>
 
-        {/* ── JADE Hero Button ── */}
-        <View style={S.heroSection}>
-          <JADEHeroButton
-            colors={colors}
-            onPress={goToJade}
-            onVoiceStart={() => setVoiceOverlay(true)}
-            onVoiceEnd={() => {
-              setVoiceOverlay(false);
-              goToJade();
-            }}
-          />
-          <Text style={[S.heroHint, { color: colors.mutedForeground }]}>
-            Segure para falar · Toque para conversar
-          </Text>
-        </View>
-
-        {/* ── Module buttons (grid) ── */}
-        <Text style={[S.gridTitle, { color: colors.mutedForeground }]}>MÓDULOS DE ATIVAÇÃO</Text>
+        {/* ── Módulos de Ativação ── */}
+        <Text style={[S.sectionSmall, { color: colors.mutedForeground }]}>MÓDULOS DE ATIVAÇÃO</Text>
         <ScrollView
           horizontal showsHorizontalScrollIndicator={false}
           contentContainerStyle={S.modulesRow} style={S.modulesScroll}
         >
-          {GRID_MODULES.map((def) => {
-            const mod = moduleStates[def.name];
+          {MODULE_DEFS.map((def) => {
+            const mod    = moduleStates[def.name];
             const active = def.locked ? false : (mod?.is_active ?? false);
             return (
               <View key={def.name} style={{ alignItems: "center", gap: 6 }}>
@@ -516,10 +457,10 @@ export default function RadarScreen() {
                   colors={colors}
                 >
                   {def.name === "scanner"    && <CrosshairIcon size={27} color={def.locked ? "#5555AA" : PINK} />}
-                  {def.name === "leads"      && <Feather name="users" size={25} color={def.locked ? "#5555AA" : PINK} />}
+                  {def.name === "leads"      && <Feather name="users"       size={25} color={def.locked ? "#5555AA" : PINK} />}
                   {def.name === "whatsapp"   && <Feather name="message-circle" size={25} color={def.locked ? "#5555AA" : PINK} />}
-                  {def.name === "marketing"  && <Feather name="zap" size={25} color={def.locked ? "#5555AA" : PINK} />}
-                  {def.name === "gestao"     && <Feather name="briefcase" size={25} color="#5555AA" />}
+                  {def.name === "marketing"  && <Feather name="zap"         size={25} color={def.locked ? "#5555AA" : PINK} />}
+                  {def.name === "gestao"     && <Feather name="briefcase"   size={25} color="#5555AA" />}
                   {def.name === "relatorios" && <Feather name="bar-chart-2" size={25} color="#5555AA" />}
                 </ModuleBtn>
                 <Text style={[S.moduleLabel, {
@@ -551,6 +492,17 @@ export default function RadarScreen() {
             <Text>Nenhum módulo ativo</Text>
           )}
         </Text>
+
+        {/* ── JADE Compact Button ── */}
+        <View style={S.jadeSection}>
+          <JADECompactButton
+            onTap={goToJade}
+            onHoldEnd={goToJade}
+          />
+          <Text style={[S.jadeHint, { color: colors.mutedForeground }]}>
+            Segure para falar · Toque para conversar
+          </Text>
+        </View>
 
         {/* ── Metric Cards ── */}
         <View style={S.metricsGrid}>
@@ -627,7 +579,7 @@ export default function RadarScreen() {
             {activityEvents.length === 0 && (
               <View style={{ padding: 20, alignItems: "center" }}>
                 <Feather name="activity" size={24} color={colors.mutedForeground} />
-                <Text style={[{ color: colors.mutedForeground, fontSize: 13, marginTop: 8, fontFamily: "SpaceGrotesk_400Regular" }]}>
+                <Text style={{ color: colors.mutedForeground, fontSize: 13, marginTop: 8, fontFamily: "SpaceGrotesk_400Regular" }}>
                   Nenhuma atividade ainda
                 </Text>
               </View>
@@ -635,9 +587,6 @@ export default function RadarScreen() {
           </View>
         </View>
       </ScrollView>
-
-      {/* ── Voice Overlay ── */}
-      <VoiceOverlay visible={voiceOverlay} onClose={() => setVoiceOverlay(false)} />
 
       {/* ── Enterprise Lock Modal ── */}
       <Modal visible={lockModal} transparent animationType="fade" onRequestClose={() => setLockModal(false)}>
@@ -665,53 +614,56 @@ export default function RadarScreen() {
 
 const S = StyleSheet.create({
   root: { flex: 1 },
-  header: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: 20, paddingBottom: 12 },
+  header: {
+    flexDirection: "row", alignItems: "center", justifyContent: "space-between",
+    paddingHorizontal: 20, paddingBottom: 14,
+  },
   greeting: { fontSize: 14, fontFamily: "SpaceGrotesk_400Regular" },
   name:     { fontSize: 24, fontFamily: "SpaceGrotesk_700Bold", marginTop: 2 },
   headerRight: { flexDirection: "row", alignItems: "center", gap: 10 },
-  headerBtn: { width: 40, height: 40, borderRadius: 20, alignItems: "center", justifyContent: "center", position: "relative" },
-  notifDot: { position: "absolute", top: 6, right: 6, width: 16, height: 16, borderRadius: 8, alignItems: "center", justifyContent: "center" },
-  notifDotText: { color: "#fff", fontSize: 9, fontFamily: "SpaceGrotesk_700Bold" },
-  avatarBtn: { width: 40, height: 40, borderRadius: 20, alignItems: "center", justifyContent: "center" },
-  heroSection: { marginBottom: 16 },
-  heroHint: { textAlign: "center", fontSize: 11, fontFamily: "SpaceGrotesk_400Regular", marginTop: 8 },
-  gridTitle: { fontSize: 11, fontFamily: "SpaceGrotesk_600SemiBold", letterSpacing: 1, paddingHorizontal: 20, marginBottom: 6 },
+  headerBtn:   { width: 40, height: 40, borderRadius: 20, alignItems: "center", justifyContent: "center", position: "relative" },
+  notifDot:    { position: "absolute", top: 6, right: 6, width: 16, height: 16, borderRadius: 8, alignItems: "center", justifyContent: "center" },
+  notifDotText:{ color: "#fff", fontSize: 9, fontFamily: "SpaceGrotesk_700Bold" },
+  avatarBtn:   { width: 40, height: 40, borderRadius: 20, alignItems: "center", justifyContent: "center" },
+  sectionSmall: { fontSize: 11, fontFamily: "SpaceGrotesk_600SemiBold", letterSpacing: 1, paddingHorizontal: 20, marginBottom: 6 },
   modulesScroll: { marginBottom: 4 },
-  modulesRow: { paddingHorizontal: 16, paddingVertical: 8, gap: 14, flexDirection: "row", alignItems: "flex-start" },
-  moduleLabel: { fontSize: 10, fontFamily: "SpaceGrotesk_500Medium", textAlign: "center" },
-  activeLabel: { fontSize: 12, fontFamily: "SpaceGrotesk_400Regular", paddingHorizontal: 20, marginBottom: 16 },
-  metricsGrid: { flexDirection: "row", flexWrap: "wrap", paddingHorizontal: 12, gap: 10, marginBottom: 16 },
-  metricCard: { width: "47%", borderRadius: 14, borderWidth: 1, padding: 14, flexGrow: 1 },
-  metricHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 10 },
-  metricIcon: { width: 34, height: 34, borderRadius: 10, alignItems: "center", justifyContent: "center" },
-  metricChange: { flexDirection: "row", alignItems: "center", gap: 3, paddingHorizontal: 7, paddingVertical: 3, borderRadius: 8 },
+  modulesRow:    { paddingHorizontal: 16, paddingVertical: 8, gap: 14, flexDirection: "row", alignItems: "flex-start" },
+  moduleLabel:   { fontSize: 10, fontFamily: "SpaceGrotesk_500Medium", textAlign: "center" },
+  activeLabel:   { fontSize: 12, fontFamily: "SpaceGrotesk_400Regular", paddingHorizontal: 20, marginBottom: 4 },
+  jadeSection:   { alignItems: "center", justifyContent: "center", marginVertical: 6 },
+  jadeHint:      { fontSize: 11, fontFamily: "SpaceGrotesk_400Regular", textAlign: "center", marginTop: 2, opacity: 0.55 },
+  metricsGrid:   { flexDirection: "row", flexWrap: "wrap", paddingHorizontal: 12, gap: 10, marginBottom: 16 },
+  metricCard:    { width: "47%", borderRadius: 14, borderWidth: 1, padding: 14, flexGrow: 1 },
+  metricHeader:  { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 10 },
+  metricIcon:    { width: 34, height: 34, borderRadius: 10, alignItems: "center", justifyContent: "center" },
+  metricChange:  { flexDirection: "row", alignItems: "center", gap: 3, paddingHorizontal: 7, paddingVertical: 3, borderRadius: 8 },
   metricChangeText: { fontSize: 10, fontFamily: "SpaceGrotesk_600SemiBold" },
-  metricValue:  { fontSize: 22, fontFamily: "SpaceGrotesk_700Bold" },
-  metricLabel:  { fontSize: 12, fontFamily: "SpaceGrotesk_400Regular", marginTop: 2 },
-  section: { paddingHorizontal: 16, marginBottom: 16 },
+  metricValue:   { fontSize: 22, fontFamily: "SpaceGrotesk_700Bold" },
+  metricLabel:   { fontSize: 12, fontFamily: "SpaceGrotesk_400Regular", marginTop: 2 },
+  section:       { paddingHorizontal: 16, marginBottom: 16 },
   sectionHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 10 },
-  sectionTitle: { fontSize: 17, fontFamily: "SpaceGrotesk_700Bold" },
-  sectionLink:  { fontSize: 14, fontFamily: "SpaceGrotesk_500Medium" },
-  pipelineCard: { borderRadius: 14, borderWidth: 1, padding: 16, flexDirection: "row", gap: 8 },
+  sectionTitle:  { fontSize: 17, fontFamily: "SpaceGrotesk_700Bold" },
+  sectionLink:   { fontSize: 14, fontFamily: "SpaceGrotesk_500Medium" },
+  pipelineCard:    { borderRadius: 14, borderWidth: 1, padding: 16, flexDirection: "row", gap: 8 },
   pipelineCol:     { flex: 1, alignItems: "center", gap: 4 },
   pipelineDot:     { width: 8, height: 8, borderRadius: 4 },
   pipelineCount:   { fontSize: 22, fontFamily: "SpaceGrotesk_700Bold" },
   pipelineLabel:   { fontSize: 11, fontFamily: "SpaceGrotesk_400Regular", textAlign: "center" },
   pipelineBar:     { width: "100%", height: 4, borderRadius: 2, marginTop: 4, flexDirection: "row" },
   pipelineBarFill: { height: 4, borderRadius: 2 },
-  activityCard:     { borderRadius: 14, borderWidth: 1, overflow: "hidden" },
-  activityItem:     { flexDirection: "row", gap: 12, padding: 14, alignItems: "flex-start" },
-  activityIconWrap: { width: 32, height: 32, borderRadius: 10, alignItems: "center", justifyContent: "center", marginTop: 1 },
-  activityText:     { fontSize: 13, fontFamily: "SpaceGrotesk_400Regular", lineHeight: 19, flex: 1 },
-  activityTime:     { fontSize: 12, fontFamily: "SpaceGrotesk_400Regular", marginTop: 3 },
-  activityDivider:  { height: StyleSheet.hairlineWidth, marginLeft: 58 },
-  modalOverlay: { flex: 1, backgroundColor: "rgba(0,0,0,0.75)", alignItems: "center", justifyContent: "center", padding: 24 },
-  modalBox: { backgroundColor: "#111118", borderRadius: 24, padding: 28, alignItems: "center", width: "100%", borderWidth: 1, borderColor: "#1E1E2E", gap: 12 },
-  modalIconWrap: { width: 64, height: 64, borderRadius: 32, backgroundColor: "#FF008018", alignItems: "center", justifyContent: "center", borderWidth: 1, borderColor: "#FF008044", marginBottom: 4 },
-  modalTitle: { fontSize: 20, fontFamily: "SpaceGrotesk_700Bold", color: "#FFFFFF", textAlign: "center" },
-  modalBody: { fontSize: 14, fontFamily: "SpaceGrotesk_400Regular", color: "#AAAACC", textAlign: "center", lineHeight: 22, marginBottom: 8 },
+  activityCard:    { borderRadius: 14, borderWidth: 1, overflow: "hidden" },
+  activityItem:    { flexDirection: "row", gap: 12, padding: 14, alignItems: "flex-start" },
+  activityIconWrap:{ width: 32, height: 32, borderRadius: 10, alignItems: "center", justifyContent: "center", marginTop: 1 },
+  activityText:    { fontSize: 13, fontFamily: "SpaceGrotesk_400Regular", lineHeight: 19, flex: 1 },
+  activityTime:    { fontSize: 12, fontFamily: "SpaceGrotesk_400Regular", marginTop: 3 },
+  activityDivider: { height: StyleSheet.hairlineWidth, marginLeft: 58 },
+  modalOverlay:    { flex: 1, backgroundColor: "rgba(0,0,0,0.75)", alignItems: "center", justifyContent: "center", padding: 24 },
+  modalBox:        { backgroundColor: "#111118", borderRadius: 24, padding: 28, alignItems: "center", width: "100%", borderWidth: 1, borderColor: "#1E1E2E", gap: 12 },
+  modalIconWrap:   { width: 64, height: 64, borderRadius: 32, backgroundColor: "#FF008018", alignItems: "center", justifyContent: "center", borderWidth: 1, borderColor: "#FF008044", marginBottom: 4 },
+  modalTitle:      { fontSize: 20, fontFamily: "SpaceGrotesk_700Bold", color: "#FFFFFF", textAlign: "center" },
+  modalBody:       { fontSize: 14, fontFamily: "SpaceGrotesk_400Regular", color: "#AAAACC", textAlign: "center", lineHeight: 22, marginBottom: 8 },
   modalPrimaryBtn: { flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8, backgroundColor: PINK, borderRadius: 14, height: 50, width: "100%" },
-  modalPrimaryText: { fontSize: 16, fontFamily: "SpaceGrotesk_700Bold", color: "#fff" },
-  modalSecondaryBtn: { paddingVertical: 10 },
+  modalPrimaryText:{ fontSize: 16, fontFamily: "SpaceGrotesk_700Bold", color: "#fff" },
+  modalSecondaryBtn:  { paddingVertical: 10 },
   modalSecondaryText: { fontSize: 14, fontFamily: "SpaceGrotesk_500Medium", color: "#7777AA" },
 });

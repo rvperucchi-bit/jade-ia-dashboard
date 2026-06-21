@@ -82,7 +82,7 @@ export default function MetasScreen() {
         body: JSON.stringify({
           messages: [{
             role: "user",
-            content: `Responda de forma direta e objetiva em no máximo 300 palavras.\n\nSou gestor comercial. Meu time está assim: ${resumo}. Meta total: ${fmt(metaTotal)}, realizado: ${fmt(realizadoTotal)} (${pTotal}%). Faltam ${fmt(metaTotal - realizadoTotal)} para bater a meta. Gere uma estratégia prática e objetiva para fechar o mês, focando nos vendedores com maior gap e nas ações que gerarão mais resultado rápido.`,
+            content: `Sou gestor comercial. Meu time está assim: ${resumo}. Meta total: ${fmt(metaTotal)}, realizado: ${fmt(realizadoTotal)} (${pTotal}%). Faltam ${fmt(metaTotal - realizadoTotal)} para bater a meta. Gere uma estratégia prática e objetiva para fechar o mês, focando nos vendedores com maior gap e nas ações que gerarão mais resultado rápido.`,
           }],
         }),
         signal: controller.signal,

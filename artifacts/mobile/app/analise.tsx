@@ -118,7 +118,7 @@ export default function AnaliseScreen() {
     const dropStr = drops
       .map((d) => `${d.from}: ${d.rate > 0 ? Math.round(d.rate * 100) + "%" : "—"}`)
       .join(", ");
-    await generate(`Você é a JADE, especialista em vendas B2B. Analise os dados do pipeline e gere uma análise de gaps objetiva.\n\nDADOS:\n- Pipeline: ${piStr}\n- Total leads: ${total}\n- Taxa de conversão: ${txConv}%\n- Ticket médio: R$${ticket.toLocaleString("pt-BR")}\n- Conversas não lidas: ${msgNaoLidas}\n- Conversão por etapa: ${dropStr}\n\nGere:\n1. DIAGNÓSTICO RÁPIDO (2 linhas)\n2. MAIOR GAP: onde está perdendo mais leads e por quê\n3. TOP 3 AÇÕES para melhorar a conversão\n4. META REALISTA: conversão possível com as ações implementadas\n\nSeja direta, prática e motivadora. Máximo 250 palavras.`);
+    await generate(`Você é a JADE, especialista em vendas B2B. Analise os dados do pipeline e gere uma análise de gaps objetiva.\n\nDADOS:\n- Pipeline: ${piStr}\n- Total leads: ${total}\n- Taxa de conversão: ${txConv}%\n- Ticket médio: R$${ticket.toLocaleString("pt-BR")}\n- Conversas não lidas: ${msgNaoLidas}\n- Conversão por etapa: ${dropStr}\n\nGere:\n1. DIAGNÓSTICO RÁPIDO (2 linhas)\n2. MAIOR GAP: onde está perdendo mais leads e por quê\n3. TOP 3 AÇÕES para melhorar a conversão\n4. META REALISTA: conversão possível com as ações implementadas\n\nSeja direta, prática e motivadora. Entregue a análise completa e estruturada.`);
   };
 
   return (

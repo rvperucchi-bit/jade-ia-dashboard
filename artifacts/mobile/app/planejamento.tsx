@@ -238,7 +238,7 @@ export default function PlanejamentoScreen() {
     setGerandoJade(true);
     setSugestao("");
     const itensStr = plano.itens.map((it, i) => `${i + 1}. [${it.tipo}] ${it.titulo}${it.horario ? ` às ${it.horario}` : ""}${it.descricao ? ` — ${it.descricao}` : ""}`).join("\n");
-    const prompt = `Responda de forma direta e objetiva em no máximo 300 palavras.\n\nVocê é a JADE, minha parceira de vendas. Analise meu planejamento de hoje e dê dicas estratégicas:\n\n${itensStr}\n\nGere:\n1. Uma frase de motivação personalizada para meu dia\n2. O compromisso mais importante do dia e por quê\n3. Uma dica rápida para maximizar cada compromisso\n4. Alertas: o que posso estar esquecendo ou subestimando\n\nSeja concisa, direta e motivadora. Máximo 200 palavras.`;
+    const prompt = `Você é a JADE, minha parceira de vendas. Analise meu planejamento de hoje e dê dicas estratégicas:\n\n${itensStr}\n\nGere:\n1. Uma frase de motivação personalizada para meu dia\n2. O compromisso mais importante do dia e por quê\n3. Uma dica rápida para maximizar cada compromisso\n4. Alertas: o que posso estar esquecendo ou subestimando\n\nSeja concisa, direta e motivadora. Entregue a análise completa.`;
     try {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 30000);

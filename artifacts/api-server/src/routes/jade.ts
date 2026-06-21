@@ -210,7 +210,7 @@ router.post('/chat', async (req: Request, res: Response) => {
     const model = genAI.getGenerativeModel({
       model: 'gemini-2.5-flash',
       systemInstruction: systemPrompt,
-      generationConfig: { maxOutputTokens: 600, temperature: 0.7 },
+      generationConfig: { maxOutputTokens: 4000, temperature: 0.7 },
     });
 
     // Build history, then drop any leading 'model' turns —
