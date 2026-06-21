@@ -18,6 +18,7 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { AuthProvider } from "@/context/AuthContext";
 import { AppProvider } from "@/context/AppContext";
+import { PlanProvider } from "@/context/PlanContext";
 import { initializeDatabase } from "@/db/init";
 
 SplashScreen.preventAutoHideAsync();
@@ -187,9 +188,11 @@ export default function RootLayout() {
           <DatabaseWrapper>
             <AuthProvider>
               <AppProvider>
-                <GestureHandlerRootView style={{ flex: 1 }}>
-                  <RootLayoutNav />
-                </GestureHandlerRootView>
+                <PlanProvider>
+                  <GestureHandlerRootView style={{ flex: 1 }}>
+                    <RootLayoutNav />
+                  </GestureHandlerRootView>
+                </PlanProvider>
               </AppProvider>
             </AuthProvider>
           </DatabaseWrapper>

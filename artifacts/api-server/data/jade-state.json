@@ -4,10 +4,10 @@
       "module_name": "scanner",
       "is_active": false,
       "status": "paused",
-      "last_started_at": "2026-06-20T22:43:57.412Z",
-      "last_stopped_at": "2026-06-20T22:44:09.067Z",
+      "last_started_at": "2026-06-21T01:42:27.200Z",
+      "last_stopped_at": "2026-06-21T01:42:27.831Z",
       "last_run_at": null,
-      "updated_at": "2026-06-20T22:44:09.067Z"
+      "updated_at": "2026-06-21T01:42:27.831Z"
     },
     "jade": {
       "module_name": "jade",
@@ -47,6 +47,26 @@
     }
   },
   "module_logs": [
+    {
+      "id": "f16b2294cf425608",
+      "module_name": "scanner",
+      "action": "deactivated",
+      "message": "Scanner Radar desativado",
+      "metadata": {
+        "active": false
+      },
+      "created_at": "2026-06-21T01:42:27.834Z"
+    },
+    {
+      "id": "f9574f962f0ab51b",
+      "module_name": "scanner",
+      "action": "activated",
+      "message": "Scanner Radar ativado",
+      "metadata": {
+        "active": true
+      },
+      "created_at": "2026-06-21T01:42:27.204Z"
+    },
     {
       "id": "d49480254924ab17",
       "module_name": "jade",
@@ -449,6 +469,75 @@
     }
   ],
   "activity_events": [
+    {
+      "id": "a1e32c025a7f6572",
+      "type": "lead",
+      "text": "Novo lead adicionado: Fernanda Silva (Livraria & Café Cantinho da Leitura)",
+      "icon": "user-plus",
+      "color": "#6C63FF",
+      "created_at": "2026-06-21T01:42:35.381Z"
+    },
+    {
+      "id": "f041230facecd796",
+      "type": "lead",
+      "text": "Novo lead adicionado: Mariana Costa (Empório Sabores do Campo)",
+      "icon": "user-plus",
+      "color": "#6C63FF",
+      "created_at": "2026-06-21T01:42:34.772Z"
+    },
+    {
+      "id": "622131328be1f331",
+      "type": "lead",
+      "text": "Novo lead adicionado: Ricardo Almeida (Moda Express Boutique)",
+      "icon": "user-plus",
+      "color": "#6C63FF",
+      "created_at": "2026-06-21T01:42:34.768Z"
+    },
+    {
+      "id": "230db851ea7039ed",
+      "type": "scan",
+      "text": "JADE encontrou 3 novos leads via radar em São Paulo",
+      "icon": "crosshair",
+      "color": "#6C63FF",
+      "metadata": {
+        "count": 3,
+        "cidade": "São Paulo"
+      },
+      "created_at": "2026-06-21T01:42:34.386Z"
+    },
+    {
+      "id": "844689ddc18bd1df",
+      "type": "module",
+      "text": "Scanner Radar desativado",
+      "icon": "crosshair",
+      "color": "#6C63FF",
+      "metadata": {
+        "module": "scanner",
+        "active": false
+      },
+      "created_at": "2026-06-21T01:42:27.837Z"
+    },
+    {
+      "id": "7363bd1e9f87498b",
+      "type": "module",
+      "text": "Scanner Radar ativado",
+      "icon": "crosshair",
+      "color": "#6C63FF",
+      "metadata": {
+        "module": "scanner",
+        "active": true
+      },
+      "created_at": "2026-06-21T01:42:27.206Z"
+    },
+    {
+      "id": "5fa6e6dfe09874ea",
+      "type": "message",
+      "text": "JADE respondeu a uma mensagem",
+      "icon": "robot",
+      "color": "#FF0080",
+      "metadata": {},
+      "created_at": "2026-06-21T01:41:05.096Z"
+    },
     {
       "id": "b47d0cb02f305214",
       "type": "message",

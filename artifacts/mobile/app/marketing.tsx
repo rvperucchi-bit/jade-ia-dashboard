@@ -1,5 +1,6 @@
 import React, { useRef, useState } from "react";
 import {
+  Alert,
   Animated,
   Easing,
   Linking,
@@ -121,6 +122,7 @@ function CampanhasTab({ colors }: { colors: any }) {
   const [filtro, setFiltro] = useState<FiltCamp>("todas");
   const [novaCampModal, setNovaCampModal] = useState(false);
   const [selectedObj, setSelectedObj] = useState<string | null>(null);
+  const [detailCamp,  setDetailCamp]  = useState<Campaign | null>(null);
 
   const filtered = CAMPAIGNS.filter((c) => {
     if (filtro === "todas") return true;
@@ -156,7 +158,7 @@ function CampanhasTab({ colors }: { colors: any }) {
       {/* Campaign cards */}
       <View style={{ gap: 12, paddingHorizontal: 16 }}>
         {filtered.map((camp) => (
-          <View key={camp.id} style={[T.campCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+          <TouchableOpacity key={camp.id} style={[T.campCard, { backgroundColor: colors.card, borderColor: colors.border }]} onPress={() => { Haptics.selectionAsync(); setDetailCamp(camp); }} activeOpacity={0.85}>
             <View style={T.campCardHead}>
               <View style={{ flex: 1 }}>
                 <Text style={[T.campName, { color: colors.text }]}>{camp.name}</Text>
@@ -209,7 +211,7 @@ function CampanhasTab({ colors }: { colors: any }) {
                 <Text style={[T.revisaoText, { color: PINK }]}>Em revisão pela equipe de anúncios</Text>
               </View>
             )}
-          </View>
+          </TouchableOpacity>
         ))}
       </View>
 
@@ -229,18 +231,12 @@ function CampanhasTab({ colors }: { colors: any }) {
           <View style={[T.sheet, { backgroundColor: colors.card }]} onStartShouldSetResponder={() => true}>
             <View style={T.sheetHandle} />
             <Text style={[T.sheetTitle, { color: colors.text }]}>Qual o objetivo da campanha?</Text>
-            <Text style={[T.sheetSub, { color: colors.mutedForeground }]}>
-              A JADE vai criar e otimizar a campanha automaticamente
-            </Text>
+            <Text style={[T.sheetSub, { color: colors.mutedForeground }]}>A JADE vai criar e otimizar a campanha automaticamente</Text>
             <View style={{ gap: 12, marginTop: 8 }}>
               {OBJETIVOS.map((obj) => (
                 <TouchableOpacity
                   key={obj.id}
-                  style={[T.objCard, {
-                    backgroundColor: selectedObj === obj.id ? obj.color + "18" : colors.surface,
-                    borderColor: selectedObj === obj.id ? obj.color : colors.border,
-                    borderWidth: selectedObj === obj.id ? 1.5 : 1,
-                  }]}
+                  style={[T.objCard, { backgroundColor: selectedObj === obj.id ? obj.color + "18" : colors.surface, borderColor: selectedObj === obj.id ? obj.color : colors.border, borderWidth: selectedObj === obj.id ? 1.5 : 1 }]}
                   onPress={() => { Haptics.selectionAsync(); setSelectedObj(obj.id); }}
                   activeOpacity={0.85}
                 >
@@ -256,13 +252,61 @@ function CampanhasTab({ colors }: { colors: any }) {
             <TouchableOpacity
               style={[T.sheetBtn, { opacity: selectedObj ? 1 : 0.5 }]}
               onPress={() => { if (selectedObj) { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success); setNovaCampModal(false); setSelectedObj(null); }}}
-              activeOpacity={0.85}
-              disabled={!selectedObj}
+              activeOpacity={0.85} disabled={!selectedObj}
             >
               <Feather name="zap" size={18} color="#fff" />
               <Text style={T.sheetBtnText}>Criar com JADE</Text>
             </TouchableOpacity>
           </View>
+        </TouchableOpacity>
+      </Modal>
+
+      {/* Campaign detail modal */}
+      <Modal visible={!!detailCamp} transparent animationType="slide" onRequestClose={() => setDetailCamp(null)}>
+        <TouchableOpacity style={T.overlay} activeOpacity={1} onPress={() => setDetailCamp(null)}>
+          {detailCamp && (
+            <View style={[T.sheet, { backgroundColor: colors.card }]} onStartShouldSetResponder={() => true}>
+              <View style={T.sheetHandle} />
+              <View style={{ flexDirection: "row", alignItems: "flex-start", gap: 12 }}>
+                <View style={{ flex: 1 }}>
+                  <Text style={[T.sheetTitle, { color: colors.text }]}>{detailCamp.name}</Text>
+                  <View style={{ flexDirection: "row", gap: 8, marginTop: 6 }}>
+                    <View style={[T.platformBadge, { backgroundColor: detailCamp.platform === "Meta Ads" ? "#1877F222" : "#4285F422" }]}>
+                      <Text style={[T.platformText, { color: detailCamp.platform === "Meta Ads" ? "#1877F2" : "#4285F4" }]}>{detailCamp.platform}</Text>
+                    </View>
+                    <StatusPill status={detailCamp.status} />
+                  </View>
+                </View>
+              </View>
+              {detailCamp.status !== "revisao" && (
+                <View style={[T.statsGrid, { marginTop: 8 }]}>
+                  {[{ l: "Investido", v: `R$${detailCamp.investido}` }, { l: "Leads", v: String(detailCamp.leads) }, { l: "CPL", v: `R$${detailCamp.cpl.toFixed(0)}` }, { l: "ROAS", v: `${detailCamp.roas}x` }].map((s, i) => (
+                    <View key={i} style={[T.statItem, { backgroundColor: colors.surface, borderRadius: 10, padding: 10 }]}>
+                      <Text style={[T.statLabel, { color: colors.mutedForeground }]}>{s.l}</Text>
+                      <Text style={[T.statVal, { color: colors.text, fontSize: 18 }]}>{s.v}</Text>
+                    </View>
+                  ))}
+                </View>
+              )}
+              <View style={{ gap: 8 }}>
+                <View style={[T.budgetBar, { backgroundColor: colors.surface, height: 8, borderRadius: 4 }]}>
+                  <View style={[T.budgetFill, { width: detailCamp.limite > 0 ? `${Math.round((detailCamp.investido / detailCamp.limite) * 100)}%` as any : "0%", backgroundColor: PINK, borderRadius: 4 }]} />
+                </View>
+                <Text style={[T.budgetLabel, { color: colors.mutedForeground }]}>Orçamento: R${detailCamp.investido} / R${detailCamp.limite}</Text>
+              </View>
+              <View style={{ flexDirection: "row", gap: 10 }}>
+                <TouchableOpacity style={[T.sheetBtn, { flex: 1, backgroundColor: detailCamp.status === "ativa" ? "#FFB30022" : PINK, borderWidth: detailCamp.status === "ativa" ? 1 : 0, borderColor: "#FFB300" }]}
+                  onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium); setDetailCamp(null); }} activeOpacity={0.85}>
+                  <Feather name={detailCamp.status === "ativa" ? "pause-circle" : "play-circle"} size={16} color={detailCamp.status === "ativa" ? "#FFB300" : "#fff"} />
+                  <Text style={[T.sheetBtnText, { color: detailCamp.status === "ativa" ? "#FFB300" : "#fff" }]}>{detailCamp.status === "ativa" ? "Pausar" : "Ativar"}</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={[T.sheetBtn, { flex: 1 }]} onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); setDetailCamp(null); }} activeOpacity={0.85}>
+                  <Feather name="edit-2" size={16} color="#fff" />
+                  <Text style={T.sheetBtnText}>Editar</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          )}
         </TouchableOpacity>
       </Modal>
     </View>
@@ -439,7 +483,10 @@ function RelatoriosTab({ colors }: { colors: any }) {
       </View>
 
       {/* Export button */}
-      <TouchableOpacity style={T.exportBtn} onPress={() => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium)} activeOpacity={0.85}>
+      <TouchableOpacity style={T.exportBtn} onPress={() => {
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        Alert.alert("📊 Relatório gerado", "Seu relatório de marketing foi preparado com sucesso. Em breve você poderá exportá-lo em PDF e compartilhar por WhatsApp ou e-mail.", [{ text: "OK" }]);
+      }} activeOpacity={0.85}>
         <Feather name="file-text" size={18} color="#fff" />
         <Text style={T.exportBtnText}>Exportar PDF</Text>
       </TouchableOpacity>
@@ -560,7 +607,31 @@ const SEED_POSTS: ScheduledPost[] = [
 
 const API_BASE_MKT = Platform.OS === "web" ? "" : `https://${process.env.EXPO_PUBLIC_DOMAIN ?? ""}`;
 
-function AgendaTab({ colors }: { colors: any }) {
+function AgendaTab({ colors: _colors }: { colors: any }) {
+  const colors = _colors;
+  return (
+    <View style={{ position: "relative" }}>
+      <AgendaTabInner colors={colors} />
+      {/* ── Em breve overlay ── */}
+      <View style={EM.overlay} pointerEvents="box-only">
+        <View style={EM.badge}>
+          <Feather name="clock" size={18} color={PURPLE} />
+          <Text style={EM.badgeText}>Em breve</Text>
+        </View>
+        <Text style={EM.hint}>Integração com redes sociais em desenvolvimento</Text>
+      </View>
+    </View>
+  );
+}
+
+const EM = StyleSheet.create({
+  overlay: { ...StyleSheet.absoluteFillObject, backgroundColor: "rgba(11,8,20,0.82)", alignItems: "center", justifyContent: "center", gap: 12, zIndex: 10 },
+  badge:   { flexDirection: "row", alignItems: "center", gap: 8, backgroundColor: PURPLE + "33", borderWidth: 1.5, borderColor: PURPLE + "66", paddingHorizontal: 18, paddingVertical: 10, borderRadius: 16 },
+  badgeText: { fontSize: 18, fontFamily: "SpaceGrotesk_700Bold", color: PURPLE },
+  hint:    { fontSize: 12, fontFamily: "SpaceGrotesk_400Regular", color: "#7777AA", textAlign: "center", paddingHorizontal: 32 },
+});
+
+function AgendaTabInner({ colors }: { colors: any }) {
   const [posts,      setPosts]      = useState<ScheduledPost[]>(SEED_POSTS);
   const [platform,   setPlatform]   = useState<Platform_>("Instagram");
   const [content,    setContent]    = useState("");
