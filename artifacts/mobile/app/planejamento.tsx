@@ -17,6 +17,7 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useColors } from "@/hooks/useColors";
+import { stripMarkdown } from "@/utils/stripMarkdown";
 
 const API_BASE =
   Platform.OS === "web"
@@ -251,7 +252,7 @@ export default function PlanejamentoScreen() {
       clearTimeout(timeoutId);
       if (!res.ok) throw new Error("API error");
       const data = await res.json();
-      setSugestao(data.message?.trim() || data.response?.trim() || "");
+      setSugestao(stripMarkdown(data.message?.trim() || data.response?.trim()) || "");
     } catch (err: unknown) {
       const isAbort = err instanceof Error && err.name === "AbortError";
       Alert.alert(

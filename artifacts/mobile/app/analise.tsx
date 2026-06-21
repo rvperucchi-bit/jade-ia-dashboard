@@ -13,6 +13,7 @@ import {
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { stripMarkdown } from "@/utils/stripMarkdown";
 
 import { useApp } from "@/context/AppContext";
 import { useColors } from "@/hooks/useColors";

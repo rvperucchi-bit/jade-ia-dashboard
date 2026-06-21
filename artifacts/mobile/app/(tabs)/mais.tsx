@@ -243,6 +243,8 @@ export default function MaisScreen() {
   const [demoModal,     setDemoModal]     = useState(false);
   const [demoPending,   setDemoPending]   = useState<{ path: string; label: string } | null>(null);
   const [creditsModal,  setCreditsModal]  = useState(false);
+  const [upgradeModal,  setUpgradeModal]  = useState(false);
+  const [selectedPkg,   setSelectedPkg]   = useState<100 | 500 | 2000 | null>(null);
   const credits = useCredits();
 
   const tapCount = useRef(0);
@@ -491,10 +493,15 @@ export default function MaisScreen() {
             }} />
           </View>
         </TouchableOpacity>
-        <View style={[S.statBox, { backgroundColor: colors.card, borderColor: colors.border }]}>
-          <Text style={[S.statValue, { color: PINK }]}>R$51k</Text>
-          <Text style={[S.statLabel, { color: colors.mutedForeground }]}>Próxima meta</Text>
-        </View>
+        <TouchableOpacity
+          style={[S.statBox, { backgroundColor: "#130026", borderColor: PINK + "66", borderWidth: 1.5 }]}
+          onPress={() => { tap(); setUpgradeModal(true); }}
+          activeOpacity={0.8}
+        >
+          <Feather name="arrow-up-circle" size={19} color={PINK} />
+          <Text style={[S.statValue, { color: PINK, fontSize: 15, marginTop: 2 }]}>Upgrade</Text>
+          <Text style={[S.statLabel, { color: PINK, opacity: 0.75 }]}>Ver planos</Text>
+        </TouchableOpacity>
       </View>
 
       {/* ── Demo gratuita banner (Start sem demo usada) ── */}
@@ -573,6 +580,69 @@ export default function MaisScreen() {
         onExitDev={handleExitDev}
       />
 
+      {/* ── Upgrade Modal ── */}
+      <Modal visible={upgradeModal} transparent animationType="slide" onRequestClose={() => setUpgradeModal(false)}>
+        <TouchableOpacity style={G.overlay} activeOpacity={1} onPress={() => setUpgradeModal(false)}>
+          <View style={[G.box, { alignItems: "stretch", gap: 0 }]} onStartShouldSetResponder={() => true}>
+            <View style={{ width: 40, height: 4, borderRadius: 2, backgroundColor: "#3A3A4E", alignSelf: "center", marginBottom: 18 }} />
+            <View style={{ flexDirection: "row", alignItems: "center", gap: 10, marginBottom: 6 }}>
+              <Feather name="zap" size={20} color={PINK} />
+              <Text style={[G.title, { fontSize: 18, textAlign: "left", flex: 1 }]}>Escolha seu plano</Text>
+            </View>
+            <Text style={{ color: "#7777AA", fontSize: 13, fontFamily: "SpaceGrotesk_400Regular", lineHeight: 19, marginBottom: 18 }}>
+              Desbloqueie recursos avançados e potencialize suas vendas.
+            </Text>
+            {/* Pro Card */}
+            <TouchableOpacity
+              style={{ backgroundColor: "#1a003a", borderRadius: 16, padding: 16, borderWidth: 1.5, borderColor: PURPLE + "99", marginBottom: 12, gap: 6 }}
+              onPress={() => { setUpgradeModal(false); router.push("/plano" as any); }}
+              activeOpacity={0.85}
+            >
+              <View style={{ flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 4 }}>
+                <View style={{ backgroundColor: PURPLE + "33", borderRadius: 8, paddingHorizontal: 8, paddingVertical: 3 }}>
+                  <Text style={{ color: PURPLE, fontSize: 12, fontFamily: "SpaceGrotesk_700Bold" }}>✦ PRO</Text>
+                </View>
+                <Text style={{ color: PURPLE, fontSize: 20, fontFamily: "SpaceGrotesk_700Bold", marginLeft: "auto" }}>R$247<Text style={{ fontSize: 12, fontFamily: "SpaceGrotesk_400Regular" }}>/mês</Text></Text>
+              </View>
+              {["Objeções IA", "Criar Rota", "Planejamento", "Roleplay de Vendas", "Marketing IA"].map((f) => (
+                <View key={f} style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+                  <Feather name="check-circle" size={14} color={PURPLE} />
+                  <Text style={{ color: "#CCAAFF", fontSize: 13, fontFamily: "SpaceGrotesk_400Regular" }}>{f}</Text>
+                </View>
+              ))}
+              <View style={{ backgroundColor: PURPLE, borderRadius: 10, height: 40, alignItems: "center", justifyContent: "center", marginTop: 8 }}>
+                <Text style={{ color: "#fff", fontSize: 14, fontFamily: "SpaceGrotesk_700Bold" }}>Assinar Pro</Text>
+              </View>
+            </TouchableOpacity>
+            {/* Enterprise Card */}
+            <TouchableOpacity
+              style={{ backgroundColor: "#1a1000", borderRadius: 16, padding: 16, borderWidth: 1.5, borderColor: GOLD + "99", marginBottom: 16, gap: 6 }}
+              onPress={() => { setUpgradeModal(false); router.push("/plano" as any); }}
+              activeOpacity={0.85}
+            >
+              <View style={{ flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 4 }}>
+                <View style={{ backgroundColor: GOLD + "33", borderRadius: 8, paddingHorizontal: 8, paddingVertical: 3 }}>
+                  <Text style={{ color: GOLD, fontSize: 12, fontFamily: "SpaceGrotesk_700Bold" }}>⭐ ENTERPRISE</Text>
+                </View>
+                <Text style={{ color: GOLD, fontSize: 20, fontFamily: "SpaceGrotesk_700Bold", marginLeft: "auto" }}>R$697<Text style={{ fontSize: 12, fontFamily: "SpaceGrotesk_400Regular" }}>/mês</Text></Text>
+              </View>
+              {["Tudo do Pro", "Meu Time", "Metas avançadas", "Carteira de Clientes", "Painel Executivo"].map((f) => (
+                <View key={f} style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+                  <Feather name="check-circle" size={14} color={GOLD} />
+                  <Text style={{ color: "#FFDDAA", fontSize: 13, fontFamily: "SpaceGrotesk_400Regular" }}>{f}</Text>
+                </View>
+              ))}
+              <View style={{ backgroundColor: GOLD, borderRadius: 10, height: 40, alignItems: "center", justifyContent: "center", marginTop: 8 }}>
+                <Text style={{ color: "#000", fontSize: 14, fontFamily: "SpaceGrotesk_700Bold" }}>Assinar Enterprise</Text>
+              </View>
+            </TouchableOpacity>
+            <TouchableOpacity style={DV.closeBtn} onPress={() => setUpgradeModal(false)} activeOpacity={0.85}>
+              <Text style={DV.closeBtnText}>Agora não</Text>
+            </TouchableOpacity>
+          </View>
+        </TouchableOpacity>
+      </Modal>
+
       {/* Credits modal */}
       <Modal visible={creditsModal} transparent animationType="slide" onRequestClose={() => setCreditsModal(false)}>
         <TouchableOpacity style={G.overlay} activeOpacity={1} onPress={() => setCreditsModal(false)}>
@@ -601,32 +671,61 @@ export default function MaisScreen() {
               </Text>
             </View>
             {/* Store */}
-            <Text style={{ fontSize: 14, fontFamily: "SpaceGrotesk_700Bold", color: "#fff", marginBottom: 10 }}>Comprar créditos extras</Text>
+            <Text style={{ fontSize: 14, fontFamily: "SpaceGrotesk_700Bold", color: "#fff", marginBottom: 10 }}>Recarregar mensagens</Text>
             {([
-              { amount: 100,  price: "R$19,90",  label: "Pacote Básico" },
-              { amount: 500,  price: "R$69,90",  label: "Pacote Pro"   },
-              { amount: 2000, price: "R$199,90", label: "Pacote Max"   },
-            ] as const).map((pkg) => (
-              <TouchableOpacity
-                key={pkg.amount}
-                style={{ flexDirection: "row", alignItems: "center", backgroundColor: "#070710", borderRadius: 12, padding: 14, gap: 10, borderWidth: 1, borderColor: "#1E1E2E", marginBottom: 8 }}
-                onPress={async () => {
-                  await credits.addExtra(pkg.amount);
-                  Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-                  Alert.alert("✅ Créditos adicionados!", `+${pkg.amount} mensagens WhatsApp adicionadas à sua conta.`);
-                }}
-                activeOpacity={0.8}
-              >
-                <View style={{ flex: 1 }}>
-                  <Text style={{ color: "#fff", fontSize: 14, fontFamily: "SpaceGrotesk_700Bold" }}>+{pkg.amount} mensagens</Text>
-                  <Text style={{ color: "#7777AA", fontSize: 11, fontFamily: "SpaceGrotesk_400Regular", marginTop: 2 }}>{pkg.label}</Text>
-                </View>
-                <Text style={{ color: PINK, fontSize: 14, fontFamily: "SpaceGrotesk_700Bold" }}>{pkg.price}</Text>
-                <Feather name="shopping-cart" size={15} color={PINK} />
-              </TouchableOpacity>
-            ))}
-            <TouchableOpacity style={[DV.closeBtn, { marginTop: 4 }]} onPress={() => setCreditsModal(false)} activeOpacity={0.85}>
-              <Text style={DV.closeBtnText}>Fechar</Text>
+              { amount: 100  as const, price: "R$19,90",  label: "100 mensagens",   sub: "Pacote Básico"  },
+              { amount: 500  as const, price: "R$69,90",  label: "500 mensagens",   sub: "Pacote Pro"     },
+              { amount: 2000 as const, price: "R$199,90", label: "2.000 mensagens", sub: "Pacote Max"     },
+            ]).map((pkg) => {
+              const sel = selectedPkg === pkg.amount;
+              return (
+                <TouchableOpacity
+                  key={pkg.amount}
+                  style={{
+                    flexDirection: "row", alignItems: "center", borderRadius: 12, padding: 14, gap: 10,
+                    borderWidth: sel ? 2 : 1,
+                    borderColor: sel ? PINK : "#1E1E2E",
+                    backgroundColor: sel ? "rgba(255,0,128,0.10)" : "#070710",
+                    marginBottom: 8,
+                  }}
+                  onPress={() => setSelectedPkg(sel ? null : pkg.amount)}
+                  activeOpacity={0.8}
+                >
+                  <View style={{
+                    width: 20, height: 20, borderRadius: 10,
+                    borderWidth: sel ? 0 : 1.5, borderColor: "#555",
+                    backgroundColor: sel ? PINK : "transparent",
+                    alignItems: "center", justifyContent: "center",
+                  }}>
+                    {sel && <Feather name="check" size={12} color="#fff" />}
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <Text style={{ color: sel ? "#fff" : "#AAAACC", fontSize: 14, fontFamily: "SpaceGrotesk_700Bold" }}>{pkg.label}</Text>
+                    <Text style={{ color: "#7777AA", fontSize: 11, fontFamily: "SpaceGrotesk_400Regular", marginTop: 2 }}>{pkg.sub}</Text>
+                  </View>
+                  <Text style={{ color: sel ? PINK : "#AAAACC", fontSize: 14, fontFamily: "SpaceGrotesk_700Bold" }}>{pkg.price}</Text>
+                </TouchableOpacity>
+              );
+            })}
+            <TouchableOpacity
+              style={[DV.closeBtn, { marginTop: 4, backgroundColor: selectedPkg ? PINK : "#1A1A2E", borderRadius: 13, height: 48 }]}
+              disabled={!selectedPkg}
+              onPress={async () => {
+                if (!selectedPkg) return;
+                await credits.addExtra(selectedPkg);
+                Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+                setSelectedPkg(null);
+                setCreditsModal(false);
+                Alert.alert("✅ Créditos adicionados!", `+${selectedPkg} mensagens adicionadas à sua conta.`);
+              }}
+              activeOpacity={0.85}
+            >
+              <Text style={[DV.closeBtnText, { color: selectedPkg ? "#fff" : "#555" }]}>
+                {selectedPkg ? `Comprar agora` : "Selecione um pacote"}
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={[DV.closeBtn, { marginTop: 8 }]} onPress={() => { setCreditsModal(false); setSelectedPkg(null); }} activeOpacity={0.85}>
+              <Text style={DV.closeBtnText}>Cancelar</Text>
             </TouchableOpacity>
           </View>
         </TouchableOpacity>

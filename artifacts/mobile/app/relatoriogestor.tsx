@@ -12,6 +12,7 @@ import {
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { stripMarkdown } from "@/utils/stripMarkdown";
 
 import { useColors } from "@/hooks/useColors";
 
@@ -78,7 +79,7 @@ export default function RelatorioGestorScreen() {
       });
       clearTimeout(t1);
       const data = await res.json();
-      setRelatorio(data.message?.trim() || data.response?.trim() || "Não foi possível gerar o relatório.");
+      setRelatorio(stripMarkdown(data.message?.trim() || data.response?.trim()) || "Não foi possível gerar o relatório.");
     } catch (err: unknown) {
       const isAbort = err instanceof Error && err.name === "AbortError";
       Alert.alert("Erro", isAbort ? "A JADE demorou demais. Tente novamente." : "Não foi possível gerar o relatório. Verifique sua conexão.");
@@ -106,7 +107,7 @@ export default function RelatorioGestorScreen() {
       });
       clearTimeout(t2);
       const data = await res.json();
-      setEstrategia(data.message?.trim() || data.response?.trim() || "Não foi possível gerar a estratégia.");
+      setEstrategia(stripMarkdown(data.message?.trim() || data.response?.trim()) || "Não foi possível gerar a estratégia.");
     } catch (err: unknown) {
       const isAbort = err instanceof Error && err.name === "AbortError";
       Alert.alert("Erro", isAbort ? "A JADE demorou demais. Tente novamente." : "Não foi possível gerar a estratégia. Verifique sua conexão.");

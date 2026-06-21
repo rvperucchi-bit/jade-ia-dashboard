@@ -12,6 +12,7 @@ import {
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { stripMarkdown } from "@/utils/stripMarkdown";
 
 import { useColors } from "@/hooks/useColors";
 
@@ -78,7 +79,7 @@ export default function FeedbackJadeScreen() {
       });
       clearTimeout(timeoutId);
       const data = await res.json();
-      setFeedbacks((prev) => ({ ...prev, [v.id]: data.message?.trim() || data.response?.trim() || "Não foi possível gerar o feedback." }));
+      setFeedbacks((prev) => ({ ...prev, [v.id]: stripMarkdown(data.message?.trim() || data.response?.trim()) || "Não foi possível gerar o feedback." }));
     } catch (err: unknown) {
       const isAbort = err instanceof Error && err.name === "AbortError";
       Alert.alert(

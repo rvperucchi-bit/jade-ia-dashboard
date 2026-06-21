@@ -417,9 +417,6 @@ export default function JADEScreen() {
     >
       {/* Header */}
       <View style={[styles.header, { paddingTop: topPad + 12, borderBottomColor: colors.border }]}>
-        <View style={[styles.jadeIcon, { backgroundColor: colors.primary + "22" }]}>
-          <MaterialCommunityIcons name="robot" size={22} color={colors.primary} />
-        </View>
         <View style={{ flex: 1 }}>
           <Text style={[styles.headerTitle, { color: colors.text }]}>JADE IA</Text>
           <View style={styles.statusRow}>

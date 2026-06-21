@@ -4,10 +4,10 @@
       "module_name": "scanner",
       "is_active": false,
       "status": "paused",
-      "last_started_at": "2026-06-21T03:38:47.902Z",
-      "last_stopped_at": "2026-06-21T03:42:11.247Z",
+      "last_started_at": "2026-06-21T03:50:13.858Z",
+      "last_stopped_at": "2026-06-21T03:50:14.784Z",
       "last_run_at": null,
-      "updated_at": "2026-06-21T03:42:11.247Z"
+      "updated_at": "2026-06-21T03:50:14.784Z"
     },
     "jade": {
       "module_name": "jade",
@@ -47,6 +47,26 @@
     }
   },
   "module_logs": [
+    {
+      "id": "ab6f3ab116a2bfea",
+      "module_name": "scanner",
+      "action": "deactivated",
+      "message": "Scanner Radar desativado",
+      "metadata": {
+        "active": false
+      },
+      "created_at": "2026-06-21T03:50:14.785Z"
+    },
+    {
+      "id": "ed956496ba0ac42c",
+      "module_name": "scanner",
+      "action": "activated",
+      "message": "Scanner Radar ativado",
+      "metadata": {
+        "active": true
+      },
+      "created_at": "2026-06-21T03:50:13.859Z"
+    },
     {
       "id": "c0eae2e01d67611c",
       "module_name": "scanner",
@@ -779,6 +799,77 @@
     }
   ],
   "activity_events": [
+    {
+      "id": "94d33c10579334fd",
+      "type": "lead",
+      "text": "Novo lead adicionado: Ricardo Silva (Pão & Doce Bakery)",
+      "icon": "user-plus",
+      "color": "#6C63FF",
+      "created_at": "2026-06-21T03:50:20.976Z"
+    },
+    {
+      "id": "1931deadd0d1832b",
+      "type": "lead",
+      "text": "Novo lead adicionado: Ana Paula Santos (Essência Boutique)",
+      "icon": "user-plus",
+      "color": "#6C63FF",
+      "created_at": "2026-06-21T03:50:20.341Z"
+    },
+    {
+      "id": "029703e67ba8fa38",
+      "type": "lead",
+      "text": "Novo lead adicionado: Fernanda Costa (Natureza Viva Produtos Naturais)",
+      "icon": "user-plus",
+      "color": "#6C63FF",
+      "created_at": "2026-06-21T03:50:20.338Z"
+    },
+    {
+      "id": "bb7c384794dc7c26",
+      "type": "scan",
+      "text": "JADE encontrou 3 novos leads via radar em São Paulo",
+      "icon": "crosshair",
+      "color": "#6C63FF",
+      "metadata": {
+        "count": 3,
+        "cidade": "São Paulo"
+      },
+      "created_at": "2026-06-21T03:50:19.928Z"
+    },
+    {
+      "id": "86d36fe8d00ea062",
+      "type": "module",
+      "text": "Scanner Radar desativado",
+      "icon": "crosshair",
+      "color": "#6C63FF",
+      "metadata": {
+        "module": "scanner",
+        "active": false
+      },
+      "created_at": "2026-06-21T03:50:14.796Z"
+    },
+    {
+      "id": "ff770355c4608680",
+      "type": "module",
+      "text": "Scanner Radar ativado",
+      "icon": "crosshair",
+      "color": "#6C63FF",
+      "metadata": {
+        "module": "scanner",
+        "active": true
+      },
+      "created_at": "2026-06-21T03:50:13.862Z"
+    },
+    {
+      "id": "d076bafa6dc233e5",
+      "type": "message",
+      "text": "JADE respondeu a uma mensagem",
+      "icon": "robot",
+      "color": "#FF0080",
+      "metadata": {
+        "session_id": "0919802f74345e30"
+      },
+      "created_at": "2026-06-21T03:50:06.135Z"
+    },
     {
       "id": "7f2e5d1f09f41c06",
       "type": "message",
@@ -2689,71 +2780,6 @@
       "icon": "user-plus",
       "color": "#6C63FF",
       "created_at": "2026-06-20T21:32:26.102Z"
-    },
-    {
-      "id": "ac21a1fe22aa9b3e",
-      "type": "scan",
-      "text": "JADE encontrou 3 novos leads via radar em São Paulo",
-      "icon": "crosshair",
-      "color": "#6C63FF",
-      "metadata": {
-        "count": 3,
-        "cidade": "São Paulo"
-      },
-      "created_at": "2026-06-20T21:32:25.759Z"
-    },
-    {
-      "id": "7ab12971f17f3eeb",
-      "type": "message",
-      "text": "JADE respondeu a uma mensagem",
-      "icon": "robot",
-      "color": "#FF0080",
-      "metadata": {},
-      "created_at": "2026-06-20T21:32:18.186Z"
-    },
-    {
-      "id": "bd4db9c52b03024a",
-      "type": "lead",
-      "text": "Novo lead adicionado: Ana Silva (Empório do Pão Artesanal)",
-      "icon": "user-plus",
-      "color": "#6C63FF",
-      "created_at": "2026-06-20T21:31:29.522Z"
-    },
-    {
-      "id": "65295a860b8550c2",
-      "type": "lead",
-      "text": "Novo lead adicionado: Patricia Santos (Moda & Estilo Boutique)",
-      "icon": "user-plus",
-      "color": "#6C63FF",
-      "created_at": "2026-06-20T21:31:29.519Z"
-    },
-    {
-      "id": "6260fb19d2a74a17",
-      "type": "lead",
-      "text": "Novo lead adicionado: Carlos Mendes (Livraria Leitura Feliz)",
-      "icon": "user-plus",
-      "color": "#6C63FF",
-      "created_at": "2026-06-20T21:31:28.880Z"
-    },
-    {
-      "id": "ec6541718e18695d",
-      "type": "scan",
-      "text": "JADE encontrou 3 novos leads via radar em São Paulo",
-      "icon": "crosshair",
-      "color": "#6C63FF",
-      "metadata": {
-        "count": 3,
-        "cidade": "São Paulo"
-      },
-      "created_at": "2026-06-20T21:31:28.485Z"
-    },
-    {
-      "id": "a309c25701eddea6",
-      "type": "lead",
-      "text": "Novo lead adicionado: Ana Paula Mello (Emporium Gourmet São Paulo)",
-      "icon": "user-plus",
-      "color": "#6C63FF",
-      "created_at": "2026-06-20T21:30:27.353Z"
     }
   ],
   "marketing_campaigns": [
@@ -2779,6 +2805,24 @@
     }
   ],
   "jade_sessions": [
+    {
+      "id": "0919802f74345e30",
+      "title": "O usuário enviou uma mensagem de voz com…",
+      "messages": [
+        {
+          "role": "user",
+          "content": "O usuário enviou uma mensagem de voz com duração de 1 segundo. Responda como se você tivesse entendido a mensagem de voz — pergunte sobre o que posso ajudar hoje em relação às vendas ou ao negócio dele.",
+          "time": "2026-06-21T03:50:06.130Z"
+        },
+        {
+          "role": "model",
+          "content": "Olá! Recebi sua mensagem. Como posso te ajudar hoje com as vendas ou o negócio do seu delivery?",
+          "time": "2026-06-21T03:50:06.133Z"
+        }
+      ],
+      "created_at": "2026-06-21T03:50:04.585Z",
+      "updated_at": "2026-06-21T03:50:06.133Z"
+    },
     {
       "id": "c845cd3ec37dd62a",
       "title": "O usuário enviou uma mensagem de voz com…",

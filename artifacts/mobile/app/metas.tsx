@@ -12,6 +12,7 @@ import {
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { stripMarkdown } from "@/utils/stripMarkdown";
 
 import { useColors } from "@/hooks/useColors";
 
@@ -89,7 +90,7 @@ export default function MetasScreen() {
       });
       clearTimeout(timeoutId);
       const data = await res.json();
-      setEstrategia(data.message?.trim() || data.response?.trim() || "Não foi possível gerar a estratégia. Tente novamente.");
+      setEstrategia(stripMarkdown(data.message?.trim() || data.response?.trim()) || "Não foi possível gerar a estratégia. Tente novamente.");
     } catch (err: unknown) {
       const isAbort = err instanceof Error && err.name === "AbortError";
       Alert.alert(

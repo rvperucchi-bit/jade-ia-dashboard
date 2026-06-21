@@ -19,6 +19,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import * as Haptics from "expo-haptics";
 import { useColors } from "@/hooks/useColors";
+import { stripMarkdown } from "@/utils/stripMarkdown";
 
 const PINK   = "#FF0080";
 const PURPLE = "#8400FF";
@@ -781,7 +782,7 @@ function AgendaTabInner({ colors }: { colors: any }) {
         }),
       });
       const data = (await res.json()) as { message?: string; response?: string };
-      const text = data.message?.trim() || data.response?.trim() || "";
+      const text = stripMarkdown(data.message?.trim() || data.response?.trim() || "") || "";
       if (text) setContent(text);
     } catch {
       setContent("✨ Promoção especial! Aproveite nossa oferta exclusiva hoje. Quantidade limitada — entre em contato agora e garanta o seu! 🔥 #promoção #negócio");

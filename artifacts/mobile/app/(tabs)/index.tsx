@@ -41,7 +41,7 @@ function CrosshairIcon({ size, color }: { size: number; color: string }) {
 }
 
 // ─── ModuleButton ─────────────────────────────────────────────────────────────
-const MOD_SIZE = 52;
+const MOD_SIZE = 53;
 
 function ModuleButton({ icon, label, active, locked, onPress, onLongPress }: {
   icon: React.ReactNode; label: string; active?: boolean; locked?: boolean;
@@ -58,7 +58,7 @@ function ModuleButton({ icon, label, active, locked, onPress, onLongPress }: {
         Animated.timing(glow,  { toValue: 0, duration: 1400, useNativeDriver: false }),
       ]));
       const scaleLoop = Animated.loop(Animated.sequence([
-        Animated.timing(scale, { toValue: 1.06, duration: 1000, useNativeDriver: false }),
+        Animated.timing(scale, { toValue: 1.04, duration: 1000, useNativeDriver: false }),
         Animated.timing(scale, { toValue: 1.0,  duration: 1000, useNativeDriver: false }),
       ]));
       glowLoop.start();
@@ -73,12 +73,14 @@ function ModuleButton({ icon, label, active, locked, onPress, onLongPress }: {
   return (
     <TouchableOpacity style={S.modCol} onPress={onPress} onLongPress={onLongPress} delayLongPress={500} activeOpacity={0.75}>
       <Animated.View style={[S.modBtn, {
-        backgroundColor: locked ? "rgba(0,0,0,0.3)" : active ? "rgba(255,0,128,0.12)" : "#0f0520",
-        borderColor: active ? "#FF0080" : locked ? colors.border + "50" : "rgba(255,0,128,0.20)",
+        backgroundColor: locked ? "rgba(0,0,0,0.3)" : active ? "rgba(255,0,128,0.15)" : "#1a0d2e",
+        borderColor: active ? "#FF0080" : locked ? colors.border + "50" : "rgba(255,0,128,0.25)",
+        borderWidth: active ? 1.5 : 1,
         shadowColor: PINK,
-        shadowRadius: active ? glow.interpolate({ inputRange: [0,1], outputRange: [8, 18] }) : 0,
-        shadowOpacity: active ? glow.interpolate({ inputRange: [0,1], outputRange: [0.5, 0.9] }) : 0,
-        elevation: active ? glow.interpolate({ inputRange: [0,1], outputRange: [4, 12] }) : 0,
+        shadowOffset: { width: 0, height: 0 },
+        shadowRadius: active ? glow.interpolate({ inputRange: [0,1], outputRange: [6, 10] }) : 0,
+        shadowOpacity: active ? glow.interpolate({ inputRange: [0,1], outputRange: [0.4, 0.6] }) : 0,
+        elevation: active ? glow.interpolate({ inputRange: [0,1], outputRange: [3, 8] }) : 0,
         transform: [{ scale }],
         opacity: locked ? 0.5 : 1,
       }]}>
@@ -89,7 +91,7 @@ function ModuleButton({ icon, label, active, locked, onPress, onLongPress }: {
           </View>
         )}
       </Animated.View>
-      <Text style={[S.modLabel, { color: active ? PINK : locked ? colors.mutedForeground + "80" : "rgba(255,0,128,0.45)" }]}>{label}</Text>
+      <Text style={[S.modLabel, { color: active ? PINK : locked ? colors.mutedForeground + "80" : "rgba(255,255,255,0.45)" }]}>{label}</Text>
     </TouchableOpacity>
   );
 }
@@ -375,7 +377,7 @@ export default function HomeScreen() {
           return (
             <ModuleButton
               key={m.name}
-              icon={m.icon(m.locked ? colors.mutedForeground : active ? PINK : "rgba(255,0,128,0.45)")}
+              icon={m.icon(m.locked ? colors.mutedForeground : active ? PINK : "rgba(255,0,128,0.5)")}
               label={m.label}
               active={active}
               locked={m.locked}
@@ -502,7 +504,7 @@ const S = StyleSheet.create({
 
   moduleStrip: { flexDirection: "row", paddingHorizontal: 12, paddingBottom: 16, paddingTop: 12, gap: 8 },
   modCol:  { alignItems: "center", gap: 5, width: MOD_SIZE + 14, overflow: "visible" },
-  modBtn:  { width: MOD_SIZE, height: MOD_SIZE, borderRadius: MOD_SIZE/2, alignItems: "center", justifyContent: "center", borderWidth: 1.5, position: "relative", overflow: "visible" },
+  modBtn:  { width: MOD_SIZE, height: MOD_SIZE, borderRadius: MOD_SIZE/2, alignItems: "center", justifyContent: "center", borderWidth: 1, position: "relative", overflow: "visible" },
   modLabel:{ fontSize: 9, fontFamily: "SpaceGrotesk_500Medium", textAlign: "center" },
   lockBadge: { position: "absolute", top: -2, right: -2, width: 14, height: 14, borderRadius: 7, backgroundColor: PURPLE, alignItems: "center", justifyContent: "center" },
 

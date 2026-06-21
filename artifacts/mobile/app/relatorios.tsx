@@ -12,6 +12,7 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useColors } from "@/hooks/useColors";
+import { stripMarkdown } from "@/utils/stripMarkdown";
 
 const API_BASE =
   Platform.OS === "web"
@@ -87,7 +88,7 @@ export default function RelatoriosScreen() {
       });
       clearTimeout(timeoutId);
       const data = await res.json();
-      setAnalysis(data.message?.trim() || data.response?.trim() || "");
+      setAnalysis(stripMarkdown(data.message?.trim() || data.response?.trim()) || "");
     } catch (err: unknown) {
       const isAbort = err instanceof Error && err.name === "AbortError";
       setAnalysis(isAbort ? "A JADE demorou demais. Tente novamente em instantes." : "Erro ao gerar análise. Verifique sua conexão.");

@@ -15,6 +15,7 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useColors } from "@/hooks/useColors";
+import { stripMarkdown } from "@/utils/stripMarkdown";
 
 const API_BASE =
   Platform.OS === "web"
@@ -121,7 +122,7 @@ export default function RoleplayScreen() {
       });
       clearTimeout(t1);
       const data = await res.json();
-      setMessages((prev) => [...prev, { role: "jade", text: data.message?.trim() || data.response?.trim() || "..." }]);
+      setMessages((prev) => [...prev, { role: "jade", text: stripMarkdown(data.message?.trim() || data.response?.trim()) || "..." }]);
       setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 100);
     } catch (err: unknown) {
       const isAbort = err instanceof Error && err.name === "AbortError";
@@ -159,7 +160,7 @@ Seja honesto, específico e encorajador.`;
       });
       clearTimeout(t2);
       const data = await res.json();
-      setFeedback(data.message?.trim() || data.response?.trim() || "");
+      setFeedback(stripMarkdown(data.message?.trim() || data.response?.trim()) || "");
     } catch (err: unknown) {
       const isAbort = err instanceof Error && err.name === "AbortError";
       setFeedback(isAbort ? "A JADE demorou demais para gerar o feedback. Tente encerrar novamente." : "Erro ao gerar feedback.");

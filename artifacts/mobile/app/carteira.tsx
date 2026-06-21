@@ -14,6 +14,7 @@ import {
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { stripMarkdown } from "@/utils/stripMarkdown";
 
 import { useColors } from "@/hooks/useColors";
 
@@ -125,7 +126,7 @@ export default function CarteiraScreen() {
       });
       clearTimeout(timeoutId);
       const data = await res.json();
-      setAnalise(data.message?.trim() || data.response?.trim() || "Não foi possível gerar a análise. Tente novamente.");
+      setAnalise(stripMarkdown(data.message?.trim() || data.response?.trim()) || "Não foi possível gerar a análise. Tente novamente.");
     } catch (err: unknown) {
       const isAbort = err instanceof Error && err.name === "AbortError";
       setAnalise(isAbort ? "A JADE demorou demais. Tente novamente em instantes." : "Erro de conexão. Tente novamente.");
