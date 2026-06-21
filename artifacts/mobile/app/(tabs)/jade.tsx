@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
   Animated,
   Easing,
@@ -16,12 +16,13 @@ import {
 } from "react-native";
 import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { useRouter } from "expo-router";
+import { useFocusEffect, useRouter } from "expo-router";
 import * as Haptics from "expo-haptics";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 import { useColors } from "@/hooks/useColors";
 import { useApp } from "@/context/AppContext";
+import { takePendingVoice } from "@/utils/voiceContext";
 
 const MODO_LABEL: Record<string, string> = {
   fechamento:             "Fechamento",
@@ -301,7 +302,7 @@ export default function JADEScreen() {
 
     try {
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 30000);
+      const timeoutId = setTimeout(() => controller.abort(), 90000);
       const response = await fetch(`${API_BASE}/api/jade/chat`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -373,6 +374,21 @@ export default function JADEScreen() {
       setMessages((prev) => [{ id: (Date.now() + 1).toString(), text: "Recebi seu áudio! Como posso te ajudar hoje?", sender: "jade", time: nowTime() }, ...prev]);
     } finally { setLoading(false); }
   };
+
+  // ── Auto-send voice from home screen button ────────────────────────────────
+  const sendAudioRef = useRef(sendAudio);
+  sendAudioRef.current = sendAudio;
+
+  useFocusEffect(
+    useCallback(() => {
+      const pending = takePendingVoice();
+      if (pending && pending.duration >= 1) {
+        // Small delay so the screen finishes mounting/transition
+        const t = setTimeout(() => sendAudioRef.current(pending.duration), 380);
+        return () => clearTimeout(t);
+      }
+    }, [])
+  );
 
   const resetConversation = () => {
     setMessages(WELCOME_MSGS().map((m) => ({ ...m, id: m.id + "-" + Date.now() })));

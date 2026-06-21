@@ -450,6 +450,39 @@
   ],
   "activity_events": [
     {
+      "id": "626d49f7800aceca",
+      "type": "message",
+      "text": "JADE respondeu a uma mensagem",
+      "icon": "robot",
+      "color": "#FF0080",
+      "metadata": {
+        "session_id": "16ffc9c6090d363d"
+      },
+      "created_at": "2026-06-21T01:15:08.887Z"
+    },
+    {
+      "id": "754a4cf5bf4fefd4",
+      "type": "message",
+      "text": "JADE respondeu a uma mensagem",
+      "icon": "robot",
+      "color": "#FF0080",
+      "metadata": {
+        "session_id": "e450791e03bacd87"
+      },
+      "created_at": "2026-06-21T01:15:00.151Z"
+    },
+    {
+      "id": "381d591e41903401",
+      "type": "message",
+      "text": "JADE respondeu a uma mensagem",
+      "icon": "robot",
+      "color": "#FF0080",
+      "metadata": {
+        "session_id": "3cdd60ef64aa6f10"
+      },
+      "created_at": "2026-06-21T01:14:51.591Z"
+    },
+    {
       "id": "a5af31ffe01ea0c9",
       "type": "message",
       "text": "JADE respondeu a uma mensagem",
@@ -2041,6 +2074,60 @@
     }
   ],
   "jade_sessions": [
+    {
+      "id": "16ffc9c6090d363d",
+      "title": "O usuário enviou uma mensagem de voz com…",
+      "messages": [
+        {
+          "role": "user",
+          "content": "O usuário enviou uma mensagem de voz com duração de 3 segundos. Responda como se você tivesse entendido a mensagem de voz — pergunte sobre o que posso ajudar hoje em relação às vendas ou ao negócio dele.",
+          "time": "2026-06-21T01:15:08.883Z"
+        },
+        {
+          "role": "model",
+          "content": "Oi! Recebi seu áudio aqui.\n\nMe conta, como posso te ajudar hoje com as vendas de imóveis ou com o seu negócio?",
+          "time": "2026-06-21T01:15:08.884Z"
+        }
+      ],
+      "created_at": "2026-06-21T01:15:07.109Z",
+      "updated_at": "2026-06-21T01:15:08.884Z"
+    },
+    {
+      "id": "e450791e03bacd87",
+      "title": "O usuário enviou uma mensagem de voz com…",
+      "messages": [
+        {
+          "role": "user",
+          "content": "O usuário enviou uma mensagem de voz com duração de 2 segundos. Responda como se você tivesse entendido a mensagem de voz — pergunte sobre o que posso ajudar hoje em relação às vendas ou ao negócio dele.",
+          "time": "2026-06-21T01:15:00.147Z"
+        },
+        {
+          "role": "model",
+          "content": "Oi! Que bom te ver por aqui.\n\nComo posso te ajudar hoje com as vendas da Pereira Imóvel ou com as nossas casas?",
+          "time": "2026-06-21T01:15:00.149Z"
+        }
+      ],
+      "created_at": "2026-06-21T01:14:58.405Z",
+      "updated_at": "2026-06-21T01:15:00.149Z"
+    },
+    {
+      "id": "3cdd60ef64aa6f10",
+      "title": "O usuário enviou uma mensagem de voz com…",
+      "messages": [
+        {
+          "role": "user",
+          "content": "O usuário enviou uma mensagem de voz com duração de 2 segundos. Responda como se você tivesse entendido a mensagem de voz — pergunte sobre o que posso ajudar hoje em relação às vendas ou ao negócio dele.",
+          "time": "2026-06-21T01:14:51.587Z"
+        },
+        {
+          "role": "model",
+          "content": "Olá! Recebi seu áudio.\n\nComo posso te ajudar hoje com suas vendas ou com o seu negócio? 😊",
+          "time": "2026-06-21T01:14:51.588Z"
+        }
+      ],
+      "created_at": "2026-06-21T01:14:49.722Z",
+      "updated_at": "2026-06-21T01:14:51.588Z"
+    },
     {
       "id": "c7cdcf1e4fa10547",
       "title": "Responder cliente",

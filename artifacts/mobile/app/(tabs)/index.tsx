@@ -19,6 +19,7 @@ import { useRouter } from "expo-router";
 
 import { useColors } from "@/hooks/useColors";
 import { useApp, type ActivityEvent } from "@/context/AppContext";
+import { setPendingVoice } from "@/utils/voiceContext";
 
 const API_BASE =
   Platform.OS === "web"
@@ -46,8 +47,8 @@ function CrosshairIcon({ size, color }: { size: number; color: string }) {
 }
 
 // ─── Module button ─────────────────────────────────────────────────────────────
-const BTN_SIZE  = 65;
-const WRAP_SIZE = 79;
+const BTN_SIZE  = 60;
+const WRAP_SIZE = 70;
 
 function ModuleBtn({
   active, locked, onPress, onLockedPress, children, color, colors,
@@ -75,27 +76,25 @@ function ModuleBtn({
   }, [active, locked]);
 
   const glowColor = color ?? PINK;
-  const animatedBtnStyle = {
-    shadowColor: glowColor,
-    shadowOffset: { width: 0, height: 0 },
-    shadowRadius: glowAnim.interpolate({ inputRange: [0, 1], outputRange: [0, 8] }),
-    shadowOpacity: glowAnim.interpolate({ inputRange: [0, 1], outputRange: [0, 0.6] }),
-    elevation: glowAnim.interpolate({ inputRange: [0, 1], outputRange: [0, 8] }),
-  };
 
   return (
     <TouchableOpacity onPress={locked ? onLockedPress : onPress} activeOpacity={0.75}
-      style={[M.wrap, { width: WRAP_SIZE, height: WRAP_SIZE, overflow: "visible" }]}>
-      <Animated.View style={[M.btn, animatedBtnStyle, {
+      style={{ alignItems: "center", justifyContent: "center", width: WRAP_SIZE, height: WRAP_SIZE }}>
+      <Animated.View style={[M.btn, {
         backgroundColor: colors.surface,
         borderColor: active && !locked ? glowColor + "80" : colors.border,
         opacity: locked ? 0.4 : 1,
+        shadowColor: glowColor,
+        shadowOffset: { width: 0, height: 0 },
+        shadowRadius: glowAnim.interpolate({ inputRange: [0, 1], outputRange: [0, 8] }),
+        shadowOpacity: glowAnim.interpolate({ inputRange: [0, 1], outputRange: [0, 0.6] }),
+        elevation: glowAnim.interpolate({ inputRange: [0, 1], outputRange: [0, 8] }),
       }]}>
         {children}
       </Animated.View>
       {locked && (
         <View style={M.lockOverlay}>
-          <Feather name="lock" size={12} color="#AAAACC" />
+          <Feather name="lock" size={9} color="#AAAACC" />
         </View>
       )}
     </TouchableOpacity>
@@ -103,17 +102,16 @@ function ModuleBtn({
 }
 
 const M = StyleSheet.create({
-  wrap: { alignItems: "center", justifyContent: "center" },
   btn: { width: BTN_SIZE, height: BTN_SIZE, borderRadius: BTN_SIZE / 2, alignItems: "center", justifyContent: "center", borderWidth: 1.5 },
-  lockOverlay: { position: "absolute", top: 4, right: 4, width: 20, height: 20, borderRadius: 10, backgroundColor: "#1E1E2E", alignItems: "center", justifyContent: "center", borderWidth: 1, borderColor: "#2E2E3E" },
+  lockOverlay: { position: "absolute", top: 3, right: 3, width: 17, height: 17, borderRadius: 9, backgroundColor: "#1E1E2E", alignItems: "center", justifyContent: "center", borderWidth: 1, borderColor: "#2E2E3E" },
 });
 
 // ─── JADE Compact Button with energizing rings ────────────────────────────────
-const JADE_BTN = 68;
+const JADE_BTN = 80;
 
 function JADECompactButton({ onTap, onHoldEnd }: {
   onTap: () => void;
-  onHoldEnd: () => void;
+  onHoldEnd: (duration: number) => void;
 }) {
   const ring1      = useRef(new Animated.Value(0)).current;
   const ring2      = useRef(new Animated.Value(0)).current;
@@ -121,31 +119,46 @@ function JADECompactButton({ onTap, onHoldEnd }: {
   const btnScale   = useRef(new Animated.Value(1)).current;
   const borderGlow = useRef(new Animated.Value(0)).current;
 
-  const isHoldingRef  = useRef(false);
-  const holdTimerRef  = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const holdStuff     = useRef<{
+  const isHoldingRef   = useRef(false);
+  const holdTimerRef   = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const holdStartRef   = useRef(0);
+  const holdStuff      = useRef<{
     timers: ReturnType<typeof setTimeout>[];
     loops:  ReturnType<typeof Animated.loop>[];
   }>({ timers: [], loops: [] });
+
+  // Always-fresh callback refs so PanResponder doesn't go stale
+  const callbacksRef = useRef({ onTap, onHoldEnd });
+  callbacksRef.current = { onTap, onHoldEnd };
+
+  const stopEnergize = () => {
+    isHoldingRef.current = false;
+    holdStuff.current.timers.forEach(clearTimeout);
+    holdStuff.current.loops.forEach((l) => l.stop());
+    holdStuff.current = { timers: [], loops: [] };
+    ring1.setValue(0);
+    ring2.setValue(0);
+    ring3.setValue(0);
+    Animated.timing(btnScale,   { toValue: 1, duration: 140, useNativeDriver: false }).start();
+    Animated.timing(borderGlow, { toValue: 0, duration: 140, useNativeDriver: false }).start();
+  };
 
   const panResponder = useRef(
     PanResponder.create({
       onStartShouldSetPanResponder: () => true,
       onPanResponderGrant: () => {
         isHoldingRef.current = false;
+        holdStartRef.current = 0;
         holdTimerRef.current = setTimeout(() => {
           isHoldingRef.current = true;
+          holdStartRef.current = Date.now();
 
-          const startRing = (anim: Animated.Value, delay: number) => {
+          const launchRing = (anim: Animated.Value, delay: number) => {
             const t = setTimeout(() => {
               if (!isHoldingRef.current) return;
               anim.setValue(0);
               const loop = Animated.loop(
-                Animated.timing(anim, {
-                  toValue: 1, duration: 1200,
-                  easing: Easing.out(Easing.ease),
-                  useNativeDriver: false,
-                })
+                Animated.timing(anim, { toValue: 1, duration: 1200, easing: Easing.out(Easing.ease), useNativeDriver: false })
               );
               loop.start();
               holdStuff.current.loops.push(loop);
@@ -153,85 +166,70 @@ function JADECompactButton({ onTap, onHoldEnd }: {
             holdStuff.current.timers.push(t);
           };
 
-          startRing(ring1, 0);
-          startRing(ring2, 380);
-          startRing(ring3, 760);
+          launchRing(ring1, 0);
+          launchRing(ring2, 370);
+          launchRing(ring3, 740);
 
-          const pulseLoop = Animated.loop(
+          const pulse = Animated.loop(
             Animated.sequence([
-              Animated.timing(btnScale, { toValue: 1.09, duration: 420, useNativeDriver: false }),
-              Animated.timing(btnScale, { toValue: 1.0,  duration: 420, useNativeDriver: false }),
+              Animated.timing(btnScale, { toValue: 1.1,  duration: 400, useNativeDriver: false }),
+              Animated.timing(btnScale, { toValue: 1.0,  duration: 400, useNativeDriver: false }),
             ])
           );
-          pulseLoop.start();
-          holdStuff.current.loops.push(pulseLoop);
-
-          Animated.timing(borderGlow, { toValue: 1, duration: 280, useNativeDriver: false }).start();
-        }, 400);
+          pulse.start();
+          holdStuff.current.loops.push(pulse);
+          Animated.timing(borderGlow, { toValue: 1, duration: 260, useNativeDriver: false }).start();
+        }, 420);
       },
       onPanResponderRelease: () => {
         if (holdTimerRef.current) clearTimeout(holdTimerRef.current);
         const wasHolding = isHoldingRef.current;
-        isHoldingRef.current = false;
-
-        holdStuff.current.timers.forEach(clearTimeout);
-        holdStuff.current.loops.forEach((l) => l.stop());
-        holdStuff.current = { timers: [], loops: [] };
-        ring1.setValue(0);
-        ring2.setValue(0);
-        ring3.setValue(0);
-        Animated.timing(btnScale,   { toValue: 1, duration: 160, useNativeDriver: false }).start();
-        Animated.timing(borderGlow, { toValue: 0, duration: 160, useNativeDriver: false }).start();
-
+        const duration   = wasHolding && holdStartRef.current > 0
+          ? Math.max(1, Math.floor((Date.now() - holdStartRef.current) / 1000))
+          : 0;
+        stopEnergize();
         if (wasHolding) {
-          onHoldEnd();
+          callbacksRef.current.onHoldEnd(duration);
         } else {
-          onTap();
+          callbacksRef.current.onTap();
         }
       },
       onPanResponderTerminate: () => {
         if (holdTimerRef.current) clearTimeout(holdTimerRef.current);
-        isHoldingRef.current = false;
-        holdStuff.current.timers.forEach(clearTimeout);
-        holdStuff.current.loops.forEach((l) => l.stop());
-        holdStuff.current = { timers: [], loops: [] };
-        ring1.setValue(0);
-        ring2.setValue(0);
-        ring3.setValue(0);
-        Animated.timing(btnScale,   { toValue: 1, duration: 160, useNativeDriver: false }).start();
-        Animated.timing(borderGlow, { toValue: 0, duration: 160, useNativeDriver: false }).start();
+        stopEnergize();
       },
     })
   ).current;
 
   const makeRingStyle = (anim: Animated.Value) => ({
-    transform: [{ scale: anim.interpolate({ inputRange: [0, 1], outputRange: [1, 3.2] }) }],
-    opacity:   anim.interpolate({ inputRange: [0, 0.4, 1], outputRange: [0.55, 0.25, 0] }),
+    transform: [{ scale: anim.interpolate({ inputRange: [0, 1], outputRange: [1, 3.0] }) }],
+    opacity:   anim.interpolate({ inputRange: [0, 0.4, 1], outputRange: [0.55, 0.22, 0] }),
   });
 
   const btnBorderColor = borderGlow.interpolate({
-    inputRange: [0, 1], outputRange: [PINK + "55", PINK + "EE"],
+    inputRange: [0, 1], outputRange: [PINK + "50", PINK + "EE"],
   });
 
   return (
-    <View style={{ alignItems: "center", justifyContent: "center", width: JADE_BTN * 3.4, height: JADE_BTN * 3.4 }}>
-      {/* Energizing rings — positioned absolutely, centered */}
-      <Animated.View style={[JB.ring, makeRingStyle(ring1)]} />
-      <Animated.View style={[JB.ring, makeRingStyle(ring2)]} />
-      <Animated.View style={[JB.ring, makeRingStyle(ring3)]} />
+    // Container is exactly button-sized; rings overflow visually (overflow:"visible" is default on RN)
+    <View style={{ alignItems: "center", justifyContent: "center", width: JADE_BTN, height: JADE_BTN }}>
+      {/* Rings — absolute, don't affect layout */}
+      <Animated.View style={[JB.ring, { position: "absolute" }, makeRingStyle(ring1)]} pointerEvents="none" />
+      <Animated.View style={[JB.ring, { position: "absolute" }, makeRingStyle(ring2)]} pointerEvents="none" />
+      <Animated.View style={[JB.ring, { position: "absolute" }, makeRingStyle(ring3)]} pointerEvents="none" />
 
       {/* Button */}
-      <View {...panResponder.panHandlers} style={{ alignItems: "center", justifyContent: "center" }}>
+      <View {...panResponder.panHandlers}>
         <Animated.View style={[JB.btn, {
           transform: [{ scale: btnScale }],
           borderColor: btnBorderColor,
           shadowColor: PINK,
           shadowOffset: { width: 0, height: 0 },
-          shadowOpacity: 0.45,
-          shadowRadius: 12,
-          elevation: 8,
+          shadowOpacity: 0.5,
+          shadowRadius: 14,
+          elevation: 10,
         }]}>
-          <MaterialCommunityIcons name="robot" size={30} color={PINK} />
+          <MaterialCommunityIcons name="robot" size={34} color={PINK} />
         </Animated.View>
       </View>
     </View>
@@ -311,47 +309,32 @@ export default function HomeScreen() {
   const [lockedModuleName, setLockedModuleName] = useState("");
 
   // ── Scanner autonomous mode ────────────────────────────────────────────────
-  const [scannerRunning, setScannerRunning] = useState(false);
-  const scannerIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const existingLeadIds    = useRef<string[]>([]);
-
-  useEffect(() => {
-    existingLeadIds.current = leads.map((l) => l.id);
-  }, [leads]);
+  const existingLeadIds = useRef<string[]>([]);
+  useEffect(() => { existingLeadIds.current = leads.map((l) => l.id); }, [leads]);
 
   const scannerActive = !(MODULE_DEFS.find((d) => d.name === "scanner")?.locked ?? false)
     && (moduleStates.scanner?.is_active ?? false);
 
   useEffect(() => {
-    if (scannerActive) {
-      setScannerRunning(true);
-      const doProspectar = async () => {
-        try {
-          const res = await fetch(`${API_BASE}/api/jade/prospectar`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ existingIds: existingLeadIds.current }),
-          });
-          if (!res.ok) return;
-          const data = (await res.json()) as { leads: any[]; count: number };
-          if (data.leads?.length > 0) {
-            for (const lead of data.leads) {
-              addLead(lead);
-              existingLeadIds.current = [...existingLeadIds.current, lead.id];
-            }
-          }
-        } catch { /* ignore */ }
-      };
-      doProspectar();
-      scannerIntervalRef.current = setInterval(doProspectar, 60000);
-      return () => {
-        if (scannerIntervalRef.current) clearInterval(scannerIntervalRef.current);
-        setScannerRunning(false);
-      };
-    } else {
-      if (scannerIntervalRef.current) clearInterval(scannerIntervalRef.current);
-      setScannerRunning(false);
-    }
+    if (!scannerActive) return;
+    const doProspectar = async () => {
+      try {
+        const res = await fetch(`${API_BASE}/api/jade/prospectar`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ existingIds: existingLeadIds.current }),
+        });
+        if (!res.ok) return;
+        const data = (await res.json()) as { leads: any[] };
+        for (const lead of (data.leads ?? [])) {
+          addLead(lead);
+          existingLeadIds.current = [...existingLeadIds.current, lead.id];
+        }
+      } catch { /* ignore */ }
+    };
+    doProspectar();
+    const interval = setInterval(doProspectar, 60000);
+    return () => clearInterval(interval);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [scannerActive]);
 
@@ -360,43 +343,32 @@ export default function HomeScreen() {
   const unread    = conversations.filter((c) => c.unread > 0).length;
 
   // ── Metrics ────────────────────────────────────────────────────────────────
-  const totalLeads      = leads.length;
   const novoLeads       = leads.filter((l) => l.column === "novo").length;
   const fechadoLeads    = leads.filter((l) => l.column === "fechado");
-  const txConversao     = totalLeads > 0 ? Math.round((fechadoLeads.length / totalLeads) * 100) : 0;
-  const receitaMes      = fechadoLeads.reduce((sum, l) => sum + l.value, 0);
+  const txConversao     = leads.length > 0 ? Math.round((fechadoLeads.length / leads.length) * 100) : 0;
+  const receitaMes      = fechadoLeads.reduce((s, l) => s + l.value, 0);
   const conversasAtivas = conversations.filter((c) => c.unread > 0).length;
 
-  function formatCurrency(v: number) {
-    if (v >= 1000) return `R$${(v / 1000).toFixed(1)}k`;
-    return `R$${v.toLocaleString("pt-BR")}`;
-  }
+  const fmt = (v: number) => v >= 1000 ? `R$${(v / 1000).toFixed(1)}k` : `R$${v.toLocaleString("pt-BR")}`;
 
   const METRICS = [
-    { label: "Leads Ativos",    value: String(novoLeads),          change: `${totalLeads} total`,             positive: true,               icon: "users",          iconColor: "#6C63FF" },
-    { label: "Conv. não lidas", value: String(conversasAtivas),    change: `${conversations.length} total`,   positive: conversasAtivas > 0, icon: "message-circle", iconColor: PINK },
-    { label: "Tx. Conversão",   value: `${txConversao}%`,          change: `${fechadoLeads.length} fechados`, positive: txConversao > 20,    icon: "trending-up",    iconColor: "#00D68F" },
-    { label: "Receita Fechada", value: formatCurrency(receitaMes), change: `${fechadoLeads.length} contratos`, positive: true,              icon: "dollar-sign",    iconColor: "#FFB300" },
+    { label: "Leads Ativos",    value: String(novoLeads),          change: `${leads.length} total`,             positive: true,               icon: "users",          iconColor: "#6C63FF" },
+    { label: "Conv. não lidas", value: String(conversasAtivas),    change: `${conversations.length} total`,     positive: conversasAtivas > 0, icon: "message-circle", iconColor: PINK },
+    { label: "Tx. Conversão",   value: `${txConversao}%`,          change: `${fechadoLeads.length} fechados`,   positive: txConversao > 20,    icon: "trending-up",    iconColor: "#00D68F" },
+    { label: "Receita Fechada", value: fmt(receitaMes),            change: `${fechadoLeads.length} contratos`,  positive: true,               icon: "dollar-sign",    iconColor: "#FFB300" },
   ] as const;
 
   const activeModuleNames = Object.values(moduleStates)
     .filter((m) => m.is_active)
     .map((m) => MODULE_DEFS.find((d) => d.name === m.module_name)?.label ?? m.module_name);
 
-  const handleToggle = async (name: string) => {
+  const handleToggle    = async (name: string) => {
     const def = MODULE_DEFS.find((d) => d.name === name);
     if (!def || def.locked) return;
     await toggleModule(name);
   };
-
   const handleLockedPress = (name: string) => { setLockedModuleName(name); setLockModal(true); };
-
-  const onRefresh = useCallback(async () => {
-    setRefreshing(true);
-    await refreshDashboard();
-    setRefreshing(false);
-  }, [refreshDashboard]);
-
+  const onRefresh = useCallback(async () => { setRefreshing(true); await refreshDashboard(); setRefreshing(false); }, [refreshDashboard]);
   const lockedDef = MODULE_DEFS.find((d) => d.name === lockedModuleName);
   const goToJade  = () => router.push("/(tabs)/jade" as any);
 
@@ -436,37 +408,40 @@ export default function HomeScreen() {
         <Text style={[S.sectionSmall, { color: colors.mutedForeground }]}>MÓDULOS DE ATIVAÇÃO</Text>
         <ScrollView
           horizontal showsHorizontalScrollIndicator={false}
-          contentContainerStyle={S.modulesRow} style={S.modulesScroll}
+          contentContainerStyle={S.modulesRow}
         >
           {MODULE_DEFS.map((def) => {
             const mod    = moduleStates[def.name];
             const active = def.locked ? false : (mod?.is_active ?? false);
             return (
-              <View key={def.name} style={{ alignItems: "center", gap: 6 }}>
+              <View key={def.name} style={S.moduleItem}>
                 <ModuleBtn
                   active={active} locked={def.locked}
                   color={def.locked ? PURPLE : undefined}
                   onPress={() => {
-                    if (def.name === "scanner")   { handleToggle("scanner"); }
-                    else if (def.name === "leads") { router.push("/leads" as any); }
-                    else if (def.name === "whatsapp") { handleToggle("whatsapp"); }
-                    else if (def.name === "marketing") { router.push("/marketing" as any); }
-                    else { handleToggle(def.name); }
+                    if (def.name === "scanner")    handleToggle("scanner");
+                    else if (def.name === "leads") router.push("/leads" as any);
+                    else if (def.name === "whatsapp") handleToggle("whatsapp");
+                    else if (def.name === "marketing") router.push("/marketing" as any);
+                    else handleToggle(def.name);
                   }}
                   onLockedPress={() => handleLockedPress(def.name)}
                   colors={colors}
                 >
-                  {def.name === "scanner"    && <CrosshairIcon size={27} color={def.locked ? "#5555AA" : PINK} />}
-                  {def.name === "leads"      && <Feather name="users"       size={25} color={def.locked ? "#5555AA" : PINK} />}
-                  {def.name === "whatsapp"   && <Feather name="message-circle" size={25} color={def.locked ? "#5555AA" : PINK} />}
-                  {def.name === "marketing"  && <Feather name="zap"         size={25} color={def.locked ? "#5555AA" : PINK} />}
-                  {def.name === "gestao"     && <Feather name="briefcase"   size={25} color="#5555AA" />}
-                  {def.name === "relatorios" && <Feather name="bar-chart-2" size={25} color="#5555AA" />}
+                  {def.name === "scanner"    && <CrosshairIcon size={24} color={def.locked ? "#5555AA" : PINK} />}
+                  {def.name === "leads"      && <Feather name="users"       size={22} color={def.locked ? "#5555AA" : PINK} />}
+                  {def.name === "whatsapp"   && <Feather name="message-circle" size={22} color={def.locked ? "#5555AA" : PINK} />}
+                  {def.name === "marketing"  && <Feather name="zap"         size={22} color={def.locked ? "#5555AA" : PINK} />}
+                  {def.name === "gestao"     && <Feather name="briefcase"   size={22} color="#5555AA" />}
+                  {def.name === "relatorios" && <Feather name="bar-chart-2" size={22} color="#5555AA" />}
                 </ModuleBtn>
-                <Text style={[S.moduleLabel, {
-                  color: def.locked ? "#5555AA" : (active ? PINK : colors.mutedForeground),
-                  marginTop: WRAP_SIZE / 2,
-                }]}>
+                {/* PRO/Enterprise badge */}
+                {def.locked && (
+                  <View style={S.planBadge}>
+                    <Text style={S.planBadgeText}>{def.plan === "Enterprise" ? "ENT" : "PRO"}</Text>
+                  </View>
+                )}
+                <Text style={[S.moduleLabel, { color: def.locked ? "#5555AA" : (active ? PINK : colors.mutedForeground) }]}>
                   {def.label}
                 </Text>
               </View>
@@ -474,30 +449,33 @@ export default function HomeScreen() {
           })}
 
           {/* Rota shortcut */}
-          <View style={{ alignItems: "center", gap: 6 }}>
-            <TouchableOpacity style={[M.wrap, { width: WRAP_SIZE, height: WRAP_SIZE, overflow: "visible" }]}
+          <View style={S.moduleItem}>
+            <TouchableOpacity style={{ alignItems: "center", justifyContent: "center", width: WRAP_SIZE, height: WRAP_SIZE }}
               onPress={() => router.push("/criarrota" as any)} activeOpacity={0.75}>
               <View style={[M.btn, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-                <Feather name="navigation" size={25} color={PINK} />
+                <Feather name="navigation" size={22} color={PINK} />
               </View>
             </TouchableOpacity>
-            <Text style={[S.moduleLabel, { color: colors.mutedForeground, marginTop: WRAP_SIZE / 2 }]}>Rota</Text>
+            <Text style={[S.moduleLabel, { color: colors.mutedForeground }]}>Rota</Text>
           </View>
         </ScrollView>
 
-        <Text style={[S.activeLabel, { color: colors.mutedForeground }]}>
-          {activeModuleNames.length > 0 ? (
-            <><Text style={{ color: PINK }}>●{"  "}</Text>{activeModuleNames.join(" · ") + " ativos"}</>
-          ) : (
-            <Text>Nenhum módulo ativo</Text>
-          )}
-        </Text>
+        {/* Active modules line */}
+        {activeModuleNames.length > 0 && (
+          <Text style={[S.activeLabel, { color: colors.mutedForeground }]}>
+            <Text style={{ color: PINK }}>●{"  "}</Text>
+            {activeModuleNames.join(" · ") + " ativos"}
+          </Text>
+        )}
 
         {/* ── JADE Compact Button ── */}
         <View style={S.jadeSection}>
           <JADECompactButton
             onTap={goToJade}
-            onHoldEnd={goToJade}
+            onHoldEnd={(duration) => {
+              setPendingVoice(duration);
+              goToJade();
+            }}
           />
           <Text style={[S.jadeHint, { color: colors.mutedForeground }]}>
             Segure para falar · Toque para conversar
@@ -510,10 +488,10 @@ export default function HomeScreen() {
             <View key={i} style={[S.metricCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
               <View style={S.metricHeader}>
                 <View style={[S.metricIcon, { backgroundColor: m.iconColor + "22" }]}>
-                  <Feather name={m.icon as any} size={16} color={m.iconColor} />
+                  <Feather name={m.icon as any} size={15} color={m.iconColor} />
                 </View>
                 <View style={[S.metricChange, { backgroundColor: m.positive ? "#00D68F22" : "#FF3B5C22" }]}>
-                  <Feather name={m.positive ? "trending-up" : "trending-down"} size={10} color={m.positive ? colors.success : colors.destructive} />
+                  <Feather name={m.positive ? "trending-up" : "trending-down"} size={9} color={m.positive ? colors.success : colors.destructive} />
                   <Text style={[S.metricChangeText, { color: m.positive ? colors.success : colors.destructive }]}>{m.change}</Text>
                 </View>
               </View>
@@ -555,11 +533,11 @@ export default function HomeScreen() {
           <View style={S.sectionHeader}>
             <Text style={[S.sectionTitle, { color: colors.text }]}>Atividade Recente</Text>
             <TouchableOpacity onPress={onRefresh} activeOpacity={0.7}>
-              <Feather name="refresh-cw" size={15} color={colors.mutedForeground} />
+              <Feather name="refresh-cw" size={14} color={colors.mutedForeground} />
             </TouchableOpacity>
           </View>
           <View style={[S.activityCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
-            {activityEvents.slice(0, 8).map((item, i, arr) => {
+            {activityEvents.slice(0, 6).map((item, i, arr) => {
               const color = activityColor(item.type, colors);
               return (
                 <React.Fragment key={item.id}>
@@ -577,9 +555,9 @@ export default function HomeScreen() {
               );
             })}
             {activityEvents.length === 0 && (
-              <View style={{ padding: 20, alignItems: "center" }}>
-                <Feather name="activity" size={24} color={colors.mutedForeground} />
-                <Text style={{ color: colors.mutedForeground, fontSize: 13, marginTop: 8, fontFamily: "SpaceGrotesk_400Regular" }}>
+              <View style={{ padding: 20, alignItems: "center", gap: 8 }}>
+                <Feather name="activity" size={22} color={colors.mutedForeground} />
+                <Text style={{ color: colors.mutedForeground, fontSize: 13, fontFamily: "SpaceGrotesk_400Regular" }}>
                   Nenhuma atividade ainda
                 </Text>
               </View>
@@ -592,15 +570,18 @@ export default function HomeScreen() {
       <Modal visible={lockModal} transparent animationType="fade" onRequestClose={() => setLockModal(false)}>
         <TouchableOpacity style={S.modalOverlay} activeOpacity={1} onPress={() => setLockModal(false)}>
           <View style={S.modalBox} onStartShouldSetResponder={() => true}>
-            <View style={S.modalIconWrap}><Feather name="lock" size={30} color={PINK} /></View>
-            <Text style={S.modalTitle}>Módulo Enterprise</Text>
+            <View style={S.modalIconWrap}>
+              <Feather name="lock" size={28} color={PINK} />
+            </View>
+            <Text style={S.modalTitle}>Módulo {lockedDef?.plan ?? "Enterprise"}</Text>
             <Text style={S.modalBody}>
-              O módulo <Text style={{ color: PINK, fontFamily: "SpaceGrotesk_600SemiBold" }}>{lockedDef?.label}</Text> é exclusivo do Plano Enterprise.{"\n\n"}Desbloqueie e gerencie seu time comercial completo.
+              <Text style={{ color: PINK, fontFamily: "SpaceGrotesk_600SemiBold" }}>{lockedDef?.label}</Text>
+              {" "}é exclusivo do Plano {lockedDef?.plan ?? "Enterprise"}.{"\n\n"}Desbloqueie para acessar todas as funcionalidades avançadas de gestão comercial.
             </Text>
             <TouchableOpacity style={S.modalPrimaryBtn} activeOpacity={0.85}
               onPress={() => { setLockModal(false); router.push("/plano" as any); }}>
-              <Feather name="zap" size={16} color="#fff" />
-              <Text style={S.modalPrimaryText}>Ver Planos</Text>
+              <Feather name="zap" size={15} color="#fff" />
+              <Text style={S.modalPrimaryText}>Ver Planos e Assinar</Text>
             </TouchableOpacity>
             <TouchableOpacity style={S.modalSecondaryBtn} onPress={() => setLockModal(false)} activeOpacity={0.7}>
               <Text style={S.modalSecondaryText}>Agora não</Text>
@@ -616,54 +597,63 @@ const S = StyleSheet.create({
   root: { flex: 1 },
   header: {
     flexDirection: "row", alignItems: "center", justifyContent: "space-between",
-    paddingHorizontal: 20, paddingBottom: 14,
+    paddingHorizontal: 20, paddingBottom: 12,
   },
-  greeting: { fontSize: 14, fontFamily: "SpaceGrotesk_400Regular" },
-  name:     { fontSize: 24, fontFamily: "SpaceGrotesk_700Bold", marginTop: 2 },
-  headerRight: { flexDirection: "row", alignItems: "center", gap: 10 },
-  headerBtn:   { width: 40, height: 40, borderRadius: 20, alignItems: "center", justifyContent: "center", position: "relative" },
-  notifDot:    { position: "absolute", top: 6, right: 6, width: 16, height: 16, borderRadius: 8, alignItems: "center", justifyContent: "center" },
+  greeting: { fontSize: 13, fontFamily: "SpaceGrotesk_400Regular" },
+  name:     { fontSize: 22, fontFamily: "SpaceGrotesk_700Bold", marginTop: 1 },
+  headerRight: { flexDirection: "row", alignItems: "center", gap: 8 },
+  headerBtn:   { width: 38, height: 38, borderRadius: 19, alignItems: "center", justifyContent: "center", position: "relative" },
+  notifDot:    { position: "absolute", top: 5, right: 5, width: 15, height: 15, borderRadius: 8, alignItems: "center", justifyContent: "center" },
   notifDotText:{ color: "#fff", fontSize: 9, fontFamily: "SpaceGrotesk_700Bold" },
-  avatarBtn:   { width: 40, height: 40, borderRadius: 20, alignItems: "center", justifyContent: "center" },
-  sectionSmall: { fontSize: 11, fontFamily: "SpaceGrotesk_600SemiBold", letterSpacing: 1, paddingHorizontal: 20, marginBottom: 6 },
-  modulesScroll: { marginBottom: 4 },
-  modulesRow:    { paddingHorizontal: 16, paddingVertical: 8, gap: 14, flexDirection: "row", alignItems: "flex-start" },
-  moduleLabel:   { fontSize: 10, fontFamily: "SpaceGrotesk_500Medium", textAlign: "center" },
-  activeLabel:   { fontSize: 12, fontFamily: "SpaceGrotesk_400Regular", paddingHorizontal: 20, marginBottom: 4 },
-  jadeSection:   { alignItems: "center", justifyContent: "center", marginVertical: 6 },
-  jadeHint:      { fontSize: 11, fontFamily: "SpaceGrotesk_400Regular", textAlign: "center", marginTop: 2, opacity: 0.55 },
-  metricsGrid:   { flexDirection: "row", flexWrap: "wrap", paddingHorizontal: 12, gap: 10, marginBottom: 16 },
-  metricCard:    { width: "47%", borderRadius: 14, borderWidth: 1, padding: 14, flexGrow: 1 },
-  metricHeader:  { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 10 },
-  metricIcon:    { width: 34, height: 34, borderRadius: 10, alignItems: "center", justifyContent: "center" },
-  metricChange:  { flexDirection: "row", alignItems: "center", gap: 3, paddingHorizontal: 7, paddingVertical: 3, borderRadius: 8 },
-  metricChangeText: { fontSize: 10, fontFamily: "SpaceGrotesk_600SemiBold" },
-  metricValue:   { fontSize: 22, fontFamily: "SpaceGrotesk_700Bold" },
-  metricLabel:   { fontSize: 12, fontFamily: "SpaceGrotesk_400Regular", marginTop: 2 },
-  section:       { paddingHorizontal: 16, marginBottom: 16 },
-  sectionHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 10 },
-  sectionTitle:  { fontSize: 17, fontFamily: "SpaceGrotesk_700Bold" },
-  sectionLink:   { fontSize: 14, fontFamily: "SpaceGrotesk_500Medium" },
-  pipelineCard:    { borderRadius: 14, borderWidth: 1, padding: 16, flexDirection: "row", gap: 8 },
-  pipelineCol:     { flex: 1, alignItems: "center", gap: 4 },
-  pipelineDot:     { width: 8, height: 8, borderRadius: 4 },
-  pipelineCount:   { fontSize: 22, fontFamily: "SpaceGrotesk_700Bold" },
-  pipelineLabel:   { fontSize: 11, fontFamily: "SpaceGrotesk_400Regular", textAlign: "center" },
-  pipelineBar:     { width: "100%", height: 4, borderRadius: 2, marginTop: 4, flexDirection: "row" },
-  pipelineBarFill: { height: 4, borderRadius: 2 },
-  activityCard:    { borderRadius: 14, borderWidth: 1, overflow: "hidden" },
-  activityItem:    { flexDirection: "row", gap: 12, padding: 14, alignItems: "flex-start" },
-  activityIconWrap:{ width: 32, height: 32, borderRadius: 10, alignItems: "center", justifyContent: "center", marginTop: 1 },
-  activityText:    { fontSize: 13, fontFamily: "SpaceGrotesk_400Regular", lineHeight: 19, flex: 1 },
-  activityTime:    { fontSize: 12, fontFamily: "SpaceGrotesk_400Regular", marginTop: 3 },
-  activityDivider: { height: StyleSheet.hairlineWidth, marginLeft: 58 },
+  avatarBtn:   { width: 38, height: 38, borderRadius: 19, alignItems: "center", justifyContent: "center" },
+
+  sectionSmall: { fontSize: 10, fontFamily: "SpaceGrotesk_600SemiBold", letterSpacing: 1, paddingHorizontal: 20, marginBottom: 8 },
+  modulesRow:   { paddingHorizontal: 16, paddingVertical: 4, gap: 12, flexDirection: "row", alignItems: "flex-start" },
+  moduleItem:   { alignItems: "center", gap: 4 },
+  moduleLabel:  { fontSize: 10, fontFamily: "SpaceGrotesk_500Medium", textAlign: "center" },
+  planBadge:    { position: "absolute", top: 0, right: 0, backgroundColor: PURPLE + "CC", borderRadius: 4, paddingHorizontal: 3, paddingVertical: 1 },
+  planBadgeText:{ fontSize: 7, fontFamily: "SpaceGrotesk_700Bold", color: "#fff", letterSpacing: 0.5 },
+  activeLabel:  { fontSize: 11, fontFamily: "SpaceGrotesk_400Regular", paddingHorizontal: 20, marginTop: 6, marginBottom: 0 },
+
+  jadeSection: { alignItems: "center", marginTop: 22, marginBottom: 20, gap: 8 },
+  jadeHint:    { fontSize: 11, fontFamily: "SpaceGrotesk_400Regular", opacity: 0.5 },
+
+  metricsGrid:  { flexDirection: "row", flexWrap: "wrap", paddingHorizontal: 12, gap: 8, marginBottom: 14 },
+  metricCard:   { width: "47%", borderRadius: 12, borderWidth: 1, padding: 12, flexGrow: 1 },
+  metricHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 8 },
+  metricIcon:   { width: 30, height: 30, borderRadius: 9, alignItems: "center", justifyContent: "center" },
+  metricChange: { flexDirection: "row", alignItems: "center", gap: 3, paddingHorizontal: 6, paddingVertical: 2, borderRadius: 6 },
+  metricChangeText: { fontSize: 9, fontFamily: "SpaceGrotesk_600SemiBold" },
+  metricValue:  { fontSize: 20, fontFamily: "SpaceGrotesk_700Bold" },
+  metricLabel:  { fontSize: 11, fontFamily: "SpaceGrotesk_400Regular", marginTop: 2 },
+
+  section:       { paddingHorizontal: 14, marginBottom: 14 },
+  sectionHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 8 },
+  sectionTitle:  { fontSize: 15, fontFamily: "SpaceGrotesk_700Bold" },
+  sectionLink:   { fontSize: 13, fontFamily: "SpaceGrotesk_500Medium" },
+
+  pipelineCard:    { borderRadius: 12, borderWidth: 1, padding: 14, flexDirection: "row", gap: 8 },
+  pipelineCol:     { flex: 1, alignItems: "center", gap: 3 },
+  pipelineDot:     { width: 7, height: 7, borderRadius: 4 },
+  pipelineCount:   { fontSize: 20, fontFamily: "SpaceGrotesk_700Bold" },
+  pipelineLabel:   { fontSize: 10, fontFamily: "SpaceGrotesk_400Regular", textAlign: "center" },
+  pipelineBar:     { width: "100%", height: 3, borderRadius: 2, marginTop: 3, flexDirection: "row" },
+  pipelineBarFill: { height: 3, borderRadius: 2 },
+
+  activityCard:     { borderRadius: 12, borderWidth: 1, overflow: "hidden" },
+  activityItem:     { flexDirection: "row", gap: 10, padding: 12, alignItems: "flex-start" },
+  activityIconWrap: { width: 30, height: 30, borderRadius: 9, alignItems: "center", justifyContent: "center", marginTop: 1 },
+  activityText:     { fontSize: 12, fontFamily: "SpaceGrotesk_400Regular", lineHeight: 18 },
+  activityTime:     { fontSize: 11, fontFamily: "SpaceGrotesk_400Regular", marginTop: 2 },
+  activityDivider:  { height: StyleSheet.hairlineWidth, marginLeft: 52 },
+
   modalOverlay:    { flex: 1, backgroundColor: "rgba(0,0,0,0.75)", alignItems: "center", justifyContent: "center", padding: 24 },
-  modalBox:        { backgroundColor: "#111118", borderRadius: 24, padding: 28, alignItems: "center", width: "100%", borderWidth: 1, borderColor: "#1E1E2E", gap: 12 },
-  modalIconWrap:   { width: 64, height: 64, borderRadius: 32, backgroundColor: "#FF008018", alignItems: "center", justifyContent: "center", borderWidth: 1, borderColor: "#FF008044", marginBottom: 4 },
-  modalTitle:      { fontSize: 20, fontFamily: "SpaceGrotesk_700Bold", color: "#FFFFFF", textAlign: "center" },
-  modalBody:       { fontSize: 14, fontFamily: "SpaceGrotesk_400Regular", color: "#AAAACC", textAlign: "center", lineHeight: 22, marginBottom: 8 },
-  modalPrimaryBtn: { flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8, backgroundColor: PINK, borderRadius: 14, height: 50, width: "100%" },
-  modalPrimaryText:{ fontSize: 16, fontFamily: "SpaceGrotesk_700Bold", color: "#fff" },
-  modalSecondaryBtn:  { paddingVertical: 10 },
-  modalSecondaryText: { fontSize: 14, fontFamily: "SpaceGrotesk_500Medium", color: "#7777AA" },
+  modalBox:        { backgroundColor: "#111118", borderRadius: 22, padding: 26, alignItems: "center", width: "100%", borderWidth: 1, borderColor: "#1E1E2E", gap: 10 },
+  modalIconWrap:   { width: 58, height: 58, borderRadius: 29, backgroundColor: "#FF008018", alignItems: "center", justifyContent: "center", borderWidth: 1, borderColor: "#FF008044", marginBottom: 2 },
+  modalTitle:      { fontSize: 18, fontFamily: "SpaceGrotesk_700Bold", color: "#FFFFFF", textAlign: "center" },
+  modalBody:       { fontSize: 13, fontFamily: "SpaceGrotesk_400Regular", color: "#AAAACC", textAlign: "center", lineHeight: 21, marginBottom: 6 },
+  modalPrimaryBtn: { flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8, backgroundColor: PINK, borderRadius: 13, height: 48, width: "100%" },
+  modalPrimaryText:{ fontSize: 15, fontFamily: "SpaceGrotesk_700Bold", color: "#fff" },
+  modalSecondaryBtn:  { paddingVertical: 8 },
+  modalSecondaryText: { fontSize: 13, fontFamily: "SpaceGrotesk_500Medium", color: "#7777AA" },
 });
