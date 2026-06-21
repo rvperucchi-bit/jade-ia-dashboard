@@ -1,6 +1,8 @@
 import { Feather } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import * as Location from "expo-location";
+import * as WebBrowser from "expo-web-browser";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
 import React, { useEffect, useRef, useState } from "react";
 import {
@@ -8,6 +10,7 @@ import {
   Animated,
   Easing,
   Linking,
+  Modal,
   Platform,
   ScrollView,
   StyleSheet,
@@ -21,8 +24,35 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useColors } from "@/hooks/useColors";
 import { useApp } from "@/context/AppContext";
 import type { Lead } from "@/context/AppContext";
+import { useRadarSearches } from "@/hooks/useRadarSearches";
 
 const TIPOS = ["Restaurante", "Lanchonete", "Açaí", "Pizzaria", "Padaria", "Mercado", "Farmácia", "Academia", "Salão", "Outros"];
+
+// ─── Radar constants ──────────────────────────────────────────────────────────
+const RAIO_OPTIONS = [
+  { label: "1 km",  value: 1000  },
+  { label: "5 km",  value: 5000  },
+  { label: "10 km", value: 10000 },
+  { label: "25 km", value: 25000 },
+  { label: "50 km", value: 50000 },
+];
+
+const PACOTES_BUSCAS = [
+  { id: "50",   label: "+50 buscas",     preco: "R$29,90",  desc: "Ideal para testes" },
+  { id: "200",  label: "+200 buscas",    preco: "R$79,90",  desc: "Mais popular" },
+  { id: "1000", label: "+1.000 buscas",  preco: "R$179,90", desc: "Melhor custo-benefício" },
+];
+
+interface RadarLead {
+  placeId: string;
+  name: string;
+  address: string;
+  rating: number | null;
+  totalRatings: number;
+  status: string;
+  phone: string;
+  hasPhone: boolean;
+}
 
 const API_BASE =
   Platform.OS === "web"
@@ -66,8 +96,9 @@ export default function ScannerScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const { addLead, moduleStates, toggleModule } = useApp();
+  const { addLead, leads, moduleStates, toggleModule } = useApp();
   const scannerActive = moduleStates.scanner?.is_active ?? false;
+  const { remaining, canSearch, decrement, addExtra } = useRadarSearches();
 
   const pulseAnim = useRef(new Animated.Value(1)).current;
   useEffect(() => {
@@ -85,6 +116,7 @@ export default function ScannerScreen() {
     }
   }, [scannerActive]);
 
+  // ── Existing scanner state ─────────────────────────────────────────────────
   const [bairro, setBairro]           = useState("");
   const [cidade, setCidade]           = useState("Criciúma");
   const [tipoIdx, setTipoIdx]         = useState(0);
@@ -97,6 +129,116 @@ export default function ScannerScreen() {
   const [addedIds, setAddedIds]       = useState<Set<string>>(new Set());
   const [userCoords, setUserCoords]   = useState<{ lat: number; lng: number } | null>(null);
   const [locationLabel, setLocationLabel] = useState("");
+
+  // ── Radar (Buscar Leads) state ─────────────────────────────────────────────
+  const [radarSegmento,    setRadarSegmento]    = useState("Outros");
+  const [radarCidade,      setRadarCidade]      = useState("Criciúma");
+  const [radarRaioIdx,     setRadarRaioIdx]     = useState(1); // 5 km default
+  const [radarLoading,     setRadarLoading]     = useState(false);
+  const [radarResults,     setRadarResults]     = useState<RadarLead[]>([]);
+  const [radarSearched,    setRadarSearched]    = useState(false);
+  const [radarError,       setRadarError]       = useState("");
+  const [radarAddedIds,    setRadarAddedIds]    = useState<Set<string>>(new Set());
+  const [showLimiteModal,  setShowLimiteModal]  = useState(false);
+  const [showLojaModal,    setShowLojaModal]    = useState(false);
+  const [selectedPacote,   setSelectedPacote]   = useState<string | null>(null);
+  const [buyingPacote,     setBuyingPacote]     = useState(false);
+
+  // Pre-fill from empresa config
+  useEffect(() => {
+    AsyncStorage.getItem("@jade_ia:empresa_v2").then((raw) => {
+      if (!raw) return;
+      try {
+        const parsed = JSON.parse(raw);
+        if (parsed.segmento) setRadarSegmento(parsed.segmento);
+        if (parsed.cidade)   setRadarCidade(parsed.cidade);
+        else if (parsed.nome) { /* use existing cidade default */ }
+      } catch { /* ignore */ }
+    });
+  }, []);
+
+  const radarSearch = async () => {
+    if (!canSearch) { setShowLimiteModal(true); return; }
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    setRadarError("");
+    setRadarLoading(true);
+    setRadarSearched(true);
+    setRadarResults([]);
+    decrement();
+
+    try {
+      const res = await fetch(`${API_BASE}/api/places/radar`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          segmento: radarSegmento,
+          cidade:   radarCidade,
+          raio:     RAIO_OPTIONS[radarRaioIdx]!.value,
+        }),
+      });
+      const data = (await res.json()) as { results?: RadarLead[]; error?: string };
+      if (!res.ok) { setRadarError(data.error ?? "Erro ao buscar leads."); return; }
+      const fetched = data.results ?? [];
+      setRadarResults(fetched);
+      if (fetched.length === 0) setRadarError("Nenhum resultado. Tente outro segmento ou raio maior.");
+      else Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    } catch {
+      setRadarError("Erro de conexão. Verifique sua internet.");
+    } finally {
+      setRadarLoading(false);
+    }
+  };
+
+  const handleRadarAdd = (place: RadarLead) => {
+    // Duplicate check by phone
+    const existingPhones = leads.map((l: Lead) => l.phone).filter(Boolean);
+    if (place.hasPhone && existingPhones.includes(place.phone)) {
+      setRadarAddedIds((prev) => new Set([...prev, place.placeId]));
+      return;
+    }
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    const words = place.name.trim().split(/\s+/);
+    const initials = words.length >= 2
+      ? (words[0]![0]! + words[1]![0]!).toUpperCase()
+      : place.name.slice(0, 2).toUpperCase();
+    const COLORS_ARR = ["#FF6B35", "#00D68F", "#6C63FF", "#FFB300", "#FF0080", "#4ECDC4"];
+    const color = COLORS_ARR[Math.abs(place.placeId.charCodeAt(0)) % COLORS_ARR.length]!;
+    const lead: Lead = {
+      id:          `radar_${place.placeId}`,
+      name:        place.name,
+      company:     radarSegmento,
+      value:       0,
+      phone:       place.phone,
+      column:      "novo",
+      tag:         "Radar Google",
+      tagColor:    "#6C63FF",
+      time:        "agora",
+      initials,
+      avatarColor: color,
+    };
+    addLead(lead);
+    setRadarAddedIds((prev) => new Set([...prev, place.placeId]));
+  };
+
+  const handleBuyPacote = async () => {
+    if (!selectedPacote) return;
+    setBuyingPacote(true);
+    try {
+      const res = await fetch(`${API_BASE}/api/stripe/create-checkout-searches`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ pacote: selectedPacote }),
+      });
+      const data = (await res.json()) as { url?: string; buscas?: number; error?: string };
+      if (data.url) {
+        setShowLojaModal(false);
+        setShowLimiteModal(false);
+        await WebBrowser.openBrowserAsync(data.url);
+        if (data.buscas) addExtra(data.buscas);
+      }
+    } catch { /* ignore */ }
+    finally { setBuyingPacote(false); }
+  };
 
   const topPad = Platform.OS === "web" ? 67 : insets.top;
 
@@ -255,6 +397,207 @@ export default function ScannerScreen() {
       )}
 
       <ScrollView showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
+
+        {/* ══════════════════════════════════════════════════════════════════════
+            SEÇÃO BUSCAR LEADS — Google Places Nearby Search
+        ══════════════════════════════════════════════════════════════════════ */}
+        <View style={styles.radarSection}>
+          <View style={styles.radarSectionHeader}>
+            <View style={[styles.radarIconWrap, { backgroundColor: "#FF008018" }]}>
+              <Feather name="search" size={16} color="#FF0080" />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={[styles.radarSectionTitle, { color: colors.text }]}>Buscar Leads</Text>
+              <Text style={[styles.radarSectionSub, { color: colors.mutedForeground }]}>
+                Google Places · Nearby Search real
+              </Text>
+            </View>
+            <TouchableOpacity
+              onPress={() => setShowLojaModal(true)}
+              style={[styles.compraBuscasBtn, { backgroundColor: colors.surface, borderColor: colors.border }]}
+              activeOpacity={0.8}
+            >
+              <Feather name="shopping-cart" size={13} color="#FF0080" />
+              <Text style={[styles.compraBuscasBtnText, { color: "#FF0080" }]}>Comprar buscas</Text>
+            </TouchableOpacity>
+          </View>
+
+          {/* Segmento */}
+          <View style={styles.radarField}>
+            <Text style={[styles.radarLabel, { color: colors.mutedForeground }]}>Segmento</Text>
+            <View style={[styles.radarInput, { backgroundColor: colors.card, borderColor: colors.border }]}>
+              <Feather name="tag" size={14} color={colors.mutedForeground} style={{ marginRight: 8 }} />
+              <TextInput
+                style={[styles.radarInputText, { color: colors.text }]}
+                value={radarSegmento}
+                onChangeText={setRadarSegmento}
+                placeholder="Ex: Clínicas & Saúde"
+                placeholderTextColor={colors.mutedForeground}
+              />
+            </View>
+          </View>
+
+          {/* Cidade */}
+          <View style={styles.radarField}>
+            <Text style={[styles.radarLabel, { color: colors.mutedForeground }]}>Cidade</Text>
+            <View style={[styles.radarInput, { backgroundColor: colors.card, borderColor: colors.border }]}>
+              <Feather name="map-pin" size={14} color={colors.mutedForeground} style={{ marginRight: 8 }} />
+              <TextInput
+                style={[styles.radarInputText, { color: colors.text }]}
+                value={radarCidade}
+                onChangeText={setRadarCidade}
+                placeholder="Ex: São Paulo"
+                placeholderTextColor={colors.mutedForeground}
+              />
+            </View>
+          </View>
+
+          {/* Raio */}
+          <View style={styles.radarField}>
+            <Text style={[styles.radarLabel, { color: colors.mutedForeground }]}>Raio de busca</Text>
+            <View style={styles.raioRow}>
+              {RAIO_OPTIONS.map((opt, i) => (
+                <TouchableOpacity
+                  key={opt.value}
+                  style={[
+                    styles.raioBtn,
+                    { borderColor: i === radarRaioIdx ? "#FF0080" : colors.border, backgroundColor: i === radarRaioIdx ? "#FF008018" : colors.card },
+                  ]}
+                  onPress={() => setRadarRaioIdx(i)}
+                  activeOpacity={0.8}
+                >
+                  <Text style={[styles.raioBtnText, { color: i === radarRaioIdx ? "#FF0080" : colors.mutedForeground }]}>
+                    {opt.label}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          </View>
+
+          {/* Botão buscar */}
+          <TouchableOpacity
+            style={[styles.radarSearchBtn, { opacity: radarLoading ? 0.7 : 1 }]}
+            onPress={radarSearch}
+            activeOpacity={0.85}
+            disabled={radarLoading}
+          >
+            {radarLoading
+              ? <ActivityIndicator color="#fff" size="small" />
+              : <><Feather name="search" size={16} color="#fff" /><Text style={styles.radarSearchBtnText}>Buscar Leads</Text></>
+            }
+          </TouchableOpacity>
+
+          {/* Contador de buscas */}
+          <TouchableOpacity
+            style={styles.buscasCounterRow}
+            onPress={() => setShowLojaModal(true)}
+            activeOpacity={0.7}
+          >
+            <Feather
+              name="zap"
+              size={13}
+              color={remaining <= 1 ? "#FF3B5C" : remaining <= 5 ? "#FFB300" : "#00D68F"}
+            />
+            <Text style={[styles.buscasCounterText, {
+              color: remaining <= 1 ? "#FF3B5C" : remaining <= 5 ? "#FFB300" : colors.mutedForeground,
+            }]}>
+              {remaining} busca{remaining !== 1 ? "s" : ""} restante{remaining !== 1 ? "s" : ""} este mês
+              {remaining <= 2 ? " — Comprar mais →" : ""}
+            </Text>
+          </TouchableOpacity>
+
+          {/* Radar error */}
+          {!!radarError && (
+            <View style={[styles.errorBox, { backgroundColor: "#FF3B5C18", borderColor: "#FF3B5C33" }]}>
+              <Feather name="alert-circle" size={14} color="#FF3B5C" />
+              <Text style={styles.errorText}>{radarError}</Text>
+            </View>
+          )}
+
+          {/* Radar Results */}
+          {radarSearched && !radarLoading && radarResults.length > 0 && (
+            <View style={styles.radarResultsWrap}>
+              <Text style={[styles.radarResultsTitle, { color: colors.mutedForeground }]}>
+                {radarResults.length} LEAD{radarResults.length !== 1 ? "S" : ""} ENCONTRADO{radarResults.length !== 1 ? "S" : ""}
+              </Text>
+              {radarResults.map((place) => {
+                const added = radarAddedIds.has(place.placeId);
+                return (
+                  <View
+                    key={place.placeId}
+                    style={[styles.radarCard, {
+                      backgroundColor: colors.card,
+                      borderColor: added ? "#00D68F44" : colors.border,
+                    }]}
+                  >
+                    <View style={styles.radarCardRow}>
+                      <View style={[styles.radarCardIcon, { backgroundColor: "#FF008018" }]}>
+                        <Feather name="briefcase" size={14} color="#FF0080" />
+                      </View>
+                      <View style={{ flex: 1 }}>
+                        <Text style={[styles.radarCardName, { color: colors.text }]} numberOfLines={1}>
+                          {place.name}
+                        </Text>
+                        <Text style={[styles.radarCardAddr, { color: colors.mutedForeground }]} numberOfLines={1}>
+                          {place.address}
+                        </Text>
+                      </View>
+                      <View style={[
+                        styles.radarStatusBadge,
+                        { backgroundColor: place.hasPhone ? "#00D68F18" : "#77777A18", borderColor: place.hasPhone ? "#00D68F44" : "#77777A44" },
+                      ]}>
+                        <Text style={[styles.radarStatusText, { color: place.hasPhone ? "#00D68F" : "#77777A" }]}>
+                          {place.hasPhone ? "Ativo" : "Sem tel."}
+                        </Text>
+                      </View>
+                    </View>
+
+                    {place.hasPhone && (
+                      <View style={styles.radarCardMeta}>
+                        <Feather name="phone" size={12} color={colors.mutedForeground} />
+                        <Text style={[styles.radarCardMetaText, { color: colors.mutedForeground }]}>{place.phone}</Text>
+                      </View>
+                    )}
+
+                    {place.rating !== null && (
+                      <View style={styles.radarCardMeta}>
+                        <Text style={{ fontSize: 12 }}>⭐</Text>
+                        <Text style={[styles.radarCardMetaText, { color: colors.mutedForeground }]}>
+                          {place.rating.toFixed(1)} ({place.totalRatings.toLocaleString("pt-BR")} avaliações)
+                        </Text>
+                      </View>
+                    )}
+
+                    <TouchableOpacity
+                      style={[
+                        styles.radarAddBtn,
+                        added
+                          ? { backgroundColor: "#00D68F18", borderColor: "#00D68F44", borderWidth: 1 }
+                          : { backgroundColor: "#FF0080" },
+                      ]}
+                      onPress={() => !added && handleRadarAdd(place)}
+                      activeOpacity={0.85}
+                      disabled={added}
+                    >
+                      <Feather name={added ? "check" : "user-plus"} size={13} color={added ? "#00D68F" : "#fff"} />
+                      <Text style={[styles.radarAddBtnText, { color: added ? "#00D68F" : "#fff" }]}>
+                        {added ? "Adicionado ao CRM" : "Adicionar ao CRM"}
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+                );
+              })}
+            </View>
+          )}
+        </View>
+
+        {/* Divider */}
+        <View style={[styles.sectionDivider, { borderColor: colors.border }]}>
+          <View style={[styles.dividerLine, { backgroundColor: colors.border }]} />
+          <Text style={[styles.dividerText, { color: colors.mutedForeground }]}>BUSCA POR ENDEREÇO</Text>
+          <View style={[styles.dividerLine, { backgroundColor: colors.border }]} />
+        </View>
+
         {/* ── Location button ── */}
         <View style={styles.form}>
           <TouchableOpacity
@@ -439,11 +782,152 @@ export default function ScannerScreen() {
 
         <View style={{ height: 40 }} />
       </ScrollView>
+
+      {/* ── Modal: Limite de buscas atingido ── */}
+      <Modal transparent animationType="fade" visible={showLimiteModal} onRequestClose={() => setShowLimiteModal(false)}>
+        <View style={styles.modalOverlay}>
+          <View style={[styles.modalBox, { backgroundColor: colors.card, borderColor: colors.border }]}>
+            <View style={[styles.modalIconWrap, { backgroundColor: "#FF3B5C18" }]}>
+              <Feather name="zap-off" size={28} color="#FF3B5C" />
+            </View>
+            <Text style={[styles.modalTitle, { color: colors.text }]}>Buscas do mês esgotadas</Text>
+            <Text style={[styles.modalSub, { color: colors.mutedForeground }]}>
+              Você usou todas as buscas disponíveis no seu plano este mês. Compre um pacote extra ou aguarde a renovação.
+            </Text>
+            <TouchableOpacity
+              style={styles.modalPrimaryBtn}
+              onPress={() => { setShowLimiteModal(false); setShowLojaModal(true); }}
+              activeOpacity={0.85}
+            >
+              <Feather name="shopping-cart" size={16} color="#fff" />
+              <Text style={styles.modalPrimaryBtnText}>Comprar mais buscas</Text>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => setShowLimiteModal(false)} style={styles.modalCancelBtn} activeOpacity={0.7}>
+              <Text style={[styles.modalCancelBtnText, { color: colors.mutedForeground }]}>Fechar</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+
+      {/* ── Modal: Loja de buscas extras ── */}
+      <Modal transparent animationType="slide" visible={showLojaModal} onRequestClose={() => setShowLojaModal(false)}>
+        <View style={styles.modalOverlay}>
+          <View style={[styles.modalBox, { backgroundColor: colors.card, borderColor: colors.border }]}>
+            <View style={styles.lojaHeader}>
+              <Text style={[styles.modalTitle, { color: colors.text }]}>Comprar mais buscas</Text>
+              <TouchableOpacity onPress={() => setShowLojaModal(false)} activeOpacity={0.7}>
+                <Feather name="x" size={20} color={colors.mutedForeground} />
+              </TouchableOpacity>
+            </View>
+            <Text style={[styles.modalSub, { color: colors.mutedForeground }]}>
+              Buscas extras nunca expiram. Acumulam com o limite do seu plano.
+            </Text>
+
+            {PACOTES_BUSCAS.map((p) => (
+              <TouchableOpacity
+                key={p.id}
+                style={[
+                  styles.pacoteCard,
+                  {
+                    borderColor: selectedPacote === p.id ? "#FF0080" : colors.border,
+                    backgroundColor: selectedPacote === p.id ? "#FF008010" : colors.surface,
+                  },
+                ]}
+                onPress={() => setSelectedPacote(p.id)}
+                activeOpacity={0.85}
+              >
+                <View style={{ flex: 1 }}>
+                  <Text style={[styles.pacoteLabel, { color: colors.text }]}>{p.label}</Text>
+                  <Text style={[styles.pacoteDesc, { color: colors.mutedForeground }]}>{p.desc}</Text>
+                </View>
+                <Text style={[styles.pacotePreco, { color: "#FF0080" }]}>{p.preco}</Text>
+                {selectedPacote === p.id && (
+                  <View style={styles.pacoteCheck}>
+                    <Feather name="check-circle" size={18} color="#FF0080" />
+                  </View>
+                )}
+              </TouchableOpacity>
+            ))}
+
+            <TouchableOpacity
+              style={[styles.modalPrimaryBtn, { opacity: selectedPacote && !buyingPacote ? 1 : 0.5 }]}
+              onPress={handleBuyPacote}
+              activeOpacity={0.85}
+              disabled={!selectedPacote || buyingPacote}
+            >
+              {buyingPacote
+                ? <ActivityIndicator color="#fff" size="small" />
+                : <><Feather name="credit-card" size={16} color="#fff" /><Text style={styles.modalPrimaryBtnText}>Comprar agora</Text></>
+              }
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
+  // ─── Radar (Buscar Leads) styles ───────────────────────────────────────────
+  radarSection: { padding: 16, gap: 12 },
+  radarSectionHeader: { flexDirection: "row", alignItems: "center", gap: 10, marginBottom: 4 },
+  radarIconWrap: { width: 36, height: 36, borderRadius: 10, alignItems: "center", justifyContent: "center" },
+  radarSectionTitle: { fontSize: 16, fontFamily: "SpaceGrotesk_700Bold" },
+  radarSectionSub: { fontSize: 11, fontFamily: "SpaceGrotesk_400Regular", marginTop: 1 },
+  compraBuscasBtn: { flexDirection: "row", alignItems: "center", gap: 5, borderRadius: 10, borderWidth: 1, paddingHorizontal: 10, paddingVertical: 6 },
+  compraBuscasBtnText: { fontSize: 11, fontFamily: "SpaceGrotesk_600SemiBold" },
+  radarField: { gap: 5 },
+  radarLabel: { fontSize: 11, fontFamily: "SpaceGrotesk_500Medium", textTransform: "uppercase", letterSpacing: 0.5 },
+  radarInput: { flexDirection: "row", alignItems: "center", borderRadius: 12, borderWidth: 1, paddingHorizontal: 14, height: 46 },
+  radarInputText: { flex: 1, fontSize: 14, fontFamily: "SpaceGrotesk_400Regular" },
+  raioRow: { flexDirection: "row", gap: 6 },
+  raioBtn: { flex: 1, alignItems: "center", justifyContent: "center", height: 36, borderRadius: 9, borderWidth: 1 },
+  raioBtnText: { fontSize: 11, fontFamily: "SpaceGrotesk_600SemiBold" },
+  radarSearchBtn: {
+    backgroundColor: "#FF0080", flexDirection: "row", alignItems: "center", justifyContent: "center",
+    gap: 8, height: 50, borderRadius: 13,
+    shadowColor: "#FF0080", shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 10, elevation: 6,
+  },
+  radarSearchBtnText: { fontSize: 15, fontFamily: "SpaceGrotesk_700Bold", color: "#fff" },
+  buscasCounterRow: { flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 5, paddingVertical: 4 },
+  buscasCounterText: { fontSize: 12, fontFamily: "SpaceGrotesk_500Medium" },
+  radarResultsWrap: { gap: 10, marginTop: 4 },
+  radarResultsTitle: { fontSize: 11, fontFamily: "SpaceGrotesk_600SemiBold", letterSpacing: 1, marginBottom: 2 },
+  radarCard: { borderRadius: 14, borderWidth: 1, padding: 14, gap: 8 },
+  radarCardRow: { flexDirection: "row", alignItems: "flex-start", gap: 10 },
+  radarCardIcon: { width: 34, height: 34, borderRadius: 9, alignItems: "center", justifyContent: "center" },
+  radarCardName: { fontSize: 14, fontFamily: "SpaceGrotesk_600SemiBold" },
+  radarCardAddr: { fontSize: 11, fontFamily: "SpaceGrotesk_400Regular", marginTop: 1 },
+  radarStatusBadge: { borderRadius: 7, borderWidth: 1, paddingHorizontal: 8, paddingVertical: 3, alignSelf: "flex-start" },
+  radarStatusText: { fontSize: 10, fontFamily: "SpaceGrotesk_600SemiBold" },
+  radarCardMeta: { flexDirection: "row", alignItems: "center", gap: 6 },
+  radarCardMetaText: { fontSize: 12, fontFamily: "SpaceGrotesk_400Regular" },
+  radarAddBtn: { flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 7, paddingVertical: 9, borderRadius: 10 },
+  radarAddBtnText: { fontSize: 13, fontFamily: "SpaceGrotesk_600SemiBold" },
+  sectionDivider: { flexDirection: "row", alignItems: "center", paddingHorizontal: 16, gap: 10, marginVertical: 4 },
+  dividerLine: { flex: 1, height: StyleSheet.hairlineWidth },
+  dividerText: { fontSize: 10, fontFamily: "SpaceGrotesk_600SemiBold", letterSpacing: 1 },
+  // ─── Modal styles ──────────────────────────────────────────────────────────
+  modalOverlay: { flex: 1, backgroundColor: "rgba(0,0,0,0.75)", justifyContent: "flex-end", alignItems: "center" },
+  modalBox: { width: "100%", borderTopLeftRadius: 24, borderTopRightRadius: 24, borderWidth: StyleSheet.hairlineWidth, padding: 24, gap: 14 },
+  modalIconWrap: { alignSelf: "center", width: 60, height: 60, borderRadius: 30, alignItems: "center", justifyContent: "center" },
+  modalTitle: { fontSize: 20, fontFamily: "SpaceGrotesk_700Bold", textAlign: "center" },
+  modalSub: { fontSize: 14, fontFamily: "SpaceGrotesk_400Regular", textAlign: "center", lineHeight: 20 },
+  modalPrimaryBtn: {
+    backgroundColor: "#FF0080", flexDirection: "row", alignItems: "center", justifyContent: "center",
+    gap: 8, height: 52, borderRadius: 14, marginTop: 4,
+  },
+  modalPrimaryBtnText: { fontSize: 16, fontFamily: "SpaceGrotesk_700Bold", color: "#fff" },
+  modalCancelBtn: { alignItems: "center", paddingVertical: 8 },
+  modalCancelBtnText: { fontSize: 14, fontFamily: "SpaceGrotesk_500Medium" },
+  lojaHeader: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
+  pacoteCard: { flexDirection: "row", alignItems: "center", borderRadius: 12, borderWidth: 1, padding: 14, gap: 10 },
+  pacoteLabel: { fontSize: 15, fontFamily: "SpaceGrotesk_600SemiBold" },
+  pacoteDesc: { fontSize: 12, fontFamily: "SpaceGrotesk_400Regular", marginTop: 2 },
+  pacotePreco: { fontSize: 16, fontFamily: "SpaceGrotesk_700Bold" },
+  pacoteCheck: { position: "absolute", top: 10, right: 10 },
+
+  // ─── Existing styles ───────────────────────────────────────────────────────
   container: { flex: 1 },
   header: {
     flexDirection: "row", alignItems: "center", gap: 14,

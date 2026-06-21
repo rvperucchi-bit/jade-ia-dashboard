@@ -145,6 +145,60 @@ router.post('/webhook', async (req: Request, res: Response) => {
   return res.json({ received: true });
 });
 
+// ─── POST /stripe/create-checkout-searches ────────────────────────────────────
+router.post('/create-checkout-searches', async (req: Request, res: Response) => {
+  try {
+    const { pacote, email } = req.body as { pacote?: string; email?: string };
+
+    const PACOTES: Record<string, { buscas: number; preco: number; label: string }> = {
+      '50':   { buscas: 50,   preco: 2990,  label: '+50 Buscas' },
+      '200':  { buscas: 200,  preco: 7990,  label: '+200 Buscas' },
+      '1000': { buscas: 1000, preco: 17990, label: '+1.000 Buscas' },
+    };
+
+    if (!pacote || !(pacote in PACOTES)) {
+      return res.status(400).json({ error: 'Pacote inválido. Use: 50, 200, 1000.' });
+    }
+
+    const info = PACOTES[pacote]!;
+    const domainRaw = process.env.REPLIT_DOMAINS ?? '';
+    const domain = domainRaw.split(',')[0] ?? 'jade-ia.replit.app';
+
+    const session = await stripe.checkout.sessions.create({
+      payment_method_types: ['card'],
+      mode: 'payment',
+      customer_email: email || undefined,
+      metadata: { tipo: 'buscas', buscas: String(info.buscas) },
+      line_items: [{
+        price_data: {
+          currency: 'brl',
+          product_data: {
+            name: `JADE IA — ${info.label} Radar`,
+            description: `${info.buscas} buscas adicionais no Radar de Prospecção`,
+          },
+          unit_amount: info.preco,
+        },
+        quantity: 1,
+      }],
+      success_url: `https://${domain}/api/stripe/callback-searches?session_id={CHECKOUT_SESSION_ID}&buscas=${info.buscas}`,
+      cancel_url:  `https://${domain}/scanner`,
+    });
+
+    req.log.info({ pacote, buscas: info.buscas }, 'Stripe searches checkout created');
+    return res.json({ url: session.url, sessionId: session.id, buscas: info.buscas });
+
+  } catch (error) {
+    req.log.error({ error }, 'Error creating searches checkout');
+    return res.status(500).json({ error: 'Erro ao criar sessão de checkout.' });
+  }
+});
+
+// ─── GET /stripe/callback-searches ───────────────────────────────────────────
+// Called after successful payment — used for deep-link back to app
+router.get('/callback-searches', (_req: Request, res: Response) => {
+  res.send('<html><body><h2>Pagamento confirmado! ✅ Volte ao app para usar suas buscas.</h2></body></html>');
+});
+
 // ─── GET /stripe/subscription/:email ─────────────────────────────────────────
 router.get('/subscription/:email', (req: Request, res: Response) => {
   const email = decodeURIComponent(req.params.email ?? '');

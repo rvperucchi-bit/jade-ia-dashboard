@@ -2,6 +2,95 @@ import { Router, Request, Response } from 'express';
 
 const router = Router();
 
+// ─── Segment → Google Places keyword mapping ──────────────────────────────────
+const SEGMENT_KEYWORDS: Record<string, string> = {
+  "Clínicas & Saúde":             "clínica médica dentista",
+  "Imobiliário":                  "imobiliária corretor de imóveis",
+  "Advocacia":                    "escritório de advocacia advogado",
+  "Serviços & Construção":        "construtora reforma elétrica",
+  "Varejo & E-commerce":          "loja comércio varejo",
+  "Consultoria & B2B":            "consultoria empresa de tecnologia",
+  "Seguros & Financeiro":         "corretora de seguros seguro",
+  "Educação":                     "escola curso faculdade",
+  "Crédito & Consórcio":          "financeira correspondente bancário consórcio",
+  "Alimentação & Food Service":   "restaurante distribuidora alimentar",
+  "Serviços de Beleza":           "salão de beleza barbearia estética",
+  "Oficinas & Manutenção":        "oficina mecânica manutenção automotiva",
+  "Marketing & Publicidade":      "agência de marketing publicidade",
+  "Moda":                         "loja de roupas moda",
+  "Outros":                       "empresa comércio",
+};
+
+// ─── POST /places/radar ─── Google Places Nearby Search + Details ─────────────
+router.post('/radar', async (req: Request, res: Response) => {
+  try {
+    const { segmento, cidade, raio = 5000 } = req.body as {
+      segmento?: string;
+      cidade?: string;
+      raio?: number;
+    };
+
+    const apiKey = process.env.GOOGLE_MAPS_PLATFORM_KEY ?? process.env.GOOGLE_MAPS_API_KEY;
+    if (!apiKey) {
+      return res.status(503).json({ error: 'Google Maps API key não configurada.' });
+    }
+
+    const keyword = SEGMENT_KEYWORDS[segmento ?? ''] ?? 'empresa';
+
+    // Step 1: Geocode city to get lat/lng
+    const geocodeUrl = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent((cidade ?? 'São Paulo') + ', Brasil')}&language=pt-BR&key=${apiKey}`;
+    const geocodeResp = await fetch(geocodeUrl);
+    const geocodeData = (await geocodeResp.json()) as { status: string; results: Array<{ geometry: { location: { lat: number; lng: number } } }> };
+
+    if (geocodeData.status !== 'OK' || !geocodeData.results?.length) {
+      return res.status(400).json({ error: `Cidade não encontrada: ${cidade}` });
+    }
+    const { lat, lng } = geocodeData.results[0]!.geometry.location;
+
+    // Step 2: Nearby Search
+    const nearbyUrl = `https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=${lat},${lng}&radius=${raio}&keyword=${encodeURIComponent(keyword)}&language=pt-BR&key=${apiKey}`;
+    const nearbyResp = await fetch(nearbyUrl);
+    const nearbyData = (await nearbyResp.json()) as { status: string; results: any[]; error_message?: string };
+
+    if (nearbyData.status !== 'OK' && nearbyData.status !== 'ZERO_RESULTS') {
+      return res.status(502).json({ error: nearbyData.error_message ?? nearbyData.status });
+    }
+
+    const places = (nearbyData.results ?? []).slice(0, 15);
+
+    // Step 3: Enrich each place with phone number via Place Details
+    const enriched = await Promise.all(
+      places.map(async (p: any) => {
+        let phone = '';
+        try {
+          const detailsUrl = `https://maps.googleapis.com/maps/api/place/details/json?place_id=${p.place_id}&fields=formatted_phone_number&language=pt-BR&key=${apiKey}`;
+          const detailsResp = await fetch(detailsUrl);
+          const detailsData = (await detailsResp.json()) as { result?: { formatted_phone_number?: string } };
+          phone = detailsData.result?.formatted_phone_number ?? '';
+        } catch { /* best-effort */ }
+
+        return {
+          placeId: p.place_id as string,
+          name: p.name as string,
+          address: (p.vicinity ?? p.formatted_address ?? '') as string,
+          rating: (p.rating ?? null) as number | null,
+          totalRatings: (p.user_ratings_total ?? 0) as number,
+          status: (p.business_status ?? 'OPERATIONAL') as string,
+          phone,
+          hasPhone: !!phone,
+        };
+      })
+    );
+
+    req.log.info({ segmento, cidade, raio, count: enriched.length }, 'radar search completed');
+    return res.json({ results: enriched, total: enriched.length });
+
+  } catch (error) {
+    req.log.error({ error }, 'radar search error');
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 interface PlaceResult {
   name: string;
   formatted_address: string;
