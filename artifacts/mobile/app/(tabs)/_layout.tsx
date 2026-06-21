@@ -1,15 +1,22 @@
-import { Tabs } from "expo-router";
+import { Redirect, Tabs } from "expo-router";
 import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
 import React from "react";
 import { Platform, View } from "react-native";
 
 import { useColors } from "@/hooks/useColors";
 import { JADEFab } from "@/components/JADEFab";
+import { useOnboarding } from "@/context/OnboardingContext";
 
 export default function TabLayout() {
   const colors = useColors();
   const isIOS = Platform.OS === "ios";
   const isWeb = Platform.OS === "web";
+
+  const { onboardingDone, onboardingLoaded } = useOnboarding();
+
+  // Wait until AsyncStorage is checked before deciding
+  if (!onboardingLoaded) return null;
+  if (!onboardingDone) return <Redirect href={"/onboarding" as any} />;
 
   return (
     <View style={{ flex: 1 }}>

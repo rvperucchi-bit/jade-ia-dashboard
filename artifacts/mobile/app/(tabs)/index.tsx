@@ -216,13 +216,16 @@ function activityColor(type: ActivityEvent["type"], colors: ReturnType<typeof us
   };
   return map[type] ?? colors.mutedForeground;
 }
-function ActivityIcon({ type, color }: { type: ActivityEvent["type"]; color: string }) {
+function ActivityIcon({ event, color }: { event: ActivityEvent; color: string }) {
   const sz = 14;
-  if (type === "lead")     return <Feather name="user-plus"     size={sz} color={color} />;
-  if (type === "deal")     return <Feather name="briefcase"     size={sz} color={color} />;
-  if (type === "message")  return <MaterialCommunityIcons name="robot" size={sz} color={color} />;
-  if (type === "task")     return <Feather name="calendar"      size={sz} color={color} />;
-  if (type === "campaign") return <Feather name="zap"           size={sz} color={color} />;
+  const icon = event.icon;
+  if (icon === "trending-up")   return <Feather name="trending-up"   size={sz} color={color} />;
+  if (icon === "trending-down") return <Feather name="trending-down"  size={sz} color={color} />;
+  if (event.type === "lead")     return <Feather name="user-plus"    size={sz} color={color} />;
+  if (event.type === "deal")     return <Feather name="briefcase"    size={sz} color={color} />;
+  if (event.type === "message")  return <MaterialCommunityIcons name="robot" size={sz} color={color} />;
+  if (event.type === "task")     return <Feather name="calendar"     size={sz} color={color} />;
+  if (event.type === "campaign") return <Feather name="zap"          size={sz} color={color} />;
   return <Feather name="activity" size={sz} color={color} />;
 }
 function timeAgo(iso: string) {
@@ -467,7 +470,7 @@ export default function HomeScreen() {
               <React.Fragment key={item.id}>
                 <View style={S.actRow}>
                   <View style={[S.actIcon, { backgroundColor: c + "22" }]}>
-                    <ActivityIcon type={item.type} color={c} />
+                    <ActivityIcon event={item} color={c} />
                   </View>
                   <View style={{ flex: 1 }}>
                     <Text style={[S.actText, { color: colors.text }]} numberOfLines={2}>{item.text}</Text>

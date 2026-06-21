@@ -20,6 +20,7 @@ import { AuthProvider } from "@/context/AuthContext";
 import { AppProvider } from "@/context/AppContext";
 import { PlanProvider } from "@/context/PlanContext";
 import { CreditsProvider } from "@/context/CreditsContext";
+import { OnboardingProvider } from "@/context/OnboardingContext";
 import { initializeDatabase } from "@/db/init";
 
 SplashScreen.preventAutoHideAsync();
@@ -154,6 +155,10 @@ function RootLayoutNav() {
         options={{ headerShown: false, presentation: "card", animation: "slide_from_right" }}
       />
       <Stack.Screen
+        name="onboarding"
+        options={{ headerShown: false, animation: "fade", gestureEnabled: false }}
+      />
+      <Stack.Screen
         name="sucesso"
         options={{ headerShown: false, presentation: "card", animation: "fade" }}
       />
@@ -193,6 +198,7 @@ export default function RootLayout() {
           <DatabaseWrapper>
             <AuthProvider>
               <AppProvider>
+                <OnboardingProvider>
                 <PlanProvider>
                   <CreditsProvider>
                     <GestureHandlerRootView style={{ flex: 1 }}>
@@ -200,6 +206,7 @@ export default function RootLayout() {
                     </GestureHandlerRootView>
                   </CreditsProvider>
                 </PlanProvider>
+                </OnboardingProvider>
               </AppProvider>
             </AuthProvider>
           </DatabaseWrapper>

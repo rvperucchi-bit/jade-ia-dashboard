@@ -17,6 +17,7 @@ import { useRouter } from "expo-router";
 
 import { useColors } from "@/hooks/useColors";
 import { useApp, Lead, LeadColumn, LeadActivity } from "@/context/AppContext";
+import { getLeadScoreInfo, calcLeadScore } from "@/utils/leadScore";
 
 const COLUMNS: { key: LeadColumn; label: string; color: string }[] = [
   { key: "novo",       label: "Novo",        color: "#6C63FF" },
@@ -93,10 +94,41 @@ function channelLabel(ch: ContactEntry["channel"]) {
   }
 }
 
+// ─── Score badge ──────────────────────────────────────────────────────────────
+function ScoreBadge({ lead }: { lead: Lead }) {
+  const info = getLeadScoreInfo(lead);
+  const pulseAnim = useRef(new Animated.Value(1)).current;
+
+  React.useEffect(() => {
+    if (info.tier === "vip") {
+      const loop = Animated.loop(Animated.sequence([
+        Animated.timing(pulseAnim, { toValue: 1.15, duration: 700, useNativeDriver: true }),
+        Animated.timing(pulseAnim, { toValue: 1,    duration: 700, useNativeDriver: true }),
+      ]));
+      loop.start();
+      return () => loop.stop();
+    }
+  }, [info.tier]);
+
+  return (
+    <Animated.View
+      style={[
+        L.scoreBadge,
+        { backgroundColor: info.color + "22", borderColor: info.color + "55" },
+        info.tier === "vip" && { transform: [{ scale: pulseAnim }] },
+      ]}
+    >
+      <View style={[L.scoreDot, { backgroundColor: info.color }]} />
+      <Text style={[L.scoreNum, { color: info.color }]}>{info.score}</Text>
+    </Animated.View>
+  );
+}
+
 // ─── Lead card ────────────────────────────────────────────────────────────────
 function LeadCard({ lead, onPress }: { lead: Lead; onPress: () => void }) {
   const colors = useColors();
   const statusColor = leadStatusColor(lead);
+  const scoreInfo = getLeadScoreInfo(lead);
   return (
     <TouchableOpacity
       style={[L.card, { backgroundColor: colors.card, borderColor: colors.border }]}
@@ -113,6 +145,14 @@ function LeadCard({ lead, onPress }: { lead: Lead; onPress: () => void }) {
             <View style={[L.semDot, { backgroundColor: statusColor }]} />
           </View>
           <Text style={[L.cardCompany, { color: colors.mutedForeground }]} numberOfLines={1}>{lead.company}</Text>
+        </View>
+      </View>
+      {/* Score bar */}
+      <View style={L.scoreRow}>
+        <ScoreBadge lead={lead} />
+        <Text style={[L.scoreLabel, { color: scoreInfo.color }]}>{scoreInfo.label}</Text>
+        <View style={[L.scoreTrack, { backgroundColor: "rgba(255,255,255,0.08)" }]}>
+          <View style={[L.scoreFill, { width: `${scoreInfo.score}%` as any, backgroundColor: scoreInfo.color }]} />
         </View>
       </View>
       <View style={L.cardFooter}>
@@ -343,6 +383,8 @@ function LeadDetailModal({
 }
 
 // ─── Screen ───────────────────────────────────────────────────────────────────
+type LeadsFilter = "all" | "hot";
+
 export default function LeadsScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
@@ -351,6 +393,7 @@ export default function LeadsScreen() {
   const [selectedLead, setSelectedLead]   = useState<Lead | null>(null);
   const [detailVisible, setDetailVisible] = useState(false);
   const [moveVisible,   setMoveVisible]   = useState(false);
+  const [filter, setFilter] = useState<LeadsFilter>("all");
 
   const topPad    = Platform.OS === "web" ? 67  : insets.top;
   const bottomPad = Platform.OS === "web" ? 84  : insets.bottom + 60;
@@ -369,6 +412,11 @@ export default function LeadsScreen() {
     setMoveVisible(false);
   };
 
+  const filterChips: { key: LeadsFilter; label: string }[] = [
+    { key: "all", label: "Todos" },
+    { key: "hot", label: "🔥 Quentes" },
+  ];
+
   return (
     <View style={[L.container, { backgroundColor: colors.background }]}>
       <View style={[L.header, { paddingTop: topPad + 16 }]}>
@@ -383,13 +431,42 @@ export default function LeadsScreen() {
         </TouchableOpacity>
       </View>
 
+      {/* Filter chips */}
+      <View style={L.filterRow}>
+        {filterChips.map((chip) => {
+          const active = filter === chip.key;
+          return (
+            <TouchableOpacity
+              key={chip.key}
+              style={[
+                L.filterChip,
+                { backgroundColor: active ? "#FF008022" : colors.card, borderColor: active ? "#FF0080" : colors.border },
+              ]}
+              onPress={() => {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                setFilter(chip.key);
+              }}
+              activeOpacity={0.75}
+            >
+              <Text style={[L.filterChipText, { color: active ? "#FF0080" : colors.mutedForeground }]}>
+                {chip.label}
+              </Text>
+            </TouchableOpacity>
+          );
+        })}
+      </View>
+
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={[L.kanban, { paddingBottom: bottomPad }]}
       >
         {COLUMNS.map((col) => {
-          const colLeads = leads.filter((l) => l.column === col.key);
+          const rawLeads = leads.filter((l) => l.column === col.key);
+          // Sort by score descending
+          const sorted = [...rawLeads].sort((a, b) => calcLeadScore(b) - calcLeadScore(a));
+          // Apply hot filter (score >= 70)
+          const colLeads = filter === "hot" ? sorted.filter((l) => calcLeadScore(l) >= 70) : sorted;
           return (
             <View key={col.key} style={[L.column, { backgroundColor: colors.card, borderColor: colors.border }]}>
               <View style={L.colHeader}>
@@ -452,13 +529,28 @@ const L = StyleSheet.create({
   colBadge:  { paddingHorizontal: 8, paddingVertical: 2, borderRadius: 10 },
   colBadgeText: { fontSize: 12, fontFamily: "SpaceGrotesk_600SemiBold" },
 
+  // Filter chips
+  filterRow:     { flexDirection: "row", gap: 8, paddingHorizontal: 16, paddingBottom: 10 },
+  filterChip:    { paddingHorizontal: 14, paddingVertical: 7, borderRadius: 20, borderWidth: 1 },
+  filterChipText:{ fontSize: 13, fontFamily: "SpaceGrotesk_600SemiBold" },
+
   card: { borderRadius: 12, borderWidth: 1, padding: 12, marginBottom: 8 },
-  cardHeader: { flexDirection: "row", alignItems: "center", gap: 10, marginBottom: 10 },
+  cardHeader: { flexDirection: "row", alignItems: "center", gap: 10, marginBottom: 8 },
   avatar:     { width: 34, height: 34, borderRadius: 17, alignItems: "center", justifyContent: "center" },
   avatarText: { color: "#fff", fontSize: 13, fontFamily: "SpaceGrotesk_700Bold" },
   cardName:    { fontSize: 13, fontFamily: "SpaceGrotesk_600SemiBold" },
   semDot:      { width: 9, height: 9, borderRadius: 4.5 },
   cardCompany: { fontSize: 12, fontFamily: "SpaceGrotesk_400Regular", marginTop: 1 },
+
+  // Score row
+  scoreRow:   { flexDirection: "row", alignItems: "center", gap: 6, marginBottom: 8 },
+  scoreBadge: { flexDirection: "row", alignItems: "center", gap: 4, paddingHorizontal: 6, paddingVertical: 3, borderRadius: 8, borderWidth: 1 },
+  scoreDot:   { width: 6, height: 6, borderRadius: 3 },
+  scoreNum:   { fontSize: 11, fontFamily: "SpaceGrotesk_700Bold" },
+  scoreLabel: { fontSize: 11, fontFamily: "SpaceGrotesk_600SemiBold", minWidth: 38 },
+  scoreTrack: { flex: 1, height: 4, borderRadius: 2, overflow: "hidden" },
+  scoreFill:  { height: 4, borderRadius: 2 },
+
   cardFooter:  { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
   cardValue:   { fontSize: 14, fontFamily: "SpaceGrotesk_700Bold" },
   tag:         { paddingHorizontal: 8, paddingVertical: 3, borderRadius: 8 },

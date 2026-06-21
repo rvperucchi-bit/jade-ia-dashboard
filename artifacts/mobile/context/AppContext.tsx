@@ -188,11 +188,13 @@ const SEED_CONVERSATIONS: Conversation[] = [
 ];
 
 const SEED_ACTIVITY: ActivityEvent[] = [
-  { id: "act1", type: "lead", text: "Lead adicionado: Carlos Mendes (TechBrasil)", icon: "user-plus", color: "#6C63FF", created_at: new Date().toISOString() },
-  { id: "act2", type: "message", text: "JADE respondeu Ana Souza automaticamente", icon: "robot", color: "#FF0080", created_at: new Date().toISOString() },
-  { id: "act3", type: "deal", text: "Roberto Costa movido para Proposta", icon: "briefcase", color: "#00D68F", created_at: new Date().toISOString() },
-  { id: "act4", type: "deal", text: "Diego Nunes fechou contrato · R$ 41.200", icon: "briefcase", color: "#00D68F", created_at: new Date().toISOString() },
-  { id: "act5", type: "task", text: "Follow-up agendado com Mariana Lima", icon: "calendar", color: "#FFB300", created_at: new Date().toISOString() },
+  { id: "act1", type: "lead",    text: "Lead adicionado: Carlos Mendes (TechBrasil)",       icon: "user-plus", color: "#6C63FF", created_at: new Date().toISOString() },
+  { id: "act2", type: "message", text: "JADE respondeu Ana Souza automaticamente",            icon: "robot",     color: "#FF0080", created_at: new Date().toISOString() },
+  { id: "act3", type: "deal",    text: "Roberto Costa movido para Proposta",                 icon: "briefcase", color: "#00D68F", created_at: new Date().toISOString() },
+  { id: "act4", type: "deal",    text: "Diego Nunes fechou contrato · R$ 41.200",            icon: "briefcase", color: "#00D68F", created_at: new Date().toISOString() },
+  { id: "act5", type: "task",    text: "Follow-up agendado com Mariana Lima",                icon: "calendar",  color: "#FFB300", created_at: new Date().toISOString() },
+  { id: "act6", type: "lead",    text: "⚡ Roberto Costa ficou quente — score 70",            icon: "trending-up", color: "#00D68F", created_at: new Date().toISOString() },
+  { id: "act7", type: "lead",    text: "⚠️ Mariana Lima esfriou — sem contato há 2 dias",    icon: "trending-down", color: "#FF3B5C", created_at: new Date().toISOString() },
 ];
 
 // ─── DB row types ─────────────────────────────────────────────────────────────
