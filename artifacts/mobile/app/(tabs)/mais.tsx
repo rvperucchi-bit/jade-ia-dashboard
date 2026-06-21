@@ -1,4 +1,4 @@
-import React, { useRef } from "react";
+import React, { useRef, useState } from "react";
 import {
   Alert,
   Animated,
@@ -201,11 +201,13 @@ export default function MaisScreen() {
   const insets  = useSafeAreaInsets();
   const router  = useRouter();
   const { logout } = useAuth();
-  const { userPlan, setUserPlan, isDevMode, setDevMode, canAccess } = usePlan();
+  const { userPlan, setUserPlan, isDevMode, setDevMode, canAccess, hasDemoAvailable, isDemoActiveFor, useDemo } = usePlan();
 
-  const [gateVisible, setGateVisible] = React.useState(false);
-  const [gateFeature, setGateFeature] = React.useState("");
-  const [devModal,    setDevModal]    = React.useState(false);
+  const [gateVisible, setGateVisible] = useState(false);
+  const [gateFeature, setGateFeature] = useState("");
+  const [devModal,    setDevModal]    = useState(false);
+  const [demoModal,   setDemoModal]   = useState(false);
+  const [demoPending, setDemoPending] = useState<{ path: string; label: string } | null>(null);
 
   // ── Dev mode: 7 quick taps ────────────────────────────────────────────────
   const tapCount    = useRef(0);
@@ -244,8 +246,16 @@ export default function MaisScreen() {
   const tap   = () => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
   const navPro = (path: string, label: string) => {
     tap();
-    if (!canAccess("pro")) { setGateFeature(label); setGateVisible(true); return; }
-    router.push(path as any);
+    if (canAccess("pro") || isDemoActiveFor(label)) { router.push(path as any); return; }
+    // Start plan: check if demo is available
+    if (hasDemoAvailable) {
+      setDemoPending({ path, label });
+      setDemoModal(true);
+      return;
+    }
+    // Demo already used for different feature or not available
+    setGateFeature(label);
+    setGateVisible(true);
   };
 
   const handleLogout = () => {
@@ -326,6 +336,19 @@ export default function MaisScreen() {
               <Feather name="arrow-right" size={18} color={GOLD} />
             </View>
           </TouchableOpacity>
+        </View>
+      )}
+
+      {/* ── Demo gratuita banner (Start sem demo usada) ── */}
+      {hasDemoAvailable && (
+        <View style={[styles.demoBanner, { borderColor: PINK + "55" }]}>
+          <View style={styles.demoBannerInner}>
+            <Text style={styles.demoEmoji}>🎁</Text>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.demoTitle}>Você tem 1 demonstração gratuita</Text>
+              <Text style={[styles.demoSub, { color: colors.mutedForeground }]}>Experimente qualquer função Pro por 24 horas, sem custo</Text>
+            </View>
+          </View>
         </View>
       )}
 
@@ -412,6 +435,39 @@ export default function MaisScreen() {
         onChangePlan={handleChangePlan}
         onExitDev={handleExitDev}
       />
+
+      {/* Demo offer modal */}
+      <Modal visible={demoModal} transparent animationType="fade" onRequestClose={() => setDemoModal(false)}>
+        <TouchableOpacity style={G.overlay} activeOpacity={1} onPress={() => setDemoModal(false)}>
+          <View style={G.box} onStartShouldSetResponder={() => true}>
+            <Text style={{ fontSize: 40 }}>🎁</Text>
+            <Text style={G.title}>Usar sua demo gratuita?</Text>
+            <Text style={G.sub}>
+              Você terá acesso a{" "}
+              <Text style={{ color: PINK, fontFamily: "SpaceGrotesk_600SemiBold" }}>{demoPending?.label}</Text>
+              {" "}por 24 horas, gratuitamente.{"\n"}Após isso, voltará ao plano Start.
+            </Text>
+            <TouchableOpacity
+              style={[G.btn, { backgroundColor: PINK }]}
+              onPress={async () => {
+                if (!demoPending) return;
+                await useDemo(demoPending.label);
+                setDemoModal(false);
+                Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+                router.push(demoPending.path as any);
+                setDemoPending(null);
+              }}
+              activeOpacity={0.85}
+            >
+              <Feather name="zap" size={15} color="#fff" />
+              <Text style={G.btnText}>Experimentar agora</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={G.cancel} onPress={() => { setDemoModal(false); setDemoPending(null); }} activeOpacity={0.7}>
+              <Text style={G.cancelText}>Guardar para depois</Text>
+            </TouchableOpacity>
+          </View>
+        </TouchableOpacity>
+      </Modal>
     </ScrollView>
   );
 }
@@ -444,4 +500,9 @@ const styles = StyleSheet.create({
   enterpriseSub: { fontSize: 11, fontFamily: "SpaceGrotesk_400Regular", marginTop: 3, color: "#AAAACC" },
   version:      { textAlign: "center", fontSize: 11, fontFamily: "SpaceGrotesk_400Regular" },
   versionHint:  { textAlign: "center", fontSize: 9, fontFamily: "SpaceGrotesk_400Regular", marginTop: 2, opacity: 0.3 },
+  demoBanner:   { marginHorizontal: 16, marginBottom: 16, borderRadius: 14, borderWidth: 1.5, overflow: "hidden" },
+  demoBannerInner: { flexDirection: "row", alignItems: "center", gap: 12, padding: 14, backgroundColor: "#FF008012" },
+  demoEmoji:    { fontSize: 28 },
+  demoTitle:    { fontSize: 14, fontFamily: "SpaceGrotesk_700Bold", color: "#fff" },
+  demoSub:      { fontSize: 12, fontFamily: "SpaceGrotesk_400Regular", marginTop: 3, lineHeight: 17 },
 });

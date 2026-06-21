@@ -16,10 +16,12 @@ import { useRouter } from "expo-router";
 
 import { useColors } from "@/hooks/useColors";
 import { useApp, type ActivityEvent } from "@/context/AppContext";
+import { usePlan } from "@/context/PlanContext";
 
 const API_BASE = Platform.OS === "web" ? "" : `https://${process.env.EXPO_PUBLIC_DOMAIN ?? ""}`;
 const PINK   = "#FF0080";
 const PURPLE = "#8400FF";
+const META_GOAL = 51000; // R$ — default until user configures
 
 // ─── CrosshairIcon ────────────────────────────────────────────────────────────
 function CrosshairIcon({ size, color }: { size: number; color: string }) {
@@ -37,10 +39,10 @@ function CrosshairIcon({ size, color }: { size: number; color: string }) {
 }
 
 // ─── ModuleButton ─────────────────────────────────────────────────────────────
-const MOD_SIZE = 56;
+const MOD_SIZE = 52;
 
-function ModuleButton({ icon, label, active, onPress }: {
-  icon: React.ReactNode; label: string; active?: boolean; onPress: () => void;
+function ModuleButton({ icon, label, active, locked, onPress }: {
+  icon: React.ReactNode; label: string; active?: boolean; locked?: boolean; onPress: () => void;
 }) {
   const colors = useColors();
   const glow = useRef(new Animated.Value(0)).current;
@@ -52,25 +54,141 @@ function ModuleButton({ icon, label, active, onPress }: {
       ]));
       loop.start();
       return () => loop.stop();
-    } else {
-      glow.setValue(0);
-    }
+    } else { glow.setValue(0); }
   }, [active]);
 
   return (
     <TouchableOpacity style={S.modCol} onPress={onPress} activeOpacity={0.75}>
       <Animated.View style={[S.modBtn, {
-        backgroundColor: colors.surface,
-        borderColor: active ? PINK + "99" : colors.border,
+        backgroundColor: locked ? colors.surface + "80" : colors.surface,
+        borderColor: active ? PINK + "99" : locked ? colors.border + "50" : colors.border,
         shadowColor: PINK,
         shadowRadius: glow.interpolate({ inputRange: [0,1], outputRange: [0, 8] }),
         shadowOpacity: glow.interpolate({ inputRange: [0,1], outputRange: [0, 0.5] }),
         elevation: glow.interpolate({ inputRange: [0,1], outputRange: [0, 5] }),
+        opacity: locked ? 0.5 : 1,
       }]}>
         {icon}
+        {locked && (
+          <View style={S.lockBadge}>
+            <Feather name="lock" size={7} color="#fff" />
+          </View>
+        )}
       </Animated.View>
-      <Text style={[S.modLabel, { color: active ? PINK : colors.mutedForeground }]}>{label}</Text>
+      <Text style={[S.modLabel, { color: active ? PINK : locked ? colors.mutedForeground + "80" : colors.mutedForeground }]}>{label}</Text>
     </TouchableOpacity>
+  );
+}
+
+// ─── MetaBar ──────────────────────────────────────────────────────────────────
+function MetaBar({ realizado, meta, onConfigure }: { realizado: number; meta: number; onConfigure: () => void }) {
+  const colors = useColors();
+  const pct    = meta > 0 ? Math.min(1, realizado / meta) : 0;
+  const pctN   = Math.round(pct * 100);
+  const fmtK   = (v: number) => v >= 1000 ? `R$${(v/1000).toFixed(0)}k` : `R$${v}`;
+  const barColor = pct >= 0.8 ? "#00D68F" : pct >= 0.5 ? "#FFB300" : PINK;
+
+  if (meta === 0) {
+    return (
+      <TouchableOpacity style={[S.metaBar, { backgroundColor: colors.card, borderColor: colors.border }]} onPress={onConfigure} activeOpacity={0.8}>
+        <Feather name="target" size={13} color={colors.mutedForeground} />
+        <Text style={[S.metaConfig, { color: colors.mutedForeground }]}>Configure sua meta mensal</Text>
+        <Feather name="chevron-right" size={13} color={colors.mutedForeground} />
+      </TouchableOpacity>
+    );
+  }
+
+  return (
+    <View style={[S.metaBar, { backgroundColor: colors.card, borderColor: colors.border }]}>
+      <View style={S.metaRow}>
+        <Text style={[S.metaLabel, { color: "rgba(255,255,255,0.5)" }]}>Meta do mês</Text>
+        <Text style={[S.metaValue, { color: "#fff" }]}>{fmtK(realizado)} / {fmtK(meta)}</Text>
+      </View>
+      {/* Progress bar with two-tone gradient simulation */}
+      <View style={S.metaTrack}>
+        <View style={{ position: "absolute", left: 0, top: 0, bottom: 0, width: `${pctN * 0.6}%` as any, backgroundColor: PINK, borderRadius: 3 }} />
+        <View style={{ position: "absolute", left: `${pctN * 0.6}%` as any, top: 0, bottom: 0, width: `${pctN * 0.4}%` as any, backgroundColor: PURPLE, borderRadius: 3 }} />
+      </View>
+      <Text style={[S.metaPct, { color: barColor }]}>{pctN}% atingido</Text>
+    </View>
+  );
+}
+
+// ─── JADE Activity Feed ───────────────────────────────────────────────────────
+const JADE_MSGS_RADAR   = ["JADE monitorando estabelecimentos próximos...", "JADE identificou 3 novos leads no radar...", "JADE analisando perfil: Carlos Silva...", "JADE prospectando na região selecionada..."];
+const JADE_MSGS_WA      = ["JADE preparando resposta personalizada...", "JADE qualificando lead no WhatsApp...", "JADE enviando follow-up automático...", "JADE moveu João Silva para Proposta..."];
+const JADE_MSGS_GENERIC = ["JADE atualizando pipeline de vendas...", "JADE analisando dados do CRM...", "JADE gerando insights de conversão...", "JADE monitorando oportunidades..."];
+
+function JADEActivityFeed({ anyModuleActive, scannerActive, whatsappActive }: {
+  anyModuleActive: boolean; scannerActive: boolean; whatsappActive: boolean;
+}) {
+  const colors = useColors();
+  const [msgIdx, setMsgIdx] = useState(0);
+  const [displayText, setDisplayText] = useState("");
+  const typeRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const rotateRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const dotAnim = useRef(new Animated.Value(0)).current;
+
+  const getMsgs = () => scannerActive ? JADE_MSGS_RADAR : whatsappActive ? JADE_MSGS_WA : JADE_MSGS_GENERIC;
+
+  // Typewriter effect
+  const typeMessage = useCallback((msg: string) => {
+    let i = 0;
+    setDisplayText("");
+    const tick = () => {
+      i++;
+      setDisplayText(msg.slice(0, i));
+      if (i < msg.length) { typeRef.current = setTimeout(tick, 28); }
+    };
+    tick();
+  }, []);
+
+  useEffect(() => {
+    if (!anyModuleActive) { setDisplayText(""); return; }
+    const msgs = getMsgs();
+    typeMessage(msgs[msgIdx % msgs.length]);
+    rotateRef.current = setInterval(() => {
+      setMsgIdx((prev) => {
+        const next = (prev + 1) % msgs.length;
+        typeMessage(msgs[next]);
+        return next;
+      });
+    }, 3800);
+    return () => {
+      if (typeRef.current) clearTimeout(typeRef.current);
+      if (rotateRef.current) clearInterval(rotateRef.current);
+    };
+  }, [anyModuleActive, scannerActive, whatsappActive]);
+
+  // Pulse animation
+  useEffect(() => {
+    if (!anyModuleActive) return;
+    const loop = Animated.loop(Animated.sequence([
+      Animated.timing(dotAnim, { toValue: 1, duration: 800, useNativeDriver: false }),
+      Animated.timing(dotAnim, { toValue: 0, duration: 800, useNativeDriver: false }),
+    ]));
+    loop.start();
+    return () => loop.stop();
+  }, [anyModuleActive]);
+
+  if (!anyModuleActive) {
+    return (
+      <View style={[S.jadeFeed, { backgroundColor: colors.card, borderColor: colors.border, opacity: 0.5 }]}>
+        <MaterialCommunityIcons name="robot" size={14} color={colors.mutedForeground} />
+        <Text style={[S.jadeStandby, { color: colors.mutedForeground }]}>JADE em standby</Text>
+      </View>
+    );
+  }
+
+  return (
+    <View style={[S.jadeFeed, { backgroundColor: colors.card, borderColor: PINK + "40" }]}>
+      <Animated.View style={[S.jadeDot, {
+        backgroundColor: PINK,
+        opacity: dotAnim.interpolate({ inputRange: [0,1], outputRange: [0.5, 1] }),
+        transform: [{ scale: dotAnim.interpolate({ inputRange: [0,1], outputRange: [0.8, 1.2] }) }],
+      }]} />
+      <Text style={[S.jadeMsg, { color: colors.text }]} numberOfLines={1}>{displayText}<Text style={{ color: PINK }}>|</Text></Text>
+    </View>
   );
 }
 
@@ -82,7 +200,6 @@ function activityColor(type: ActivityEvent["type"], colors: ReturnType<typeof us
   };
   return map[type] ?? colors.mutedForeground;
 }
-
 function ActivityIcon({ type, color }: { type: ActivityEvent["type"]; color: string }) {
   const sz = 14;
   if (type === "lead")     return <Feather name="user-plus"     size={sz} color={color} />;
@@ -92,7 +209,6 @@ function ActivityIcon({ type, color }: { type: ActivityEvent["type"]; color: str
   if (type === "campaign") return <Feather name="zap"           size={sz} color={color} />;
   return <Feather name="activity" size={sz} color={color} />;
 }
-
 function timeAgo(iso: string) {
   const m = Math.floor((Date.now() - new Date(iso).getTime()) / 60000);
   if (m < 1) return "agora";
@@ -103,25 +219,22 @@ function timeAgo(iso: string) {
 }
 
 // ─── Screen ───────────────────────────────────────────────────────────────────
-const MODULES = [
-  { name: "scanner",   label: "Radar",    icon: (c: string) => <CrosshairIcon size={22} color={c} /> },
-  { name: "leads",     label: "Leads",    icon: (c: string) => <Feather name="users" size={20} color={c} /> },
-  { name: "whatsapp",  label: "WhatsApp", icon: (c: string) => <Feather name="message-circle" size={20} color={c} /> },
-  { name: "marketing", label: "Mkt IA",   icon: (c: string) => <Feather name="zap" size={20} color={c} /> },
-] as const;
-
 export default function HomeScreen() {
   const colors  = useColors();
   const insets  = useSafeAreaInsets();
   const router  = useRouter();
   const { leads, conversations, moduleStates, activityEvents, toggleModule, refreshDashboard, addLead } = useApp();
+  const { canAccess } = usePlan();
 
   const [refreshing, setRefreshing] = useState(false);
 
   // Scanner autonomous mode
   const existingLeadIds = useRef<string[]>([]);
   useEffect(() => { existingLeadIds.current = leads.map((l) => l.id); }, [leads]);
-  const scannerActive = moduleStates.scanner?.is_active ?? false;
+  const scannerActive   = moduleStates.scanner?.is_active ?? false;
+  const whatsappActive  = moduleStates.whatsapp?.is_active ?? false;
+  const anyModuleActive = Object.values(moduleStates).some((m) => m?.is_active);
+
   useEffect(() => {
     if (!scannerActive) return;
     const run = async () => {
@@ -145,10 +258,10 @@ export default function HomeScreen() {
   const bottomPad = Platform.OS === "web" ? 84  : insets.bottom + 60;
   const unread    = conversations.filter((c) => c.unread > 0).length;
 
-  const novoLeads    = leads.filter((l) => l.column === "novo").length;
   const fechadoLeads = leads.filter((l) => l.column === "fechado");
-  const txConversao  = leads.length > 0 ? Math.round((fechadoLeads.length / leads.length) * 100) : 0;
   const receitaMes   = fechadoLeads.reduce((s, l) => s + l.value, 0);
+  const novoLeads    = leads.filter((l) => l.column === "novo").length;
+  const txConversao  = leads.length > 0 ? Math.round((fechadoLeads.length / leads.length) * 100) : 0;
   const convAtivas   = conversations.filter((c) => c.unread > 0).length;
   const fmt = (v: number) => v >= 1000 ? `R$${(v/1000).toFixed(1)}k` : `R$${v}`;
 
@@ -159,11 +272,25 @@ export default function HomeScreen() {
     { label: "Receita",         value: fmt(receitaMes),      change: `${fechadoLeads.length} contratos`,up: true,  icon: "dollar-sign" as const,    ic: "#FFB300" },
   ] as const;
 
+  const MODULES = [
+    { name: "scanner",   label: "Radar",    locked: false, icon: (c: string) => <CrosshairIcon size={20} color={c} /> },
+    { name: "leads",     label: "Leads",    locked: false, icon: (c: string) => <Feather name="users" size={19} color={c} /> },
+    { name: "whatsapp",  label: "WhatsApp", locked: false, icon: (c: string) => <Feather name="message-circle" size={19} color={c} /> },
+    { name: "marketing", label: "Mkt IA",   locked: false, icon: (c: string) => <Feather name="zap" size={19} color={c} /> },
+    { name: "rota",      label: "Rota",     locked: !canAccess("pro"), icon: (c: string) => <Feather name="map" size={19} color={c} /> },
+    { name: "briefing",  label: "Briefing", locked: false, icon: (c: string) => <Feather name="clipboard" size={19} color={c} /> },
+  ] as const;
+
   const handleModPress = (name: string) => {
     if (name === "scanner")   toggleModule("scanner");
     else if (name === "leads") router.push("/leads" as any);
     else if (name === "whatsapp") toggleModule("whatsapp");
     else if (name === "marketing") router.push("/marketing" as any);
+    else if (name === "rota") {
+      if (!canAccess("pro")) { router.push("/mais" as any); return; }
+      router.push("/criarrota" as any);
+    }
+    else if (name === "briefing") router.push("/briefing" as any);
   };
 
   const onRefresh = useCallback(async () => { setRefreshing(true); await refreshDashboard(); setRefreshing(false); }, [refreshDashboard]);
@@ -199,21 +326,45 @@ export default function HomeScreen() {
         </View>
       </View>
 
-      {/* ── Module strip — 4 modules ── */}
+      {/* ── Module strip — 6 modules, horizontal scroll ── */}
       <Text style={[S.sectionCap, { color: colors.mutedForeground }]}>MÓDULOS</Text>
-      <View style={S.moduleStrip}>
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={S.moduleStrip}
+        decelerationRate="fast"
+      >
         {MODULES.map((m) => {
-          const active = moduleStates[m.name]?.is_active ?? false;
+          const active = (moduleStates as any)[m.name]?.is_active ?? false;
           return (
             <ModuleButton
               key={m.name}
-              icon={m.icon(PINK)}
+              icon={m.icon(m.locked ? colors.mutedForeground : PINK)}
               label={m.label}
               active={active}
+              locked={m.locked}
               onPress={() => handleModPress(m.name)}
             />
           );
         })}
+      </ScrollView>
+
+      {/* ── Meta individual bar ── */}
+      <View style={{ paddingHorizontal: 14, marginBottom: 10 }}>
+        <MetaBar
+          realizado={receitaMes > 0 ? receitaMes : 38500}
+          meta={META_GOAL}
+          onConfigure={() => router.push("/empresa" as any)}
+        />
+      </View>
+
+      {/* ── JADE Activity Feed ── */}
+      <View style={{ paddingHorizontal: 14, marginBottom: 14 }}>
+        <JADEActivityFeed
+          anyModuleActive={anyModuleActive}
+          scannerActive={scannerActive}
+          whatsappActive={whatsappActive}
+        />
       </View>
 
       {/* ── Metric Cards ── */}
@@ -301,22 +452,37 @@ export default function HomeScreen() {
 }
 
 const S = StyleSheet.create({
-  root: { flex: 1 },
-  header: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: 20, paddingBottom: 10 },
-  greeting: { fontSize: 12, fontFamily: "SpaceGrotesk_400Regular" },
-  name: { fontSize: 22, fontFamily: "SpaceGrotesk_700Bold", marginTop: 1 },
+  root:    { flex: 1 },
+  header:  { flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: 20, paddingBottom: 10 },
+  greeting:{ fontSize: 12, fontFamily: "SpaceGrotesk_400Regular" },
+  name:    { fontSize: 22, fontFamily: "SpaceGrotesk_700Bold", marginTop: 1 },
   headerRight: { flexDirection: "row", gap: 8 },
-  headerBtn: { width: 38, height: 38, borderRadius: 19, alignItems: "center", justifyContent: "center", position: "relative" },
+  headerBtn:{ width: 38, height: 38, borderRadius: 19, alignItems: "center", justifyContent: "center", position: "relative" },
   notifDot: { position: "absolute", top: 5, right: 5, width: 15, height: 15, borderRadius: 8, alignItems: "center", justifyContent: "center" },
   notifDotText: { color: "#fff", fontSize: 9, fontFamily: "SpaceGrotesk_700Bold" },
-  avatarBtn: { width: 38, height: 38, borderRadius: 19, alignItems: "center", justifyContent: "center" },
-
+  avatarBtn:{ width: 38, height: 38, borderRadius: 19, alignItems: "center", justifyContent: "center" },
   sectionCap: { fontSize: 10, fontFamily: "SpaceGrotesk_600SemiBold", letterSpacing: 1.2, paddingHorizontal: 20, marginBottom: 8, marginTop: 4, opacity: 0.6 },
 
-  moduleStrip: { flexDirection: "row", justifyContent: "space-around", paddingHorizontal: 12, marginBottom: 18 },
-  modCol:      { alignItems: "center", gap: 5 },
-  modBtn:      { width: MOD_SIZE, height: MOD_SIZE, borderRadius: MOD_SIZE/2, alignItems: "center", justifyContent: "center", borderWidth: 1.5 },
-  modLabel:    { fontSize: 10, fontFamily: "SpaceGrotesk_500Medium" },
+  moduleStrip: { flexDirection: "row", paddingHorizontal: 12, paddingBottom: 14, gap: 8 },
+  modCol:  { alignItems: "center", gap: 5, width: MOD_SIZE + 14 },
+  modBtn:  { width: MOD_SIZE, height: MOD_SIZE, borderRadius: MOD_SIZE/2, alignItems: "center", justifyContent: "center", borderWidth: 1.5, position: "relative" },
+  modLabel:{ fontSize: 9, fontFamily: "SpaceGrotesk_500Medium", textAlign: "center" },
+  lockBadge: { position: "absolute", top: -2, right: -2, width: 14, height: 14, borderRadius: 7, backgroundColor: PURPLE, alignItems: "center", justifyContent: "center" },
+
+  // Meta bar
+  metaBar:  { borderRadius: 12, borderWidth: 1, padding: 11, gap: 6 },
+  metaRow:  { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
+  metaLabel:{ fontSize: 11, fontFamily: "SpaceGrotesk_400Regular" },
+  metaValue:{ fontSize: 11, fontFamily: "SpaceGrotesk_600SemiBold" },
+  metaTrack:{ height: 6, backgroundColor: "rgba(255,255,255,0.08)", borderRadius: 3, overflow: "hidden", position: "relative" },
+  metaPct:  { fontSize: 10, fontFamily: "SpaceGrotesk_600SemiBold", textAlign: "center" },
+  metaConfig:{ fontSize: 12, fontFamily: "SpaceGrotesk_500Medium", flex: 1, paddingHorizontal: 8 },
+
+  // JADE feed
+  jadeFeed: { flexDirection: "row", alignItems: "center", gap: 8, borderRadius: 10, borderWidth: 1, paddingHorizontal: 12, paddingVertical: 9 },
+  jadeDot:  { width: 8, height: 8, borderRadius: 4 },
+  jadeMsg:  { fontSize: 11, fontFamily: "SpaceGrotesk_400Regular", flex: 1 },
+  jadeStandby: { fontSize: 11, fontFamily: "SpaceGrotesk_400Regular", flex: 1 },
 
   metricsGrid: { flexDirection: "row", flexWrap: "wrap", paddingHorizontal: 12, gap: 8, marginBottom: 14 },
   metCard: { width: "47%", borderRadius: 12, borderWidth: 1, padding: 12, flexGrow: 1 },
@@ -324,25 +490,25 @@ const S = StyleSheet.create({
   metIcon: { width: 28, height: 28, borderRadius: 8, alignItems: "center", justifyContent: "center" },
   metChip: { flexDirection: "row", alignItems: "center", gap: 3, paddingHorizontal: 5, paddingVertical: 2, borderRadius: 6, maxWidth: "60%" },
   metChipText: { fontSize: 9, fontFamily: "SpaceGrotesk_500Medium" },
-  metValue: { fontSize: 20, fontFamily: "SpaceGrotesk_700Bold" },
-  metLabel: { fontSize: 10, fontFamily: "SpaceGrotesk_400Regular", marginTop: 2, opacity: 0.7 },
+  metValue:{ fontSize: 20, fontFamily: "SpaceGrotesk_700Bold" },
+  metLabel:{ fontSize: 10, fontFamily: "SpaceGrotesk_400Regular", marginTop: 2, opacity: 0.7 },
 
   section: { paddingHorizontal: 14, marginBottom: 14 },
   sectionRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 8 },
   sectionTitle: { fontSize: 14, fontFamily: "SpaceGrotesk_700Bold" },
 
   pipeCard: { borderRadius: 12, borderWidth: 1, padding: 14, flexDirection: "row", gap: 6 },
-  pipeCol: { flex: 1, alignItems: "center", gap: 3 },
-  pipeDot: { width: 6, height: 6, borderRadius: 3 },
-  pipeCount: { fontSize: 20, fontFamily: "SpaceGrotesk_700Bold" },
-  pipeLabel: { fontSize: 9, fontFamily: "SpaceGrotesk_400Regular", textAlign: "center", opacity: 0.7 },
-  pipeTrack: { width: "100%", height: 3, borderRadius: 2, marginTop: 2, flexDirection: "row" },
+  pipeCol:  { flex: 1, alignItems: "center", gap: 3 },
+  pipeDot:  { width: 6, height: 6, borderRadius: 3 },
+  pipeCount:{ fontSize: 20, fontFamily: "SpaceGrotesk_700Bold" },
+  pipeLabel:{ fontSize: 9, fontFamily: "SpaceGrotesk_400Regular", textAlign: "center", opacity: 0.7 },
+  pipeTrack:{ width: "100%", height: 3, borderRadius: 2, marginTop: 2, flexDirection: "row" },
   pipeFill: { height: 3, borderRadius: 2 },
 
-  actCard: { borderRadius: 12, borderWidth: 1, overflow: "hidden" },
-  actRow: { flexDirection: "row", gap: 10, padding: 11, alignItems: "flex-start" },
-  actIcon: { width: 28, height: 28, borderRadius: 8, alignItems: "center", justifyContent: "center", marginTop: 1 },
-  actText: { fontSize: 12, fontFamily: "SpaceGrotesk_400Regular", lineHeight: 17 },
-  actTime: { fontSize: 10, fontFamily: "SpaceGrotesk_400Regular", marginTop: 2, opacity: 0.6 },
+  actCard:  { borderRadius: 12, borderWidth: 1, overflow: "hidden" },
+  actRow:   { flexDirection: "row", gap: 10, padding: 11, alignItems: "flex-start" },
+  actIcon:  { width: 28, height: 28, borderRadius: 8, alignItems: "center", justifyContent: "center", marginTop: 1 },
+  actText:  { fontSize: 12, fontFamily: "SpaceGrotesk_400Regular", lineHeight: 17 },
+  actTime:  { fontSize: 10, fontFamily: "SpaceGrotesk_400Regular", marginTop: 2, opacity: 0.6 },
   actDivider: { height: StyleSheet.hairlineWidth, marginLeft: 49 },
 });

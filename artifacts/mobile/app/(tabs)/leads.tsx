@@ -256,7 +256,7 @@ function LeadDetailModal({
                 <Text style={[L.aiTitle, { color: colors.primary }]}>Análise JADE IA</Text>
                 <View style={[L.aiBadge, { backgroundColor: "#00D68F22" }]}>
                   <Text style={{ fontSize: 10, fontFamily: "SpaceGrotesk_600SemiBold", color: "#00D68F" }}>
-                    Gemini 2.5
+                    JADE IA
                   </Text>
                 </View>
               </View>

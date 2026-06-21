@@ -417,7 +417,7 @@ export default function JADEScreen() {
           <View style={styles.statusRow}>
             <View style={styles.greenDot} />
             <Text style={[styles.statusText, { color: colors.success }]}>
-              Gemini 2.5 Flash · Online{sessionId ? " · Sessão salva" : ""}
+              JADE IA · Online{sessionId ? " · Sessão salva" : ""}
             </Text>
             {!!modoOp && (
               <View style={[styles.modeBadge, { backgroundColor: colors.surface, borderColor: colors.border }]}>

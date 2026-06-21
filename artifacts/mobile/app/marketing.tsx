@@ -119,12 +119,23 @@ function typeIcon(type: Creative["type"]) {
 
 // ─── TABS ──────────────────────────────────────────────────────────────────────
 function CampanhasTab({ colors }: { colors: any }) {
-  const [filtro, setFiltro] = useState<FiltCamp>("todas");
+  const [campaigns, setCampaigns]     = useState<Campaign[]>(CAMPAIGNS);
+  const [filtro, setFiltro]           = useState<FiltCamp>("todas");
   const [novaCampModal, setNovaCampModal] = useState(false);
   const [selectedObj, setSelectedObj] = useState<string | null>(null);
   const [detailCamp,  setDetailCamp]  = useState<Campaign | null>(null);
 
-  const filtered = CAMPAIGNS.filter((c) => {
+  const toggleCampStatus = (id: string) => {
+    setCampaigns((prev) => prev.map((c) =>
+      c.id === id ? { ...c, status: c.status === "ativa" ? "pausada" : "ativa" } : c
+    ));
+    setDetailCamp((prev) => prev && prev.id === id
+      ? { ...prev, status: prev.status === "ativa" ? "pausada" : "ativa" }
+      : prev
+    );
+  };
+
+  const filtered = campaigns.filter((c) => {
     if (filtro === "todas") return true;
     if (filtro === "ativas")  return c.status === "ativa";
     if (filtro === "pausadas") return c.status === "pausada";
@@ -295,8 +306,14 @@ function CampanhasTab({ colors }: { colors: any }) {
                 <Text style={[T.budgetLabel, { color: colors.mutedForeground }]}>Orçamento: R${detailCamp.investido} / R${detailCamp.limite}</Text>
               </View>
               <View style={{ flexDirection: "row", gap: 10 }}>
-                <TouchableOpacity style={[T.sheetBtn, { flex: 1, backgroundColor: detailCamp.status === "ativa" ? "#FFB30022" : PINK, borderWidth: detailCamp.status === "ativa" ? 1 : 0, borderColor: "#FFB300" }]}
-                  onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium); setDetailCamp(null); }} activeOpacity={0.85}>
+                <TouchableOpacity
+                  style={[T.sheetBtn, { flex: 1, backgroundColor: detailCamp.status === "ativa" ? "#FFB30022" : PINK, borderWidth: detailCamp.status === "ativa" ? 1 : 0, borderColor: "#FFB300" }]}
+                  onPress={() => {
+                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+                    toggleCampStatus(detailCamp.id);
+                  }}
+                  activeOpacity={0.85}
+                >
                   <Feather name={detailCamp.status === "ativa" ? "pause-circle" : "play-circle"} size={16} color={detailCamp.status === "ativa" ? "#FFB300" : "#fff"} />
                   <Text style={[T.sheetBtnText, { color: detailCamp.status === "ativa" ? "#FFB300" : "#fff" }]}>{detailCamp.status === "ativa" ? "Pausar" : "Ativar"}</Text>
                 </TouchableOpacity>
@@ -314,12 +331,34 @@ function CampanhasTab({ colors }: { colors: any }) {
 }
 
 function CriativosTab({ colors }: { colors: any }) {
-  const [filtro, setFiltro] = useState<FiltCriat>("todos");
+  const [filtro, setFiltro]           = useState<FiltCriat>("todos");
+  const [novoCriatModal, setNovoCriatModal] = useState(false);
+  const [criatType, setCriatType]     = useState<Creative["type"]>("imagem");
+  const [criatName, setCriatName]     = useState("");
+  const [criatGen, setCriatGen]       = useState(false);
+  const [criativos, setCriativos]     = useState<Creative[]>(CREATIVES);
 
-  const top = CREATIVES.filter((c) => c.performance === "top");
-  const filtered = CREATIVES.filter((c) =>
+  const top = criativos.filter((c) => c.performance === "top");
+  const filtered = criativos.filter((c) =>
     filtro === "todos" ? true : c.type === filtro
   );
+
+  const handleCriarCriativo = () => {
+    if (!criatName.trim()) return;
+    const novo: Creative = {
+      id: Date.now().toString(),
+      name: criatName.trim(),
+      type: criatType,
+      performance: "medio",
+      campaign: "Nova campanha",
+      impressions: "0",
+    };
+    setCriativos((prev) => [novo, ...prev]);
+    setCriatName("");
+    setCriatGen(false);
+    setNovoCriatModal(false);
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+  };
 
   return (
     <View>
@@ -360,9 +399,22 @@ function CriativosTab({ colors }: { colors: any }) {
         {/* JADE sugere */}
         <View style={[T.jadeSuggestion, { backgroundColor: PURPLE + "18", borderColor: PURPLE + "44" }]}>
           <MaterialCommunityIcons name="robot" size={18} color={PURPLE} />
-          <Text style={[T.jadeSuggText, { color: "#CCAAFF" }]}>
-            <Text style={{ fontFamily: "SpaceGrotesk_700Bold" }}>JADE sugere:</Text> pausar "Reels bastidores" e duplicar "Card promoção" com novo público
-          </Text>
+          <View style={{ flex: 1 }}>
+            <Text style={[T.jadeSuggText, { color: "#CCAAFF" }]}>
+              <Text style={{ fontFamily: "SpaceGrotesk_700Bold" }}>JADE sugere:</Text> pausar "Reels bastidores" e duplicar "Card promoção" com novo público
+            </Text>
+            <TouchableOpacity
+              style={[T.applySuggBtn, { borderColor: PURPLE + "88" }]}
+              onPress={() => {
+                Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+                Alert.alert("✅ Sugestão aplicada", "JADE pausou 'Reels bastidores' e criou a variação 'Card promoção — Novo público'. Acompanhe o desempenho em Relatórios.", [{ text: "OK" }]);
+              }}
+              activeOpacity={0.8}
+            >
+              <Feather name="check" size={12} color={PURPLE} />
+              <Text style={[T.applySuggText, { color: PURPLE }]}>Aplicar sugestão</Text>
+            </TouchableOpacity>
+          </View>
         </View>
 
         {/* Grid geral */}
@@ -371,7 +423,7 @@ function CriativosTab({ colors }: { colors: any }) {
           {/* + Novo criativo card */}
           <TouchableOpacity
             style={[T.novoCriatCard, { borderColor: PINK + "60" }]}
-            onPress={() => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium)}
+            onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium); setNovoCriatModal(true); }}
             activeOpacity={0.8}
           >
             <Feather name="plus-circle" size={28} color={PINK} />
@@ -393,6 +445,82 @@ function CriativosTab({ colors }: { colors: any }) {
           ))}
         </View>
       </View>
+
+      {/* Novo criativo modal */}
+      <Modal visible={novoCriatModal} transparent animationType="slide" onRequestClose={() => setNovoCriatModal(false)}>
+        <TouchableOpacity style={T.overlay} activeOpacity={1} onPress={() => setNovoCriatModal(false)}>
+          <View style={[T.sheet, { backgroundColor: colors.card }]} onStartShouldSetResponder={() => true}>
+            <View style={T.sheetHandle} />
+            <Text style={[T.sheetTitle, { color: colors.text }]}>Novo criativo</Text>
+            <Text style={[T.sheetSub, { color: colors.mutedForeground }]}>Crie um criativo manualmente ou deixe a JADE gerar para você</Text>
+
+            {/* Tipo */}
+            <View style={{ gap: 6 }}>
+              <Text style={[T.sheetSub, { color: colors.mutedForeground, marginBottom: 2 }]}>Tipo de criativo</Text>
+              <View style={{ flexDirection: "row", gap: 8 }}>
+                {(["video","imagem","carrossel"] as Creative["type"][]).map((tp) => (
+                  <TouchableOpacity
+                    key={tp}
+                    style={[T.levelPill, { flex: 1, backgroundColor: criatType === tp ? PINK + "22" : colors.surface, borderColor: criatType === tp ? PINK : colors.border, borderWidth: criatType === tp ? 1.5 : 1 }]}
+                    onPress={() => { Haptics.selectionAsync(); setCriatType(tp); }}
+                    activeOpacity={0.8}
+                  >
+                    {typeIcon(tp)}
+                    <Text style={[T.levelDesc, { color: criatType === tp ? PINK : colors.mutedForeground, textAlign: "center" }]}>
+                      {tp === "video" ? "Vídeo" : tp === "imagem" ? "Imagem" : "Carrossel"}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </View>
+
+            {/* Nome */}
+            <TextInput
+              style={[T.levelPill, { color: colors.text, borderColor: colors.border, borderWidth: 1, paddingHorizontal: 14, paddingVertical: 12, fontSize: 14, fontFamily: "SpaceGrotesk_400Regular", height: 48 }]}
+              placeholder="Nome do criativo"
+              placeholderTextColor={colors.mutedForeground}
+              value={criatName}
+              onChangeText={setCriatName}
+              returnKeyType="done"
+            />
+
+            {/* JADE gerar nome */}
+            {!criatName.trim() && (
+              <TouchableOpacity
+                style={[T.sheetBtn, { backgroundColor: PURPLE, opacity: criatGen ? 0.7 : 1 }]}
+                disabled={criatGen}
+                onPress={() => {
+                  setCriatGen(true);
+                  setTimeout(() => {
+                    const names: Record<Creative["type"], string[]> = {
+                      video: ["Vídeo especial de lançamento", "Reels produto em destaque", "Vídeo depoimento cliente"],
+                      imagem: ["Card oferta especial", "Post produto premium", "Banner promoção relâmpago"],
+                      carrossel: ["Carrossel benefícios", "Carrossel antes e depois", "Carrossel produtos top"],
+                    };
+                    const opts = names[criatType];
+                    setCriatName(opts[Math.floor(Math.random() * opts.length)]);
+                    setCriatGen(false);
+                  }, 1200);
+                }}
+                activeOpacity={0.85}
+              >
+                <MaterialCommunityIcons name="robot" size={16} color="#fff" />
+                <Text style={T.sheetBtnText}>{criatGen ? "Gerando…" : "JADE sugerir nome"}</Text>
+              </TouchableOpacity>
+            )}
+
+            <TouchableOpacity
+              style={[T.sheetBtn, { opacity: criatName.trim() ? 1 : 0.4 }]}
+              onPress={handleCriarCriativo}
+              disabled={!criatName.trim()}
+              activeOpacity={0.85}
+            >
+              <Feather name="plus" size={16} color="#fff" />
+              <Text style={T.sheetBtnText}>Criar criativo</Text>
+            </TouchableOpacity>
+          </View>
+        </TouchableOpacity>
+      </Modal>
     </View>
   );
 }
@@ -1009,7 +1137,9 @@ const T = StyleSheet.create({
   topImpr: { fontSize: 11, fontFamily: "SpaceGrotesk_400Regular" },
 
   jadeSuggestion: { flexDirection: "row", alignItems: "flex-start", gap: 10, padding: 14, borderRadius: 14, borderWidth: 1 },
-  jadeSuggText: { flex: 1, fontSize: 13, fontFamily: "SpaceGrotesk_400Regular", lineHeight: 19 },
+  jadeSuggText: { fontSize: 13, fontFamily: "SpaceGrotesk_400Regular", lineHeight: 19 },
+  applySuggBtn: { flexDirection: "row", alignItems: "center", gap: 5, alignSelf: "flex-start", marginTop: 8, paddingHorizontal: 10, paddingVertical: 5, borderRadius: 8, borderWidth: 1 },
+  applySuggText: { fontSize: 11, fontFamily: "SpaceGrotesk_600SemiBold" },
 
   criatGrid: { flexDirection: "row", flexWrap: "wrap", gap: 10 },
   novoCriatCard: {
