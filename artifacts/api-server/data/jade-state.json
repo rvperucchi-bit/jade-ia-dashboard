@@ -2,12 +2,12 @@
   "modules": {
     "scanner": {
       "module_name": "scanner",
-      "is_active": false,
-      "status": "paused",
-      "last_started_at": "2026-06-21T03:21:18.568Z",
+      "is_active": true,
+      "status": "running",
+      "last_started_at": "2026-06-21T03:32:59.897Z",
       "last_stopped_at": "2026-06-21T03:21:32.429Z",
       "last_run_at": null,
-      "updated_at": "2026-06-21T03:21:32.429Z"
+      "updated_at": "2026-06-21T03:32:59.897Z"
     },
     "jade": {
       "module_name": "jade",
@@ -47,6 +47,16 @@
     }
   },
   "module_logs": [
+    {
+      "id": "8ee9a02e294864d3",
+      "module_name": "scanner",
+      "action": "activated",
+      "message": "Scanner Radar ativado",
+      "metadata": {
+        "active": true
+      },
+      "created_at": "2026-06-21T03:32:59.899Z"
+    },
     {
       "id": "2e133e7acd69a20c",
       "module_name": "scanner",
@@ -629,6 +639,38 @@
     }
   ],
   "activity_events": [
+    {
+      "id": "6de1f363c962867e",
+      "type": "module",
+      "text": "Scanner Radar ativado",
+      "icon": "crosshair",
+      "color": "#6C63FF",
+      "metadata": {
+        "module": "scanner",
+        "active": true
+      },
+      "created_at": "2026-06-21T03:32:59.901Z"
+    },
+    {
+      "id": "11ea2e0e91310b0f",
+      "type": "message",
+      "text": "JADE respondeu a uma mensagem",
+      "icon": "robot",
+      "color": "#FF0080",
+      "metadata": {
+        "session_id": "c845cd3ec37dd62a"
+      },
+      "created_at": "2026-06-21T03:32:40.487Z"
+    },
+    {
+      "id": "1b2f0b5aa5396068",
+      "type": "message",
+      "text": "JADE respondeu a uma mensagem",
+      "icon": "robot",
+      "color": "#FF0080",
+      "metadata": {},
+      "created_at": "2026-06-21T03:24:41.311Z"
+    },
     {
       "id": "687602de488fd4e8",
       "type": "module",
@@ -2548,42 +2590,6 @@
         "active": true
       },
       "created_at": "2026-06-20T19:22:37.628Z"
-    },
-    {
-      "id": "e9efe8fb4707b287",
-      "type": "module",
-      "text": "Scanner Radar ativado",
-      "icon": "crosshair",
-      "color": "#6C63FF",
-      "metadata": {
-        "module": "scanner",
-        "active": true
-      },
-      "created_at": "2026-06-20T19:20:41.610Z"
-    },
-    {
-      "id": "64ea82d31bf815a9",
-      "type": "module",
-      "text": "Scanner Radar desativado",
-      "icon": "crosshair",
-      "color": "#6C63FF",
-      "metadata": {
-        "module": "scanner",
-        "active": false
-      },
-      "created_at": "2026-06-20T19:20:40.211Z"
-    },
-    {
-      "id": "3ab40d79d5d125ab",
-      "type": "module",
-      "text": "Scanner Radar ativado",
-      "icon": "crosshair",
-      "color": "#6C63FF",
-      "metadata": {
-        "module": "scanner",
-        "active": true
-      },
-      "created_at": "2026-06-20T18:33:21.881Z"
     }
   ],
   "marketing_campaigns": [
@@ -2609,6 +2615,24 @@
     }
   ],
   "jade_sessions": [
+    {
+      "id": "c845cd3ec37dd62a",
+      "title": "O usuário enviou uma mensagem de voz com…",
+      "messages": [
+        {
+          "role": "user",
+          "content": "O usuário enviou uma mensagem de voz com duração de 2 segundos. Responda como se você tivesse entendido a mensagem de voz — pergunte sobre o que posso ajudar hoje em relação às vendas ou ao negócio dele.",
+          "time": "2026-06-21T03:32:40.483Z"
+        },
+        {
+          "role": "model",
+          "content": "Oi! Recebi sua mensagem de voz. Conta pra mim, como posso te ajudar hoje com as vendas ou com o seu negócio?",
+          "time": "2026-06-21T03:32:40.485Z"
+        }
+      ],
+      "created_at": "2026-06-21T03:32:38.832Z",
+      "updated_at": "2026-06-21T03:32:40.485Z"
+    },
     {
       "id": "d2c28e76cda879ca",
       "title": "O usuário enviou uma mensagem de voz com…",

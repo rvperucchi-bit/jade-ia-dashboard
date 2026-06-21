@@ -63,12 +63,12 @@ function ModuleButton({ icon, label, active, locked, onPress, onLongPress }: {
   return (
     <TouchableOpacity style={S.modCol} onPress={onPress} onLongPress={onLongPress} delayLongPress={500} activeOpacity={0.75}>
       <Animated.View style={[S.modBtn, {
-        backgroundColor: locked ? colors.surface + "80" : active ? "rgba(255,0,128,0.30)" : "rgba(255,0,128,0.15)",
-        borderColor: active ? "rgba(255,0,128,0.80)" : locked ? colors.border + "50" : "rgba(255,0,128,0.30)",
+        backgroundColor: locked ? "rgba(0,0,0,0.3)" : "#1a0a2e",
+        borderColor: active ? "#FF0080" : locked ? colors.border + "50" : "rgba(255,0,128,0.50)",
         shadowColor: PINK,
-        shadowRadius: glow.interpolate({ inputRange: [0,1], outputRange: [0, 8] }),
-        shadowOpacity: glow.interpolate({ inputRange: [0,1], outputRange: [0, 0.5] }),
-        elevation: glow.interpolate({ inputRange: [0,1], outputRange: [0, 5] }),
+        shadowRadius: glow.interpolate({ inputRange: [0,1], outputRange: [5, 14] }),
+        shadowOpacity: glow.interpolate({ inputRange: [0,1], outputRange: [0.35, 0.80] }),
+        elevation: glow.interpolate({ inputRange: [0,1], outputRange: [3, 10] }),
         opacity: locked ? 0.5 : 1,
       }]}>
         {icon}
@@ -328,7 +328,7 @@ export default function HomeScreen() {
           <Text style={[S.greeting, { color: colors.mutedForeground }]}>Bom dia,</Text>
           <Text style={[S.name, { color: colors.text }]}>Rodrigo 👋</Text>
           {empresaNome ? (
-            <Text style={{ fontSize: 13, fontFamily: "SpaceGrotesk_400Regular", color: "rgba(255,255,255,0.45)", marginTop: 4 }}>
+            <Text style={{ fontSize: 13, fontFamily: "SpaceGrotesk_400Regular", color: "rgba(255,255,255,0.40)", marginTop: 5 }}>
               {empresaNome}
             </Text>
           ) : null}
@@ -487,9 +487,9 @@ const S = StyleSheet.create({
   notifDot: { position: "absolute", top: 5, right: 5, width: 15, height: 15, borderRadius: 8, alignItems: "center", justifyContent: "center" },
   notifDotText: { color: "#fff", fontSize: 9, fontFamily: "SpaceGrotesk_700Bold" },
   avatarBtn:{ width: 38, height: 38, borderRadius: 19, alignItems: "center", justifyContent: "center" },
-  sectionCap: { fontSize: 10, fontFamily: "SpaceGrotesk_600SemiBold", letterSpacing: 1.2, paddingHorizontal: 20, marginBottom: 8, marginTop: 4, opacity: 0.6 },
+  sectionCap: { fontSize: 10, fontFamily: "SpaceGrotesk_600SemiBold", letterSpacing: 1.2, paddingHorizontal: 20, marginBottom: 10, marginTop: 20, opacity: 0.6 },
 
-  moduleStrip: { flexDirection: "row", paddingHorizontal: 12, paddingBottom: 14, gap: 8 },
+  moduleStrip: { flexDirection: "row", paddingHorizontal: 12, paddingBottom: 14, paddingTop: 4, gap: 8 },
   modCol:  { alignItems: "center", gap: 5, width: MOD_SIZE + 14 },
   modBtn:  { width: MOD_SIZE, height: MOD_SIZE, borderRadius: MOD_SIZE/2, alignItems: "center", justifyContent: "center", borderWidth: 1.5, position: "relative" },
   modLabel:{ fontSize: 9, fontFamily: "SpaceGrotesk_500Medium", textAlign: "center" },
