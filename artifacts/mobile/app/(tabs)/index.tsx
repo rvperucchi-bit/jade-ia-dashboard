@@ -48,27 +48,38 @@ function ModuleButton({ icon, label, active, locked, onPress, onLongPress }: {
   onPress: () => void; onLongPress?: () => void;
 }) {
   const colors = useColors();
-  const glow = useRef(new Animated.Value(0)).current;
+  const glow  = useRef(new Animated.Value(0)).current;
+  const scale = useRef(new Animated.Value(1)).current;
+
   useEffect(() => {
     if (active) {
-      const loop = Animated.loop(Animated.sequence([
-        Animated.timing(glow, { toValue: 1, duration: 1400, useNativeDriver: false }),
-        Animated.timing(glow, { toValue: 0, duration: 1400, useNativeDriver: false }),
+      const glowLoop = Animated.loop(Animated.sequence([
+        Animated.timing(glow,  { toValue: 1, duration: 1400, useNativeDriver: false }),
+        Animated.timing(glow,  { toValue: 0, duration: 1400, useNativeDriver: false }),
       ]));
-      loop.start();
-      return () => loop.stop();
-    } else { glow.setValue(0); }
+      const scaleLoop = Animated.loop(Animated.sequence([
+        Animated.timing(scale, { toValue: 1.06, duration: 1000, useNativeDriver: false }),
+        Animated.timing(scale, { toValue: 1.0,  duration: 1000, useNativeDriver: false }),
+      ]));
+      glowLoop.start();
+      scaleLoop.start();
+      return () => { glowLoop.stop(); scaleLoop.stop(); };
+    } else {
+      glow.setValue(0);
+      scale.setValue(1);
+    }
   }, [active]);
 
   return (
     <TouchableOpacity style={S.modCol} onPress={onPress} onLongPress={onLongPress} delayLongPress={500} activeOpacity={0.75}>
       <Animated.View style={[S.modBtn, {
-        backgroundColor: locked ? "rgba(0,0,0,0.3)" : "#1a0a2e",
-        borderColor: active ? "#FF0080" : locked ? colors.border + "50" : "rgba(255,0,128,0.50)",
+        backgroundColor: locked ? "rgba(0,0,0,0.3)" : active ? "rgba(255,0,128,0.12)" : "#0f0520",
+        borderColor: active ? "#FF0080" : locked ? colors.border + "50" : "rgba(255,0,128,0.20)",
         shadowColor: PINK,
-        shadowRadius: glow.interpolate({ inputRange: [0,1], outputRange: [5, 14] }),
-        shadowOpacity: glow.interpolate({ inputRange: [0,1], outputRange: [0.35, 0.80] }),
-        elevation: glow.interpolate({ inputRange: [0,1], outputRange: [3, 10] }),
+        shadowRadius: active ? glow.interpolate({ inputRange: [0,1], outputRange: [8, 18] }) : 0,
+        shadowOpacity: active ? glow.interpolate({ inputRange: [0,1], outputRange: [0.5, 0.9] }) : 0,
+        elevation: active ? glow.interpolate({ inputRange: [0,1], outputRange: [4, 12] }) : 0,
+        transform: [{ scale }],
         opacity: locked ? 0.5 : 1,
       }]}>
         {icon}
@@ -78,7 +89,7 @@ function ModuleButton({ icon, label, active, locked, onPress, onLongPress }: {
           </View>
         )}
       </Animated.View>
-      <Text style={[S.modLabel, { color: active ? PINK : locked ? colors.mutedForeground + "80" : colors.mutedForeground }]}>{label}</Text>
+      <Text style={[S.modLabel, { color: active ? PINK : locked ? colors.mutedForeground + "80" : "rgba(255,0,128,0.45)" }]}>{label}</Text>
     </TouchableOpacity>
   );
 }
@@ -364,7 +375,7 @@ export default function HomeScreen() {
           return (
             <ModuleButton
               key={m.name}
-              icon={m.icon(m.locked ? colors.mutedForeground : PINK)}
+              icon={m.icon(m.locked ? colors.mutedForeground : active ? PINK : "rgba(255,0,128,0.45)")}
               label={m.label}
               active={active}
               locked={m.locked}
@@ -489,9 +500,9 @@ const S = StyleSheet.create({
   avatarBtn:{ width: 38, height: 38, borderRadius: 19, alignItems: "center", justifyContent: "center" },
   sectionCap: { fontSize: 10, fontFamily: "SpaceGrotesk_600SemiBold", letterSpacing: 1.2, paddingHorizontal: 20, marginBottom: 10, marginTop: 20, opacity: 0.6 },
 
-  moduleStrip: { flexDirection: "row", paddingHorizontal: 12, paddingBottom: 14, paddingTop: 4, gap: 8 },
-  modCol:  { alignItems: "center", gap: 5, width: MOD_SIZE + 14 },
-  modBtn:  { width: MOD_SIZE, height: MOD_SIZE, borderRadius: MOD_SIZE/2, alignItems: "center", justifyContent: "center", borderWidth: 1.5, position: "relative" },
+  moduleStrip: { flexDirection: "row", paddingHorizontal: 12, paddingBottom: 16, paddingTop: 12, gap: 8 },
+  modCol:  { alignItems: "center", gap: 5, width: MOD_SIZE + 14, overflow: "visible" },
+  modBtn:  { width: MOD_SIZE, height: MOD_SIZE, borderRadius: MOD_SIZE/2, alignItems: "center", justifyContent: "center", borderWidth: 1.5, position: "relative", overflow: "visible" },
   modLabel:{ fontSize: 9, fontFamily: "SpaceGrotesk_500Medium", textAlign: "center" },
   lockBadge: { position: "absolute", top: -2, right: -2, width: 14, height: 14, borderRadius: 7, backgroundColor: PURPLE, alignItems: "center", justifyContent: "center" },
 

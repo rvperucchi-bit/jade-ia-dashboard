@@ -780,6 +780,15 @@
   ],
   "activity_events": [
     {
+      "id": "7f2e5d1f09f41c06",
+      "type": "message",
+      "text": "JADE respondeu a uma mensagem",
+      "icon": "robot",
+      "color": "#FF0080",
+      "metadata": {},
+      "created_at": "2026-06-21T03:45:17.212Z"
+    },
+    {
       "id": "c75eb79f3365c6ed",
       "type": "scan",
       "text": "JADE encontrou 3 novos leads via radar em São Paulo",
@@ -2745,14 +2754,6 @@
       "icon": "user-plus",
       "color": "#6C63FF",
       "created_at": "2026-06-20T21:30:27.353Z"
-    },
-    {
-      "id": "46d08ea5084bea41",
-      "type": "lead",
-      "text": "Novo lead adicionado: Carla Mendes (Moda e Estilo Boutique)",
-      "icon": "user-plus",
-      "color": "#6C63FF",
-      "created_at": "2026-06-20T21:30:27.346Z"
     }
   ],
   "marketing_campaigns": [
