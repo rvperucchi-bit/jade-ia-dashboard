@@ -470,6 +470,17 @@
   ],
   "activity_events": [
     {
+      "id": "58ae9d05ff733ae7",
+      "type": "message",
+      "text": "JADE respondeu a uma mensagem",
+      "icon": "robot",
+      "color": "#FF0080",
+      "metadata": {
+        "session_id": "d2c28e76cda879ca"
+      },
+      "created_at": "2026-06-21T01:56:42.114Z"
+    },
+    {
       "id": "a1e32c025a7f6572",
       "type": "lead",
       "text": "Novo lead adicionado: Fernanda Silva (Livraria & Café Cantinho da Leitura)",
@@ -2183,6 +2194,24 @@
     }
   ],
   "jade_sessions": [
+    {
+      "id": "d2c28e76cda879ca",
+      "title": "O usuário enviou uma mensagem de voz com…",
+      "messages": [
+        {
+          "role": "user",
+          "content": "O usuário enviou uma mensagem de voz com duração de 4 segundos. Responda como se você tivesse entendido a mensagem de voz — pergunte sobre o que posso ajudar hoje em relação às vendas ou ao negócio dele.",
+          "time": "2026-06-21T01:56:42.109Z"
+        },
+        {
+          "role": "model",
+          "content": "Olá! Recebi sua mensagem de voz.\n\nMe diz, como posso te ajudar hoje com as vendas ou com o seu negócio na Pereira Imóvel? 😊",
+          "time": "2026-06-21T01:56:42.110Z"
+        }
+      ],
+      "created_at": "2026-06-21T01:56:40.128Z",
+      "updated_at": "2026-06-21T01:56:42.110Z"
+    },
     {
       "id": "68a5da972b09a04b",
       "title": "O usuário enviou uma mensagem de voz com…",

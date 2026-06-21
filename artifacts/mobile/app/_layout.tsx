@@ -160,6 +160,10 @@ function RootLayoutNav() {
         name="analise"
         options={{ headerShown: false, presentation: "card", animation: "slide_from_right" }}
       />
+      <Stack.Screen
+        name="painelexecutivo"
+        options={{ headerShown: false, presentation: "card", animation: "slide_from_right" }}
+      />
     </Stack>
   );
 }

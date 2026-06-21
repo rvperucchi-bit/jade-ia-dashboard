@@ -54,15 +54,16 @@ export default function GestaoScreen() {
   const [enviando, setEnviando] = useState(false);
 
   const HUB_CARDS: HubCard[] = [
+    { icon: "bar-chart-2",   iconLib: "feather", title: "Painel Executivo",sub: "Metas, KPIs e ranking do time",route: "/painelexecutivo",  color: "#FFB800",        accent: "#FFB80018" },
     { icon: "users",         iconLib: "feather", title: "Meu Time",        sub: "Vendedores e metas",         route: "/meutime",          color: "#6C63FF",        accent: "#6C63FF18" },
     { icon: "target",        iconLib: "feather", title: "Metas",           sub: "Pipeline consolidado",        route: "/metas",            color: "#FF0080",        accent: "#FF008018" },
     { icon: "briefcase",     iconLib: "feather", title: "Carteira",        sub: "Farmer, hunter, pós-venda",   route: "/carteira",         color: "#00D68F",        accent: "#00D68F18" },
-    { icon: "message-circle",iconLib: "feather", title: "Feedback JADE",   sub: "Mentoria por vendedor",        route: "/feedbackjade",     color: ENTERPRISE_PURPLE,accent: "#8400FF18" },
-    { icon: "bar-chart-2",   iconLib: "feather", title: "Relatório",       sub: "Consolidado p/ diretoria",     route: "/relatoriogestor",  color: "#FFB300",        accent: "#FFB30018" },
-    { icon: "calendar",      iconLib: "feather", title: "Planejamento",    sub: "Agenda do time",               route: "/planejamento",     color: "#4ECDC4",        accent: "#4ECDC418" },
-    { icon: "users",         iconLib: "feather", title: "Roleplay",        sub: "Treino de vendas com IA",      route: "/roleplay",         color: "#AB47BC",        accent: "#AB47BC18" },
+    { icon: "calendar",      iconLib: "feather", title: "Planejamento",    sub: "Agenda e check-in do time",    route: "/planejamento",     color: "#4ECDC4",        accent: "#4ECDC418" },
     { icon: "bell",          iconLib: "feather", title: "Notificar Time",  sub: "Enviar broadcast ao time",     color: ENTERPRISE_PURPLE,   accent: "#8400FF18", modalAction: "notificar" },
-    { icon: "heart",         iconLib: "feather", title: "Humor do Time",   sub: "Check-in diário dos executivos", route: "/feedbackexecutivo", color: "#FF6B35",        accent: "#FF6B3518" },
+    { icon: "message-circle",iconLib: "feather", title: "Feedback JADE",   sub: "Mentoria por vendedor",        route: "/feedbackjade",     color: ENTERPRISE_PURPLE,accent: "#8400FF18" },
+    { icon: "heart",         iconLib: "feather", title: "Humor do Time",   sub: "Check-in diário dos executivos", route: "/feedbackexecutivo", color: "#FF6B35",      accent: "#FF6B3518" },
+    { icon: "bar-chart-2",   iconLib: "feather", title: "Relatório",       sub: "Consolidado p/ diretoria",     route: "/relatoriogestor",  color: "#FFB300",        accent: "#FFB30018" },
+    { icon: "users",         iconLib: "feather", title: "Roleplay",        sub: "Treino de vendas com IA",      route: "/roleplay",         color: "#AB47BC",        accent: "#AB47BC18" },
     { icon: "activity",      iconLib: "feather", title: "Análise & KPIs",  sub: "Gaps e performance do time",     route: "/analise",          color: "#4ECDC4",        accent: "#4ECDC418" },
   ];
 
