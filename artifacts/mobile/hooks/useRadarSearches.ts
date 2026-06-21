@@ -5,9 +5,9 @@ import { usePlan } from "@/context/PlanContext";
 const RADAR_KEY = "@jade_ia:radar_searches_v1";
 
 const PLAN_SEARCH_LIMITS: Record<string, number> = {
-  start: 5,
-  pro: 30,
-  enterprise: 100,
+  start: 50,
+  pro: 200,
+  enterprise: 500,
 };
 
 function currentMonth() {

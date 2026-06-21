@@ -193,6 +193,49 @@ router.post('/create-checkout-searches', async (req: Request, res: Response) => 
   }
 });
 
+// ─── POST /stripe/create-checkout-messages ────────────────────────────────────
+const MSG_PACOTES: Record<string, { mensagens: number; preco: number; label: string }> = {
+  '500':   { mensagens: 500,   preco: 2990,  label: '500 mensagens WhatsApp'    },
+  '2000':  { mensagens: 2000,  preco: 8990,  label: '2.000 mensagens WhatsApp'  },
+  '5000':  { mensagens: 5000,  preco: 17990, label: '5.000 mensagens WhatsApp'  },
+  '10000': { mensagens: 10000, preco: 29990, label: '10.000 mensagens WhatsApp' },
+};
+
+router.post('/create-checkout-messages', async (req: Request, res: Response) => {
+  const { pacote, email } = req.body as { pacote?: string; email?: string };
+
+  if (!pacote || !(pacote in MSG_PACOTES)) {
+    return res.status(400).json({ error: 'Pacote inválido. Use: 500, 2000, 5000, 10000.' });
+  }
+
+  const info = MSG_PACOTES[pacote]!;
+  const domainRaw2 = process.env.REPLIT_DOMAINS ?? '';
+  const domain2 = domainRaw2.split(',')[0] ?? 'jade-ia.replit.app';
+
+  const session = await stripe.checkout.sessions.create({
+    payment_method_types: ['card'],
+    mode: 'payment',
+    line_items: [{
+      price_data: {
+        currency: 'brl',
+        unit_amount: info.preco,
+        product_data: { name: `JADE IA — ${info.label}` },
+      },
+      quantity: 1,
+    }],
+    customer_email: email,
+    success_url: `https://${domain2}/api/stripe/callback-messages?session_id={CHECKOUT_SESSION_ID}&mensagens=${info.mensagens}`,
+    cancel_url:  `https://${domain2}/api/stripe/callback-messages?cancelled=true`,
+  });
+
+  return res.json({ url: session.url });
+});
+
+// ─── GET /stripe/callback-messages ───────────────────────────────────────────
+router.get('/callback-messages', (_req: Request, res: Response) => {
+  res.send('<html><body><h2>Pagamento confirmado! ✅ Volte ao app para usar suas mensagens.</h2></body></html>');
+});
+
 // ─── GET /stripe/callback-searches ───────────────────────────────────────────
 // Called after successful payment — used for deep-link back to app
 router.get('/callback-searches', (_req: Request, res: Response) => {

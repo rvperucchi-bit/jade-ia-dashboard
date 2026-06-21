@@ -19,6 +19,7 @@ import { useColors } from "@/hooks/useColors";
 import { useAuth } from "@/context/AuthContext";
 import { usePlan, type Plan } from "@/context/PlanContext";
 import { useCredits } from "@/context/CreditsContext";
+import { useRadarSearches } from "@/hooks/useRadarSearches";
 
 const PURPLE = "#8400FF";
 const GOLD   = "#FFB800";
@@ -246,6 +247,7 @@ export default function MaisScreen() {
   const [upgradeModal,  setUpgradeModal]  = useState(false);
   const [selectedPkg,   setSelectedPkg]   = useState<100 | 500 | 2000 | null>(null);
   const credits = useCredits();
+  const radar   = useRadarSearches();
 
   const tapCount = useRef(0);
   const tapTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -422,6 +424,12 @@ export default function MaisScreen() {
       locked: false,
       onPress: () => { tap(); router.push("/biblioteca" as any); },
     },
+    {
+      label: "Loja JADE",
+      iconNode: <Feather name="shopping-cart" size={20} color={pinkIc} />,
+      locked: false,
+      onPress: () => { tap(); router.push("/loja" as any); },
+    },
   ];
 
   return (
@@ -473,7 +481,7 @@ export default function MaisScreen() {
               ? (credits.warnLevel === "empty" ? "#FF3B5C55" : "#FFB30055")
               : colors.border,
           }]}
-          onPress={() => { tap(); setCreditsModal(true); }}
+          onPress={() => { tap(); router.push("/loja?tab=0" as any); }}
           activeOpacity={0.8}
         >
           <Text style={[S.statValue, {
@@ -492,6 +500,7 @@ export default function MaisScreen() {
               borderRadius: 2,
             }} />
           </View>
+          <Text style={[S.statBuyLink, { color: PINK }]}>Comprar mais</Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={[S.statBox, { backgroundColor: "#130026", borderColor: PINK + "66", borderWidth: 1.5 }]}
@@ -503,6 +512,40 @@ export default function MaisScreen() {
           <Text style={[S.statLabel, { color: PINK, opacity: 0.75 }]}>Ver planos</Text>
         </TouchableOpacity>
       </View>
+
+      {/* ── Radar Stats Card ── */}
+      {(() => {
+        const radarWarn = radar.remaining === 0 ? "empty" : radar.remaining < radar.total * 0.2 ? "warn" : "ok";
+        const radarColor = radarWarn === "empty" ? "#FF3B5C" : radarWarn === "warn" ? "#FFB300" : "#00D68F";
+        const radarBorder = radarWarn !== "ok" ? (radarWarn === "empty" ? "#FF3B5C55" : "#FFB30055") : colors.border;
+        return (
+          <TouchableOpacity
+            style={[S.radarStatCard, { backgroundColor: colors.card, borderColor: radarBorder }]}
+            onPress={() => { tap(); router.push("/loja?tab=1" as any); }}
+            activeOpacity={0.8}
+          >
+            <View style={S.radarStatLeft}>
+              <View style={[S.radarStatIconWrap, { backgroundColor: "#FF008018" }]}>
+                <Feather name="radio" size={16} color={PINK} />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={[S.radarStatLabel, { color: colors.mutedForeground }]}>Buscas Radar este mês</Text>
+                <View style={[S.radarBarTrack, { backgroundColor: colors.border }]}>
+                  <View style={[S.radarBarFill, {
+                    width: `${radar.total > 0 ? Math.round((radar.remaining / radar.total) * 100) : 0}%` as any,
+                    backgroundColor: radarColor,
+                  }]} />
+                </View>
+              </View>
+            </View>
+            <View style={{ alignItems: "flex-end", gap: 2 }}>
+              <Text style={[S.radarStatValue, { color: radarColor }]}>{radar.remaining}</Text>
+              <Text style={[S.radarStatSub, { color: colors.mutedForeground }]}>de {radar.total}</Text>
+              <Text style={[S.statBuyLink, { color: PINK }]}>Comprar mais</Text>
+            </View>
+          </TouchableOpacity>
+        );
+      })()}
 
       {/* ── Demo gratuita banner (Start sem demo usada) ── */}
       {hasDemoAvailable && (
@@ -797,6 +840,16 @@ const S = StyleSheet.create({
   gridWrap:     { flexDirection: "row", flexWrap: "wrap", paddingHorizontal: 8, marginBottom: 20 },
 
   planDot:      { width: 8, height: 8, borderRadius: 4, marginBottom: 2 },
+  statBuyLink:  { fontSize: 10, fontFamily: "SpaceGrotesk_600SemiBold", marginTop: 4 },
+
+  radarStatCard:    { flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginHorizontal: 16, marginBottom: 14, padding: 14, borderRadius: 12, borderWidth: 1, gap: 12 },
+  radarStatLeft:    { flex: 1, flexDirection: "row", alignItems: "center", gap: 10 },
+  radarStatIconWrap:{ width: 32, height: 32, borderRadius: 9, alignItems: "center", justifyContent: "center" },
+  radarStatLabel:   { fontSize: 11, fontFamily: "SpaceGrotesk_400Regular", marginBottom: 6 },
+  radarBarTrack:    { height: 5, borderRadius: 3, overflow: "hidden", position: "relative" },
+  radarBarFill:     { position: "absolute", top: 0, left: 0, bottom: 0, borderRadius: 3 },
+  radarStatValue:   { fontSize: 20, fontFamily: "SpaceGrotesk_700Bold" },
+  radarStatSub:     { fontSize: 11, fontFamily: "SpaceGrotesk_400Regular" },
 
   section:      { marginBottom: 16 },
   sectionTitle: { fontSize: 10, fontFamily: "SpaceGrotesk_600SemiBold", letterSpacing: 1, marginHorizontal: 20, marginBottom: 8 },

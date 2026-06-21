@@ -796,11 +796,11 @@ export default function ScannerScreen() {
             </Text>
             <TouchableOpacity
               style={styles.modalPrimaryBtn}
-              onPress={() => { setShowLimiteModal(false); setShowLojaModal(true); }}
+              onPress={() => { setShowLimiteModal(false); router.push("/loja?tab=1" as any); }}
               activeOpacity={0.85}
             >
               <Feather name="shopping-cart" size={16} color="#fff" />
-              <Text style={styles.modalPrimaryBtnText}>Comprar mais buscas</Text>
+              <Text style={styles.modalPrimaryBtnText}>Ver loja — comprar buscas</Text>
             </TouchableOpacity>
             <TouchableOpacity onPress={() => setShowLimiteModal(false)} style={styles.modalCancelBtn} activeOpacity={0.7}>
               <Text style={[styles.modalCancelBtnText, { color: colors.mutedForeground }]}>Fechar</Text>

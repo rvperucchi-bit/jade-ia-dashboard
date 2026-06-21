@@ -11,8 +11,8 @@ interface CreditsData {
 }
 
 const PLAN_LIMITS: Record<string, number> = {
-  start: 300,
-  pro: 1000,
+  start: 500,
+  pro: 2000,
   enterprise: 5000,
 };
 
