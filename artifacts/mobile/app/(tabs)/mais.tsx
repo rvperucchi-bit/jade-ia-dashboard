@@ -454,14 +454,21 @@ export default function MaisScreen() {
         </TouchableOpacity>
       </View>
 
-      {/* ── Stats ── */}
+      {/* ── Plan Info Row ── */}
       <View style={S.statsRow}>
-        {[{ label: "Leads", value: "124" }, { label: "Fechados", value: "38" }, { label: "Receita", value: "R$92k" }].map((s, i) => (
-          <View key={i} style={[S.statBox, { backgroundColor: colors.card, borderColor: colors.border }]}>
-            <Text style={[S.statValue, { color: colors.text }]}>{s.value}</Text>
-            <Text style={[S.statLabel, { color: colors.mutedForeground }]}>{s.label}</Text>
-          </View>
-        ))}
+        <View style={[S.statBox, { backgroundColor: colors.card, borderColor: colors.border }]}>
+          <View style={[S.planDot, { backgroundColor: planColor }]} />
+          <Text style={[S.statValue, { color: planColor }]}>{planLabel}</Text>
+          <Text style={[S.statLabel, { color: colors.mutedForeground }]}>Plano atual</Text>
+        </View>
+        <View style={[S.statBox, { backgroundColor: colors.card, borderColor: colors.border }]}>
+          <Text style={[S.statValue, { color: colors.text }]}>47</Text>
+          <Text style={[S.statLabel, { color: colors.mutedForeground }]}>Gerações IA</Text>
+        </View>
+        <View style={[S.statBox, { backgroundColor: colors.card, borderColor: colors.border }]}>
+          <Text style={[S.statValue, { color: PINK }]}>R$51k</Text>
+          <Text style={[S.statLabel, { color: colors.mutedForeground }]}>Próxima meta</Text>
+        </View>
       </View>
 
       {/* ── Demo gratuita banner (Start sem demo usada) ── */}
@@ -477,19 +484,17 @@ export default function MaisScreen() {
         </View>
       )}
 
-      {/* ── Icon Grid (CapCut style) ── */}
-      <View style={[S.gridCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
-        <View style={S.grid}>
-          {GRID_ITEMS.map((item) => (
-            <GridItem
-              key={item.label}
-              label={item.label}
-              iconNode={item.iconNode}
-              locked={item.locked}
-              onPress={item.onPress}
-            />
-          ))}
-        </View>
+      {/* ── Icon Grid (CapCut style — sem container card) ── */}
+      <View style={S.gridWrap}>
+        {GRID_ITEMS.map((item) => (
+          <GridItem
+            key={item.label}
+            label={item.label}
+            iconNode={item.iconNode}
+            locked={item.locked}
+            onPress={item.onPress}
+          />
+        ))}
       </View>
 
       {/* ── Seção CONTA (lista, igual antes) ── */}
@@ -605,8 +610,9 @@ const S = StyleSheet.create({
   demoTitle:    { fontSize: 14, fontFamily: "SpaceGrotesk_700Bold", color: "#fff" },
   demoSub:      { fontSize: 12, fontFamily: "SpaceGrotesk_400Regular", marginTop: 3, lineHeight: 17 },
 
-  gridCard:     { marginHorizontal: 16, marginBottom: 20, borderRadius: 16, borderWidth: 1, paddingVertical: 4 },
-  grid:         { flexDirection: "row", flexWrap: "wrap" },
+  gridWrap:     { flexDirection: "row", flexWrap: "wrap", paddingHorizontal: 8, marginBottom: 20 },
+
+  planDot:      { width: 8, height: 8, borderRadius: 4, marginBottom: 2 },
 
   section:      { marginBottom: 16 },
   sectionTitle: { fontSize: 10, fontFamily: "SpaceGrotesk_600SemiBold", letterSpacing: 1, marginHorizontal: 20, marginBottom: 8 },

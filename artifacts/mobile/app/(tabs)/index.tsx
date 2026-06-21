@@ -90,7 +90,7 @@ function MetaBar({ realizado, meta, onConfigure }: { realizado: number; meta: nu
 
   if (meta === 0) {
     return (
-      <TouchableOpacity style={[S.metaBar, { backgroundColor: colors.card, borderColor: colors.border }]} onPress={onConfigure} activeOpacity={0.8}>
+      <TouchableOpacity style={S.metaBar} onPress={onConfigure} activeOpacity={0.8}>
         <Feather name="target" size={13} color={colors.mutedForeground} />
         <Text style={[S.metaConfig, { color: colors.mutedForeground }]}>Configure sua meta mensal</Text>
         <Feather name="chevron-right" size={13} color={colors.mutedForeground} />
@@ -99,15 +99,15 @@ function MetaBar({ realizado, meta, onConfigure }: { realizado: number; meta: nu
   }
 
   return (
-    <View style={[S.metaBar, { backgroundColor: colors.card, borderColor: colors.border }]}>
+    <View style={S.metaBar}>
       <View style={S.metaRow}>
-        <Text style={[S.metaLabel, { color: "rgba(255,255,255,0.5)" }]}>Meta do mês</Text>
+        <Text style={[S.metaLabel, { color: "rgba(255,255,255,0.45)" }]}>Meta do mês</Text>
         <Text style={[S.metaValue, { color: "#fff" }]}>{fmtK(realizado)} / {fmtK(meta)}</Text>
       </View>
-      {/* Progress bar with two-tone gradient simulation */}
+      {/* Progress bar — thick, two-tone */}
       <View style={S.metaTrack}>
-        <View style={{ position: "absolute", left: 0, top: 0, bottom: 0, width: `${pctN * 0.6}%` as any, backgroundColor: PINK, borderRadius: 3 }} />
-        <View style={{ position: "absolute", left: `${pctN * 0.6}%` as any, top: 0, bottom: 0, width: `${pctN * 0.4}%` as any, backgroundColor: PURPLE, borderRadius: 3 }} />
+        <View style={{ position: "absolute", left: 0, top: 0, bottom: 0, width: `${pctN * 0.6}%` as any, backgroundColor: PINK, borderRadius: 5 }} />
+        <View style={{ position: "absolute", left: `${pctN * 0.6}%` as any, top: 0, bottom: 0, width: `${pctN * 0.4}%` as any, backgroundColor: PURPLE, borderRadius: 5 }} />
       </View>
       <Text style={[S.metaPct, { color: barColor }]}>{pctN}% atingido</Text>
     </View>
@@ -173,7 +173,7 @@ function JADEActivityFeed({ anyModuleActive, scannerActive, whatsappActive }: {
 
   if (!anyModuleActive) {
     return (
-      <View style={[S.jadeFeed, { backgroundColor: colors.card, borderColor: colors.border, opacity: 0.5 }]}>
+      <View style={[S.jadeFeed, { opacity: 0.38 }]}>
         <MaterialCommunityIcons name="robot" size={14} color={colors.mutedForeground} />
         <Text style={[S.jadeStandby, { color: colors.mutedForeground }]}>JADE em standby</Text>
       </View>
@@ -181,7 +181,7 @@ function JADEActivityFeed({ anyModuleActive, scannerActive, whatsappActive }: {
   }
 
   return (
-    <View style={[S.jadeFeed, { backgroundColor: colors.card, borderColor: PINK + "40" }]}>
+    <View style={S.jadeFeed}>
       <Animated.View style={[S.jadeDot, {
         backgroundColor: PINK,
         opacity: dotAnim.interpolate({ inputRange: [0,1], outputRange: [0.5, 1] }),
@@ -469,17 +469,17 @@ const S = StyleSheet.create({
   modLabel:{ fontSize: 9, fontFamily: "SpaceGrotesk_500Medium", textAlign: "center" },
   lockBadge: { position: "absolute", top: -2, right: -2, width: 14, height: 14, borderRadius: 7, backgroundColor: PURPLE, alignItems: "center", justifyContent: "center" },
 
-  // Meta bar
-  metaBar:  { borderRadius: 12, borderWidth: 1, padding: 11, gap: 6 },
+  // Meta bar — sem card, números grandes
+  metaBar:  { gap: 8, paddingVertical: 4, flexDirection: "column" },
   metaRow:  { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
-  metaLabel:{ fontSize: 11, fontFamily: "SpaceGrotesk_400Regular" },
-  metaValue:{ fontSize: 11, fontFamily: "SpaceGrotesk_600SemiBold" },
-  metaTrack:{ height: 6, backgroundColor: "rgba(255,255,255,0.08)", borderRadius: 3, overflow: "hidden", position: "relative" },
-  metaPct:  { fontSize: 10, fontFamily: "SpaceGrotesk_600SemiBold", textAlign: "center" },
+  metaLabel:{ fontSize: 12, fontFamily: "SpaceGrotesk_400Regular" },
+  metaValue:{ fontSize: 16, fontFamily: "SpaceGrotesk_600SemiBold" },
+  metaTrack:{ height: 10, backgroundColor: "rgba(255,255,255,0.08)", borderRadius: 5, overflow: "hidden", position: "relative" },
+  metaPct:  { fontSize: 11, fontFamily: "SpaceGrotesk_600SemiBold" },
   metaConfig:{ fontSize: 12, fontFamily: "SpaceGrotesk_500Medium", flex: 1, paddingHorizontal: 8 },
 
-  // JADE feed
-  jadeFeed: { flexDirection: "row", alignItems: "center", gap: 8, borderRadius: 10, borderWidth: 1, paddingHorizontal: 12, paddingVertical: 9 },
+  // JADE feed — sem card, texto flutuando
+  jadeFeed: { flexDirection: "row", alignItems: "center", gap: 8, paddingVertical: 2, paddingHorizontal: 2 },
   jadeDot:  { width: 8, height: 8, borderRadius: 4 },
   jadeMsg:  { fontSize: 11, fontFamily: "SpaceGrotesk_400Regular", flex: 1 },
   jadeStandby: { fontSize: 11, fontFamily: "SpaceGrotesk_400Regular", flex: 1 },

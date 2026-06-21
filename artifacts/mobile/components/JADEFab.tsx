@@ -105,10 +105,12 @@ export function JADEFab() {
   }, []);
 
   // ── Long press / tap logic ────────────────────────────────────────────────
-  const holdTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const isLongPress  = useRef(false);
-  const isDragging   = useRef(false);
-  const dragDist     = useRef(0);
+  const holdTimerRef  = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const holdInterval  = useRef<ReturnType<typeof setInterval> | null>(null);
+  const isLongPress   = useRef(false);
+  const isDragging    = useRef(false);
+  const dragDist      = useRef(0);
+  const holdSecs      = useRef(0);
 
   // ── PanResponder (drag) ───────────────────────────────────────────────────
   const panResponder = useRef(
@@ -124,12 +126,14 @@ export function JADEFab() {
         // Scale down (press in)
         Animated.timing(btnScale, { toValue: 0.92, duration: 120, useNativeDriver: false }).start();
 
-        // Long press timer for voice
+        // Long press timer for voice — track actual held duration
+        holdSecs.current = 0;
         holdTimerRef.current = setTimeout(() => {
           if (!isDragging.current) {
             isLongPress.current = true;
             Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
             Animated.timing(btnScale, { toValue: 1.08, duration: 200, useNativeDriver: false }).start();
+            holdInterval.current = setInterval(() => { holdSecs.current += 1; }, 1000);
           }
         }, 450);
 
@@ -155,6 +159,7 @@ export function JADEFab() {
 
       onPanResponderRelease: (_, { moveX, moveY }) => {
         if (holdTimerRef.current) { clearTimeout(holdTimerRef.current); holdTimerRef.current = null; }
+        if (holdInterval.current) { clearInterval(holdInterval.current); holdInterval.current = null; }
 
         posRef.flattenOffset();
 
@@ -180,7 +185,7 @@ export function JADEFab() {
           Animated.timing(dragScale,   { toValue: 1, duration: 150, useNativeDriver: false }).start();
 
           if (isLongPress.current) {
-            const secs = 1;
+            const secs = Math.max(1, holdSecs.current);
             setPendingVoice(secs);
             Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
           } else {

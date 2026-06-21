@@ -54,6 +54,20 @@ const JADE_SUMMARIES: string[] = [
   "Lead frio, demorou a responder. Última interação há 4 dias. Probabilidade 30%. Recomendo reengajamento com conteúdo relevante ao setor.",
 ];
 
+// ─── Lead semaphore status ────────────────────────────────────────────────────
+function leadStatusColor(lead: Lead): string {
+  if (lead.column === "fechado" || lead.column === "proposta") return "#0088FF";
+  const t = lead.time.toLowerCase();
+  if (t.includes("min") || (t.includes("h") && !t.includes("dia"))) return "#00D68F";
+  if (t.includes("dia")) {
+    const m = t.match(/(\d+)/);
+    const days = m ? parseInt(m[1], 10) : 1;
+    if (days >= 7) return "#FF3B5C";
+    if (days >= 3) return "#FFB300";
+  }
+  return "#00D68F";
+}
+
 function channelIcon(ch: ContactEntry["channel"], color: string) {
   switch (ch) {
     case "whatsapp": return <Feather name="message-circle" size={14} color={color} />;
@@ -82,6 +96,7 @@ function channelLabel(ch: ContactEntry["channel"]) {
 // ─── Lead card ────────────────────────────────────────────────────────────────
 function LeadCard({ lead, onPress }: { lead: Lead; onPress: () => void }) {
   const colors = useColors();
+  const statusColor = leadStatusColor(lead);
   return (
     <TouchableOpacity
       style={[L.card, { backgroundColor: colors.card, borderColor: colors.border }]}
@@ -93,7 +108,10 @@ function LeadCard({ lead, onPress }: { lead: Lead; onPress: () => void }) {
           <Text style={L.avatarText}>{lead.initials}</Text>
         </View>
         <View style={{ flex: 1 }}>
-          <Text style={[L.cardName, { color: colors.text }]} numberOfLines={1}>{lead.name}</Text>
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+            <Text style={[L.cardName, { color: colors.text, flex: 1 }]} numberOfLines={1}>{lead.name}</Text>
+            <View style={[L.semDot, { backgroundColor: statusColor }]} />
+          </View>
           <Text style={[L.cardCompany, { color: colors.mutedForeground }]} numberOfLines={1}>{lead.company}</Text>
         </View>
       </View>
@@ -439,6 +457,7 @@ const L = StyleSheet.create({
   avatar:     { width: 34, height: 34, borderRadius: 17, alignItems: "center", justifyContent: "center" },
   avatarText: { color: "#fff", fontSize: 13, fontFamily: "SpaceGrotesk_700Bold" },
   cardName:    { fontSize: 13, fontFamily: "SpaceGrotesk_600SemiBold" },
+  semDot:      { width: 9, height: 9, borderRadius: 4.5 },
   cardCompany: { fontSize: 12, fontFamily: "SpaceGrotesk_400Regular", marginTop: 1 },
   cardFooter:  { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
   cardValue:   { fontSize: 14, fontFamily: "SpaceGrotesk_700Bold" },
