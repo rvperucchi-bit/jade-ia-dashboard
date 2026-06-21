@@ -1,0 +1,77 @@
+Refazer a área superior da tela “Mais” seguindo exatamente a referência visual enviada.
+
+Objetivo:
+Transformar os cards atuais de perfil, plano, mensagens, upgrade e buscas Radar em um único card premium executivo.
+
+Não alterar a estrutura geral da tela.
+Não remover os botões das seções Comercial, Inteligência IA e Gestão.
+Não alterar a navegação inferior.
+Não mudar a identidade da JADE.
+
+Card superior:
+
+- Criar um card único grande, com fundo dark premium.
+- Bordas arredondadas.
+- Borda fina sutil.
+- Leve efeito glass.
+- Glow rosa/roxo muito discreto.
+- Visual limpo, sofisticado e organizado.
+
+Dentro do card:
+
+Topo:
+- Avatar circular com a letra R.
+- Nome: Rodrigo.
+- Subtexto: Fundador · JÁ Delivery.
+- Badge: Plano Pro.
+- Botão discreto à direita: Gerenciar plano.
+
+Métricas:
+- Mensagens disponíveis: 1.999.
+- Buscas Radar disponíveis: 200.
+- Cada métrica deve ter ícone premium em rosa JADE.
+- Cada métrica deve ter barra de progresso verde.
+- Separar as duas métricas com uma linha vertical fina.
+
+Rodapé do card:
+- Ícone de coroa ou plano.
+- Texto: PRO.
+- Texto auxiliar: Seu plano está ativo.
+- Próxima renovação: 12 de julho.
+- Ícone pequeno de calendário à direita.
+
+Remover:
+- Card separado de Upgrade.
+- Card separado de Plano atual.
+- Card separado de Mensagens.
+- Card separado de Buscas Radar.
+
+Substituir tudo por esse card único.
+
+Estilo visual:
+- Dark premium.
+- SaaS mobile.
+- Ícones lineares.
+- Rosa JADE apenas como destaque.
+- Verde apenas nas barras de consumo/disponibilidade.
+- Tipografia limpa.
+- Espaçamento generoso.
+- Visual parecido com Linear, Raycast, Vercel e OpenAI.
+
+Responsividade:
+- No mobile, o card deve ocupar quase toda a largura da tela com margens laterais consistentes.
+- As métricas podem ficar lado a lado se couberem bem.
+- Se ficar apertado, empilhar as métricas mantendo o visual premium.
+- Não cortar textos.
+- Não sobrepor elementos.
+
+Importante:
+Manter os módulos abaixo exatamente organizados por categorias:
+Comercial
+Inteligência IA
+Gestão
+
+Manter os bloqueios com cadeado nos recursos que não fazem parte do plano atual.
+
+Resultado esperado:
+A tela “Mais” deve parecer um painel premium de conta e uso da JADE, não uma coleção de cards soltos.

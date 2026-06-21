@@ -261,6 +261,36 @@ const DV = StyleSheet.create({
   closeBtnText: { color: "#AAAACC", fontSize: 14, fontFamily: "SpaceGrotesk_600SemiBold" },
 });
 
+// ─── Premium Card Styles ──────────────────────────────────────────────────────
+const PC = StyleSheet.create({
+  card:          { marginHorizontal: 16, marginBottom: 14, borderRadius: 20, borderWidth: 1, overflow: "hidden", backgroundColor: "#0D0918" },
+  glowTop:       { position: "absolute", top: 0, left: 0, right: 0, height: 100, opacity: 0.9 },
+  topRow:        { flexDirection: "row", alignItems: "flex-start", padding: 16, gap: 13 },
+  avatar:        { width: 54, height: 54, borderRadius: 27, alignItems: "center", justifyContent: "center" },
+  avatarLetter:  { color: "#fff", fontSize: 23, fontFamily: "SpaceGrotesk_700Bold" },
+  name:          { fontSize: 18, fontFamily: "SpaceGrotesk_700Bold", color: "#FFFFFF", lineHeight: 23 },
+  role:          { fontSize: 12, fontFamily: "SpaceGrotesk_400Regular", lineHeight: 17 },
+  planBadge:     { flexDirection: "row", alignItems: "center", alignSelf: "flex-start", borderRadius: 8, paddingHorizontal: 8, paddingVertical: 3, marginTop: 5 },
+  planBadgeText: { fontSize: 11, fontFamily: "SpaceGrotesk_600SemiBold" },
+  manageBtn:     { flexDirection: "row", alignItems: "center", gap: 4, borderWidth: 1, borderRadius: 10, paddingHorizontal: 9, paddingVertical: 6, marginTop: 3 },
+  manageBtnText: { fontSize: 11, fontFamily: "SpaceGrotesk_500Medium" },
+  divider:       { height: StyleSheet.hairlineWidth },
+  metricsRow:    { flexDirection: "row", paddingVertical: 16, paddingHorizontal: 14 },
+  metric:        { flex: 1, gap: 9 },
+  metricTop:     { flexDirection: "row", alignItems: "flex-start", gap: 10 },
+  metricIcon:    { width: 36, height: 36, borderRadius: 10, alignItems: "center", justifyContent: "center" },
+  metricValue:   { fontSize: 22, fontFamily: "SpaceGrotesk_700Bold", color: "#FFFFFF", lineHeight: 26 },
+  metricLabel:   { fontSize: 11, fontFamily: "SpaceGrotesk_400Regular", lineHeight: 15, flexWrap: "wrap" },
+  barTrack:      { height: 4, borderRadius: 2, overflow: "hidden" },
+  barFill:       { position: "absolute", top: 0, left: 0, bottom: 0, borderRadius: 2 },
+  barCaption:    { fontSize: 10, fontFamily: "SpaceGrotesk_400Regular" },
+  vDivider:      { width: StyleSheet.hairlineWidth, marginHorizontal: 10, alignSelf: "stretch" },
+  footerRow:     { flexDirection: "row", alignItems: "center", paddingHorizontal: 16, paddingVertical: 11, gap: 6 },
+  footerPlan:    { fontSize: 13, fontFamily: "SpaceGrotesk_700Bold", letterSpacing: 0.4 },
+  footerSub:     { fontSize: 12, fontFamily: "SpaceGrotesk_400Regular" },
+  footerRenewal: { fontSize: 11, fontFamily: "SpaceGrotesk_400Regular" },
+});
+
 // ─── Screen ───────────────────────────────────────────────────────────────────
 const REAL_PLAN: Plan = "start";
 
@@ -500,101 +530,103 @@ export default function MaisScreen() {
         )}
       </View>
 
-      {/* ── Profile Card ── */}
-      <View style={[S.profileCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
-        <View style={[S.profileAvatar, { backgroundColor: planColor }]}>
-          <Text style={S.profileInitials}>R</Text>
-        </View>
-        <View style={{ flex: 1 }}>
-          <Text style={[S.profileName, { color: colors.text }]}>Rodrigo</Text>
-          <Text style={[S.profileRole, { color: colors.mutedForeground }]}>Fundador · JÁ Delivery</Text>
-          <View style={[S.proBadge, { backgroundColor: planColor + "22" }]}>
-            <Text style={[S.proBadgeText, { color: planColor }]}>✦ Plano {planLabel}</Text>
-          </View>
-        </View>
-        <TouchableOpacity style={[S.editBtn, { backgroundColor: colors.surface }]}
-          onPress={() => router.push("/perfil" as any)} activeOpacity={0.8}>
-          <Feather name="edit-2" size={16} color={colors.primary} />
-        </TouchableOpacity>
-      </View>
-
-      {/* ── Plan Info Row ── */}
-      <View style={S.statsRow}>
-        <View style={[S.statBox, { backgroundColor: colors.card, borderColor: colors.border }]}>
-          <View style={[S.planDot, { backgroundColor: planColor }]} />
-          <Text style={[S.statValue, { color: planColor }]}>{planLabel}</Text>
-          <Text style={[S.statLabel, { color: colors.mutedForeground }]}>Plano atual</Text>
-        </View>
-        <TouchableOpacity
-          style={[S.statBox, {
-            backgroundColor: colors.card,
-            borderColor: credits.warnLevel !== "ok"
-              ? (credits.warnLevel === "empty" ? "#FF3B5C55" : "#FFB30055")
-              : colors.border,
-          }]}
-          onPress={() => { tap(); router.push("/loja?tab=0" as any); }}
-          activeOpacity={0.8}
-        >
-          <Text style={[S.statValue, {
-            color: credits.warnLevel === "empty" ? "#FF3B5C"
-                 : credits.warnLevel === "warn"  ? "#FFB300"
-                 : colors.text,
-          }]}>
-            {credits.remaining}
-          </Text>
-          <Text style={[S.statLabel, { color: colors.mutedForeground }]}>Mensagens</Text>
-          <View style={{ width: "100%", height: 3, backgroundColor: colors.border, borderRadius: 2, marginTop: 5, overflow: "hidden" }}>
-            <View style={{
-              position: "absolute", top: 0, left: 0, bottom: 0,
-              width: `${credits.total > 0 ? Math.round((credits.remaining / credits.total) * 100) : 0}%` as any,
-              backgroundColor: credits.warnLevel === "empty" ? "#FF3B5C" : credits.warnLevel === "warn" ? "#FFB300" : "#00D68F",
-              borderRadius: 2,
-            }} />
-          </View>
-          <Text style={[S.statBuyLink, { color: PINK }]}>Comprar mais</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[S.statBox, { backgroundColor: "#130026", borderColor: PINK + "66", borderWidth: 1.5 }]}
-          onPress={() => { tap(); setUpgradeModal(true); }}
-          activeOpacity={0.8}
-        >
-          <Feather name="arrow-up-circle" size={19} color={PINK} />
-          <Text style={[S.statValue, { color: PINK, fontSize: 15, marginTop: 2 }]}>Upgrade</Text>
-          <Text style={[S.statLabel, { color: PINK, opacity: 0.75 }]}>Ver planos</Text>
-        </TouchableOpacity>
-      </View>
-
-      {/* ── Radar Stats Card ── */}
+      {/* ── Premium Account Card ── */}
       {(() => {
-        const radarWarn = radar.remaining === 0 ? "empty" : radar.remaining < radar.total * 0.2 ? "warn" : "ok";
-        const radarColor = radarWarn === "empty" ? "#FF3B5C" : radarWarn === "warn" ? "#FFB300" : "#00D68F";
-        const radarBorder = radarWarn !== "ok" ? (radarWarn === "empty" ? "#FF3B5C55" : "#FFB30055") : colors.border;
+        const msgPct   = credits.total > 0 ? Math.round((credits.remaining / credits.total) * 100) : 0;
+        const msgBar   = credits.warnLevel === "empty" ? "#FF3B5C" : credits.warnLevel === "warn" ? "#FFB300" : "#00D68F";
+        const radarWarn= radar.remaining === 0 ? "empty" : radar.remaining < radar.total * 0.2 ? "warn" : "ok";
+        const radarPct = radar.total > 0 ? Math.round((radar.remaining / radar.total) * 100) : 0;
+        const radarBar = radarWarn === "empty" ? "#FF3B5C" : radarWarn === "warn" ? "#FFB300" : "#00D68F";
+        const MONTHS   = ["janeiro","fevereiro","março","abril","maio","junho","julho","agosto","setembro","outubro","novembro","dezembro"];
+        const nxt = new Date(); nxt.setMonth(nxt.getMonth() + 1);
+        const renewalStr = `12 de ${MONTHS[nxt.getMonth()]}`;
+        const msgCaption   = msgPct === 0   ? "esgotado"   : msgPct < 20   ? "quase no limite" : `${msgPct}% disponível`;
+        const radarCaption = radarPct === 0 ? "esgotado"   : radarPct < 20 ? "quase no limite" : `${radarPct}% disponível`;
         return (
-          <TouchableOpacity
-            style={[S.radarStatCard, { backgroundColor: colors.card, borderColor: radarBorder }]}
-            onPress={() => { tap(); router.push("/loja?tab=1" as any); }}
-            activeOpacity={0.8}
-          >
-            <View style={S.radarStatLeft}>
-              <View style={[S.radarStatIconWrap, { backgroundColor: "#FF008018" }]}>
-                <Feather name="radio" size={16} color={PINK} />
+          <View style={[PC.card, { borderColor: planColor + "38" }]}>
+            {/* Glow top */}
+            <View style={[PC.glowTop, { backgroundColor: planColor + "12" }]} />
+
+            {/* ── Linha 1: Avatar + Nome + Gerenciar ── */}
+            <View style={PC.topRow}>
+              <View style={[PC.avatar, { backgroundColor: planColor }]}>
+                <Text style={PC.avatarLetter}>R</Text>
               </View>
-              <View style={{ flex: 1 }}>
-                <Text style={[S.radarStatLabel, { color: colors.mutedForeground }]}>Buscas Radar este mês</Text>
-                <View style={[S.radarBarTrack, { backgroundColor: colors.border }]}>
-                  <View style={[S.radarBarFill, {
-                    width: `${radar.total > 0 ? Math.round((radar.remaining / radar.total) * 100) : 0}%` as any,
-                    backgroundColor: radarColor,
-                  }]} />
+              <View style={{ flex: 1, gap: 2 }}>
+                <Text style={PC.name}>Rodrigo</Text>
+                <Text style={[PC.role, { color: colors.mutedForeground }]}>Fundador · JÁ Delivery</Text>
+                <View style={[PC.planBadge, { backgroundColor: planColor + "22" }]}>
+                  <Text style={{ fontSize: 9, color: planColor, marginRight: 2 }}>✦</Text>
+                  <Text style={[PC.planBadgeText, { color: planColor }]}>Plano {planLabel}</Text>
                 </View>
               </View>
+              <TouchableOpacity
+                style={[PC.manageBtn, { borderColor: "#FFFFFF14", backgroundColor: "#FFFFFF08" }]}
+                onPress={() => { tap(); router.push("/plano" as any); }}
+                activeOpacity={0.75}
+              >
+                <Feather name="calendar" size={11} color={colors.mutedForeground} />
+                <Text style={[PC.manageBtnText, { color: colors.mutedForeground }]}>Gerenciar plano</Text>
+                <Feather name="chevron-right" size={12} color={colors.mutedForeground} />
+              </TouchableOpacity>
             </View>
-            <View style={{ alignItems: "flex-end", gap: 2 }}>
-              <Text style={[S.radarStatValue, { color: radarColor }]}>{radar.remaining}</Text>
-              <Text style={[S.radarStatSub, { color: colors.mutedForeground }]}>de {radar.total}</Text>
-              <Text style={[S.statBuyLink, { color: PINK }]}>Comprar mais</Text>
+
+            {/* ── Divisor ── */}
+            <View style={[PC.divider, { backgroundColor: "#FFFFFF0D" }]} />
+
+            {/* ── Linha 2: Métricas lado a lado ── */}
+            <View style={PC.metricsRow}>
+              {/* Mensagens */}
+              <TouchableOpacity style={PC.metric} onPress={() => { tap(); router.push("/loja?tab=0" as any); }} activeOpacity={0.7}>
+                <View style={PC.metricTop}>
+                  <View style={[PC.metricIcon, { backgroundColor: PINK + "1A" }]}>
+                    <Feather name="message-circle" size={16} color={PINK} />
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <Text style={PC.metricValue}>{credits.remaining.toLocaleString("pt-BR")}</Text>
+                    <Text style={[PC.metricLabel, { color: colors.mutedForeground }]}>Mensagens disponíveis</Text>
+                  </View>
+                </View>
+                <View style={[PC.barTrack, { backgroundColor: "#FFFFFF0F" }]}>
+                  <View style={[PC.barFill, { width: `${msgPct}%` as any, backgroundColor: msgBar }]} />
+                </View>
+                <Text style={[PC.barCaption, { color: colors.mutedForeground }]}>{msgCaption}</Text>
+              </TouchableOpacity>
+
+              {/* Divisor vertical */}
+              <View style={[PC.vDivider, { backgroundColor: "#FFFFFF0D" }]} />
+
+              {/* Buscas Radar */}
+              <TouchableOpacity style={PC.metric} onPress={() => { tap(); router.push("/loja?tab=1" as any); }} activeOpacity={0.7}>
+                <View style={PC.metricTop}>
+                  <View style={[PC.metricIcon, { backgroundColor: PINK + "1A" }]}>
+                    <Feather name="radio" size={16} color={PINK} />
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <Text style={PC.metricValue}>{radar.remaining.toLocaleString("pt-BR")}</Text>
+                    <Text style={[PC.metricLabel, { color: colors.mutedForeground }]}>Buscas Radar disponíveis</Text>
+                  </View>
+                </View>
+                <View style={[PC.barTrack, { backgroundColor: "#FFFFFF0F" }]}>
+                  <View style={[PC.barFill, { width: `${radarPct}%` as any, backgroundColor: radarBar }]} />
+                </View>
+                <Text style={[PC.barCaption, { color: colors.mutedForeground }]}>{radarCaption}</Text>
+              </TouchableOpacity>
             </View>
-          </TouchableOpacity>
+
+            {/* ── Divisor ── */}
+            <View style={[PC.divider, { backgroundColor: "#FFFFFF0D" }]} />
+
+            {/* ── Linha 3: Rodapé do plano ── */}
+            <View style={PC.footerRow}>
+              <MaterialCommunityIcons name="crown" size={15} color={planColor} />
+              <Text style={[PC.footerPlan, { color: planColor }]}>{planLabel.toUpperCase()}</Text>
+              <Text style={[PC.footerSub, { color: colors.mutedForeground }]}>Seu plano está ativo</Text>
+              <View style={{ flex: 1 }} />
+              <Text style={[PC.footerRenewal, { color: colors.mutedForeground }]}>Renovação: {renewalStr}</Text>
+              <Feather name="calendar" size={12} color={colors.mutedForeground} style={{ opacity: 0.5 }} />
+            </View>
+          </View>
         );
       })()}
 
