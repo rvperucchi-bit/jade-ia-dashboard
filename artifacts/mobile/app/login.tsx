@@ -1,4 +1,4 @@
-import { Feather } from "@expo/vector-icons";
+import { Feather, FontAwesome } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import React, { useEffect, useRef, useState } from "react";
 import {
@@ -133,12 +133,12 @@ export default function LoginScreen() {
           {/* ── Social: lado a lado ── */}
           <View style={S.socialRow}>
             <TouchableOpacity style={S.socialBtn} activeOpacity={0.75}>
-              <Text style={S.googleG}>G</Text>
+              <FontAwesome name="google" size={16} color="#EA4335" />
               <Text style={S.socialText}>Google</Text>
             </TouchableOpacity>
 
             <TouchableOpacity style={S.socialBtn} activeOpacity={0.75}>
-              <Text style={S.appleA}></Text>
+              <FontAwesome name="apple" size={17} color="#fff" />
               <Text style={S.socialText}>Apple</Text>
             </TouchableOpacity>
           </View>
@@ -164,7 +164,7 @@ const S = StyleSheet.create({
   card: { gap: 16 },
 
   title: {
-    fontSize: 34,
+    fontSize: 39,
     fontFamily: "SpaceGrotesk_700Bold",
     color: "#fff",
     textAlign: "center",
@@ -186,7 +186,7 @@ const S = StyleSheet.create({
 
   btn: {
     backgroundColor: PINK,
-    height: 50,
+    height: 44,
     borderRadius: 12,
     alignItems: "center",
     justifyContent: "center",
@@ -208,17 +208,8 @@ const S = StyleSheet.create({
   socialRow: { flexDirection: "row", gap: 10 },
   socialBtn: {
     flex: 1, flexDirection: "row", alignItems: "center", justifyContent: "center",
-    gap: 8, backgroundColor: "#111", borderRadius: 12,
-    height: 46, borderWidth: StyleSheet.hairlineWidth, borderColor: "#2A2A2A",
-  },
-  googleG: {
-    fontSize: 15,
-    fontFamily: "SpaceGrotesk_700Bold",
-    color: "#4285F4",
-  },
-  appleA: {
-    fontSize: 16,
-    color: "#fff",
+    gap: 8, backgroundColor: "transparent", borderRadius: 12,
+    height: 46, borderWidth: 1, borderColor: "#2A2A2A",
   },
   socialText: { fontSize: 14, fontFamily: "SpaceGrotesk_500Medium", color: "#ccc" },
 
