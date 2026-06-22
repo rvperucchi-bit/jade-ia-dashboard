@@ -190,25 +190,19 @@ function RecordingBar({ secs, cancelling, pulseAnim }: { secs: number; cancellin
 
 // ─── Empty state ──────────────────────────────────────────────────────────────
 function EmptyState({ onSend, colors }: { onSend: (t: string) => void; colors: ReturnType<typeof useColors> }) {
-  const logoScale   = useRef(new Animated.Value(0.88)).current;
-  const logoOpacity = useRef(new Animated.Value(0)).current;
+  const fadeIn = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
-    Animated.parallel([
-      Animated.timing(logoOpacity, { toValue: 1, duration: 600, easing: Easing.out(Easing.cubic), useNativeDriver: true }),
-      Animated.timing(logoScale, { toValue: 1, duration: 700, easing: Easing.out(Easing.back(1.04)), useNativeDriver: true }),
-    ]).start();
+    Animated.timing(fadeIn, { toValue: 1, duration: 500, easing: Easing.out(Easing.cubic), useNativeDriver: true }).start();
   }, []);
 
   return (
-    <View style={{ flex: 1, alignItems: "center", justifyContent: "center", paddingHorizontal: 28 }}>
-      <Animated.Image
-        source={jadeLogo}
-        style={{ width: 84, height: 84, marginBottom: 26, opacity: logoOpacity, transform: [{ scale: logoScale }] }}
-        resizeMode="contain"
-      />
-      <Text style={{ color: colors.text, fontSize: 20, fontFamily: "SpaceGrotesk_700Bold", marginBottom: 30, textAlign: "center" }}>
-        Como posso ajudar hoje?
+    <Animated.View style={{ flex: 1, alignItems: "center", justifyContent: "center", paddingHorizontal: 28, opacity: fadeIn }}>
+      <Text style={{ color: colors.mutedForeground, fontSize: 12, fontFamily: "SpaceGrotesk_500Medium", letterSpacing: 1.2, marginBottom: 10, textTransform: "uppercase" }}>
+        JADE IA
+      </Text>
+      <Text style={{ color: colors.text, fontSize: 21, fontFamily: "SpaceGrotesk_700Bold", marginBottom: 32, textAlign: "center", lineHeight: 28 }}>
+        Como posso{"\n"}ajudar hoje?
       </Text>
       <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 10, justifyContent: "center" }}>
         {SUGGESTIONS.map((s) => (
@@ -218,11 +212,11 @@ function EmptyState({ onSend, colors }: { onSend: (t: string) => void; colors: R
             onPress={() => onSend(s)}
             activeOpacity={0.7}
           >
-            <Text style={{ color: colors.text, fontSize: 13, fontFamily: "SpaceGrotesk_500Medium" }}>{s}</Text>
+            <Text style={{ color: colors.text, fontSize: 13, fontFamily: "SpaceGrotesk_400Regular" }}>{s}</Text>
           </TouchableOpacity>
         ))}
       </View>
-    </View>
+    </Animated.View>
   );
 }
 
@@ -605,8 +599,8 @@ export default function JADEScreen() {
 
       {/* ── Input bar ── */}
       <View style={[C.inputBar, { borderTopColor: colors.border, backgroundColor: colors.background, paddingBottom: bottomPad + 8 }]}>
-        <TouchableOpacity style={[C.actionBtn, { backgroundColor: colors.surface }]} onPress={pickAttachment} activeOpacity={0.8}>
-          <Feather name="paperclip" size={18} color={colors.mutedForeground} />
+        <TouchableOpacity style={[C.actionBtn, { backgroundColor: "transparent" }]} onPress={pickAttachment} activeOpacity={0.6}>
+          <Feather name="plus" size={22} color={colors.mutedForeground} />
         </TouchableOpacity>
 
         <View style={[C.inputWrap, { backgroundColor: colors.surface, borderColor: colors.border }]}>

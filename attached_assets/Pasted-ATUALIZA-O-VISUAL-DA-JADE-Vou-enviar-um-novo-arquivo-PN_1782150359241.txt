@@ -1,0 +1,102 @@
+ATUALIZAÇÃO VISUAL DA JADE
+
+Vou enviar um novo arquivo PNG do anel oficial da JADE.
+
+IMPORTANTE:
+
+* Este novo anel passa a ser o símbolo oficial da marca.
+* Substituir imediatamente o anel antigo em TODAS as telas.
+* Não recriar.
+* Não redesenhar.
+* Não alterar espessura.
+* Não alterar proporções.
+* Não alterar inclinação.
+* Utilizar exatamente o arquivo enviado.
+
+LOCAIS ONDE DEVE SER SUBSTITUÍDO
+
+1. Splash Screen
+2. Onboarding
+3. Login
+4. Cabeçalho do Chat
+5. Avatar da JADE
+6. Menu lateral
+7. Qualquer tela que utilize o anel antigo
+8. Estados de carregamento relacionados à JADE
+
+SPLASH SCREEN
+
+* Fundo preto absoluto (#000000)
+* Utilizar apenas o novo anel
+* Remover os três pontos de loading
+* Não exibir textos
+* Não exibir mensagens de boas-vindas
+
+Animação:
+
+* Fade-in suave
+* 1 rotação completa (360°)
+* Duração aproximada de 1,2 segundos
+* Ease-out suave
+* Parar naturalmente
+* Fade-out
+* Abrir login ou onboarding
+
+Tempo total:
+2 a 3 segundos
+
+CHAT JADE
+
+REMOVER o anel gigante que aparece no centro da conversa.
+
+Quando não houver mensagens:
+
+* Mostrar apenas uma saudação simples
+* Manter aparência limpa
+* Não ocupar metade da tela com o logo
+
+Cabeçalho:
+
+* Utilizar o novo anel ao lado do nome JADE
+* Tamanho discreto e proporcional
+
+CAMPO DE MENSAGEM
+
+Corrigir imediatamente o botão de anexos e ações.
+
+Problema atual:
+
+* Ícone muito grande
+* Visual desproporcional
+* Rouba atenção da interface
+
+Novo comportamento:
+
+* Utilizar ícone "+" minimalista
+  ou
+* Utilizar menu de três pontos
+
+Requisitos:
+
+* Mesmo tamanho visual utilizado por ChatGPT, Claude e aplicativos modernos
+* Aproximadamente 20px a 24px
+* Centralizado
+* Sem exagero visual
+* Mesmo alinhamento dos botões de microfone e envio
+
+OBJETIVO FINAL
+
+A interface deve parecer um produto premium.
+
+Referências:
+
+* ChatGPT
+* Claude
+* Linear
+* OpenAI
+* Apple
+
+Menos elementos visuais.
+Mais espaço.
+Mais elegância.
+Mais foco na conversa.

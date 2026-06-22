@@ -22,10 +22,10 @@
       "module_name": "leads",
       "is_active": false,
       "status": "paused",
-      "last_started_at": "2026-06-21T13:56:32.721Z",
-      "last_stopped_at": "2026-06-21T14:10:12.334Z",
+      "last_started_at": "2026-06-22T17:29:46.890Z",
+      "last_stopped_at": "2026-06-22T17:29:51.900Z",
       "last_run_at": null,
-      "updated_at": "2026-06-21T14:10:12.334Z"
+      "updated_at": "2026-06-22T17:29:51.900Z"
     },
     "whatsapp": {
       "module_name": "whatsapp",
@@ -47,6 +47,26 @@
     }
   },
   "module_logs": [
+    {
+      "id": "20fbb6c13037652d",
+      "module_name": "leads",
+      "action": "deactivated",
+      "message": "CRM/Leads desativado",
+      "metadata": {
+        "active": false
+      },
+      "created_at": "2026-06-22T17:29:51.904Z"
+    },
+    {
+      "id": "ed7751b246f774bf",
+      "module_name": "leads",
+      "action": "activated",
+      "message": "CRM/Leads ativado",
+      "metadata": {
+        "active": true
+      },
+      "created_at": "2026-06-22T17:29:46.902Z"
+    },
     {
       "id": "fa4376b11b32d6b7",
       "module_name": "whatsapp",
@@ -1159,6 +1179,30 @@
     }
   ],
   "activity_events": [
+    {
+      "id": "a816fa29735c659b",
+      "type": "module",
+      "text": "CRM/Leads desativado",
+      "icon": "users",
+      "color": "#00D68F",
+      "metadata": {
+        "module": "leads",
+        "active": false
+      },
+      "created_at": "2026-06-22T17:29:51.907Z"
+    },
+    {
+      "id": "2d8159e2eb65c697",
+      "type": "module",
+      "text": "CRM/Leads ativado",
+      "icon": "users",
+      "color": "#00D68F",
+      "metadata": {
+        "module": "leads",
+        "active": true
+      },
+      "created_at": "2026-06-22T17:29:46.908Z"
+    },
     {
       "id": "381b92d6c3baffd1",
       "type": "lead",
@@ -3151,22 +3195,6 @@
       "icon": "user-plus",
       "color": "#6C63FF",
       "created_at": "2026-06-21T03:21:00.553Z"
-    },
-    {
-      "id": "0e8052040378821b",
-      "type": "lead",
-      "text": "Novo lead adicionado: Ana Carolina Santos (Empório da Gula - Doces e Delícias)",
-      "icon": "user-plus",
-      "color": "#6C63FF",
-      "created_at": "2026-06-21T03:21:00.548Z"
-    },
-    {
-      "id": "a9621e5e3906ae31",
-      "type": "lead",
-      "text": "Novo lead adicionado: Marcia Mendes (Boutique Chique - Moda Feminina)",
-      "icon": "user-plus",
-      "color": "#6C63FF",
-      "created_at": "2026-06-21T03:20:59.907Z"
     }
   ],
   "marketing_campaigns": [
