@@ -477,7 +477,7 @@ function CriativosTab({ colors }: { colors: any }) {
 
             {/* Nome */}
             <TextInput
-              style={[T.levelPill, { color: colors.text, borderColor: colors.border, borderWidth: 1, paddingHorizontal: 14, paddingVertical: 12, fontSize: 14, fontFamily: "SpaceGrotesk_400Regular", height: 48 }]}
+              style={[T.levelPill, { color: colors.text, borderColor: colors.border, borderWidth: 1, paddingHorizontal: 14, paddingVertical: 12, fontSize: 16, fontFamily: "SpaceGrotesk_400Regular", height: 48 }]}
               placeholder="Nome do criativo"
               placeholderTextColor={colors.mutedForeground}
               value={criatName}
@@ -757,7 +757,7 @@ const EM = StyleSheet.create({
   overlay: { ...StyleSheet.absoluteFillObject, backgroundColor: "rgba(11,8,20,0.82)", alignItems: "center", justifyContent: "center", gap: 12, zIndex: 10 },
   badge:   { flexDirection: "row", alignItems: "center", gap: 8, backgroundColor: PURPLE + "33", borderWidth: 1.5, borderColor: PURPLE + "66", paddingHorizontal: 18, paddingVertical: 10, borderRadius: 16 },
   badgeText: { fontSize: 18, fontFamily: "SpaceGrotesk_700Bold", color: PURPLE },
-  hint:    { fontSize: 12, fontFamily: "SpaceGrotesk_400Regular", color: "#7777AA", textAlign: "center", paddingHorizontal: 32 },
+  hint:    { fontSize: 13, fontFamily: "SpaceGrotesk_400Regular", color: "#7777AA", textAlign: "center", paddingHorizontal: 32 },
 });
 
 function AgendaTabInner({ colors }: { colors: any }) {
@@ -940,7 +940,7 @@ function AgendaTabInner({ colors }: { colors: any }) {
       {posts.length === 0 && (
         <View style={{ alignItems: "center", paddingVertical: 30, gap: 8 }}>
           <Feather name="calendar" size={26} color={colors.mutedForeground} />
-          <Text style={{ color: colors.mutedForeground, fontSize: 13, fontFamily: "SpaceGrotesk_400Regular" }}>Nenhum post agendado</Text>
+          <Text style={{ color: colors.mutedForeground, fontSize: 15, fontFamily: "SpaceGrotesk_400Regular" }}>Nenhum post agendado</Text>
         </View>
       )}
 
@@ -954,15 +954,15 @@ const AG = StyleSheet.create({
   cardTitle:    { fontSize: 15, fontFamily: "SpaceGrotesk_700Bold" },
   platRow:      { flexDirection: "row", gap: 8 },
   platPill:     { flexDirection: "row", alignItems: "center", gap: 5, paddingHorizontal: 10, paddingVertical: 7, borderRadius: 10 },
-  platLabel:    { fontSize: 12, fontFamily: "SpaceGrotesk_600SemiBold" },
-  contentInput: { borderRadius: 12, borderWidth: 1, padding: 12, fontSize: 13, fontFamily: "SpaceGrotesk_400Regular", minHeight: 110, textAlignVertical: "top" },
+  platLabel:    { fontSize: 13, fontFamily: "SpaceGrotesk_600SemiBold" },
+  contentInput: { borderRadius: 12, borderWidth: 1, padding: 12, fontSize: 15, fontFamily: "SpaceGrotesk_400Regular", minHeight: 110, textAlignVertical: "top" },
   jadeGenBtn:   { flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 7, backgroundColor: PURPLE, borderRadius: 12, height: 42 },
-  jadeGenText:  { color: "#fff", fontSize: 13, fontFamily: "SpaceGrotesk_700Bold" },
-  dateInput:    { borderRadius: 12, borderWidth: 1, padding: 12, fontSize: 13, fontFamily: "SpaceGrotesk_400Regular", height: 44 },
+  jadeGenText:  { color: "#fff", fontSize: 15, fontFamily: "SpaceGrotesk_700Bold" },
+  dateInput:    { borderRadius: 12, borderWidth: 1, padding: 12, fontSize: 15, fontFamily: "SpaceGrotesk_400Regular", height: 44 },
   infoRow:      { flexDirection: "row", alignItems: "flex-start", gap: 8, padding: 10, borderRadius: 10, borderWidth: 1 },
   infoText:     { flex: 1, fontSize: 11, fontFamily: "SpaceGrotesk_400Regular", lineHeight: 16 },
   saveBtn:      { flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8, borderRadius: 12, height: 46 },
-  saveBtnText:  { color: "#fff", fontSize: 14, fontFamily: "SpaceGrotesk_700Bold" },
+  saveBtnText:  { color: "#fff", fontSize: 16, fontFamily: "SpaceGrotesk_700Bold" },
   listTitle:    { fontSize: 15, fontFamily: "SpaceGrotesk_700Bold" },
   postCard:     { borderRadius: 14, borderWidth: 1, padding: 14, gap: 10 },
   postHeader:   { flexDirection: "row", alignItems: "center", gap: 6, flexWrap: "wrap" },
@@ -972,10 +972,10 @@ const AG = StyleSheet.create({
   aiTagText:    { fontSize: 10, fontFamily: "SpaceGrotesk_700Bold" },
   dateTag:      { flexDirection: "row", alignItems: "center", gap: 4, paddingHorizontal: 7, paddingVertical: 3, borderRadius: 7 },
   dateTagText:  { fontSize: 10, fontFamily: "SpaceGrotesk_400Regular" },
-  postContent:  { fontSize: 13, fontFamily: "SpaceGrotesk_400Regular", lineHeight: 19 },
+  postContent:  { fontSize: 15, fontFamily: "SpaceGrotesk_400Regular", lineHeight: 19 },
   postActions:  { flexDirection: "row", gap: 8 },
   actionBtn:    { flexDirection: "row", alignItems: "center", gap: 5, flex: 1, justifyContent: "center", borderRadius: 9, height: 36 },
-  actionBtnText:{ color: "#fff", fontSize: 12, fontFamily: "SpaceGrotesk_600SemiBold" },
+  actionBtnText:{ color: "#fff", fontSize: 13, fontFamily: "SpaceGrotesk_600SemiBold" },
   deleteBtn:    { width: 36, height: 36, borderRadius: 9, borderWidth: 1, alignItems: "center", justifyContent: "center" },
 });
 
@@ -1073,18 +1073,18 @@ const R = StyleSheet.create({
   badge: { flexDirection: "row", alignItems: "center", gap: 4, backgroundColor: PINK + "22", paddingHorizontal: 8, paddingVertical: 3, borderRadius: 8 },
   badgeText: { fontSize: 11, fontFamily: "SpaceGrotesk_600SemiBold", color: PINK },
   autoToggleRow: { flexDirection: "row", alignItems: "center", gap: 6 },
-  autoLabel: { fontSize: 12, fontFamily: "SpaceGrotesk_600SemiBold" },
+  autoLabel: { fontSize: 13, fontFamily: "SpaceGrotesk_600SemiBold" },
   tabBar: { flexDirection: "row", borderBottomWidth: StyleSheet.hairlineWidth },
   tab: { flex: 1, alignItems: "center", paddingVertical: 14, position: "relative" },
   tabActive: {},
-  tabText: { fontSize: 13, fontFamily: "SpaceGrotesk_600SemiBold" },
+  tabText: { fontSize: 15, fontFamily: "SpaceGrotesk_600SemiBold" },
   tabIndicator: { position: "absolute", bottom: 0, left: "15%", right: "15%", height: 2, backgroundColor: PINK, borderRadius: 1 },
 });
 
 const T = StyleSheet.create({
   filterRow: { paddingHorizontal: 16, gap: 8, marginBottom: 16, flexDirection: "row" },
   filterPill: { paddingHorizontal: 14, paddingVertical: 7, borderRadius: 20, borderWidth: 1, borderColor: "#2A2A3E" },
-  filterText: { fontSize: 13, fontFamily: "SpaceGrotesk_500Medium" },
+  filterText: { fontSize: 15, fontFamily: "SpaceGrotesk_500Medium" },
 
   pill: { alignSelf: "flex-start", paddingHorizontal: 8, paddingVertical: 3, borderRadius: 8 },
   pillText: { fontSize: 11, fontFamily: "SpaceGrotesk_700Bold" },
@@ -1094,7 +1094,7 @@ const T = StyleSheet.create({
   campName: { fontSize: 15, fontFamily: "SpaceGrotesk_700Bold" },
   platformBadge: { alignSelf: "flex-start", paddingHorizontal: 7, paddingVertical: 2, borderRadius: 6 },
   platformText: { fontSize: 11, fontFamily: "SpaceGrotesk_600SemiBold" },
-  tipoText: { fontSize: 12, fontFamily: "SpaceGrotesk_400Regular" },
+  tipoText: { fontSize: 13, fontFamily: "SpaceGrotesk_400Regular" },
   statsGrid: { flexDirection: "row", gap: 8 },
   statItem: { flex: 1, alignItems: "center", gap: 2 },
   statLabel: { fontSize: 10, fontFamily: "SpaceGrotesk_400Regular" },
@@ -1104,7 +1104,7 @@ const T = StyleSheet.create({
   budgetFill: { height: "100%", borderRadius: 3 },
   budgetLabel: { fontSize: 11, fontFamily: "SpaceGrotesk_400Regular", textAlign: "right" },
   revisaoNote: { flexDirection: "row", alignItems: "center", gap: 6, padding: 8, borderRadius: 8 },
-  revisaoText: { fontSize: 12, fontFamily: "SpaceGrotesk_500Medium" },
+  revisaoText: { fontSize: 13, fontFamily: "SpaceGrotesk_500Medium" },
 
   fab: {
     flexDirection: "row", alignItems: "center", gap: 8,
@@ -1119,11 +1119,11 @@ const T = StyleSheet.create({
   sheet: { borderTopLeftRadius: 28, borderTopRightRadius: 28, padding: 24, gap: 12, paddingBottom: 40 },
   sheetHandle: { width: 40, height: 4, borderRadius: 2, backgroundColor: "#3A3A4E", alignSelf: "center", marginBottom: 8 },
   sheetTitle: { fontSize: 20, fontFamily: "SpaceGrotesk_700Bold" },
-  sheetSub: { fontSize: 13, fontFamily: "SpaceGrotesk_400Regular" },
+  sheetSub: { fontSize: 15, fontFamily: "SpaceGrotesk_400Regular" },
   objCard: { flexDirection: "row", alignItems: "center", gap: 14, padding: 16, borderRadius: 14 },
   objEmoji: { fontSize: 26 },
   objTitle: { fontSize: 15, fontFamily: "SpaceGrotesk_700Bold" },
-  objSub: { fontSize: 12, fontFamily: "SpaceGrotesk_400Regular", marginTop: 2 },
+  objSub: { fontSize: 13, fontFamily: "SpaceGrotesk_400Regular", marginTop: 2 },
   sheetBtn: {
     flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8,
     backgroundColor: PINK, borderRadius: 14, height: 52, marginTop: 8,
@@ -1134,11 +1134,11 @@ const T = StyleSheet.create({
   topGrid: { flexDirection: "row", gap: 10 },
   topCard: { flex: 1, borderRadius: 14, borderWidth: 1, padding: 12, gap: 6, alignItems: "flex-start" },
   topIcon: { width: 36, height: 36, borderRadius: 10, alignItems: "center", justifyContent: "center", marginBottom: 2 },
-  topName: { fontSize: 13, fontFamily: "SpaceGrotesk_600SemiBold" },
+  topName: { fontSize: 15, fontFamily: "SpaceGrotesk_600SemiBold" },
   topImpr: { fontSize: 11, fontFamily: "SpaceGrotesk_400Regular" },
 
   jadeSuggestion: { flexDirection: "row", alignItems: "flex-start", gap: 10, padding: 14, borderRadius: 14, borderWidth: 1 },
-  jadeSuggText: { fontSize: 13, fontFamily: "SpaceGrotesk_400Regular", lineHeight: 19 },
+  jadeSuggText: { fontSize: 15, fontFamily: "SpaceGrotesk_400Regular", lineHeight: 19 },
   applySuggBtn: { flexDirection: "row", alignItems: "center", gap: 5, alignSelf: "flex-start", marginTop: 8, paddingHorizontal: 10, paddingVertical: 5, borderRadius: 8, borderWidth: 1 },
   applySuggText: { fontSize: 11, fontFamily: "SpaceGrotesk_600SemiBold" },
 
@@ -1147,16 +1147,16 @@ const T = StyleSheet.create({
     width: "47%", aspectRatio: 0.9, borderRadius: 14, borderWidth: 2, borderStyle: "dashed",
     alignItems: "center", justifyContent: "center", gap: 8,
   },
-  novoCriatText: { fontSize: 13, fontFamily: "SpaceGrotesk_600SemiBold" },
+  novoCriatText: { fontSize: 15, fontFamily: "SpaceGrotesk_600SemiBold" },
   criatCard: { width: "47%", borderRadius: 14, borderWidth: 1, padding: 12, gap: 6 },
   criatIcon: { width: 36, height: 36, borderRadius: 10, alignItems: "center", justifyContent: "center" },
-  criatName: { fontSize: 13, fontFamily: "SpaceGrotesk_600SemiBold" },
+  criatName: { fontSize: 15, fontFamily: "SpaceGrotesk_600SemiBold" },
   criatCamp: { fontSize: 11, fontFamily: "SpaceGrotesk_400Regular" },
 
   heroCard: { borderRadius: 20, padding: 20, gap: 12 },
   heroBadge: { flexDirection: "row", alignItems: "center", gap: 6, alignSelf: "flex-start", paddingHorizontal: 10, paddingVertical: 4, borderRadius: 10 },
-  heroBadgeText: { fontSize: 12, fontFamily: "SpaceGrotesk_600SemiBold" },
-  heroText: { fontSize: 14, fontFamily: "SpaceGrotesk_400Regular", lineHeight: 21 },
+  heroBadgeText: { fontSize: 13, fontFamily: "SpaceGrotesk_600SemiBold" },
+  heroText: { fontSize: 16, fontFamily: "SpaceGrotesk_400Regular", lineHeight: 21 },
 
   metricsGrid: { flexDirection: "row", flexWrap: "wrap", gap: 10 },
   metCard: { width: "30.5%", borderRadius: 12, borderWidth: 1, padding: 12, gap: 4, alignItems: "flex-start", flexGrow: 1 },
@@ -1166,7 +1166,7 @@ const T = StyleSheet.create({
   metChangeText: { fontSize: 10, fontFamily: "SpaceGrotesk_600SemiBold" },
 
   chartCard: { borderRadius: 16, borderWidth: 1, padding: 16 },
-  chartTitle: { fontSize: 14, fontFamily: "SpaceGrotesk_600SemiBold", marginBottom: 12 },
+  chartTitle: { fontSize: 16, fontFamily: "SpaceGrotesk_600SemiBold", marginBottom: 12 },
   chartBars: { flexDirection: "row", gap: 6, height: 120, alignItems: "flex-end" },
   barCol: { flex: 1, alignItems: "center", gap: 4, height: "100%" },
   barValue: { fontSize: 11, fontFamily: "SpaceGrotesk_600SemiBold" },
@@ -1175,13 +1175,13 @@ const T = StyleSheet.create({
   barDay: { fontSize: 10, fontFamily: "SpaceGrotesk_400Regular" },
 
   rankCard: { borderRadius: 16, borderWidth: 1, padding: 16, gap: 12 },
-  rankTitle: { fontSize: 14, fontFamily: "SpaceGrotesk_600SemiBold" },
+  rankTitle: { fontSize: 16, fontFamily: "SpaceGrotesk_600SemiBold" },
   rankRow: { flexDirection: "row", alignItems: "center", gap: 10 },
   rankNum: { width: 28, height: 28, borderRadius: 8, alignItems: "center", justifyContent: "center" },
-  rankNumText: { fontSize: 12, fontFamily: "SpaceGrotesk_700Bold" },
+  rankNumText: { fontSize: 13, fontFamily: "SpaceGrotesk_700Bold" },
   rankDot: { width: 8, height: 8, borderRadius: 4 },
-  rankName: { flex: 1, fontSize: 13, fontFamily: "SpaceGrotesk_500Medium" },
-  rankResult: { fontSize: 12, fontFamily: "SpaceGrotesk_700Bold" },
+  rankName: { flex: 1, fontSize: 15, fontFamily: "SpaceGrotesk_500Medium" },
+  rankResult: { fontSize: 13, fontFamily: "SpaceGrotesk_700Bold" },
 
   exportBtn: {
     flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8,
@@ -1193,15 +1193,15 @@ const T = StyleSheet.create({
   autoSectionTitle: { fontSize: 15, fontFamily: "SpaceGrotesk_700Bold" },
   levelRow: { flexDirection: "row", gap: 8 },
   levelPill: { flex: 1, borderRadius: 12, padding: 12, alignItems: "center", gap: 4 },
-  levelLabel: { fontSize: 12, fontFamily: "SpaceGrotesk_700Bold", textAlign: "center" },
+  levelLabel: { fontSize: 13, fontFamily: "SpaceGrotesk_700Bold", textAlign: "center" },
   levelDesc: { fontSize: 10, fontFamily: "SpaceGrotesk_400Regular", textAlign: "center" },
   feedRow: { flexDirection: "row", gap: 10, alignItems: "flex-start" },
   feedDot: { width: 8, height: 8, borderRadius: 4, marginTop: 5 },
-  feedText: { flex: 1, fontSize: 13, fontFamily: "SpaceGrotesk_400Regular", lineHeight: 19 },
+  feedText: { flex: 1, fontSize: 15, fontFamily: "SpaceGrotesk_400Regular", lineHeight: 19 },
   limitRow: { flexDirection: "row", alignItems: "center", gap: 10, paddingVertical: 10, borderBottomWidth: StyleSheet.hairlineWidth },
-  limitLabel: { flex: 1, fontSize: 14, fontFamily: "SpaceGrotesk_400Regular" },
-  limitValue: { fontSize: 14, fontFamily: "SpaceGrotesk_700Bold" },
+  limitLabel: { flex: 1, fontSize: 16, fontFamily: "SpaceGrotesk_400Regular" },
+  limitValue: { fontSize: 16, fontFamily: "SpaceGrotesk_700Bold" },
   toggleRow: { flexDirection: "row", alignItems: "center", gap: 12 },
-  toggleLabel: { fontSize: 14, fontFamily: "SpaceGrotesk_500Medium" },
+  toggleLabel: { fontSize: 16, fontFamily: "SpaceGrotesk_500Medium" },
   toggleSub: { fontSize: 11, fontFamily: "SpaceGrotesk_400Regular", marginTop: 1 },
 });

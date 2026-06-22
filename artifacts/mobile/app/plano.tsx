@@ -16,7 +16,7 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 const C = {
-  bg:      "#0A0A0F",
+  bg:      "#0B0814",
   card:    "#111118",
   border:  "#1E1E2E",
   text:    "#FFFFFF",
@@ -342,21 +342,21 @@ const S = StyleSheet.create({
   activePlanBadge:   { fontSize: 11, fontFamily: "SpaceGrotesk_700Bold", color: C.primary, letterSpacing: 1 },
   activePlanPrice:   { fontSize: 36, fontFamily: "SpaceGrotesk_700Bold", color: C.text, marginTop: 4 },
   activePlanSub:     { fontSize: 16, fontFamily: "SpaceGrotesk_400Regular", color: C.muted },
-  activePlanRenewal: { fontSize: 13, fontFamily: "SpaceGrotesk_400Regular", color: C.muted, marginTop: 4 },
+  activePlanRenewal: { fontSize: 15, fontFamily: "SpaceGrotesk_400Regular", color: C.muted, marginTop: 4 },
   activeChip:        { flexDirection: "row", alignItems: "center", gap: 6, backgroundColor: C.success + "22", paddingHorizontal: 10, paddingVertical: 5, borderRadius: 20 },
   activeDot:         { width: 7, height: 7, borderRadius: 4, backgroundColor: C.success },
-  activeText:        { fontSize: 12, fontFamily: "SpaceGrotesk_600SemiBold", color: C.success },
+  activeText:        { fontSize: 13, fontFamily: "SpaceGrotesk_600SemiBold", color: C.success },
 
   section:      { marginBottom: 24 },
   sectionTitle: { fontSize: 11, fontFamily: "SpaceGrotesk_600SemiBold", color: C.muted, letterSpacing: 1, marginBottom: 14 },
 
   creditsCard: { backgroundColor: C.card, borderRadius: 16, borderWidth: 1, borderColor: C.border },
   creditsRow:  { flexDirection: "row", justifyContent: "space-between", alignItems: "center", padding: 16, paddingBottom: 10 },
-  creditsLabel: { fontSize: 14, fontFamily: "SpaceGrotesk_500Medium", color: C.text },
-  creditsValue: { fontSize: 14, fontFamily: "SpaceGrotesk_700Bold", color: C.primary },
+  creditsLabel: { fontSize: 16, fontFamily: "SpaceGrotesk_500Medium", color: C.text },
+  creditsValue: { fontSize: 16, fontFamily: "SpaceGrotesk_700Bold", color: C.primary },
   barTrack:     { height: 8, backgroundColor: C.surface, marginHorizontal: 16, borderRadius: 4 },
   barFill:      { height: 8, backgroundColor: C.primary, borderRadius: 4 },
-  creditsHint:  { fontSize: 12, fontFamily: "SpaceGrotesk_400Regular", color: C.muted, padding: 12, paddingTop: 8 },
+  creditsHint:  { fontSize: 13, fontFamily: "SpaceGrotesk_400Regular", color: C.muted, padding: 12, paddingTop: 8 },
 
   planCard: {
     backgroundColor: C.card,
@@ -382,11 +382,11 @@ const S = StyleSheet.create({
 
   featureList: { gap: 10, marginBottom: 16 },
   featureRow:  { flexDirection: "row", alignItems: "flex-start", gap: 10 },
-  featureText: { flex: 1, fontSize: 14, fontFamily: "SpaceGrotesk_400Regular", color: C.sub, lineHeight: 20 },
+  featureText: { flex: 1, fontSize: 16, fontFamily: "SpaceGrotesk_400Regular", color: C.sub, lineHeight: 20 },
 
   planMeta: { flexDirection: "row", gap: 10, flexWrap: "wrap", marginBottom: 4 },
   metaChip: { flexDirection: "row", alignItems: "center", gap: 5, backgroundColor: C.surface, paddingHorizontal: 10, paddingVertical: 5, borderRadius: 20 },
-  metaText: { fontSize: 12, fontFamily: "SpaceGrotesk_500Medium", color: C.muted },
+  metaText: { fontSize: 13, fontFamily: "SpaceGrotesk_500Medium", color: C.muted },
 
   upgradeBtn: {
     flexDirection: "row",
@@ -399,7 +399,7 @@ const S = StyleSheet.create({
     height: 44,
     marginTop: 14,
   },
-  upgradeBtnText: { fontSize: 14, fontFamily: "SpaceGrotesk_700Bold", color: C.primary },
+  upgradeBtnText: { fontSize: 16, fontFamily: "SpaceGrotesk_700Bold", color: C.primary },
 
   upgradeHero: {
     flexDirection: "row",

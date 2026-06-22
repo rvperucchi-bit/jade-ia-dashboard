@@ -37,9 +37,9 @@ interface HubCard {
 }
 
 const TIPO_NOTIF = [
-  { id: "informativo",  label: "📋 Informativo",  color: "#6C63FF" },
+  { id: "informativo",  label: "📋 Informativo",  color: "#8400FF" },
   { id: "urgente",      label: "🚨 Urgente",      color: "#FF3B5C" },
-  { id: "motivacional", label: "🚀 Motivacional", color: "#00D68F" },
+  { id: "motivacional", label: "🚀 Motivacional", color: "#FF0080" },
 ];
 
 export default function GestaoScreen() {
@@ -54,17 +54,17 @@ export default function GestaoScreen() {
   const [enviando, setEnviando] = useState(false);
 
   const HUB_CARDS: HubCard[] = [
-    { icon: "bar-chart-2",   iconLib: "feather", title: "Painel Executivo",sub: "Metas, KPIs e ranking do time",route: "/painelexecutivo",  color: "#FFB800",        accent: "#FFB80018" },
-    { icon: "users",         iconLib: "feather", title: "Meu Time",        sub: "Vendedores e metas",         route: "/meutime",          color: "#6C63FF",        accent: "#6C63FF18" },
+    { icon: "bar-chart-2",   iconLib: "feather", title: "Painel Executivo",sub: "Metas, KPIs e ranking do time",route: "/painelexecutivo",  color: "#FF0080",        accent: "#FF008018" },
+    { icon: "users",         iconLib: "feather", title: "Meu Time",        sub: "Vendedores e metas",         route: "/meutime",          color: "#8400FF",        accent: "#8400FF18" },
     { icon: "target",        iconLib: "feather", title: "Metas",           sub: "Pipeline consolidado",        route: "/metas",            color: "#FF0080",        accent: "#FF008018" },
-    { icon: "briefcase",     iconLib: "feather", title: "Carteira",        sub: "Farmer, hunter, pós-venda",   route: "/carteira",         color: "#00D68F",        accent: "#00D68F18" },
-    { icon: "calendar",      iconLib: "feather", title: "Planejamento",    sub: "Agenda e check-in do time",    route: "/planejamento",     color: "#4ECDC4",        accent: "#4ECDC418" },
+    { icon: "briefcase",     iconLib: "feather", title: "Carteira",        sub: "Farmer, hunter, pós-venda",   route: "/carteira",         color: "#FF0080",        accent: "#FF008018" },
+    { icon: "calendar",      iconLib: "feather", title: "Planejamento",    sub: "Agenda e check-in do time",    route: "/planejamento",     color: "#FF0080",        accent: "#FF008018" },
     { icon: "bell",          iconLib: "feather", title: "Notificar Time",  sub: "Enviar broadcast ao time",     color: ENTERPRISE_PURPLE,   accent: "#8400FF18", modalAction: "notificar" },
     { icon: "message-circle",iconLib: "feather", title: "Feedback JADE",   sub: "Mentoria por vendedor",        route: "/feedbackjade",     color: ENTERPRISE_PURPLE,accent: "#8400FF18" },
-    { icon: "heart",         iconLib: "feather", title: "Humor do Time",   sub: "Check-in diário dos executivos", route: "/feedbackexecutivo", color: "#FF6B35",      accent: "#FF6B3518" },
-    { icon: "bar-chart-2",   iconLib: "feather", title: "Relatório",       sub: "Consolidado p/ diretoria",     route: "/relatoriogestor",  color: "#FFB300",        accent: "#FFB30018" },
-    { icon: "users",         iconLib: "feather", title: "Roleplay",        sub: "Treino de vendas com IA",      route: "/roleplay",         color: "#AB47BC",        accent: "#AB47BC18" },
-    { icon: "activity",      iconLib: "feather", title: "Análise & KPIs",  sub: "Gaps e performance do time",     route: "/analise",          color: "#4ECDC4",        accent: "#4ECDC418" },
+    { icon: "heart",         iconLib: "feather", title: "Humor do Time",   sub: "Check-in diário dos executivos", route: "/feedbackexecutivo", color: "#FF0080",      accent: "#FF008018" },
+    { icon: "bar-chart-2",   iconLib: "feather", title: "Relatório",       sub: "Consolidado p/ diretoria",     route: "/relatoriogestor",  color: "#FF0080",        accent: "#FF008018" },
+    { icon: "users",         iconLib: "feather", title: "Roleplay",        sub: "Treino de vendas com IA",      route: "/roleplay",         color: "#8400FF",        accent: "#8400FF18" },
+    { icon: "activity",      iconLib: "feather", title: "Análise & KPIs",  sub: "Gaps e performance do time",     route: "/analise",          color: "#FF0080",        accent: "#FF008018" },
   ];
 
   const abrirNotifModal = () => {
@@ -244,31 +244,31 @@ const S = StyleSheet.create({
   headerTitle: { fontSize: 17, fontFamily: "SpaceGrotesk_700Bold" },
   headerSub: { fontSize: 11, fontFamily: "SpaceGrotesk_400Regular", marginTop: 1 },
   notifBtn: { flexDirection: "row", alignItems: "center", gap: 5, paddingHorizontal: 10, paddingVertical: 7, borderRadius: 10, borderWidth: 1 },
-  notifBtnText: { fontSize: 12, fontFamily: "SpaceGrotesk_600SemiBold" },
+  notifBtnText: { fontSize: 13, fontFamily: "SpaceGrotesk_600SemiBold" },
   heroBanner: { flexDirection: "row", alignItems: "center", gap: 12, margin: 14, padding: 14, borderRadius: 14, borderWidth: 1 },
   heroIconWrap: { width: 44, height: 44, borderRadius: 12, alignItems: "center", justifyContent: "center" },
-  heroTitle: { fontSize: 14, fontFamily: "SpaceGrotesk_700Bold", marginBottom: 3 },
-  heroSub: { fontSize: 12, fontFamily: "SpaceGrotesk_400Regular", lineHeight: 18 },
+  heroTitle: { fontSize: 16, fontFamily: "SpaceGrotesk_700Bold", marginBottom: 3 },
+  heroSub: { fontSize: 13, fontFamily: "SpaceGrotesk_400Regular", lineHeight: 18 },
   sectionLabel: { fontSize: 11, fontFamily: "SpaceGrotesk_600SemiBold", letterSpacing: 1, marginHorizontal: 20, marginBottom: 10 },
   grid: { flexDirection: "row", flexWrap: "wrap", paddingHorizontal: 12, gap: 8 },
   card: { width: "47%", flexGrow: 1, borderRadius: 14, borderWidth: 1, padding: 12, gap: 3, position: "relative" },
   cardIcon: { width: 36, height: 36, borderRadius: 10, alignItems: "center", justifyContent: "center", marginBottom: 2 },
-  cardTitle: { fontSize: 13, fontFamily: "SpaceGrotesk_700Bold" },
+  cardTitle: { fontSize: 15, fontFamily: "SpaceGrotesk_700Bold" },
   cardSub: { fontSize: 11, fontFamily: "SpaceGrotesk_400Regular", lineHeight: 15 },
   cardArrow: { marginTop: 6, alignSelf: "flex-end" },
   tipBox: { flexDirection: "row", alignItems: "flex-start", gap: 10, margin: 14, padding: 12, borderRadius: 12, borderWidth: 1 },
-  tipText: { flex: 1, fontSize: 12, fontFamily: "SpaceGrotesk_400Regular", lineHeight: 19 },
+  tipText: { flex: 1, fontSize: 13, fontFamily: "SpaceGrotesk_400Regular", lineHeight: 19 },
   modalOverlay: { flex: 1, backgroundColor: "rgba(0,0,0,0.7)", justifyContent: "flex-end" },
   modalBox: { borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 24, gap: 14, paddingBottom: 44 },
   modalHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start" },
   modalTitle: { fontSize: 20, fontFamily: "SpaceGrotesk_700Bold" },
-  modalSub: { fontSize: 13, fontFamily: "SpaceGrotesk_400Regular", marginTop: 3 },
+  modalSub: { fontSize: 15, fontFamily: "SpaceGrotesk_400Regular", marginTop: 3 },
   fieldLabel: { fontSize: 11, fontFamily: "SpaceGrotesk_700Bold", letterSpacing: 0.8 },
   tipoRow: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
   tipoBadge: { paddingHorizontal: 12, paddingVertical: 8, borderRadius: 10, borderWidth: 1.5 },
-  tipoBadgeText: { fontSize: 13, fontFamily: "SpaceGrotesk_600SemiBold" },
+  tipoBadgeText: { fontSize: 15, fontFamily: "SpaceGrotesk_600SemiBold" },
   textareaWrap: { borderRadius: 12, borderWidth: 1, padding: 14, minHeight: 110 },
-  textarea: { fontSize: 14, fontFamily: "SpaceGrotesk_400Regular", lineHeight: 22 },
+  textarea: { fontSize: 16, fontFamily: "SpaceGrotesk_400Regular", lineHeight: 22 },
   enviarBtn: { flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8, height: 52, borderRadius: 14 },
   enviarBtnText: { color: "#fff", fontSize: 15, fontFamily: "SpaceGrotesk_700Bold" },
 });

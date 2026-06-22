@@ -27,7 +27,7 @@ const API_BASE =
     : `https://${process.env.EXPO_PUBLIC_DOMAIN ?? ""}`;
 
 const C = {
-  bg: "#0A0A0F",
+  bg: "#0B0814",
   card: "#111118",
   border: "#1E1E2E",
   surface: "#16161F",
@@ -48,8 +48,8 @@ interface TomCard {
 }
 
 const TOMS: TomCard[] = [
-  { id: "formal",       label: "Formal",       emoji: "👔", desc: "Linguagem corporativa e técnica",      color: "#4ECDC4" },
-  { id: "consultivo",   label: "Consultivo",   emoji: "🎯", desc: "Consultora estratégica e parceira",    color: "#6C63FF" },
+  { id: "formal",       label: "Formal",       emoji: "👔", desc: "Linguagem corporativa e técnica",      color: "#FF0080" },
+  { id: "consultivo",   label: "Consultivo",   emoji: "🎯", desc: "Consultora estratégica e parceira",    color: "#FF0080" },
   { id: "descontraido", label: "Descontraído", emoji: "😊", desc: "Próximo, leve e autêntico",            color: "#00D68F" },
   { id: "agressivo",    label: "Vendas",       emoji: "🔥", desc: "Direto ao ponto, foco em fechamento", color: "#FF0080" },
   { id: "empatico",     label: "Empático",     emoji: "💜", desc: "Acolhedor, escuta ativa e humanizado", color: "#8400FF" },
@@ -81,7 +81,7 @@ interface ModoCard {
 
 const MODOS: ModoCard[] = [
   { id: "fechamento",            label: "Direto ao Fechamento",        emoji: "🎯", desc: "Produto simples, decide na hora. JADE vai direto pra venda.",        color: "#FF0080" },
-  { id: "consultivo_presencial", label: "Agendar + Fechar Presencial", emoji: "📅", desc: "Venda consultiva, ticket alto. JADE agenda reuniões.",              color: "#6C63FF" },
+  { id: "consultivo_presencial", label: "Agendar + Fechar Presencial", emoji: "📅", desc: "Venda consultiva, ticket alto. JADE agenda reuniões.",              color: "#FF0080" },
   { id: "nutricao",              label: "Nutrição + Relacionamento",   emoji: "🌱", desc: "Ciclo longo. JADE nutre o lead até ele estar pronto.",              color: "#00D68F" },
 ];
 
@@ -450,7 +450,7 @@ const S = StyleSheet.create({
     marginTop: 4,
   },
   headerTitle: { fontSize: 18, fontFamily: "SpaceGrotesk_700Bold", color: C.text },
-  headerSub: { fontSize: 12, fontFamily: "SpaceGrotesk_400Regular", color: C.muted, marginTop: 2 },
+  headerSub: { fontSize: 13, fontFamily: "SpaceGrotesk_400Regular", color: C.muted, marginTop: 2 },
   scroll: { padding: 20, gap: 14 },
 
   infoBanner: {
@@ -459,13 +459,13 @@ const S = StyleSheet.create({
     borderRadius: 14, padding: 14, marginBottom: 8,
   },
   infoBannerIcon: { width: 34, height: 34, borderRadius: 10, backgroundColor: C.primary + "18", alignItems: "center", justifyContent: "center" },
-  infoBannerText: { flex: 1, fontSize: 13, fontFamily: "SpaceGrotesk_400Regular", color: C.sub, lineHeight: 20 },
+  infoBannerText: { flex: 1, fontSize: 15, fontFamily: "SpaceGrotesk_400Regular", color: C.sub, lineHeight: 20 },
 
   sectionLabel: { fontSize: 11, fontFamily: "SpaceGrotesk_700Bold", color: C.muted, letterSpacing: 1.2, marginBottom: 4 },
-  sectionSub: { fontSize: 12, fontFamily: "SpaceGrotesk_400Regular", color: C.muted, marginBottom: 12, lineHeight: 18 },
+  sectionSub: { fontSize: 13, fontFamily: "SpaceGrotesk_400Regular", color: C.muted, marginBottom: 12, lineHeight: 18 },
 
   fieldGroup: { gap: 6, marginBottom: 4 },
-  label: { fontSize: 12, fontFamily: "SpaceGrotesk_500Medium", color: C.muted, textTransform: "uppercase", letterSpacing: 0.5 },
+  label: { fontSize: 13, fontFamily: "SpaceGrotesk_500Medium", color: C.muted, textTransform: "uppercase", letterSpacing: 0.5 },
   inputWrap: { flexDirection: "row", alignItems: "center", backgroundColor: C.card, borderRadius: 12, borderWidth: 1, paddingHorizontal: 14, height: 50 },
   inputIcon: { marginRight: 10 },
   currencySymbol: { fontSize: 15, fontFamily: "SpaceGrotesk_500Medium", marginRight: 6 },
@@ -479,19 +479,19 @@ const S = StyleSheet.create({
   tomsGrid: { flexDirection: "row", flexWrap: "wrap", gap: 10, marginBottom: 4 },
   tomCard: { width: "47%", flexGrow: 1, backgroundColor: C.card, borderRadius: 14, borderWidth: 1.5, borderColor: C.border, padding: 14, gap: 4, position: "relative" },
   tomEmoji: { fontSize: 24, marginBottom: 4 },
-  tomLabel: { fontSize: 14, fontFamily: "SpaceGrotesk_700Bold", color: C.text },
+  tomLabel: { fontSize: 16, fontFamily: "SpaceGrotesk_700Bold", color: C.text },
   tomDesc: { fontSize: 11, fontFamily: "SpaceGrotesk_400Regular", color: C.muted, lineHeight: 16 },
   tomCheck: { position: "absolute", top: 10, right: 10, width: 18, height: 18, borderRadius: 9, alignItems: "center", justifyContent: "center" },
 
   produtoCard: { backgroundColor: C.card, borderRadius: 16, borderWidth: 1.5, padding: 16, gap: 12 },
   produtoHeader: { flexDirection: "row", alignItems: "center", gap: 10 },
   produtoNum: { width: 28, height: 28, borderRadius: 8, alignItems: "center", justifyContent: "center" },
-  produtoNumText: { fontSize: 13, fontFamily: "SpaceGrotesk_700Bold" },
-  produtoTitle: { flex: 1, fontSize: 14, fontFamily: "SpaceGrotesk_600SemiBold" },
+  produtoNumText: { fontSize: 15, fontFamily: "SpaceGrotesk_700Bold" },
+  produtoTitle: { flex: 1, fontSize: 16, fontFamily: "SpaceGrotesk_600SemiBold" },
   removeBtn: { width: 34, height: 34, borderRadius: 10, alignItems: "center", justifyContent: "center" },
   produtoFields: { gap: 10 },
   campanhaRow: { flexDirection: "row", alignItems: "center", gap: 12, backgroundColor: C.surface, borderRadius: 12, padding: 14 },
-  campanhaLabel: { fontSize: 14, fontFamily: "SpaceGrotesk_500Medium" },
+  campanhaLabel: { fontSize: 16, fontFamily: "SpaceGrotesk_500Medium" },
   campanhaSub: { fontSize: 11, fontFamily: "SpaceGrotesk_400Regular", marginTop: 2 },
 
   addProdutoBtn: { flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8, borderRadius: 14, borderWidth: 1.5, borderStyle: "dashed", paddingVertical: 14 },
@@ -500,5 +500,5 @@ const S = StyleSheet.create({
   saveBtn: { backgroundColor: C.primary, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 10, height: 54, borderRadius: 14, marginTop: 8, shadowColor: C.primary, shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.4, shadowRadius: 18, elevation: 10 },
   saveBtnText: { fontSize: 16, fontFamily: "SpaceGrotesk_700Bold", color: "#fff" },
   savedNote: { backgroundColor: "#00D68F18", borderRadius: 12, borderWidth: 1, borderColor: "#00D68F33", padding: 14 },
-  savedNoteText: { fontSize: 13, fontFamily: "SpaceGrotesk_400Regular", color: "#00D68F", textAlign: "center", lineHeight: 20 },
+  savedNoteText: { fontSize: 15, fontFamily: "SpaceGrotesk_400Regular", color: "#00D68F", textAlign: "center", lineHeight: 20 },
 });

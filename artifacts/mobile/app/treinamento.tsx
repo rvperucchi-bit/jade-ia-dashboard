@@ -11,7 +11,7 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 const C = {
-  bg: "#0A0A0F",
+  bg: "#0B0814",
   card: "#111118",
   border: "#1E1E2E",
   text: "#FFFFFF",
@@ -32,31 +32,31 @@ const MODULES = [
   },
   {
     icon: "message-circle",
-    color: "#25D366",
+    color: C.primary,
     name: "Abordagem WhatsApp",
     desc: 'Diga: "Cria uma mensagem pro WhatsApp" ou "Monta um script de abordagem". A JADE gera textos personalizados para o perfil do lead.',
   },
   {
     icon: "bar-chart-2",
-    color: C.warning,
+    color: C.primary,
     name: "CRM & Pipeline",
     desc: 'Diga: "Move esse lead para negociação" ou "Mostra meu pipeline". Gerencie o funil de vendas por comandos de voz ou texto.',
   },
   {
     icon: "file-text",
-    color: "#7C3AED",
+    color: C.primary,
     name: "Laudo Executivo",
     desc: 'Diga: "Gera um laudo executivo" ou "Faz o diagnóstico de marketing". A JADE cria um relatório profissional para usar na prospecção.',
   },
   {
     icon: "zap",
-    color: C.warning,
+    color: C.primary,
     name: "Marketing IA",
     desc: 'Diga: "Cria um post para Instagram" ou "Faz um story sobre minha oferta". Conteúdo pronto para redes sociais e WhatsApp.',
   },
   {
     icon: "trending-up",
-    color: C.success,
+    color: C.primary,
     name: "Relatórios",
     desc: 'Diga: "Mostra meu relatório do dia" ou "Quantos leads fechei essa semana?". Acompanhe sua performance em tempo real.',
   },
@@ -197,7 +197,7 @@ const S = StyleSheet.create({
   },
   heroTitle: { fontSize: 22, fontFamily: "SpaceGrotesk_700Bold", color: C.text, textAlign: "center" },
   heroSub: {
-    fontSize: 14,
+    fontSize: 16,
     fontFamily: "SpaceGrotesk_400Regular",
     color: C.sub,
     textAlign: "center",
@@ -229,7 +229,7 @@ const S = StyleSheet.create({
     justifyContent: "center",
   },
   moduleName: { fontSize: 15, fontFamily: "SpaceGrotesk_700Bold", color: C.text },
-  moduleDesc: { fontSize: 13, fontFamily: "SpaceGrotesk_400Regular", color: C.sub, lineHeight: 20 },
+  moduleDesc: { fontSize: 15, fontFamily: "SpaceGrotesk_400Regular", color: C.sub, lineHeight: 20 },
 
   card: {
     backgroundColor: C.card,
@@ -241,7 +241,7 @@ const S = StyleSheet.create({
     marginBottom: 24,
   },
   cardDesc: {
-    fontSize: 13,
+    fontSize: 15,
     fontFamily: "SpaceGrotesk_400Regular",
     color: C.muted,
     lineHeight: 20,
@@ -267,10 +267,10 @@ const S = StyleSheet.create({
     minWidth: 100,
     alignItems: "center",
   },
-  chipText: { fontSize: 12, fontFamily: "SpaceGrotesk_600SemiBold", color: C.text },
+  chipText: { fontSize: 13, fontFamily: "SpaceGrotesk_600SemiBold", color: C.text },
   shortcutDesc: {
     flex: 1,
-    fontSize: 13,
+    fontSize: 15,
     fontFamily: "SpaceGrotesk_400Regular",
     color: C.sub,
     lineHeight: 18,
@@ -296,6 +296,6 @@ const S = StyleSheet.create({
     justifyContent: "center",
     marginTop: 1,
   },
-  tipTitle: { fontSize: 14, fontFamily: "SpaceGrotesk_700Bold", color: C.text, marginBottom: 4 },
-  tipDesc: { fontSize: 13, fontFamily: "SpaceGrotesk_400Regular", color: C.sub, lineHeight: 20 },
+  tipTitle: { fontSize: 16, fontFamily: "SpaceGrotesk_700Bold", color: C.text, marginBottom: 4 },
+  tipDesc: { fontSize: 15, fontFamily: "SpaceGrotesk_400Regular", color: C.sub, lineHeight: 20 },
 });

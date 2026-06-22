@@ -48,7 +48,7 @@ interface AggData {
 const HUMOR_OPTIONS: { key: Humor; emoji: string; label: string; color: string; bg: string }[] = [
   { key: "otimo",   emoji: "😄", label: "Mandei bem!",           color: "#00D68F", bg: "#00D68F18" },
   { key: "ok",      emoji: "😐", label: "Ok, travei em algumas", color: "#FFB300", bg: "#FFB30018" },
-  { key: "dificil", emoji: "😔", label: "Difícil, precisei de apoio", color: "#FF6B35", bg: "#FF6B3518" },
+  { key: "dificil", emoji: "😔", label: "Difícil, precisei de apoio", color: "#FF0080", bg: "rgba(255,0,128,0.08)" },
   { key: "ideia",   emoji: "💡", label: "Tenho uma ideia!",      color: ENTERPRISE_PURPLE, bg: "#8400FF18" },
 ];
 
@@ -236,10 +236,10 @@ export default function FeedbackExecutivoScreen() {
               <>
                 {/* Alertas */}
                 {aggData.alertas.length > 0 && (
-                  <View style={[S.alertaCard, { backgroundColor: "#FF6B3514", borderColor: "#FF6B3544" }]}>
-                    <Feather name="alert-triangle" size={18} color="#FF6B35" />
+                  <View style={[S.alertaCard, { backgroundColor: "rgba(255,0,128,0.06)", borderColor: "rgba(255,0,128,0.27)" }]}>
+                    <Feather name="alert-triangle" size={18} color="#FF0080" />
                     <View style={{ flex: 1 }}>
-                      <Text style={[S.alertaTitle, { color: "#FF6B35" }]}>Atenção</Text>
+                      <Text style={[S.alertaTitle, { color: "#FF0080" }]}>Atenção</Text>
                       {aggData.alertas.map((a, i) => (
                         <Text key={i} style={[S.alertaText, { color: colors.mutedForeground }]}>
                           {a.userName} marcou 😔 por {a.dias} dias consecutivos
@@ -322,25 +322,25 @@ const S = StyleSheet.create({
   header: { flexDirection: "row", alignItems: "center", gap: 12, paddingHorizontal: 20, paddingBottom: 14, borderBottomWidth: StyleSheet.hairlineWidth },
   backBtn: { width: 40, height: 40, borderRadius: 20, alignItems: "center", justifyContent: "center" },
   title: { fontSize: 18, fontFamily: "SpaceGrotesk_700Bold" },
-  sub: { fontSize: 12, fontFamily: "SpaceGrotesk_400Regular", marginTop: 2 },
+  sub: { fontSize: 13, fontFamily: "SpaceGrotesk_400Regular", marginTop: 2 },
   badge: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: 10 },
   badgeText: { fontSize: 11, fontFamily: "SpaceGrotesk_700Bold" },
   tabRow: { flexDirection: "row", borderBottomWidth: StyleSheet.hairlineWidth },
   tabBtn: { flex: 1, alignItems: "center", paddingVertical: 14, borderBottomWidth: 2, borderBottomColor: "transparent" },
   tabBtnActive: {},
-  tabText: { fontSize: 14, fontFamily: "SpaceGrotesk_600SemiBold" },
+  tabText: { fontSize: 16, fontFamily: "SpaceGrotesk_600SemiBold" },
   sectionLabel: { fontSize: 11, fontFamily: "SpaceGrotesk_700Bold", letterSpacing: 1 },
   checkinCard: { borderRadius: 16, borderWidth: 1, padding: 20, alignItems: "center", gap: 8 },
   checkinEmoji: { fontSize: 36 },
   checkinTitle: { fontSize: 20, fontFamily: "SpaceGrotesk_700Bold", textAlign: "center" },
-  checkinSub: { fontSize: 13, fontFamily: "SpaceGrotesk_400Regular", textAlign: "center", lineHeight: 20 },
+  checkinSub: { fontSize: 15, fontFamily: "SpaceGrotesk_400Regular", textAlign: "center", lineHeight: 20 },
   humorGrid: { flexDirection: "row", flexWrap: "wrap", gap: 10 },
   humorBtn: { width: "47%", flexGrow: 1, borderRadius: 14, borderWidth: 1.5, padding: 14, alignItems: "center", gap: 6, position: "relative" },
   humorEmoji: { fontSize: 32 },
-  humorLabel: { fontSize: 12, fontFamily: "SpaceGrotesk_600SemiBold", textAlign: "center", lineHeight: 18 },
+  humorLabel: { fontSize: 13, fontFamily: "SpaceGrotesk_600SemiBold", textAlign: "center", lineHeight: 18 },
   humorCheck: { position: "absolute", top: 10, right: 10, width: 18, height: 18, borderRadius: 9, alignItems: "center", justifyContent: "center" },
   textareaWrap: { borderRadius: 12, borderWidth: 1, padding: 14, minHeight: 90 },
-  textarea: { fontSize: 14, fontFamily: "SpaceGrotesk_400Regular", lineHeight: 22 },
+  textarea: { fontSize: 16, fontFamily: "SpaceGrotesk_400Regular", lineHeight: 22 },
   actionRow: { flexDirection: "row", gap: 12 },
   skipBtn: { flex: 1, height: 52, borderRadius: 14, alignItems: "center", justifyContent: "center" },
   skipText: { fontSize: 15, fontFamily: "SpaceGrotesk_500Medium" },
@@ -349,12 +349,12 @@ const S = StyleSheet.create({
   successCard: { borderRadius: 16, borderWidth: 1, padding: 24, alignItems: "center", gap: 12 },
   successEmoji: { fontSize: 48 },
   successTitle: { fontSize: 20, fontFamily: "SpaceGrotesk_700Bold" },
-  successSub: { fontSize: 14, fontFamily: "SpaceGrotesk_400Regular", textAlign: "center", lineHeight: 21 },
+  successSub: { fontSize: 16, fontFamily: "SpaceGrotesk_400Regular", textAlign: "center", lineHeight: 21 },
   novaBtn: { paddingHorizontal: 20, paddingVertical: 10, borderRadius: 12, marginTop: 4 },
-  novaBtnText: { fontSize: 14, fontFamily: "SpaceGrotesk_500Medium" },
+  novaBtnText: { fontSize: 16, fontFamily: "SpaceGrotesk_500Medium" },
   alertaCard: { flexDirection: "row", alignItems: "flex-start", gap: 12, borderRadius: 14, borderWidth: 1, padding: 14 },
-  alertaTitle: { fontSize: 14, fontFamily: "SpaceGrotesk_700Bold", marginBottom: 4 },
-  alertaText: { fontSize: 13, fontFamily: "SpaceGrotesk_400Regular", lineHeight: 20 },
+  alertaTitle: { fontSize: 16, fontFamily: "SpaceGrotesk_700Bold", marginBottom: 4 },
+  alertaText: { fontSize: 15, fontFamily: "SpaceGrotesk_400Regular", lineHeight: 20 },
   resumoRow: { flexDirection: "row", gap: 10 },
   resumoCard: { flex: 1, borderRadius: 12, borderWidth: 1, padding: 14, alignItems: "center" },
   resumoNum: { fontSize: 26, fontFamily: "SpaceGrotesk_700Bold" },
@@ -365,13 +365,13 @@ const S = StyleSheet.create({
   distribLabel: { fontSize: 11, fontFamily: "SpaceGrotesk_400Regular", width: 110 },
   distribTrack: { flex: 1, height: 6, borderRadius: 4, overflow: "hidden" },
   distribFill: { height: "100%", borderRadius: 4 },
-  distribCount: { fontSize: 14, fontFamily: "SpaceGrotesk_700Bold", width: 24, textAlign: "right" },
+  distribCount: { fontSize: 16, fontFamily: "SpaceGrotesk_700Bold", width: 24, textAlign: "right" },
   emptyCard: { borderRadius: 14, borderWidth: 1, padding: 20, alignItems: "center" },
-  emptyText: { fontSize: 14, fontFamily: "SpaceGrotesk_400Regular" },
+  emptyText: { fontSize: 16, fontFamily: "SpaceGrotesk_400Regular" },
   fbCard: { borderRadius: 14, borderWidth: 1, padding: 14 },
   fbHeader: { flexDirection: "row", alignItems: "center", gap: 12 },
   fbEmoji: { fontSize: 24 },
   fbName: { fontSize: 15, fontFamily: "SpaceGrotesk_700Bold" },
-  fbDef: { fontSize: 12, fontFamily: "SpaceGrotesk_400Regular", marginTop: 2 },
-  fbTime: { fontSize: 12, fontFamily: "SpaceGrotesk_400Regular" },
+  fbDef: { fontSize: 13, fontFamily: "SpaceGrotesk_400Regular", marginTop: 2 },
+  fbTime: { fontSize: 13, fontFamily: "SpaceGrotesk_400Regular" },
 });

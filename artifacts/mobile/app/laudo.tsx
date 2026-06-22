@@ -20,7 +20,7 @@ import { useApp } from "@/context/AppContext";
 
 
 const TIPOS = [
-  { id: "completo",  label: "Diagnóstico Completo",       icon: "layers",        color: "#6C63FF" },
+  { id: "completo",  label: "Diagnóstico Completo",       icon: "layers",        color: "#FF0080" },
   { id: "digital",   label: "Análise de Presença Digital", icon: "globe",         color: "#FF0080" },
   { id: "potencial", label: "Potencial de Vendas",         icon: "trending-up",   color: "#00D68F" },
 ];
@@ -167,19 +167,19 @@ const S = StyleSheet.create({
   },
   backBtn: { width: 40, height: 40, borderRadius: 20, alignItems: "center", justifyContent: "center" },
   headerTitle: { fontSize: 18, fontFamily: "SpaceGrotesk_700Bold" },
-  headerSub: { fontSize: 12, fontFamily: "SpaceGrotesk_400Regular", marginTop: 2 },
+  headerSub: { fontSize: 13, fontFamily: "SpaceGrotesk_400Regular", marginTop: 2 },
   form: { padding: 20, gap: 18 },
   field: { gap: 8 },
-  label: { fontSize: 14, fontFamily: "SpaceGrotesk_600SemiBold" },
+  label: { fontSize: 16, fontFamily: "SpaceGrotesk_600SemiBold" },
   textarea: { borderRadius: 12, borderWidth: 1, padding: 14, minHeight: 120 },
-  textareaInput: { fontSize: 14, fontFamily: "SpaceGrotesk_400Regular", lineHeight: 22 },
+  textareaInput: { fontSize: 16, fontFamily: "SpaceGrotesk_400Regular", lineHeight: 22 },
   tipos: { gap: 10 },
   tipoCard: {
     flexDirection: "row", alignItems: "center", gap: 12,
     borderRadius: 12, borderWidth: 1.5, padding: 14,
   },
   tipoIcon: { width: 36, height: 36, borderRadius: 10, alignItems: "center", justifyContent: "center" },
-  tipoLabel: { flex: 1, fontSize: 14, fontFamily: "SpaceGrotesk_600SemiBold" },
+  tipoLabel: { flex: 1, fontSize: 16, fontFamily: "SpaceGrotesk_600SemiBold" },
   genBtn: {
     backgroundColor: "#FF0080", flexDirection: "row", alignItems: "center",
     justifyContent: "center", gap: 10, height: 52, borderRadius: 14,
@@ -192,10 +192,10 @@ const S = StyleSheet.create({
   resultHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
   resultBadge: { flexDirection: "row", alignItems: "center", gap: 6 },
   greenDot: { width: 7, height: 7, borderRadius: 4 },
-  resultLabel: { fontSize: 12, fontFamily: "SpaceGrotesk_600SemiBold" },
+  resultLabel: { fontSize: 13, fontFamily: "SpaceGrotesk_600SemiBold" },
   copyBtn: { flexDirection: "row", alignItems: "center", gap: 6, padding: 6 },
-  copyText: { fontSize: 13, fontFamily: "SpaceGrotesk_500Medium" },
-  resultText: { fontSize: 14, fontFamily: "SpaceGrotesk_400Regular", lineHeight: 22 },
+  copyText: { fontSize: 15, fontFamily: "SpaceGrotesk_500Medium" },
+  resultText: { fontSize: 16, fontFamily: "SpaceGrotesk_400Regular", lineHeight: 22 },
   errorBox: { flexDirection: "row", alignItems: "center", gap: 8, padding: 12, borderRadius: 10, backgroundColor: "#FF6B6B18", borderWidth: 1, borderColor: "#FF6B6B40" },
-  errorText: { flex: 1, fontSize: 13, fontFamily: "SpaceGrotesk_400Regular", color: "#FF6B6B", lineHeight: 20 },
+  errorText: { flex: 1, fontSize: 15, fontFamily: "SpaceGrotesk_400Regular", color: "#FF6B6B", lineHeight: 20 },
 });

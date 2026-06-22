@@ -33,10 +33,10 @@ interface VendedorMeta {
 }
 
 const VENDEDORES: VendedorMeta[] = [
-  { id: "v1", nome: "Ana Paula",    avatarColor: "#6C63FF", meta: 30000, realizado: 36000, forecast: 38000 },
+  { id: "v1", nome: "Ana Paula",    avatarColor: "#FF0080", meta: 30000, realizado: 36000, forecast: 38000 },
   { id: "v2", nome: "Carlos Rocha", avatarColor: "#FF0080", meta: 60000, realizado: 34800, forecast: 42000 },
-  { id: "v3", nome: "Mariana Lima", avatarColor: "#00D68F", meta: 25000, realizado: 21250, forecast: 24000 },
-  { id: "v4", nome: "Diego Nunes",  avatarColor: "#FFB300", meta: 45000, realizado: 20250, forecast: 27000 },
+  { id: "v3", nome: "Mariana Lima", avatarColor: "#FF0080", meta: 25000, realizado: 21250, forecast: 24000 },
+  { id: "v4", nome: "Diego Nunes",  avatarColor: "#8400FF", meta: 45000, realizado: 20250, forecast: 27000 },
 ];
 
 type Periodo = "mes" | "anterior" | "trimestre";
@@ -140,7 +140,7 @@ export default function MetasScreen() {
             </View>
             <View style={{ flex: 1 }}>
               <Text style={[S.totalSub, { color: colors.mutedForeground }]}>Forecast</Text>
-              <Text style={[S.totalForecast, { color: "#FFB300" }]}>{fmt(forecastTotal)}</Text>
+              <Text style={[S.totalForecast, { color: "#8400FF" }]}>{fmt(forecastTotal)}</Text>
             </View>
             <View style={[S.pctBadge, { backgroundColor: bc + "22" }]}>
               <Text style={[S.pctText, { color: bc }]}>{pTotal}%</Text>
@@ -174,7 +174,7 @@ export default function MetasScreen() {
                 </View>
                 <View style={{ alignItems: "flex-end", gap: 2 }}>
                   <Text style={[S.vPct, { color: bc2 }]}>{p}%</Text>
-                  <Text style={[S.vForecast, { color: "#FFB300" }]}>forecast {pf}%</Text>
+                  <Text style={[S.vForecast, { color: "#8400FF" }]}>forecast {pf}%</Text>
                 </View>
               </View>
               <View style={S.vBars}>
@@ -222,10 +222,10 @@ const S = StyleSheet.create({
   header: { flexDirection: "row", alignItems: "center", gap: 12, paddingHorizontal: 20, paddingBottom: 14, borderBottomWidth: StyleSheet.hairlineWidth },
   backBtn: { width: 40, height: 40, borderRadius: 20, alignItems: "center", justifyContent: "center" },
   title: { fontSize: 18, fontFamily: "SpaceGrotesk_700Bold" },
-  sub: { fontSize: 12, fontFamily: "SpaceGrotesk_400Regular", marginTop: 2 },
+  sub: { fontSize: 13, fontFamily: "SpaceGrotesk_400Regular", marginTop: 2 },
   filters: { flexDirection: "row", gap: 8, padding: 16, paddingBottom: 8 },
   filterBtn: { paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20 },
-  filterText: { fontSize: 13, fontFamily: "SpaceGrotesk_600SemiBold" },
+  filterText: { fontSize: 15, fontFamily: "SpaceGrotesk_600SemiBold" },
   totalCard: { margin: 16, padding: 18, borderRadius: 18, borderWidth: 1, gap: 12 },
   totalLabel: { fontSize: 10, fontFamily: "SpaceGrotesk_700Bold", letterSpacing: 1 },
   totalValue: { fontSize: 28, fontFamily: "SpaceGrotesk_700Bold" },
@@ -243,9 +243,9 @@ const S = StyleSheet.create({
   vCard: { marginHorizontal: 16, marginBottom: 10, padding: 16, borderRadius: 16, borderWidth: 1, gap: 10 },
   vTop: { flexDirection: "row", alignItems: "center", gap: 12 },
   avatar: { width: 40, height: 40, borderRadius: 20, alignItems: "center", justifyContent: "center" },
-  avatarText: { color: "#fff", fontSize: 13, fontFamily: "SpaceGrotesk_700Bold" },
+  avatarText: { color: "#fff", fontSize: 15, fontFamily: "SpaceGrotesk_700Bold" },
   vNome: { fontSize: 15, fontFamily: "SpaceGrotesk_700Bold" },
-  vMeta: { fontSize: 12, fontFamily: "SpaceGrotesk_400Regular", marginTop: 2 },
+  vMeta: { fontSize: 13, fontFamily: "SpaceGrotesk_400Regular", marginTop: 2 },
   vPct: { fontSize: 16, fontFamily: "SpaceGrotesk_700Bold" },
   vForecast: { fontSize: 11, fontFamily: "SpaceGrotesk_400Regular" },
   vBars: { gap: 6 },
@@ -257,6 +257,6 @@ const S = StyleSheet.create({
   estrategiaBtnText: { color: "#fff", fontSize: 16, fontFamily: "SpaceGrotesk_700Bold" },
   estrategiaBox: { borderRadius: 14, borderWidth: 1, overflow: "hidden" },
   estrategiaHeader: { flexDirection: "row", alignItems: "center", gap: 8, padding: 12 },
-  estrategiaLabel: { fontSize: 12, fontFamily: "SpaceGrotesk_600SemiBold" },
-  estrategiaText: { fontSize: 14, fontFamily: "SpaceGrotesk_400Regular", lineHeight: 22, padding: 16 },
+  estrategiaLabel: { fontSize: 13, fontFamily: "SpaceGrotesk_600SemiBold" },
+  estrategiaText: { fontSize: 16, fontFamily: "SpaceGrotesk_400Regular", lineHeight: 22, padding: 16 },
 });

@@ -15,7 +15,7 @@ import * as Haptics from "expo-haptics";
 import { useColors } from "@/hooks/useColors";
 
 const PURPLE = "#8400FF";
-const GOLD   = "#FFB800";
+
 const PINK   = "#FF0080";
 const GREEN  = "#00D68F";
 
@@ -33,7 +33,7 @@ const FEED = [
   { text: "João fechou R$ 8.500 em Pizzaria Milano",  time: "5min atrás",   icon: "briefcase", color: GREEN  },
   { text: "Maria enviou 3 propostas hoje",             time: "28min atrás",  icon: "file-text", color: PURPLE },
   { text: "JADE prospectou 12 leads nesta manhã",     time: "1h atrás",     icon: "zap",       color: PINK   },
-  { text: "Lucas agendou reunião com Burguer King",   time: "2h atrás",     icon: "calendar",  color: GOLD   },
+  { text: "Lucas agendou reunião com Burguer King",   time: "2h atrás",     icon: "calendar",  color: PINK   },
   { text: "Rodrigo fechou R$ 12.000 com Sushi Zen",  time: "3h atrás",     icon: "briefcase", color: GREEN  },
 ];
 
@@ -74,7 +74,7 @@ const KPI_DATA: Record<Period, {
 // ─── Progress Ring ───────────────────────────────────────────────────────────
 function ProgressBar({ value, max, color }: { value: number; max: number; color: string }) {
   const pct = Math.min(1, value / Math.max(max, 1));
-  const statusColor = pct >= 0.8 ? GREEN : pct >= 0.5 ? GOLD : "#FF3B5C";
+  const statusColor = pct >= 0.8 ? GREEN : pct >= 0.5 ? PINK : "#FF3B5C";
   return (
     <View style={{ gap: 6 }}>
       <View style={[PB.track]}>
@@ -92,8 +92,8 @@ const PB = StyleSheet.create({
   track:    { height: 10, backgroundColor: "#1E1E2E", borderRadius: 6, overflow: "hidden" },
   fill:     { height: 10, borderRadius: 6 },
   row:      { flexDirection: "row", justifyContent: "space-between" },
-  realizado:{ fontSize: 14, fontFamily: "SpaceGrotesk_700Bold" },
-  meta:     { fontSize: 12, fontFamily: "SpaceGrotesk_400Regular", color: "#7777AA" },
+  realizado:{ fontSize: 16, fontFamily: "SpaceGrotesk_700Bold" },
+  meta:     { fontSize: 13, fontFamily: "SpaceGrotesk_400Regular", color: "#7777AA" },
 });
 
 // ─── KPI Card ─────────────────────────────────────────────────────────────────
@@ -128,19 +128,19 @@ function TeamRow({ member, rank }: { member: typeof TEAM[0]; rank: number }) {
   const pctN   = Math.round(pct * 100);
   const isLeader = rank === 1;
   const isDanger = pct < 0.5;
-  const barColor = isLeader ? GOLD : isDanger ? "#FF3B5C" : PURPLE;
+  const barColor = isLeader ? PINK : isDanger ? "#FF3B5C" : PURPLE;
 
   return (
     <View style={[TR.row, { borderBottomColor: colors.border }]}>
-      <View style={[TR.rankBadge, { backgroundColor: isLeader ? GOLD + "22" : isDanger ? "#FF3B5C18" : "#1A1A2E" }]}>
-        <Text style={[TR.rankText, { color: isLeader ? GOLD : isDanger ? "#FF3B5C" : colors.mutedForeground }]}>
+      <View style={[TR.rankBadge, { backgroundColor: isLeader ? PINK + "22" : isDanger ? "#FF3B5C18" : "#1A1A2E" }]}>
+        <Text style={[TR.rankText, { color: isLeader ? PINK : isDanger ? "#FF3B5C" : colors.mutedForeground }]}>
           {isLeader ? "🥇" : `#${rank}`}
         </Text>
       </View>
       <View style={{ flex: 1, gap: 4 }}>
         <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
           <Text style={[TR.name, { color: colors.text }]}>{member.name}</Text>
-          <Text style={[TR.vendas, { color: isLeader ? GOLD : colors.text }]}>
+          <Text style={[TR.vendas, { color: isLeader ? PINK : colors.text }]}>
             R${(member.vendas / 1000).toFixed(0)}k
           </Text>
         </View>
@@ -161,8 +161,8 @@ function TeamRow({ member, rank }: { member: typeof TEAM[0]; rank: number }) {
 const TR = StyleSheet.create({
   row:      { flexDirection: "row", gap: 12, alignItems: "flex-start", paddingVertical: 12, paddingHorizontal: 14, borderBottomWidth: StyleSheet.hairlineWidth },
   rankBadge:{ width: 38, height: 38, borderRadius: 10, alignItems: "center", justifyContent: "center" },
-  rankText: { fontSize: 14, fontFamily: "SpaceGrotesk_700Bold" },
-  name:     { fontSize: 13, fontFamily: "SpaceGrotesk_600SemiBold" },
+  rankText: { fontSize: 16, fontFamily: "SpaceGrotesk_700Bold" },
+  name:     { fontSize: 15, fontFamily: "SpaceGrotesk_600SemiBold" },
   vendas:   { fontSize: 15, fontFamily: "SpaceGrotesk_700Bold" },
   barTrack: { height: 5, backgroundColor: "#1E1E2E", borderRadius: 3, overflow: "hidden" },
   barFill:  { height: 5, borderRadius: 3 },
@@ -181,7 +181,7 @@ export default function PainelExecutivoScreen() {
   const kpi      = KPI_DATA[period];
   const pct      = Math.min(1, kpi.realizado / kpi.metaTotal);
   const pctN     = Math.round(pct * 100);
-  const barColor = pct >= 0.8 ? GREEN : pct >= 0.5 ? GOLD : "#FF3B5C";
+  const barColor = pct >= 0.8 ? GREEN : pct >= 0.5 ? PINK : "#FF3B5C";
   const statusMsg = pct >= 0.8 ? "🟢 No caminho certo" : pct >= 0.5 ? "🟡 Atenção necessária" : "🔴 Requer ação imediata";
 
   const topPad    = Platform.OS === "web" ? 67 : insets.top;
@@ -204,8 +204,8 @@ export default function PainelExecutivoScreen() {
           <Feather name="arrow-left" size={20} color={colors.text} />
         </TouchableOpacity>
         <Text style={[S.title, { color: colors.text }]}>Painel Executivo</Text>
-        <View style={[S.goldBadge, { backgroundColor: GOLD + "22" }]}>
-          <Text style={[S.goldBadgeText, { color: GOLD }]}>Enterprise</Text>
+        <View style={[S.goldBadge, { backgroundColor: PINK + "22" }]}>
+          <Text style={[S.goldBadgeText, { color: PINK }]}>Enterprise</Text>
         </View>
       </View>
 
@@ -278,14 +278,14 @@ export default function PainelExecutivoScreen() {
           value={fmt(kpi.ticketMedio)}
           meta={`meta ${fmt(kpi.metaTicket)}`}
           up={kpi.ticketMedio >= kpi.metaTicket}
-          color={GOLD}
+          color={PINK}
         />
         <KpiCard
           label="Reuniões"
           value={String(kpi.reunioes)}
           meta="realizadas"
           up
-          color="#6C63FF"
+          color="#FF0080"
         />
         <KpiCard
           label="Propostas"
@@ -335,16 +335,16 @@ const S = StyleSheet.create({
   goldBadgeText: { fontSize: 11, fontFamily: "SpaceGrotesk_700Bold" },
   periodRow:{ flexDirection: "row", gap: 8, paddingHorizontal: 16, marginBottom: 16 },
   periodBtn:{ flex: 1, height: 36, borderRadius: 10, borderWidth: 1, alignItems: "center", justifyContent: "center" },
-  periodText: { fontSize: 13, fontFamily: "SpaceGrotesk_600SemiBold" },
+  periodText: { fontSize: 15, fontFamily: "SpaceGrotesk_600SemiBold" },
   metaCard: { marginHorizontal: 16, borderRadius: 16, borderWidth: 1.5, padding: 18, marginBottom: 16, gap: 12 },
   metaHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start" },
   metaLabel:{ fontSize: 11, fontFamily: "SpaceGrotesk_500Medium", opacity: 0.7 },
   metaVal:  { fontSize: 32, fontFamily: "SpaceGrotesk_700Bold" },
-  metaDe:   { fontSize: 13, fontFamily: "SpaceGrotesk_400Regular" },
+  metaDe:   { fontSize: 15, fontFamily: "SpaceGrotesk_400Regular" },
   pctCircle:{ width: 70, height: 70, borderRadius: 35, borderWidth: 3, alignItems: "center", justifyContent: "center" },
   pctNum:   { fontSize: 20, fontFamily: "SpaceGrotesk_700Bold" },
   metaFooter:{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
-  statusMsg:{ fontSize: 12, fontFamily: "SpaceGrotesk_500Medium" },
+  statusMsg:{ fontSize: 13, fontFamily: "SpaceGrotesk_500Medium" },
   diasBadge:{ flexDirection: "row", alignItems: "center", gap: 4, paddingHorizontal: 8, paddingVertical: 4, borderRadius: 8 },
   diasText: { fontSize: 11, fontFamily: "SpaceGrotesk_600SemiBold" },
   sectionCap:{ fontSize: 10, fontFamily: "SpaceGrotesk_600SemiBold", letterSpacing: 1.2, paddingHorizontal: 20, marginBottom: 8, marginTop: 4, opacity: 0.6 },
@@ -352,7 +352,7 @@ const S = StyleSheet.create({
   card:     { marginHorizontal: 16, borderRadius: 14, borderWidth: 1, overflow: "hidden", marginBottom: 14 },
   feedRow:  { flexDirection: "row", gap: 10, padding: 12, alignItems: "flex-start" },
   feedIcon: { width: 28, height: 28, borderRadius: 8, alignItems: "center", justifyContent: "center" },
-  feedText: { fontSize: 12, fontFamily: "SpaceGrotesk_400Regular", lineHeight: 18 },
+  feedText: { fontSize: 13, fontFamily: "SpaceGrotesk_400Regular", lineHeight: 18 },
   feedTime: { fontSize: 10, fontFamily: "SpaceGrotesk_400Regular", marginTop: 2, opacity: 0.6 },
   div:      { height: StyleSheet.hairlineWidth, marginLeft: 50 },
 });

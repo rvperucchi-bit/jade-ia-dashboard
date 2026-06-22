@@ -20,7 +20,7 @@ import { useProfile } from "@/context/ProfileContext";
 
 const PROFILE_KEY = "@jade_ia:profile";
 const COLORS = {
-  bg: "#0A0A0F",
+  bg: "#0B0814",
   card: "#111118",
   border: "#1E1E2E",
   text: "#FFFFFF",
@@ -146,7 +146,7 @@ export default function PerfilScreen() {
           <Text style={S.avatarRole}>{profile.cargo} · {profile.empresa}</Text>
           {photoUri && (
             <TouchableOpacity onPress={removePhoto} style={{ marginTop: 8 }} activeOpacity={0.7}>
-              <Text style={{ fontSize: 12, color: "rgba(255,60,100,0.7)", fontFamily: "SpaceGrotesk_400Regular" }}>
+              <Text style={{ fontSize: 13, color: "rgba(255,60,100,0.7)", fontFamily: "SpaceGrotesk_400Regular" }}>
                 Remover foto
               </Text>
             </TouchableOpacity>
@@ -247,7 +247,7 @@ const S = StyleSheet.create({
     borderColor: COLORS.bg,
   },
   avatarName: { fontSize: 20, fontFamily: "SpaceGrotesk_700Bold", color: COLORS.text },
-  avatarRole: { fontSize: 13, fontFamily: "SpaceGrotesk_400Regular", color: COLORS.muted, marginTop: 4 },
+  avatarRole: { fontSize: 15, fontFamily: "SpaceGrotesk_400Regular", color: COLORS.muted, marginTop: 4 },
   proBadge: {
     marginTop: 10,
     backgroundColor: COLORS.primary + "22",
@@ -255,7 +255,7 @@ const S = StyleSheet.create({
     paddingVertical: 4,
     borderRadius: 20,
   },
-  proBadgeText: { fontSize: 12, fontFamily: "SpaceGrotesk_600SemiBold", color: COLORS.primary },
+  proBadgeText: { fontSize: 13, fontFamily: "SpaceGrotesk_600SemiBold", color: COLORS.primary },
 
   section: { marginBottom: 24 },
   sectionTitle: {

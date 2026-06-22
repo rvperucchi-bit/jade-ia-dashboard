@@ -890,7 +890,7 @@ const C = StyleSheet.create({
 
   header:     { flexDirection: "row", alignItems: "center", paddingHorizontal: 12, paddingBottom: 6 },
   headerRing: {
-    width: 37, height: 37, borderRadius: 19,
+    width: 44, height: 44, borderRadius: 22,
     borderWidth: 1, borderColor: "rgba(255,255,255,0.09)",
     backgroundColor: "rgba(255,255,255,0.04)",
     alignItems: "center", justifyContent: "center",

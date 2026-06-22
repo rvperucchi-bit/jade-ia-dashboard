@@ -11,7 +11,7 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 const C = {
-  bg: "#0A0A0F",
+  bg: "#0B0814",
   card: "#111118",
   border: "#1E1E2E",
   text: "#FFFFFF",

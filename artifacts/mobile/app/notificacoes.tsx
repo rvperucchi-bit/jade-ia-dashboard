@@ -11,7 +11,7 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 const C = {
-  bg: "#0A0A0F",
+  bg: "#0B0814",
   card: "#111118",
   border: "#1E1E2E",
   text: "#FFFFFF",
@@ -87,7 +87,7 @@ const ICON_MAP = {
   jade: { name: "cpu", color: C.primary, bg: C.primary + "18" },
   lead: { name: "user-plus", color: C.success, bg: C.success + "18" },
   plano: { name: "star", color: C.warning, bg: C.warning + "18" },
-  relatorio: { name: "bar-chart-2", color: "#7C3AED", bg: "#7C3AED18" },
+  relatorio: { name: "bar-chart-2", color: "#8400FF", bg: "rgba(132,0,255,0.08)" },
 };
 
 export default function NotificacoesScreen() {
@@ -177,7 +177,7 @@ const S = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  headerBadgeText: { fontSize: 13, fontFamily: "SpaceGrotesk_700Bold", color: "#fff" },
+  headerBadgeText: { fontSize: 15, fontFamily: "SpaceGrotesk_700Bold", color: "#fff" },
   scroll: { paddingHorizontal: 16, paddingTop: 16 },
 
   unreadBanner: {
@@ -193,7 +193,7 @@ const S = StyleSheet.create({
     borderColor: C.primary + "30",
   },
   unreadText: {
-    fontSize: 13,
+    fontSize: 15,
     fontFamily: "SpaceGrotesk_600SemiBold",
     color: C.primary,
   },
@@ -230,7 +230,7 @@ const S = StyleSheet.create({
   },
   itemTitle: {
     flex: 1,
-    fontSize: 14,
+    fontSize: 16,
     fontFamily: "SpaceGrotesk_600SemiBold",
     color: C.text,
   },
@@ -241,13 +241,13 @@ const S = StyleSheet.create({
     backgroundColor: C.primary,
   },
   itemBody: {
-    fontSize: 13,
+    fontSize: 15,
     fontFamily: "SpaceGrotesk_400Regular",
     color: C.sub,
     lineHeight: 18,
   },
   itemTime: {
-    fontSize: 12,
+    fontSize: 13,
     fontFamily: "SpaceGrotesk_400Regular",
     color: C.muted,
     marginTop: 2,
@@ -255,7 +255,7 @@ const S = StyleSheet.create({
 
   clearBtn: { alignItems: "center", paddingVertical: 20 },
   clearText: {
-    fontSize: 14,
+    fontSize: 16,
     fontFamily: "SpaceGrotesk_500Medium",
     color: C.muted,
   },

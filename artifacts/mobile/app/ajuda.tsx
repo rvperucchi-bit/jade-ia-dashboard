@@ -13,7 +13,7 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 const C = {
-  bg: "#0A0A0F",
+  bg: "#0B0814",
   card: "#111118",
   border: "#1E1E2E",
   text: "#FFFFFF",
@@ -96,7 +96,7 @@ const A = StyleSheet.create({
   },
   questionText: {
     flex: 1,
-    fontSize: 14,
+    fontSize: 16,
     fontFamily: "SpaceGrotesk_600SemiBold",
     color: C.text,
     lineHeight: 20,
@@ -109,7 +109,7 @@ const A = StyleSheet.create({
     paddingTop: 14,
   },
   answerText: {
-    fontSize: 14,
+    fontSize: 16,
     fontFamily: "SpaceGrotesk_400Regular",
     color: C.sub,
     lineHeight: 22,
@@ -215,7 +215,7 @@ const S = StyleSheet.create({
     textAlign: "center",
   },
   heroSub: {
-    fontSize: 14,
+    fontSize: 16,
     fontFamily: "SpaceGrotesk_400Regular",
     color: C.sub,
     textAlign: "center",
@@ -258,7 +258,7 @@ const S = StyleSheet.create({
     color: C.text,
   },
   supportSub: {
-    fontSize: 13,
+    fontSize: 15,
     fontFamily: "SpaceGrotesk_400Regular",
     color: C.muted,
     marginTop: 2,

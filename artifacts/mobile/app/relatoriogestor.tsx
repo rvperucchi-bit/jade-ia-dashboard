@@ -24,10 +24,10 @@ const API_BASE =
     : `https://${process.env.EXPO_PUBLIC_DOMAIN ?? ""}`;
 
 const VENDEDORES = [
-  { nome: "Ana Paula",    meta: 30000, realizado: 36000, leads: 38, conversao: 24, avatarColor: "#6C63FF" },
+  { nome: "Ana Paula",    meta: 30000, realizado: 36000, leads: 38, conversao: 24, avatarColor: "#FF0080" },
   { nome: "Carlos Rocha", meta: 60000, realizado: 34800, leads: 22, conversao: 12, avatarColor: "#FF0080" },
-  { nome: "Mariana Lima", meta: 25000, realizado: 21250, leads: 44, conversao: 18, avatarColor: "#00D68F" },
-  { nome: "Diego Nunes",  meta: 45000, realizado: 20250, leads: 28, conversao: 10, avatarColor: "#FFB300" },
+  { nome: "Mariana Lima", meta: 25000, realizado: 21250, leads: 44, conversao: 18, avatarColor: "#FF0080" },
+  { nome: "Diego Nunes",  meta: 45000, realizado: 20250, leads: 28, conversao: 10, avatarColor: "#8400FF" },
 ];
 
 function pct(v: number, t: number) { return t ? Math.min(Math.round((v / t) * 100), 999) : 0; }
@@ -146,7 +146,7 @@ export default function RelatorioGestorScreen() {
           <View style={S.kpiRow}>
             <View style={S.kpi}>
               <Text style={[S.kpiLabel, { color: colors.mutedForeground }]}>Forecast</Text>
-              <Text style={[S.kpiValue, { color: "#FFB300" }]}>{fmt(forecastTotal)}</Text>
+              <Text style={[S.kpiValue, { color: "#FF0080" }]}>{fmt(forecastTotal)}</Text>
             </View>
             <View style={S.kpi}>
               <Text style={[S.kpiLabel, { color: colors.mutedForeground }]}>Gap</Text>
@@ -223,7 +223,7 @@ export default function RelatorioGestorScreen() {
           )}
 
           <TouchableOpacity
-            style={[S.actionBtn, { backgroundColor: "#FFB300" }, loadingEst && { opacity: 0.7 }]}
+            style={[S.actionBtn, { backgroundColor: "#FF0080" }, loadingEst && { opacity: 0.7 }]}
             onPress={gerarEstrategia}
             disabled={loadingEst}
             activeOpacity={0.85}
@@ -234,10 +234,10 @@ export default function RelatorioGestorScreen() {
           </TouchableOpacity>
 
           {!!estrategia && (
-            <View style={[S.outputBox, { backgroundColor: colors.card, borderColor: "#FFB30040" }]}>
-              <View style={[S.outputHeader, { backgroundColor: "#FFB30018" }]}>
-                <MaterialCommunityIcons name="robot" size={16} color="#FFB300" />
-                <Text style={[S.outputLabel, { color: "#FFB300" }]}>Estratégia do Próximo Mês</Text>
+            <View style={[S.outputBox, { backgroundColor: colors.card, borderColor: "rgba(255,0,128,0.25)" }]}>
+              <View style={[S.outputHeader, { backgroundColor: "rgba(255,0,128,0.08)" }]}>
+                <MaterialCommunityIcons name="robot" size={16} color="#FF0080" />
+                <Text style={[S.outputLabel, { color: "#FF0080" }]}>Estratégia do Próximo Mês</Text>
               </View>
               <Text style={[S.outputText, { color: colors.text }]}>{estrategia}</Text>
             </View>
@@ -253,12 +253,12 @@ const S = StyleSheet.create({
   header: { flexDirection: "row", alignItems: "center", gap: 12, paddingHorizontal: 20, paddingBottom: 14, borderBottomWidth: StyleSheet.hairlineWidth },
   backBtn: { width: 40, height: 40, borderRadius: 20, alignItems: "center", justifyContent: "center" },
   title: { fontSize: 18, fontFamily: "SpaceGrotesk_700Bold" },
-  sub: { fontSize: 12, fontFamily: "SpaceGrotesk_400Regular", marginTop: 2 },
+  sub: { fontSize: 13, fontFamily: "SpaceGrotesk_400Regular", marginTop: 2 },
   totalCard: { margin: 16, padding: 18, borderRadius: 18, borderWidth: 1, gap: 12 },
   totalLabel: { fontSize: 10, fontFamily: "SpaceGrotesk_700Bold", letterSpacing: 1 },
   totalNumbers: { flexDirection: "row", alignItems: "center", gap: 16 },
   totalValue: { fontSize: 26, fontFamily: "SpaceGrotesk_700Bold" },
-  totalMeta: { fontSize: 12, fontFamily: "SpaceGrotesk_400Regular", marginTop: 2 },
+  totalMeta: { fontSize: 13, fontFamily: "SpaceGrotesk_400Regular", marginTop: 2 },
   pctCircle: { width: 64, height: 64, borderRadius: 32, borderWidth: 3, alignItems: "center", justifyContent: "center" },
   pctCircleText: { fontSize: 18, fontFamily: "SpaceGrotesk_700Bold" },
   barTrack: { height: 8, borderRadius: 4, overflow: "hidden" },
@@ -266,19 +266,19 @@ const S = StyleSheet.create({
   kpiRow: { flexDirection: "row", gap: 8 },
   kpi: { flex: 1, alignItems: "center", gap: 2 },
   kpiLabel: { fontSize: 11, fontFamily: "SpaceGrotesk_400Regular" },
-  kpiValue: { fontSize: 14, fontFamily: "SpaceGrotesk_700Bold" },
+  kpiValue: { fontSize: 16, fontFamily: "SpaceGrotesk_700Bold" },
   spotlightRow: { flexDirection: "row", marginHorizontal: 16, gap: 10, marginBottom: 8 },
   spotCard: { flex: 1, borderRadius: 14, borderWidth: 1, padding: 14, gap: 4 },
   spotLabel: { fontSize: 11, fontFamily: "SpaceGrotesk_600SemiBold" },
-  spotNome: { fontSize: 14, fontFamily: "SpaceGrotesk_700Bold" },
+  spotNome: { fontSize: 16, fontFamily: "SpaceGrotesk_700Bold" },
   spotPct: { fontSize: 20, fontFamily: "SpaceGrotesk_700Bold" },
   sectionLabel: { fontSize: 11, fontFamily: "SpaceGrotesk_600SemiBold", letterSpacing: 1, marginHorizontal: 20, marginBottom: 12 },
   table: { marginHorizontal: 16, borderRadius: 14, borderWidth: 1, overflow: "hidden" },
   tableHeader: { flexDirection: "row", paddingHorizontal: 14, paddingVertical: 10, borderBottomWidth: 1 },
   thCell: { flex: 1, fontSize: 11, fontFamily: "SpaceGrotesk_700Bold", letterSpacing: 0.5 },
   tableRow: { flexDirection: "row", paddingHorizontal: 14, paddingVertical: 12, alignItems: "center" },
-  tdCell: { flex: 1, fontSize: 13, fontFamily: "SpaceGrotesk_500Medium" },
-  tdName: { fontSize: 13, fontFamily: "SpaceGrotesk_600SemiBold" },
+  tdCell: { flex: 1, fontSize: 15, fontFamily: "SpaceGrotesk_500Medium" },
+  tdName: { fontSize: 15, fontFamily: "SpaceGrotesk_600SemiBold" },
   miniAvatar: { width: 28, height: 28, borderRadius: 14, alignItems: "center", justifyContent: "center" },
   miniAvatarText: { color: "#fff", fontSize: 10, fontFamily: "SpaceGrotesk_700Bold" },
   actions: { padding: 20, gap: 16 },
@@ -286,6 +286,6 @@ const S = StyleSheet.create({
   actionBtnText: { color: "#fff", fontSize: 16, fontFamily: "SpaceGrotesk_700Bold" },
   outputBox: { borderRadius: 14, borderWidth: 1, overflow: "hidden" },
   outputHeader: { flexDirection: "row", alignItems: "center", gap: 8, padding: 12 },
-  outputLabel: { fontSize: 12, fontFamily: "SpaceGrotesk_600SemiBold" },
-  outputText: { fontSize: 14, fontFamily: "SpaceGrotesk_400Regular", lineHeight: 22, padding: 16 },
+  outputLabel: { fontSize: 13, fontFamily: "SpaceGrotesk_600SemiBold" },
+  outputText: { fontSize: 16, fontFamily: "SpaceGrotesk_400Regular", lineHeight: 22, padding: 16 },
 });

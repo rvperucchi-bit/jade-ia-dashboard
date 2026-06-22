@@ -201,7 +201,7 @@ export default function ScannerScreen() {
     const initials = words.length >= 2
       ? (words[0]![0]! + words[1]![0]!).toUpperCase()
       : place.name.slice(0, 2).toUpperCase();
-    const COLORS_ARR = ["#FF6B35", "#00D68F", "#6C63FF", "#FFB300", "#FF0080", "#4ECDC4"];
+    const COLORS_ARR = ["#FF0080", "#8400FF", "#FF0080", "#8400FF", "#FF0080", "#8400FF"];
     const color = COLORS_ARR[Math.abs(place.placeId.charCodeAt(0)) % COLORS_ARR.length]!;
     const lead: Lead = {
       id:          `radar_${place.placeId}`,
@@ -211,7 +211,7 @@ export default function ScannerScreen() {
       phone:       place.phone,
       column:      "novo",
       tag:         "Radar Google",
-      tagColor:    "#6C63FF",
+      tagColor:    "#FF0080",
       time:        "agora",
       initials,
       avatarColor: color,
@@ -330,7 +330,7 @@ export default function ScannerScreen() {
       ? (nameWords[0][0] + nameWords[1][0]).toUpperCase()
       : place.name.slice(0, 2).toUpperCase();
 
-    const COLORS_ARR = ["#FF6B35", "#00D68F", "#6C63FF", "#FFB300", "#FF0080", "#4ECDC4"];
+    const COLORS_ARR = ["#FF0080", "#8400FF", "#FF0080", "#8400FF", "#FF0080", "#8400FF"];
     const color = COLORS_ARR[Math.abs(place.placeId.charCodeAt(0)) % COLORS_ARR.length];
 
     const lead: Lead = {
@@ -561,7 +561,7 @@ export default function ScannerScreen() {
 
                     {place.rating !== null && (
                       <View style={styles.radarCardMeta}>
-                        <Text style={{ fontSize: 12 }}>⭐</Text>
+                        <Text style={{ fontSize: 13 }}>⭐</Text>
                         <Text style={[styles.radarCardMetaText, { color: colors.mutedForeground }]}>
                           {place.rating.toFixed(1)} ({place.totalRatings.toLocaleString("pt-BR")} avaliações)
                         </Text>
@@ -879,7 +879,7 @@ const styles = StyleSheet.create({
   radarField: { gap: 5 },
   radarLabel: { fontSize: 11, fontFamily: "SpaceGrotesk_500Medium", textTransform: "uppercase", letterSpacing: 0.5 },
   radarInput: { flexDirection: "row", alignItems: "center", borderRadius: 12, borderWidth: 1, paddingHorizontal: 14, height: 46 },
-  radarInputText: { flex: 1, fontSize: 14, fontFamily: "SpaceGrotesk_400Regular" },
+  radarInputText: { flex: 1, fontSize: 16, fontFamily: "SpaceGrotesk_400Regular" },
   raioRow: { flexDirection: "row", gap: 6 },
   raioBtn: { flex: 1, alignItems: "center", justifyContent: "center", height: 36, borderRadius: 9, borderWidth: 1 },
   raioBtnText: { fontSize: 11, fontFamily: "SpaceGrotesk_600SemiBold" },
@@ -890,20 +890,20 @@ const styles = StyleSheet.create({
   },
   radarSearchBtnText: { fontSize: 15, fontFamily: "SpaceGrotesk_700Bold", color: "#fff" },
   buscasCounterRow: { flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 5, paddingVertical: 4 },
-  buscasCounterText: { fontSize: 12, fontFamily: "SpaceGrotesk_500Medium" },
+  buscasCounterText: { fontSize: 13, fontFamily: "SpaceGrotesk_500Medium" },
   radarResultsWrap: { gap: 10, marginTop: 4 },
   radarResultsTitle: { fontSize: 11, fontFamily: "SpaceGrotesk_600SemiBold", letterSpacing: 1, marginBottom: 2 },
   radarCard: { borderRadius: 14, borderWidth: 1, padding: 14, gap: 8 },
   radarCardRow: { flexDirection: "row", alignItems: "flex-start", gap: 10 },
   radarCardIcon: { width: 34, height: 34, borderRadius: 9, alignItems: "center", justifyContent: "center" },
-  radarCardName: { fontSize: 14, fontFamily: "SpaceGrotesk_600SemiBold" },
+  radarCardName: { fontSize: 16, fontFamily: "SpaceGrotesk_600SemiBold" },
   radarCardAddr: { fontSize: 11, fontFamily: "SpaceGrotesk_400Regular", marginTop: 1 },
   radarStatusBadge: { borderRadius: 7, borderWidth: 1, paddingHorizontal: 8, paddingVertical: 3, alignSelf: "flex-start" },
   radarStatusText: { fontSize: 10, fontFamily: "SpaceGrotesk_600SemiBold" },
   radarCardMeta: { flexDirection: "row", alignItems: "center", gap: 6 },
-  radarCardMetaText: { fontSize: 12, fontFamily: "SpaceGrotesk_400Regular" },
+  radarCardMetaText: { fontSize: 13, fontFamily: "SpaceGrotesk_400Regular" },
   radarAddBtn: { flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 7, paddingVertical: 9, borderRadius: 10 },
-  radarAddBtnText: { fontSize: 13, fontFamily: "SpaceGrotesk_600SemiBold" },
+  radarAddBtnText: { fontSize: 15, fontFamily: "SpaceGrotesk_600SemiBold" },
   sectionDivider: { flexDirection: "row", alignItems: "center", paddingHorizontal: 16, gap: 10, marginVertical: 4 },
   dividerLine: { flex: 1, height: StyleSheet.hairlineWidth },
   dividerText: { fontSize: 10, fontFamily: "SpaceGrotesk_600SemiBold", letterSpacing: 1 },
@@ -912,18 +912,18 @@ const styles = StyleSheet.create({
   modalBox: { width: "100%", borderTopLeftRadius: 24, borderTopRightRadius: 24, borderWidth: StyleSheet.hairlineWidth, padding: 24, gap: 14 },
   modalIconWrap: { alignSelf: "center", width: 60, height: 60, borderRadius: 30, alignItems: "center", justifyContent: "center" },
   modalTitle: { fontSize: 20, fontFamily: "SpaceGrotesk_700Bold", textAlign: "center" },
-  modalSub: { fontSize: 14, fontFamily: "SpaceGrotesk_400Regular", textAlign: "center", lineHeight: 20 },
+  modalSub: { fontSize: 16, fontFamily: "SpaceGrotesk_400Regular", textAlign: "center", lineHeight: 20 },
   modalPrimaryBtn: {
     backgroundColor: "#FF0080", flexDirection: "row", alignItems: "center", justifyContent: "center",
     gap: 8, height: 52, borderRadius: 14, marginTop: 4,
   },
   modalPrimaryBtnText: { fontSize: 16, fontFamily: "SpaceGrotesk_700Bold", color: "#fff" },
   modalCancelBtn: { alignItems: "center", paddingVertical: 8 },
-  modalCancelBtnText: { fontSize: 14, fontFamily: "SpaceGrotesk_500Medium" },
+  modalCancelBtnText: { fontSize: 16, fontFamily: "SpaceGrotesk_500Medium" },
   lojaHeader: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
   pacoteCard: { flexDirection: "row", alignItems: "center", borderRadius: 12, borderWidth: 1, padding: 14, gap: 10 },
   pacoteLabel: { fontSize: 15, fontFamily: "SpaceGrotesk_600SemiBold" },
-  pacoteDesc: { fontSize: 12, fontFamily: "SpaceGrotesk_400Regular", marginTop: 2 },
+  pacoteDesc: { fontSize: 13, fontFamily: "SpaceGrotesk_400Regular", marginTop: 2 },
   pacotePreco: { fontSize: 16, fontFamily: "SpaceGrotesk_700Bold" },
   pacoteCheck: { position: "absolute", top: 10, right: 10 },
 
@@ -936,18 +936,18 @@ const styles = StyleSheet.create({
   },
   backBtn: { width: 40, height: 40, borderRadius: 20, alignItems: "center", justifyContent: "center" },
   headerTitle: { fontSize: 18, fontFamily: "SpaceGrotesk_700Bold" },
-  headerSub: { fontSize: 12, fontFamily: "SpaceGrotesk_400Regular", marginTop: 2 },
+  headerSub: { fontSize: 13, fontFamily: "SpaceGrotesk_400Regular", marginTop: 2 },
   form: { padding: 20, gap: 14 },
   locationBtn: {
     flexDirection: "row", alignItems: "center", gap: 10,
     borderRadius: 12, borderWidth: 1, paddingHorizontal: 14, height: 50,
   },
-  locationBtnText: { flex: 1, fontSize: 14, fontFamily: "SpaceGrotesk_500Medium" },
+  locationBtnText: { flex: 1, fontSize: 16, fontFamily: "SpaceGrotesk_500Medium" },
   orRow: { flexDirection: "row", alignItems: "center", gap: 10 },
   orLine: { flex: 1, height: StyleSheet.hairlineWidth },
   orText: { fontSize: 11, fontFamily: "SpaceGrotesk_400Regular" },
   fieldGroup: { gap: 6 },
-  label: { fontSize: 12, fontFamily: "SpaceGrotesk_500Medium", textTransform: "uppercase", letterSpacing: 0.5 },
+  label: { fontSize: 13, fontFamily: "SpaceGrotesk_500Medium", textTransform: "uppercase", letterSpacing: 0.5 },
   inputWrap: { flexDirection: "row", alignItems: "center", borderRadius: 12, borderWidth: 1, paddingHorizontal: 14, height: 50 },
   inputIcon: { marginRight: 10 },
   input: { flex: 1, fontSize: 15, fontFamily: "SpaceGrotesk_400Regular" },
@@ -964,12 +964,12 @@ const styles = StyleSheet.create({
   scannerBannerActive: { backgroundColor: "#00D68F18", borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: "#00D68F33" },
   scannerBannerPaused: { backgroundColor: "#FFB30012", borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: "#FFB30030" },
   scannerDot: { width: 8, height: 8, borderRadius: 4, backgroundColor: "#00D68F" },
-  scannerBannerText:       { flex: 1, fontSize: 12, fontFamily: "SpaceGrotesk_500Medium", color: "#00D68F" },
-  scannerBannerPausedText: { flex: 1, fontSize: 12, fontFamily: "SpaceGrotesk_400Regular", color: "#FFB300" },
+  scannerBannerText:       { flex: 1, fontSize: 13, fontFamily: "SpaceGrotesk_500Medium", color: "#00D68F" },
+  scannerBannerPausedText: { flex: 1, fontSize: 13, fontFamily: "SpaceGrotesk_400Regular", color: "#FFB300" },
   ativarBtn: { backgroundColor: "#FFB30022", borderRadius: 8, paddingHorizontal: 10, paddingVertical: 4, borderWidth: 1, borderColor: "#FFB30044" },
   ativarBtnText: { fontSize: 11, fontFamily: "SpaceGrotesk_700Bold", color: "#FFB300" },
   errorBox: { flexDirection: "row", alignItems: "center", gap: 10, marginHorizontal: 20, padding: 14, borderRadius: 12, borderWidth: 1 },
-  errorText: { flex: 1, fontSize: 13, fontFamily: "SpaceGrotesk_400Regular", color: "#FF3B5C" },
+  errorText: { flex: 1, fontSize: 15, fontFamily: "SpaceGrotesk_400Regular", color: "#FF3B5C" },
   resultsSection: { paddingHorizontal: 16, gap: 12 },
   resultsHeader: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 4 },
   resultsTitle: { fontSize: 11, fontFamily: "SpaceGrotesk_600SemiBold", letterSpacing: 1 },
@@ -980,12 +980,12 @@ const styles = StyleSheet.create({
   placeHeader: { flexDirection: "row", gap: 12, alignItems: "flex-start" },
   placeIcon: { width: 38, height: 38, borderRadius: 10, alignItems: "center", justifyContent: "center", marginTop: 2 },
   placeName: { fontSize: 15, fontFamily: "SpaceGrotesk_600SemiBold" },
-  placeAddress: { fontSize: 12, fontFamily: "SpaceGrotesk_400Regular", marginTop: 2, lineHeight: 17 },
+  placeAddress: { fontSize: 13, fontFamily: "SpaceGrotesk_400Regular", marginTop: 2, lineHeight: 17 },
   mapsBtn: { width: 32, height: 32, alignItems: "center", justifyContent: "center" },
   placeMeta: { flexDirection: "row", alignItems: "center", gap: 6 },
   stars: { flexDirection: "row", alignItems: "center", gap: 2 },
-  ratingText: { fontSize: 12, fontFamily: "SpaceGrotesk_600SemiBold", marginLeft: 4 },
+  ratingText: { fontSize: 13, fontFamily: "SpaceGrotesk_600SemiBold", marginLeft: 4 },
   totalRatings: { fontSize: 11, fontFamily: "SpaceGrotesk_400Regular" },
   addBtn: { flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8, paddingVertical: 10, borderRadius: 10 },
-  addBtnText: { fontSize: 13, fontFamily: "SpaceGrotesk_600SemiBold" },
+  addBtnText: { fontSize: 15, fontFamily: "SpaceGrotesk_600SemiBold" },
 });

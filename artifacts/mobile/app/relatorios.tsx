@@ -25,9 +25,9 @@ interface DailyMetric { label: string; value: number; icon: string; color: strin
 interface HourBar      { hour: string; value: number }
 
 const DAILY_METRICS: DailyMetric[] = [
-  { label: "Leads abordados",    value: 8,  icon: "users",         color: "#6C63FF" },
+  { label: "Leads abordados",    value: 8,  icon: "users",         color: "#FF0080" },
   { label: "Conversas iniciadas",value: 5,  icon: "message-circle",color: "#FF0080" },
-  { label: "Propostas enviadas", value: 2,  icon: "send",          color: "#FFB300" },
+  { label: "Propostas enviadas", value: 2,  icon: "send",          color: "#FF0080" },
   { label: "Fechamentos",        value: 1,  icon: "check-circle",  color: "#00D68F" },
 ];
 
@@ -41,17 +41,17 @@ const HOUR_BARS: HourBar[] = [
 const MAX_BAR = Math.max(...HOUR_BARS.map((b) => b.value));
 
 const WEEKLY_METRICS = [
-  { label: "Leads totais",        value: 42,  prev: 38,  icon: "users",         color: "#6C63FF" },
+  { label: "Leads totais",        value: 42,  prev: 38,  icon: "users",         color: "#FF0080" },
   { label: "Conversas",          value: 31,  prev: 28,  icon: "message-circle",color: "#FF0080" },
-  { label: "Propostas",          value: 14,  prev: 11,  icon: "send",          color: "#FFB300" },
+  { label: "Propostas",          value: 14,  prev: 11,  icon: "send",          color: "#FF0080" },
   { label: "Fechamentos",        value: 6,   prev: 4,   icon: "check-circle",  color: "#00D68F" },
-  { label: "Receita estimada",   value: 18600, prev: 12400, icon: "dollar-sign", color: "#4ECDC4", unit: "R$" },
+  { label: "Receita estimada",   value: 18600, prev: 12400, icon: "dollar-sign", color: "#FF0080", unit: "R$" },
 ];
 
 const TOP_LEADS = [
   { name: "Pizzaria Nova Roma",   score: 88, status: "Quente",       color: "#FF0080" },
-  { name: "Açaí do Bessa",       score: 76, status: "Em contato",   color: "#FFB300" },
-  { name: "Hamburgueria 4Rios",  score: 71, status: "Respondeu",    color: "#6C63FF" },
+  { name: "Açaí do Bessa",       score: 76, status: "Em contato",   color: "#FF0080" },
+  { name: "Hamburgueria 4Rios",  score: 71, status: "Respondeu",    color: "#FF0080" },
 ];
 
 function pct(v: number, prev: number) {
@@ -251,19 +251,19 @@ const S = StyleSheet.create({
   },
   backBtn: { width: 40, height: 40, borderRadius: 20, alignItems: "center", justifyContent: "center" },
   headerTitle: { fontSize: 18, fontFamily: "SpaceGrotesk_700Bold" },
-  headerSub: { fontSize: 12, fontFamily: "SpaceGrotesk_400Regular", marginTop: 2 },
+  headerSub: { fontSize: 13, fontFamily: "SpaceGrotesk_400Regular", marginTop: 2 },
   proBadge: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: 8, borderWidth: 1 },
   proBadgeText: { fontSize: 11, fontFamily: "SpaceGrotesk_700Bold", color: "#FF0080" },
   tabBar: { flexDirection: "row", borderBottomWidth: StyleSheet.hairlineWidth },
   tabItem: { flex: 1, alignItems: "center", paddingVertical: 14 },
-  tabText: { fontSize: 14 },
+  tabText: { fontSize: 16 },
   section: { padding: 20, gap: 14 },
   sectionLabel: { fontSize: 11, fontFamily: "SpaceGrotesk_700Bold", letterSpacing: 1 },
   metricsGrid: { flexDirection: "row", flexWrap: "wrap", gap: 10 },
   metricCard: { width: "47%", borderRadius: 14, borderWidth: 1, padding: 14, gap: 8, alignItems: "flex-start" },
   metricIcon: { width: 36, height: 36, borderRadius: 10, alignItems: "center", justifyContent: "center" },
   metricValue: { fontSize: 28, fontFamily: "SpaceGrotesk_700Bold" },
-  metricLabel: { fontSize: 12, fontFamily: "SpaceGrotesk_400Regular" },
+  metricLabel: { fontSize: 13, fontFamily: "SpaceGrotesk_400Regular" },
   chartCard: { borderRadius: 14, borderWidth: 1, padding: 16 },
   bars: { flexDirection: "row", alignItems: "flex-end", height: 80, gap: 6 },
   barWrap: { flex: 1, alignItems: "center", gap: 4 },
@@ -279,22 +279,22 @@ const S = StyleSheet.create({
   genBtnText: { fontSize: 15, fontFamily: "SpaceGrotesk_700Bold", color: "#fff" },
   analysisBox: { borderRadius: 12, borderWidth: 1, padding: 16, gap: 8 },
   analysisLabel: { fontSize: 10, fontFamily: "SpaceGrotesk_700Bold", letterSpacing: 1 },
-  analysisText: { fontSize: 13, fontFamily: "SpaceGrotesk_400Regular", lineHeight: 21 },
+  analysisText: { fontSize: 15, fontFamily: "SpaceGrotesk_400Regular", lineHeight: 21 },
   weekMetrics: { gap: 10 },
   weekCard: {
     flexDirection: "row", alignItems: "center", gap: 12,
     borderRadius: 12, borderWidth: 1, padding: 14,
   },
   weekValue: { fontSize: 20, fontFamily: "SpaceGrotesk_700Bold", minWidth: 60 },
-  weekLabel: { flex: 1, fontSize: 13, fontFamily: "SpaceGrotesk_400Regular" },
+  weekLabel: { flex: 1, fontSize: 15, fontFamily: "SpaceGrotesk_400Regular" },
   pctBadge: { flexDirection: "row", alignItems: "center", gap: 4, paddingHorizontal: 8, paddingVertical: 4, borderRadius: 8 },
   pctText: { fontSize: 11, fontFamily: "SpaceGrotesk_700Bold" },
   leadsCard: { borderRadius: 14, borderWidth: 1, overflow: "hidden" },
   leadRow: { flexDirection: "row", alignItems: "center", gap: 12, padding: 14 },
   leadNum: { width: 32, height: 32, borderRadius: 8, alignItems: "center", justifyContent: "center" },
   leadNumText: { fontSize: 11, fontFamily: "SpaceGrotesk_700Bold" },
-  leadName: { fontSize: 14, fontFamily: "SpaceGrotesk_600SemiBold" },
-  leadStatus: { fontSize: 12, fontFamily: "SpaceGrotesk_500Medium", marginTop: 2 },
+  leadName: { fontSize: 16, fontFamily: "SpaceGrotesk_600SemiBold" },
+  leadStatus: { fontSize: 13, fontFamily: "SpaceGrotesk_500Medium", marginTop: 2 },
   scoreBadge: { paddingHorizontal: 10, paddingVertical: 6, borderRadius: 8 },
   scoreText: { fontSize: 16, fontFamily: "SpaceGrotesk_700Bold" },
   divider: { height: StyleSheet.hairlineWidth, marginHorizontal: 14 },

@@ -67,7 +67,7 @@ const RC = StyleSheet.create({
   header: { flexDirection: "row", alignItems: "center", gap: 8 },
   iconWrap: { width: 28, height: 28, borderRadius: 8, alignItems: "center", justifyContent: "center" },
   label: { fontSize: 11, fontFamily: "SpaceGrotesk_700Bold", letterSpacing: 1 },
-  text: { fontSize: 13, fontFamily: "SpaceGrotesk_400Regular", lineHeight: 21 },
+  text: { fontSize: 15, fontFamily: "SpaceGrotesk_400Regular", lineHeight: 21 },
 });
 
 export default function BriefingScreen() {
@@ -208,11 +208,11 @@ export default function BriefingScreen() {
             <Text style={[S.resultsTitle, { color: colors.text }]}>
               Briefing — <Text style={{ color: "#FF0080" }}>{lead}</Text>
             </Text>
-            <ResultCard icon="user"       label="PERFIL DO LEAD"         color="#6C63FF" text={result.resumo} />
+            <ResultCard icon="user"       label="PERFIL DO LEAD"         color="#FF0080" text={result.resumo} />
             <ResultCard icon="alert-circle" label="DORES PROVÁVEIS"      color="#FF0080" text={result.dores} />
             <ResultCard icon="trending-up"  label="ARGUMENTOS DE VENDA"  color="#00D68F" text={result.argumentos} />
             <ResultCard icon="help-circle"  label="PERGUNTAS-CHAVE"      color="#FFB300" text={result.perguntas} />
-            <ResultCard icon="shield"        label="ALERTAS DE OBJEÇÕES" color="#FF6B35" text={result.alertas} />
+            <ResultCard icon="shield"        label="ALERTAS DE OBJEÇÕES" color="#FF0080" text={result.alertas} />
           </View>
         )}
       </ScrollView>
@@ -229,17 +229,17 @@ const S = StyleSheet.create({
   },
   backBtn: { width: 40, height: 40, borderRadius: 20, alignItems: "center", justifyContent: "center" },
   headerTitle: { fontSize: 18, fontFamily: "SpaceGrotesk_700Bold" },
-  headerSub: { fontSize: 12, fontFamily: "SpaceGrotesk_400Regular", marginTop: 2 },
+  headerSub: { fontSize: 13, fontFamily: "SpaceGrotesk_400Regular", marginTop: 2 },
   form: { padding: 20, gap: 18 },
   field: { gap: 8 },
-  label: { fontSize: 14, fontFamily: "SpaceGrotesk_600SemiBold" },
+  label: { fontSize: 16, fontFamily: "SpaceGrotesk_600SemiBold" },
   input: { flexDirection: "row", alignItems: "center", borderRadius: 12, borderWidth: 1, height: 50, paddingHorizontal: 14, gap: 10 },
   inputText: { flex: 1, fontSize: 15, fontFamily: "SpaceGrotesk_400Regular" },
   origemRow: { paddingVertical: 4, gap: 8 },
   origemChip: { paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20, borderWidth: 1 },
-  origemText: { fontSize: 13, fontFamily: "SpaceGrotesk_500Medium" },
+  origemText: { fontSize: 15, fontFamily: "SpaceGrotesk_500Medium" },
   textarea: { borderRadius: 12, borderWidth: 1, padding: 14, minHeight: 100 },
-  textareaInput: { fontSize: 14, fontFamily: "SpaceGrotesk_400Regular", lineHeight: 22 },
+  textareaInput: { fontSize: 16, fontFamily: "SpaceGrotesk_400Regular", lineHeight: 22 },
   genBtn: {
     backgroundColor: "#FF0080", flexDirection: "row", alignItems: "center",
     justifyContent: "center", gap: 10, height: 52, borderRadius: 14,
@@ -250,5 +250,5 @@ const S = StyleSheet.create({
   results: { paddingHorizontal: 20, gap: 12, paddingBottom: 20 },
   resultsTitle: { fontSize: 17, fontFamily: "SpaceGrotesk_700Bold", marginBottom: 4 },
   errorBox: { flexDirection: "row", alignItems: "center", gap: 8, padding: 12, borderRadius: 10, backgroundColor: "#FF6B6B18", borderWidth: 1, borderColor: "#FF6B6B40" },
-  errorText: { flex: 1, fontSize: 13, fontFamily: "SpaceGrotesk_400Regular", color: "#FF6B6B", lineHeight: 20 },
+  errorText: { flex: 1, fontSize: 15, fontFamily: "SpaceGrotesk_400Regular", color: "#FF6B6B", lineHeight: 20 },
 });

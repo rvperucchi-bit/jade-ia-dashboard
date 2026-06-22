@@ -43,11 +43,11 @@ function GapBar({
 
 const GB = StyleSheet.create({
   row:     { gap: 8, marginBottom: 14 },
-  label:   { fontSize: 12, fontFamily: "SpaceGrotesk_500Medium" },
+  label:   { fontSize: 13, fontFamily: "SpaceGrotesk_500Medium" },
   barWrap: { flexDirection: "row", alignItems: "center", gap: 8 },
   barTrack:{ flex: 1, height: 10, borderRadius: 5, overflow: "hidden" },
   barFill: { height: 10, borderRadius: 5 },
-  count:   { fontSize: 13, fontFamily: "SpaceGrotesk_700Bold", width: 28, textAlign: "right" },
+  count:   { fontSize: 15, fontFamily: "SpaceGrotesk_700Bold", width: 28, textAlign: "right" },
   pct:     { fontSize: 11, fontFamily: "SpaceGrotesk_400Regular", width: 34, textAlign: "right" },
 });
 
@@ -69,7 +69,7 @@ const KC = StyleSheet.create({
   card:    { flex: 1, minWidth: "47%", borderRadius: 16, borderWidth: 1, padding: 16, gap: 4 },
   iconWrap:{ width: 36, height: 36, borderRadius: 10, alignItems: "center", justifyContent: "center", marginBottom: 6 },
   value:   { fontSize: 26, fontFamily: "SpaceGrotesk_700Bold" },
-  label:   { fontSize: 12, fontFamily: "SpaceGrotesk_400Regular", marginTop: 2 },
+  label:   { fontSize: 13, fontFamily: "SpaceGrotesk_400Regular", marginTop: 2 },
   sub:     { fontSize: 11, fontFamily: "SpaceGrotesk_600SemiBold", marginTop: 4 },
 });
 
@@ -95,8 +95,8 @@ export default function AnaliseScreen() {
 
   // ─── Gap analysis helpers ─────────────────────────────────────────────────
   const stages = [
-    { label: "Leads Novos",     count: novos,           color: "#6C63FF" },
-    { label: "Qualificados",    count: qualif,           color: "#FFB300" },
+    { label: "Leads Novos",     count: novos,           color: "#FF0080" },
+    { label: "Qualificados",    count: qualif,           color: "#8400FF" },
     { label: "Proposta",        count: proposta,         color: "#FF0080" },
     { label: "Fechados",        count: fechados.length,  color: "#00D68F" },
   ];
@@ -170,7 +170,7 @@ export default function AnaliseScreen() {
             value={String(novos + qualif + proposta)}
             sub={`${total} total no pipeline`}
             icon="users"
-            color="#6C63FF"
+            color="#FF0080"
           />
           <KpiCard
             label="Conv. Não Lidas"
@@ -250,20 +250,20 @@ const S = StyleSheet.create({
   header: { flexDirection: "row", alignItems: "center", gap: 12, paddingHorizontal: 20, paddingBottom: 14, borderBottomWidth: StyleSheet.hairlineWidth },
   backBtn:{ width: 40, height: 40, borderRadius: 20, alignItems: "center", justifyContent: "center" },
   headerTitle:{ fontSize: 18, fontFamily: "SpaceGrotesk_700Bold" },
-  headerSub:  { fontSize: 12, fontFamily: "SpaceGrotesk_400Regular", marginTop: 2 },
+  headerSub:  { fontSize: 13, fontFamily: "SpaceGrotesk_400Regular", marginTop: 2 },
   enterpriseBadge:    { paddingHorizontal: 10, paddingVertical: 4, borderRadius: 8, borderWidth: 1 },
   enterpriseBadgeText:{ fontSize: 10, fontFamily: "SpaceGrotesk_700Bold", color: "#8400FF" },
   scroll: { padding: 16, gap: 16 },
   jadeBanner: { flexDirection: "row", alignItems: "flex-start", gap: 10, borderRadius: 14, borderWidth: 1, padding: 14 },
-  jadeBannerText: { flex: 1, fontSize: 13, fontFamily: "SpaceGrotesk_400Regular", color: "#FF8080", lineHeight: 20 },
+  jadeBannerText: { flex: 1, fontSize: 15, fontFamily: "SpaceGrotesk_400Regular", color: "#FF8080", lineHeight: 20 },
   sectionLabel: { fontSize: 11, fontFamily: "SpaceGrotesk_700Bold", letterSpacing: 1 },
   kpiGrid: { flexDirection: "row", flexWrap: "wrap", gap: 10 },
   gapCard: { borderRadius: 16, borderWidth: 1, padding: 16 },
   divider: { height: StyleSheet.hairlineWidth, marginVertical: 12 },
-  gapTitle: { fontSize: 12, fontFamily: "SpaceGrotesk_600SemiBold", marginBottom: 10 },
+  gapTitle: { fontSize: 13, fontFamily: "SpaceGrotesk_600SemiBold", marginBottom: 10 },
   dropRow:  { flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 8 },
-  dropLabel:{ flex: 1, fontSize: 13, fontFamily: "SpaceGrotesk_400Regular" },
-  dropRate: { fontSize: 13, fontFamily: "SpaceGrotesk_700Bold", width: 40, textAlign: "right" },
+  dropLabel:{ flex: 1, fontSize: 15, fontFamily: "SpaceGrotesk_400Regular" },
+  dropRate: { fontSize: 15, fontFamily: "SpaceGrotesk_700Bold", width: 40, textAlign: "right" },
   jadeBtn: {
     backgroundColor: "#FF0080", flexDirection: "row", alignItems: "center", justifyContent: "center",
     gap: 10, height: 54, borderRadius: 14,
@@ -272,8 +272,8 @@ const S = StyleSheet.create({
   jadeBtnText:  { fontSize: 16, fontFamily: "SpaceGrotesk_700Bold", color: "#fff" },
   analiseBox:   { borderRadius: 14, borderWidth: 1, overflow: "hidden" },
   analiseHeader:{ flexDirection: "row", alignItems: "center", gap: 8, padding: 12 },
-  analiseLabel: { fontSize: 12, fontFamily: "SpaceGrotesk_600SemiBold", color: "#FF0080" },
-  analiseText:  { fontSize: 14, fontFamily: "SpaceGrotesk_400Regular", lineHeight: 22, padding: 16, paddingTop: 4, color: "#FFFFFF" },
+  analiseLabel: { fontSize: 13, fontFamily: "SpaceGrotesk_600SemiBold", color: "#FF0080" },
+  analiseText:  { fontSize: 16, fontFamily: "SpaceGrotesk_400Regular", lineHeight: 22, padding: 16, paddingTop: 4, color: "#FFFFFF" },
   errorBox: { flexDirection: "row", alignItems: "center", gap: 8, padding: 12, borderRadius: 10, backgroundColor: "#FF6B6B18", borderWidth: 1, borderColor: "#FF6B6B40" },
-  errorText: { flex: 1, fontSize: 13, fontFamily: "SpaceGrotesk_400Regular", color: "#FF6B6B", lineHeight: 20 },
+  errorText: { flex: 1, fontSize: 15, fontFamily: "SpaceGrotesk_400Regular", color: "#FF6B6B", lineHeight: 20 },
 });

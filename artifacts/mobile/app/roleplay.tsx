@@ -23,15 +23,15 @@ const API_BASE =
     : `https://${process.env.EXPO_PUBLIC_DOMAIN ?? ""}`;
 
 const CENARIOS = [
-  { id: "frio",      label: "Cliente Frio",          desc: "Nunca ouviu falar da empresa",          icon: "wind",          color: "#6C63FF" },
-  { id: "objecoes",  label: "Com Objeções",           desc: "Interessado mas resistente ao preço",   icon: "shield",        color: "#FFB300" },
+  { id: "frio",      label: "Cliente Frio",          desc: "Nunca ouviu falar da empresa",          icon: "wind",          color: "#FF0080" },
+  { id: "objecoes",  label: "Com Objeções",           desc: "Interessado mas resistente ao preço",   icon: "shield",        color: "#FF0080" },
   { id: "quase",     label: "Quase Fechando",         desc: "Travou na última etapa",                icon: "clock",         color: "#FF0080" },
-  { id: "retencao",  label: "Retenção",               desc: "Cliente insatisfeito, pensa em sair",  icon: "alert-triangle",color: "#FF6B35" },
+  { id: "retencao",  label: "Retenção",               desc: "Cliente insatisfeito, pensa em sair",  icon: "alert-triangle",color: "#FF0080" },
 ];
 
 const DIFICULDADES = [
   { id: "iniciante",     label: "Iniciante",     color: "#00D68F" },
-  { id: "intermediario", label: "Intermediário", color: "#FFB300" },
+  { id: "intermediario", label: "Intermediário", color: "#FF0080" },
   { id: "avancado",      label: "Avançado",      color: "#FF0080" },
 ];
 
@@ -252,8 +252,8 @@ Seja honesto, específico e encorajador.`;
             {messages.map((m, i) => (
               <View key={i} style={[S.bubble, m.role === "user" ? S.bubbleUser : S.bubbleJade]}>
                 {m.role === "jade" && (
-                  <View style={[S.bubbleAvatar, { backgroundColor: "#6C63FF22" }]}>
-                    <Feather name="user" size={14} color="#6C63FF" />
+                  <View style={[S.bubbleAvatar, { backgroundColor: "rgba(255,0,128,0.08)" }]}>
+                    <Feather name="user" size={14} color="#FF0080" />
                   </View>
                 )}
                 <View style={[S.bubbleBody, {
@@ -267,8 +267,8 @@ Seja honesto, específico e encorajador.`;
             ))}
             {loading && (
               <View style={[S.bubble, S.bubbleJade]}>
-                <View style={[S.bubbleAvatar, { backgroundColor: "#6C63FF22" }]}>
-                  <Feather name="user" size={14} color="#6C63FF" />
+                <View style={[S.bubbleAvatar, { backgroundColor: "rgba(255,0,128,0.08)" }]}>
+                  <Feather name="user" size={14} color="#FF0080" />
                 </View>
                 <View style={[S.bubbleBody, { backgroundColor: colors.card, borderColor: colors.border, borderWidth: 1 }]}>
                   <ActivityIndicator size="small" color={colors.mutedForeground} />
@@ -336,7 +336,7 @@ const S = StyleSheet.create({
   },
   backBtn: { width: 40, height: 40, borderRadius: 20, alignItems: "center", justifyContent: "center" },
   headerTitle: { fontSize: 18, fontFamily: "SpaceGrotesk_700Bold" },
-  headerSub: { fontSize: 12, fontFamily: "SpaceGrotesk_400Regular", marginTop: 2 },
+  headerSub: { fontSize: 13, fontFamily: "SpaceGrotesk_400Regular", marginTop: 2 },
   entBadge: { flexDirection: "row", alignItems: "center", gap: 4, paddingHorizontal: 8, paddingVertical: 4, borderRadius: 8, borderWidth: 1 },
   entBadgeText: { fontSize: 10, fontFamily: "SpaceGrotesk_700Bold", color: "#8400FF" },
   configSection: { padding: 20, gap: 12 },
@@ -344,10 +344,10 @@ const S = StyleSheet.create({
   scenarioCard: { flexDirection: "row", alignItems: "center", gap: 12, borderRadius: 14, padding: 14 },
   scenarioIcon: { width: 40, height: 40, borderRadius: 12, alignItems: "center", justifyContent: "center" },
   scenarioLabel: { fontSize: 15, fontFamily: "SpaceGrotesk_600SemiBold" },
-  scenarioDesc: { fontSize: 12, fontFamily: "SpaceGrotesk_400Regular", marginTop: 2 },
+  scenarioDesc: { fontSize: 13, fontFamily: "SpaceGrotesk_400Regular", marginTop: 2 },
   difRow: { flexDirection: "row", gap: 10 },
   difChip: { flex: 1, alignItems: "center", paddingVertical: 12, borderRadius: 12, borderWidth: 1.5 },
-  difText: { fontSize: 13, fontFamily: "SpaceGrotesk_600SemiBold" },
+  difText: { fontSize: 15, fontFamily: "SpaceGrotesk_600SemiBold" },
   startSection: { paddingHorizontal: 20, paddingTop: 8 },
   startBtn: {
     backgroundColor: "#FF0080", flexDirection: "row", alignItems: "center",
@@ -361,7 +361,7 @@ const S = StyleSheet.create({
   bubbleJade: { alignSelf: "flex-start" },
   bubbleAvatar: { width: 28, height: 28, borderRadius: 14, alignItems: "center", justifyContent: "center", flexShrink: 0 },
   bubbleBody: { borderRadius: 16, padding: 12, maxWidth: "100%" },
-  bubbleText: { fontSize: 14, fontFamily: "SpaceGrotesk_400Regular", lineHeight: 20 },
+  bubbleText: { fontSize: 16, fontFamily: "SpaceGrotesk_400Regular", lineHeight: 20 },
   inputBar: {
     flexDirection: "row", alignItems: "flex-end", gap: 10,
     paddingHorizontal: 16, paddingVertical: 12,
@@ -369,7 +369,7 @@ const S = StyleSheet.create({
   },
   chatInput: {
     flex: 1, borderRadius: 20, borderWidth: 1, paddingHorizontal: 16,
-    paddingVertical: 10, fontSize: 14, fontFamily: "SpaceGrotesk_400Regular",
+    paddingVertical: 10, fontSize: 16, fontFamily: "SpaceGrotesk_400Regular",
     maxHeight: 100,
   },
   sendBtn: {
@@ -381,10 +381,10 @@ const S = StyleSheet.create({
     gap: 8, marginHorizontal: 16, marginBottom: 8, paddingVertical: 10,
     borderRadius: 10, borderWidth: 1,
   },
-  encerrarText: { fontSize: 13, fontFamily: "SpaceGrotesk_500Medium" },
+  encerrarText: { fontSize: 15, fontFamily: "SpaceGrotesk_500Medium" },
   feedbackHeader: { flexDirection: "row", alignItems: "center", gap: 14, padding: 16, borderRadius: 14, borderWidth: 1 },
   feedbackTitle: { fontSize: 18, fontFamily: "SpaceGrotesk_700Bold" },
-  feedbackSub: { fontSize: 13, fontFamily: "SpaceGrotesk_400Regular", marginTop: 2 },
+  feedbackSub: { fontSize: 15, fontFamily: "SpaceGrotesk_400Regular", marginTop: 2 },
   feedbackBox: { borderRadius: 14, borderWidth: 1, padding: 16 },
-  feedbackText: { fontSize: 14, fontFamily: "SpaceGrotesk_400Regular", lineHeight: 22 },
+  feedbackText: { fontSize: 16, fontFamily: "SpaceGrotesk_400Regular", lineHeight: 22 },
 });

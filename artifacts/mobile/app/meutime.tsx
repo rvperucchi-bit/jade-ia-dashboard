@@ -41,11 +41,11 @@ interface Vendedor {
   observacoes?: string;
 }
 
-const AVATAR_COLORS = ["#FF0080", "#6C63FF", "#00D68F", "#FFB300", "#4ECDC4", "#FF6B35", "#AB47BC"];
+const AVATAR_COLORS = ["#FF0080", "#8400FF", "#FF0080", "#8400FF", "#FF0080", "#8400FF", "#FF0080"];
 
 const STATUS_OPTIONS: { key: StatusVendedor; label: string; emoji: string; color: string }[] = [
   { key: "ativo",     label: "Ativo",    emoji: "🟢", color: "#00D68F" },
-  { key: "ferias",    label: "Férias",   emoji: "🌴", color: "#FFB300" },
+  { key: "ferias",    label: "Férias",   emoji: "🌴", color: "#FF0080" },
   { key: "afastado",  label: "Afastado", emoji: "⚠️", color: "#FF3B5C" },
 ];
 
@@ -66,10 +66,10 @@ function medalha(rank: number): string {
 }
 
 const SEED: Vendedor[] = [
-  { id: "v1", nome: "Ana Paula",    email: "ana@empresa.com",     segmento: "PME",        metaMensal: 30000, metaLeads: 40, realizado: 36000, avatarColor: "#6C63FF", ultimaAtividade: "Hoje, 14h",   status: "ativo" },
+  { id: "v1", nome: "Ana Paula",    email: "ana@empresa.com",     segmento: "PME",        metaMensal: 30000, metaLeads: 40, realizado: 36000, avatarColor: "#FF0080", ultimaAtividade: "Hoje, 14h",   status: "ativo" },
   { id: "v2", nome: "Carlos Rocha", email: "carlos@empresa.com",  segmento: "Enterprise", metaMensal: 60000, metaLeads: 25, realizado: 34800, avatarColor: "#FF0080", ultimaAtividade: "Hoje, 10h",   status: "ativo" },
-  { id: "v3", nome: "Mariana Lima", email: "mariana@empresa.com", segmento: "Varejo",     metaMensal: 25000, metaLeads: 50, realizado: 21250, avatarColor: "#00D68F", ultimaAtividade: "Ontem, 16h",  status: "ferias" },
-  { id: "v4", nome: "Diego Nunes",  email: "diego@empresa.com",   segmento: "SaaS",       metaMensal: 45000, metaLeads: 30, realizado: 20250, avatarColor: "#FFB300", ultimaAtividade: "Ontem, 9h",   status: "ativo" },
+  { id: "v3", nome: "Mariana Lima", email: "mariana@empresa.com", segmento: "Varejo",     metaMensal: 25000, metaLeads: 50, realizado: 21250, avatarColor: "#FF0080", ultimaAtividade: "Ontem, 16h",  status: "ferias" },
+  { id: "v4", nome: "Diego Nunes",  email: "diego@empresa.com",   segmento: "SaaS",       metaMensal: 45000, metaLeads: 30, realizado: 20250, avatarColor: "#8400FF", ultimaAtividade: "Ontem, 9h",   status: "ativo" },
 ];
 
 export default function MeuTimeScreen() {
@@ -417,9 +417,9 @@ const S = StyleSheet.create({
   },
   backBtn: { width: 40, height: 40, borderRadius: 20, alignItems: "center", justifyContent: "center" },
   title: { fontSize: 18, fontFamily: "SpaceGrotesk_700Bold" },
-  sub: { fontSize: 12, fontFamily: "SpaceGrotesk_400Regular", marginTop: 2 },
+  sub: { fontSize: 13, fontFamily: "SpaceGrotesk_400Regular", marginTop: 2 },
   addBtn: { flexDirection: "row", alignItems: "center", gap: 6, paddingHorizontal: 14, paddingVertical: 9, borderRadius: 12 },
-  addBtnText: { color: "#fff", fontSize: 13, fontFamily: "SpaceGrotesk_600SemiBold" },
+  addBtnText: { color: "#fff", fontSize: 15, fontFamily: "SpaceGrotesk_600SemiBold" },
   sectionLabel: { fontSize: 11, fontFamily: "SpaceGrotesk_600SemiBold", letterSpacing: 1, marginHorizontal: 20, marginTop: 20, marginBottom: 12 },
   card: { marginHorizontal: 16, marginBottom: 10, padding: 16, borderRadius: 16, borderWidth: 1, gap: 10 },
   cardTop: { flexDirection: "row", alignItems: "center", gap: 12 },
@@ -435,25 +435,25 @@ const S = StyleSheet.create({
   atv: { fontSize: 11, fontFamily: "SpaceGrotesk_400Regular" },
   pctText: { fontSize: 18, fontFamily: "SpaceGrotesk_700Bold" },
   metaRow: { flexDirection: "row", justifyContent: "space-between" },
-  metaLabel: { fontSize: 12, fontFamily: "SpaceGrotesk_400Regular" },
-  leadsLabel: { fontSize: 12, fontFamily: "SpaceGrotesk_400Regular" },
+  metaLabel: { fontSize: 13, fontFamily: "SpaceGrotesk_400Regular" },
+  leadsLabel: { fontSize: 13, fontFamily: "SpaceGrotesk_400Regular" },
   barTrack: { height: 6, borderRadius: 4, overflow: "hidden" },
   barFill: { height: "100%", borderRadius: 4 },
-  obsText: { fontSize: 12, fontFamily: "SpaceGrotesk_400Regular", fontStyle: "italic" },
+  obsText: { fontSize: 13, fontFamily: "SpaceGrotesk_400Regular", fontStyle: "italic" },
   modalOverlay: { flex: 1, backgroundColor: "rgba(0,0,0,0.7)", justifyContent: "flex-end" },
   modalBox: { borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 24, gap: 14, paddingBottom: 44 },
   modalHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start" },
   modalTitle: { fontSize: 18, fontFamily: "SpaceGrotesk_700Bold" },
-  modalSub: { fontSize: 12, fontFamily: "SpaceGrotesk_400Regular", marginTop: 2 },
+  modalSub: { fontSize: 13, fontFamily: "SpaceGrotesk_400Regular", marginTop: 2 },
   fieldGroup: { gap: 6 },
   fieldLabel: { fontSize: 11, fontFamily: "SpaceGrotesk_700Bold", letterSpacing: 0.8 },
   inputRow: { flexDirection: "row", alignItems: "center", gap: 10, borderRadius: 12, borderWidth: 1, paddingHorizontal: 14, height: 48 },
   input: { flex: 1, fontSize: 15, fontFamily: "SpaceGrotesk_400Regular" },
   statusRow: { flexDirection: "row", gap: 8 },
   statusBtn: { flex: 1, paddingVertical: 10, borderRadius: 10, borderWidth: 1.5, alignItems: "center" },
-  statusBtnText: { fontSize: 12, fontFamily: "SpaceGrotesk_600SemiBold" },
+  statusBtnText: { fontSize: 13, fontFamily: "SpaceGrotesk_600SemiBold" },
   textareaWrap: { borderRadius: 12, borderWidth: 1, padding: 12, minHeight: 80 },
-  textarea: { fontSize: 14, fontFamily: "SpaceGrotesk_400Regular", lineHeight: 21 },
+  textarea: { fontSize: 16, fontFamily: "SpaceGrotesk_400Regular", lineHeight: 21 },
   saveBtn: { flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8, height: 52, borderRadius: 14, marginTop: 4 },
   saveBtnText: { color: "#fff", fontSize: 15, fontFamily: "SpaceGrotesk_700Bold" },
 });
