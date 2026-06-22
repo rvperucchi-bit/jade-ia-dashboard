@@ -38,15 +38,25 @@
     },
     "marketing": {
       "module_name": "marketing",
-      "is_active": false,
-      "status": "paused",
-      "last_started_at": "2026-06-21T04:09:59.313Z",
+      "is_active": true,
+      "status": "running",
+      "last_started_at": "2026-06-22T21:43:32.587Z",
       "last_stopped_at": "2026-06-21T04:10:00.785Z",
       "last_run_at": null,
-      "updated_at": "2026-06-21T04:10:00.785Z"
+      "updated_at": "2026-06-22T21:43:32.587Z"
     }
   },
   "module_logs": [
+    {
+      "id": "f90593e1c15aa223",
+      "module_name": "marketing",
+      "action": "activated",
+      "message": "Marketing IA ativado",
+      "metadata": {
+        "active": true
+      },
+      "created_at": "2026-06-22T21:43:32.594Z"
+    },
     {
       "id": "20fbb6c13037652d",
       "module_name": "leads",
@@ -1179,6 +1189,18 @@
     }
   ],
   "activity_events": [
+    {
+      "id": "68c48c070012f186",
+      "type": "module",
+      "text": "Marketing IA ativado",
+      "icon": "zap",
+      "color": "#FFB300",
+      "metadata": {
+        "module": "marketing",
+        "active": true
+      },
+      "created_at": "2026-06-22T21:43:32.603Z"
+    },
     {
       "id": "ae4c286921571dbd",
       "type": "message",
@@ -3191,14 +3213,6 @@
         "active": true
       },
       "created_at": "2026-06-21T03:21:18.572Z"
-    },
-    {
-      "id": "a81a01a49a70a3ce",
-      "type": "lead",
-      "text": "Novo lead adicionado: Ana Paula Mendes (Boutique Essência Feminina)",
-      "icon": "user-plus",
-      "color": "#6C63FF",
-      "created_at": "2026-06-21T03:21:02.960Z"
     }
   ],
   "marketing_campaigns": [

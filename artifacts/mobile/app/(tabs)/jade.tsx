@@ -35,7 +35,7 @@ const PINK      = "#FF0080";
 const BG        = "#0B0814";
 const { width: SCREEN_W } = Dimensions.get("window");
 const DRAWER_W  = SCREEN_W;
-const RDRAWER_W = 72;
+const RDRAWER_W = 76;
 
 // ─── Menu data ────────────────────────────────────────────────────────────────
 type MenuItem = { label: string; route: string; requiresPlan?: "pro" | "enterprise" };
@@ -92,12 +92,12 @@ const CONTEXT_ITEMS = [
 
 // ─── AI Modules (right drawer) ────────────────────────────────────────────────
 const MODULES = [
-  { key: "radar",     icon: "activity"       as const, label: "Radar" },
-  { key: "vendas",    icon: "trending-up"    as const, label: "Vendas" },
+  { key: "radar",     icon: "crosshair"      as const, label: "Radar" },
+  { key: "vendas",    icon: "bar-chart-2"    as const, label: "Vendas" },
   { key: "whatsapp",  icon: "message-circle" as const, label: "WhatsApp" },
   { key: "marketing", icon: "volume-2"       as const, label: "Marketing" },
   { key: "analise",   icon: "pie-chart"      as const, label: "Análise" },
-  { key: "briefing",  icon: "file-text"      as const, label: "Briefing" },
+  { key: "briefing",  icon: "clipboard"      as const, label: "Briefing" },
   { key: "rotas",     icon: "map-pin"        as const, label: "Rotas" },
 ];
 
@@ -812,15 +812,20 @@ export default function JADEScreen() {
         {...rightEdgePan.panHandlers}
       />
 
-      {/* ── Right drawer (AI Modules) ── */}
+      {/* ── Right drawer (AI Modules) — floating compact panel ── */}
       {rDrawerOpen && (
         <Animated.View style={[StyleSheet.absoluteFill, { zIndex: 400 }]} pointerEvents="box-none">
+          {/* Dismiss tap outside */}
           <TouchableOpacity style={StyleSheet.absoluteFill} onPress={closeRDrawer} activeOpacity={1} />
+          {/* Floating panel — wraps content, not full height */}
           <Animated.View
-            style={[C.rDrawer, { transform: [{ translateX: rDrawerAnim }], paddingTop: insets.top + 24, paddingBottom: insets.bottom + 24 }]}
+            style={[C.rDrawer, { top: topPad + 52, transform: [{ translateX: rDrawerAnim }] }]}
             pointerEvents="auto"
             {...rDrawerPan.panHandlers}
           >
+            {/* Title */}
+            <Text style={C.rDrawerTitle}>MÓDULOS IA</Text>
+            {/* Module buttons */}
             {MODULES.map((mod) => {
               const active = modules[mod.key] ?? false;
               return (
@@ -828,12 +833,12 @@ export default function JADEScreen() {
                   key={mod.key}
                   style={[C.modBtn, active && C.modBtnActive]}
                   onPress={() => toggleModule(mod.key)}
-                  activeOpacity={0.7}
+                  activeOpacity={0.75}
                 >
                   <Feather
                     name={mod.icon}
-                    size={19}
-                    color={active ? "#fff" : "rgba(255,255,255,0.22)"}
+                    size={20}
+                    color={active ? "#fff" : "rgba(255,255,255,0.28)"}
                   />
                 </TouchableOpacity>
               );
@@ -982,31 +987,47 @@ const C = StyleSheet.create({
   contextItem:  { flexDirection: "row", alignItems: "center", gap: 12, paddingHorizontal: 16, paddingVertical: 13 },
   contextLabel: { fontSize: 13, fontFamily: "SpaceGrotesk_400Regular" },
 
-  // ── Right drawer (AI Modules) ──
+  // ── Right drawer (AI Modules) — compact floating panel ──
   rDrawer: {
-    position: "absolute", right: 0, top: 0, bottom: 0,
+    position: "absolute",
+    right: 0,
+    // top is set inline (topPad + 52)
     width: RDRAWER_W,
-    backgroundColor: "#080710",
-    borderLeftWidth: StyleSheet.hairlineWidth,
-    borderLeftColor: "rgba(255,255,255,0.06)",
+    backgroundColor: "rgba(14,12,22,0.95)",
+    borderTopLeftRadius: 14,
+    borderBottomLeftRadius: 14,
+    paddingTop: 10,
+    paddingBottom: 12,
+    paddingHorizontal: 8,
     alignItems: "center",
-    justifyContent: "center",
-    gap: 6,
+    gap: 8,
     shadowColor: "#000",
-    shadowOffset: { width: -4, height: 0 },
-    shadowOpacity: 0.6,
-    shadowRadius: 16,
-    elevation: 20,
+    shadowOffset: { width: -6, height: 4 },
+    shadowOpacity: 0.55,
+    shadowRadius: 18,
+    elevation: 24,
+  },
+  rDrawerTitle: {
+    fontSize: 8,
+    fontFamily: "SpaceGrotesk_600SemiBold",
+    color: "rgba(255,255,255,0.35)",
+    letterSpacing: 1.0,
+    textAlign: "center",
+    marginBottom: 4,
   },
   modBtn: {
-    width: 44, height: 44, borderRadius: 22,
-    alignItems: "center", justifyContent: "center",
+    width: 50,
+    height: 50,
+    borderRadius: 12,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "rgba(255,255,255,0.05)",
   },
   modBtnActive: {
-    backgroundColor: "rgba(255,255,255,0.10)",
+    backgroundColor: "rgba(255,255,255,0.13)",
     shadowColor: "#fff",
     shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.12,
-    shadowRadius: 10,
+    shadowOpacity: 0.18,
+    shadowRadius: 8,
   },
 });
