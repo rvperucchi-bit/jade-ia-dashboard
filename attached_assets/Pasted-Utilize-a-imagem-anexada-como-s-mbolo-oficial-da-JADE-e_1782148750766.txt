@@ -1,0 +1,240 @@
+Utilize a imagem anexada como símbolo oficial da JADE em toda a aplicação.
+
+IMPORTANTE:
+
+- Utilizar exatamente a imagem enviada.
+- Não redesenhar.
+- Não recriar em SVG.
+- Não reinterpretar o design.
+- Não alterar proporções.
+- Não alterar cores.
+- Não adicionar efeitos.
+- Preservar transparência e qualidade original.
+
+==================================================
+OBJETIVO PRINCIPAL
+==================================================
+
+Transformar a experiência da JADE em uma experiência centrada na conversa.
+
+A tela principal deve transmitir a sensação de estar utilizando uma assistente de IA premium, rápida, organizada e focada em produtividade.
+
+O chat deve ser o elemento principal da plataforma.
+
+==================================================
+IDENTIDADE VISUAL
+==================================================
+
+Substituir o símbolo atual da JADE pelo novo símbolo enviado em anexo em todos os locais da aplicação onde a identidade visual da marca é exibida.
+
+Locais obrigatórios:
+
+- Splash Screen
+- Tela inicial
+- Tela de chat
+- Login
+- Cabeçalhos
+- Loading
+- Áreas institucionais
+- Componentes que exibam a identidade visual da JADE
+
+Manter total consistência visual em toda a aplicação.
+
+==================================================
+CHAT FULL SCREEN
+==================================================
+
+Reestruturar completamente a tela de conversa.
+
+Objetivos:
+
+- Chat ocupando praticamente toda a área útil da tela
+- Eliminar containers desnecessários
+- Eliminar áreas duplicadas
+- Eliminar rolagens internas conflitantes
+- Eliminar elementos que reduzam o espaço da conversa
+- Melhor aproveitamento da tela em dispositivos móveis
+
+Estrutura desejada:
+
+TOPO
+- Símbolo da JADE
+- Nome JADE
+- Botão do menu lateral
+
+CENTRO
+- Área da conversa
+
+RODAPÉ
+- Upload de arquivos
+- Campo de mensagem
+- Botão de áudio
+- Botão enviar
+
+A conversa deve ser o foco absoluto da experiência.
+
+==================================================
+ESTADO INICIAL SEM CONVERSA
+==================================================
+
+Quando não existir conversa ativa:
+
+Exibir no centro da tela:
+
+- Símbolo oficial da JADE
+- Tamanho elegante e proporcional
+- Aparência premium
+
+Texto:
+
+"Como posso ajudar hoje?"
+
+Abaixo exibir sugestões rápidas:
+
+- Gerar relatório
+- Encontrar oportunidades
+- Criar campanha
+- Analisar negócio
+
+Ao tocar em qualquer sugestão, iniciar automaticamente uma nova conversa.
+
+==================================================
+HISTÓRICO DE CONVERSAS
+==================================================
+
+Revisar e validar o sistema de histórico.
+
+Cada conversa deve:
+
+- Ser salva corretamente
+- Possuir título automático
+- Possuir data
+- Poder ser reaberta
+- Recuperar o contexto corretamente
+
+Adicionar e validar:
+
+- Nova conversa
+- Renomear conversa
+- Excluir conversa
+
+Garantir funcionamento real, não apenas visual.
+
+==================================================
+EXPERIÊNCIA DE RESPOSTA
+==================================================
+
+Durante o processamento das respostas:
+
+Utilizar o símbolo oficial da JADE como indicador visual.
+
+Animação desejada:
+
+- Extremamente discreta
+- Elegante
+- Premium
+- Sem exageros
+- Sem elementos chamativos
+- Sem distrações
+
+Ao finalizar a resposta:
+
+- Retornar ao estado normal
+
+==================================================
+UPLOAD DE ARQUIVOS
+==================================================
+
+Implementar e validar funcionamento completo.
+
+Tipos suportados:
+
+- PDF
+- DOCX
+- XLSX
+- CSV
+- TXT
+- PNG
+- JPG
+- JPEG
+- WEBP
+
+Requisitos:
+
+- Upload funcional
+- Preview do arquivo
+- Remoção do arquivo
+- Múltiplos arquivos
+- Integração correta com o chat
+
+==================================================
+ÁUDIO
+==================================================
+
+Revisar completamente o sistema de áudio.
+
+Problemas a investigar:
+
+- Falhas de captura
+- Interrupções
+- Áudios incompletos
+- Problemas de transcrição
+- Inconsistências na gravação
+
+Objetivo:
+
+Experiência confiável e fluida.
+
+Fluxo esperado:
+
+- Tocar no microfone
+- Gravar
+- Encerrar gravação
+- Transcrever automaticamente
+- Inserir texto na conversa
+
+Garantir funcionamento em dispositivos móveis e desktop.
+
+==================================================
+PERFORMANCE E QUALIDADE
+==================================================
+
+Realizar auditoria completa da tela de chat.
+
+Corrigir:
+
+- Componentes duplicados
+- Elementos sobrepostos
+- Rolagens desnecessárias
+- Travamentos
+- Lentidão
+- Recarregamentos desnecessários
+- Problemas de responsividade
+- Inconsistências visuais
+
+Objetivos:
+
+- Interface rápida
+- Navegação fluida
+- Respostas rápidas
+- Experiência premium
+- Aparência profissional
+
+==================================================
+RESULTADO ESPERADO
+==================================================
+
+Ao concluir as alterações, a JADE deve apresentar:
+
+- Experiência focada em conversa
+- Interface limpa
+- Chat como elemento principal
+- Histórico funcional
+- Upload funcional
+- Áudio funcional
+- Visual premium
+- Identidade visual consistente
+- Excelente experiência mobile
+- Excelente experiência desktop
+
+Antes de finalizar, realizar uma auditoria completa da implementação e corrigir automaticamente qualquer inconsistência encontrada.

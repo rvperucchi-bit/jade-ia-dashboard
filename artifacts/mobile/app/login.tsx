@@ -23,8 +23,8 @@ import { useAuth } from "@/context/AuthContext";
 const jadeLogo = require("../assets/images/jade-logo.png");
 
 const { width: SW } = Dimensions.get("window");
-const LOGO_W = Math.min(SW * 0.713, 299);
-const LOGO_H = LOGO_W * (683 / 1024);
+const LOGO_W = Math.min(SW * 0.55, 220);
+const LOGO_H = LOGO_W;
 
 export default function LoginScreen() {
   const { login } = useAuth();

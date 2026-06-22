@@ -74,7 +74,7 @@ export default function SplashScreen() {
       >
         <Image
           source={jadeLogo}
-          style={{ width: LOGO_W, height: LOGO_W * (683 / 1024) }}
+          style={{ width: LOGO_W, height: LOGO_W }}
           resizeMode="contain"
           fadeDuration={0}
         />
