@@ -11,6 +11,7 @@ import {
   Platform,
   ScrollView,
   StyleSheet,
+  Switch,
   Text,
   TextInput,
   TouchableOpacity,
@@ -30,11 +31,10 @@ import { useProfile } from "@/context/ProfileContext";
 import { takePendingVoice } from "@/utils/voiceContext";
 import { stripMarkdown } from "@/utils/stripMarkdown";
 
-const jadeLogo = require("../../assets/images/jade-logo.png");
-
-const PINK      = "#FF0080";
+const PINK     = "#FF0080";
+const BG       = "#0B0814";
 const { width: SCREEN_W } = Dimensions.get("window");
-const DRAWER_W  = Math.round(SCREEN_W * 0.82);
+const DRAWER_W = SCREEN_W;
 
 const RECENT_CONVOS = [
   "Análise Comercial",
@@ -44,13 +44,20 @@ const RECENT_CONVOS = [
   "Campanhas Ativas",
 ];
 
-const MENU_ITEMS = [
-  "Favoritos",
-  "Arquivos",
-  "Configurações",
-  "Perfil",
-  "Plano atual",
-] as const;
+const MENU_ITEMS: { label: string; route?: string }[] = [
+  { label: "Favoritos" },
+  { label: "Arquivos" },
+  { label: "Configurações" },
+  { label: "Plano atual" },
+];
+
+const TOOLS: { key: string; label: string; desc: string }[] = [
+  { key: "modoVendas",    label: "Modo Vendas",         desc: "Respostas orientadas a conversão" },
+  { key: "deteccaoLeads", label: "Detecção de Leads",   desc: "Identifica sinais de compra" },
+  { key: "respostasRap",  label: "Respostas Rápidas",   desc: "Sugestões automáticas de resposta" },
+  { key: "objecoes",      label: "Análise de Objeções", desc: "Detecta e rebate objeções" },
+  { key: "followUp",      label: "Follow-up Ativo",     desc: "Lembretes inteligentes de follow-up" },
+];
 
 const CONTEXT_ITEMS = [
   { icon: "edit-2"   as const, label: "Renomear conversa" },
@@ -85,12 +92,9 @@ function AudioWave({ color }: { color: string }) {
 }
 
 // ─── Message bubble ───────────────────────────────────────────────────────────
-// JADE: sem avatar, sem bolha — texto corrido como Claude/ChatGPT
-// User: bolha rosa à direita
 function MessageBubble({ msg, colors }: { msg: AIMessage; colors: ReturnType<typeof useColors> }) {
   const isJade = msg.sender === "jade";
 
-  // Áudio do usuário
   if (msg.isAudio && !isJade) {
     return (
       <View style={[C.msgRow, C.msgRight]}>
@@ -107,7 +111,6 @@ function MessageBubble({ msg, colors }: { msg: AIMessage; colors: ReturnType<typ
     );
   }
 
-  // Mensagem da JADE — sem bolha, sem avatar
   if (isJade) {
     return (
       <View style={C.msgJade}>
@@ -116,22 +119,17 @@ function MessageBubble({ msg, colors }: { msg: AIMessage; colors: ReturnType<typ
             {msg.files.map((f, i) => (
               <View key={i} style={[C.filePill, { backgroundColor: "rgba(255,255,255,0.06)" }]}>
                 <Feather name={f.type === "image" ? "image" : "file"} size={12} color={colors.mutedForeground} />
-                <Text style={{ fontSize: 11, color: colors.mutedForeground, fontFamily: "SpaceGrotesk_400Regular", flex: 1 }} numberOfLines={1}>
-                  {f.name}
-                </Text>
+                <Text style={{ fontSize: 11, color: colors.mutedForeground, fontFamily: "SpaceGrotesk_400Regular", flex: 1 }} numberOfLines={1}>{f.name}</Text>
               </View>
             ))}
           </View>
         )}
-        {!!msg.text && (
-          <Text style={[C.jadeText, { color: colors.text }]}>{msg.text}</Text>
-        )}
+        {!!msg.text && <Text style={[C.jadeText, { color: colors.text }]}>{msg.text}</Text>}
         <Text style={[C.jadeTime, { color: colors.mutedForeground }]}>{msg.time}</Text>
       </View>
     );
   }
 
-  // Mensagem do usuário — bolha rosa
   return (
     <View style={[C.msgRow, C.msgRight]}>
       <View style={[C.bubble, C.bubbleUser, { backgroundColor: PINK }]}>
@@ -140,16 +138,12 @@ function MessageBubble({ msg, colors }: { msg: AIMessage; colors: ReturnType<typ
             {msg.files.map((f, i) => (
               <View key={i} style={[C.filePill, { backgroundColor: "rgba(0,0,0,0.15)" }]}>
                 <Feather name={f.type === "image" ? "image" : "file"} size={12} color="rgba(255,255,255,0.8)" />
-                <Text style={{ fontSize: 11, color: "rgba(255,255,255,0.9)", fontFamily: "SpaceGrotesk_400Regular", flex: 1 }} numberOfLines={1}>
-                  {f.name}
-                </Text>
+                <Text style={{ fontSize: 11, color: "rgba(255,255,255,0.9)", fontFamily: "SpaceGrotesk_400Regular", flex: 1 }} numberOfLines={1}>{f.name}</Text>
               </View>
             ))}
           </View>
         )}
-        {!!msg.text && (
-          <Text style={[C.bubbleText, { color: "#fff" }]}>{msg.text}</Text>
-        )}
+        {!!msg.text && <Text style={[C.bubbleText, { color: "#fff" }]}>{msg.text}</Text>}
         <Text style={[C.bubbleTime, { color: "rgba(255,255,255,0.6)" }]}>{msg.time}</Text>
       </View>
     </View>
@@ -159,7 +153,6 @@ function MessageBubble({ msg, colors }: { msg: AIMessage; colors: ReturnType<typ
 // ─── Pensando… indicator ──────────────────────────────────────────────────────
 function TypingBubble({ colors }: { colors: ReturnType<typeof useColors> }) {
   const fade = useRef(new Animated.Value(0.3)).current;
-
   useEffect(() => {
     const loop = Animated.loop(
       Animated.sequence([
@@ -170,7 +163,6 @@ function TypingBubble({ colors }: { colors: ReturnType<typeof useColors> }) {
     loop.start();
     return () => loop.stop();
   }, []);
-
   return (
     <Animated.View style={{ paddingHorizontal: 20, paddingVertical: 10, opacity: fade }}>
       <Text style={{ color: colors.mutedForeground, fontSize: 14, fontFamily: "SpaceGrotesk_400Regular", fontStyle: "italic" }}>
@@ -220,7 +212,7 @@ export default function JADEScreen() {
   const router  = useRouter();
   const { addActivityEvent } = useApp();
   const { remaining, warnLevel, useCredit } = useCredits();
-  const { displayName } = useProfile();
+  const { displayName, photoUri } = useProfile();
 
   const topPad    = Platform.OS === "web" ? 24 : insets.top;
   const bottomPad = Platform.OS === "web" ? 20 : insets.bottom;
@@ -230,17 +222,26 @@ export default function JADEScreen() {
   const [loading,      setLoading]      = useState(false);
   const [sessionId,    setSessionId]    = useState<string | null>(null);
   const [handoffAlert, setHandoffAlert] = useState(false);
-  const [modoOp,       setModoOp]       = useState<string | null>(null);
-  const [segmento,     setSegmento]     = useState<string | null>(null);
   const [attachments,  setAttachments]  = useState<AttachedFile[]>([]);
 
-  // ── Drawer + menu state ────────────────────────────────────────────────────
+  // ── Tools toggles ─────────────────────────────────────────────────────────
+  const [tools, setTools] = useState<Record<string, boolean>>({
+    modoVendas:    true,
+    deteccaoLeads: true,
+    respostasRap:  false,
+    objecoes:      false,
+    followUp:      false,
+  });
+  const toggleTool = (key: string) => setTools((prev) => ({ ...prev, [key]: !prev[key] }));
+
+  // ── Drawer + menu state ───────────────────────────────────────────────────
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const drawerOpenRef = useRef(false);
   const [menuOpen,   setMenuOpen]   = useState(false);
   const drawerAnim  = useRef(new Animated.Value(-DRAWER_W)).current;
   const drawerBg    = useRef(new Animated.Value(0)).current;
 
-  // ── Audio state ────────────────────────────────────────────────────────────
+  // ── Audio state ───────────────────────────────────────────────────────────
   const [recording,  setRecording]  = useState(false);
   const [recordSecs, setRecordSecs] = useState(0);
   const [cancelling, setCancelling] = useState(false);
@@ -253,19 +254,9 @@ export default function JADEScreen() {
   const handoffTimer    = useRef<ReturnType<typeof setTimeout> | null>(null);
   const sessionCreating = useRef(false);
 
-  useEffect(() => {
-    AsyncStorage.getItem("@jade_ia:empresa_v2").then((raw) => {
-      if (!raw) return;
-      try {
-        const d = JSON.parse(raw);
-        setModoOp(d.modoOperacao ?? null);
-        setSegmento(d.segmento ?? null);
-      } catch {}
-    });
-  }, []);
-
-  // ── Drawer ─────────────────────────────────────────────────────────────────
+  // ── Drawer open / close ───────────────────────────────────────────────────
   const openDrawer = () => {
+    drawerOpenRef.current = true;
     setDrawerOpen(true);
     Animated.parallel([
       Animated.timing(drawerAnim, { toValue: 0,         duration: 290, easing: Easing.out(Easing.cubic), useNativeDriver: true }),
@@ -277,8 +268,19 @@ export default function JADEScreen() {
     Animated.parallel([
       Animated.timing(drawerAnim, { toValue: -DRAWER_W, duration: 240, easing: Easing.in(Easing.cubic), useNativeDriver: true }),
       Animated.timing(drawerBg,   { toValue: 0,         duration: 240, easing: Easing.in(Easing.cubic), useNativeDriver: true }),
-    ]).start(() => setDrawerOpen(false));
+    ]).start(() => { setDrawerOpen(false); drawerOpenRef.current = false; });
   };
+
+  // ── Swipe from left edge to open drawer ──────────────────────────────────
+  const swipePan = useRef(
+    PanResponder.create({
+      onMoveShouldSetPanResponder: (_, gs) =>
+        !drawerOpenRef.current && gs.x0 < 32 && gs.dx > 12 && Math.abs(gs.dy) < Math.abs(gs.dx),
+      onPanResponderRelease: (_, gs) => {
+        if (!drawerOpenRef.current && gs.dx > 40) openDrawer();
+      },
+    })
+  ).current;
 
   // ── Pulse ─────────────────────────────────────────────────────────────────
   const startPulse = () => {
@@ -316,8 +318,7 @@ export default function JADEScreen() {
       },
       onPanResponderTerminate: () => {
         if (recordTimer.current) clearInterval(recordTimer.current);
-        stopPulse();
-        setRecording(false); setCancelling(false); setRecordSecs(0);
+        stopPulse(); setRecording(false); setCancelling(false); setRecordSecs(0);
         cancelRef.current = false; secsRef.current = 0;
       },
     })
@@ -441,10 +442,7 @@ export default function JADEScreen() {
 
   // ── File attachment ────────────────────────────────────────────────────────
   const pickAttachment = async () => {
-    if (Platform.OS === "web") {
-      Alert.alert("Anexar", "Upload de arquivos disponível apenas no app mobile.");
-      return;
-    }
+    if (Platform.OS === "web") { Alert.alert("Anexar", "Upload disponível apenas no app mobile."); return; }
     Alert.alert("Anexar arquivo", "Escolha o tipo:", [
       {
         text: "Imagem da galeria",
@@ -483,8 +481,11 @@ export default function JADEScreen() {
     if (label === "Limpar conversa") resetConversation();
   };
 
+  // ── Profile initials fallback ──────────────────────────────────────────────
+  const initials = displayName.split(" ").map((w) => w[0]).slice(0, 2).join("").toUpperCase();
+
   return (
-    <View style={[C.container, { backgroundColor: colors.background }]}>
+    <View style={[C.container, { backgroundColor: colors.background }]} {...swipePan.panHandlers}>
       <KeyboardAvoidingView
         style={{ flex: 1 }}
         behavior={Platform.OS === "ios" ? "padding" : "height"}
@@ -492,12 +493,12 @@ export default function JADEScreen() {
       >
         {/* ── Header ── */}
         <View style={[C.header, { paddingTop: topPad + 4 }]}>
-          <TouchableOpacity style={C.headerBtn} onPress={openDrawer} activeOpacity={0.6}>
-            <Feather name="menu" size={20} color={colors.mutedForeground} />
+          <TouchableOpacity style={C.headerRing} onPress={openDrawer} activeOpacity={0.6}>
+            <Feather name="menu" size={17} color={colors.mutedForeground} />
           </TouchableOpacity>
           <View style={{ flex: 1 }} />
-          <TouchableOpacity style={C.headerBtn} onPress={() => setMenuOpen((v) => !v)} activeOpacity={0.6}>
-            <Feather name="more-vertical" size={20} color={colors.mutedForeground} />
+          <TouchableOpacity style={C.headerRing} onPress={() => setMenuOpen((v) => !v)} activeOpacity={0.6}>
+            <Feather name="more-vertical" size={17} color={colors.mutedForeground} />
           </TouchableOpacity>
         </View>
 
@@ -600,71 +601,105 @@ export default function JADEScreen() {
       {/* ── Drawer overlay ── */}
       {drawerOpen && (
         <Animated.View style={[StyleSheet.absoluteFill, { zIndex: 300 }]} pointerEvents="box-none">
-          {/* Backdrop */}
+          {/* Tap-outside to close (thin strip on the right) — tela cheia não tem backdrop */}
+          <TouchableOpacity
+            style={StyleSheet.absoluteFill}
+            onPress={closeDrawer}
+            activeOpacity={1}
+          />
+
+          {/* Panel — tela inteira, mesmo preto do app */}
           <Animated.View
-            style={[StyleSheet.absoluteFill, { backgroundColor: "rgba(0,0,0,0.65)", opacity: drawerBg }]}
+            style={[C.drawer, { transform: [{ translateX: drawerAnim }], paddingTop: insets.top }]}
             pointerEvents="auto"
           >
-            <TouchableOpacity style={{ flex: 1 }} onPress={closeDrawer} activeOpacity={1} />
-          </Animated.View>
-
-          {/* Panel */}
-          <Animated.View
-            style={[C.drawer, { backgroundColor: "#0F0F0F", borderRightColor: "#1E1E1E", transform: [{ translateX: drawerAnim }], paddingTop: insets.top + 28 }]}
-            pointerEvents="auto"
-          >
-            <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 40 }}>
-
-              {/* ── Cabeçalho ── */}
-              <View style={{ paddingHorizontal: 24, marginBottom: 28 }}>
-                <Text style={{ fontSize: 18, fontFamily: "SpaceGrotesk_700Bold", color: "#fff", letterSpacing: -0.4 }}>
-                  JADE
-                </Text>
-                <Text style={{ fontSize: 12, fontFamily: "SpaceGrotesk_400Regular", color: "#555", marginTop: 2 }}>
-                  Plano Master
-                </Text>
+            {/* ── Cabeçalho do drawer ── */}
+            <View style={C.drawerHeader}>
+              <View style={{ flex: 1 }}>
+                <Text style={C.drawerTitle}>JADE</Text>
               </View>
+              {/* Badge Enterprise */}
+              <View style={C.entBadge}>
+                <Text style={C.entBadgeText}>Enterprise</Text>
+              </View>
+              {/* Foto de perfil */}
+              <TouchableOpacity
+                style={C.profileThumb}
+                onPress={() => { closeDrawer(); router.push("/perfil" as any); }}
+                activeOpacity={0.75}
+              >
+                {photoUri ? (
+                  <Image source={{ uri: photoUri }} style={C.profileImg} />
+                ) : (
+                  <Text style={C.profileInitials}>{initials}</Text>
+                )}
+              </TouchableOpacity>
+            </View>
+
+            <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 48 }}>
 
               {/* ── Nova conversa ── */}
               <TouchableOpacity
                 style={C.newConvoBtn}
                 onPress={() => { closeDrawer(); resetConversation(); }}
-                activeOpacity={0.8}
+                activeOpacity={0.75}
               >
-                <Feather name="plus" size={15} color="#fff" />
-                <Text style={{ fontSize: 14, fontFamily: "SpaceGrotesk_600SemiBold", color: "#fff" }}>
-                  Nova conversa
-                </Text>
+                <Feather name="plus" size={14} color="rgba(255,255,255,0.6)" />
+                <Text style={C.newConvoText}>Nova conversa</Text>
               </TouchableOpacity>
 
               {/* ── Recentes ── */}
-              <View style={{ marginTop: 28, paddingHorizontal: 24 }}>
-                <Text style={{ fontSize: 11, fontFamily: "SpaceGrotesk_600SemiBold", color: "#444", letterSpacing: 1, textTransform: "uppercase", marginBottom: 10 }}>
-                  Recentes
-                </Text>
+              <View style={C.section}>
+                <Text style={C.sectionLabel}>Recentes</Text>
                 {RECENT_CONVOS.map((title) => (
                   <TouchableOpacity
                     key={title}
                     style={C.recentItem}
                     onPress={() => { closeDrawer(); resetConversation(); }}
-                    activeOpacity={0.65}
+                    activeOpacity={0.6}
                   >
-                    <Text style={{ fontSize: 14, fontFamily: "SpaceGrotesk_400Regular", color: "#ccc" }} numberOfLines={1}>
-                      {title}
-                    </Text>
+                    <Text style={C.recentText} numberOfLines={1}>{title}</Text>
                   </TouchableOpacity>
                 ))}
               </View>
 
-              {/* ── Divisor ── */}
-              <View style={{ height: StyleSheet.hairlineWidth, backgroundColor: "#1E1E1E", marginHorizontal: 24, marginTop: 24, marginBottom: 20 }} />
+              {/* ── Separador ── */}
+              <View style={C.sep} />
 
-              {/* ── Menu principal (texto) ── */}
-              <View style={{ paddingHorizontal: 24 }}>
-                {MENU_ITEMS.map((label) => (
-                  <TouchableOpacity key={label} style={C.menuItem} activeOpacity={0.65}>
-                    <Text style={{ fontSize: 14, fontFamily: "SpaceGrotesk_400Regular", color: label === "Plano atual" ? PINK : "#aaa" }}>
-                      {label}
+              {/* ── Ferramentas ── */}
+              <View style={C.section}>
+                <Text style={C.sectionLabel}>Ferramentas</Text>
+                {TOOLS.map((tool) => (
+                  <View key={tool.key} style={C.toolRow}>
+                    <View style={{ flex: 1, gap: 2 }}>
+                      <Text style={C.toolLabel}>{tool.label}</Text>
+                      <Text style={C.toolDesc} numberOfLines={1}>{tool.desc}</Text>
+                    </View>
+                    <Switch
+                      value={tools[tool.key] ?? false}
+                      onValueChange={() => toggleTool(tool.key)}
+                      trackColor={{ false: "#222", true: PINK + "55" }}
+                      thumbColor={tools[tool.key] ? PINK : "#444"}
+                      ios_backgroundColor="#222"
+                    />
+                  </View>
+                ))}
+              </View>
+
+              {/* ── Separador ── */}
+              <View style={C.sep} />
+
+              {/* ── Menu principal ── */}
+              <View style={C.section}>
+                {MENU_ITEMS.map((item) => (
+                  <TouchableOpacity
+                    key={item.label}
+                    style={C.menuItem}
+                    activeOpacity={0.6}
+                    onPress={() => { closeDrawer(); if (item.route) router.push(item.route as any); }}
+                  >
+                    <Text style={[C.menuText, item.label === "Plano atual" && { color: PINK }]}>
+                      {item.label}
                     </Text>
                   </TouchableOpacity>
                 ))}
@@ -678,10 +713,7 @@ export default function JADEScreen() {
       {/* ── Context menu ── */}
       {menuOpen && (
         <>
-          <TouchableOpacity
-            style={[StyleSheet.absoluteFill, { zIndex: 200 }]}
-            onPress={() => setMenuOpen(false)} activeOpacity={1}
-          />
+          <TouchableOpacity style={[StyleSheet.absoluteFill, { zIndex: 200 }]} onPress={() => setMenuOpen(false)} activeOpacity={1} />
           <View style={[C.contextMenu, { backgroundColor: "#111", borderColor: "#222", top: topPad + 48, zIndex: 201 }]}>
             {CONTEXT_ITEMS.map((item, idx) => (
               <TouchableOpacity
@@ -706,15 +738,21 @@ export default function JADEScreen() {
 const C = StyleSheet.create({
   container: { flex: 1 },
 
-  header:    { flexDirection: "row", alignItems: "center", paddingHorizontal: 8, paddingBottom: 6 },
-  headerBtn: { width: 40, height: 40, alignItems: "center", justifyContent: "center" },
+  // Header
+  header:     { flexDirection: "row", alignItems: "center", paddingHorizontal: 12, paddingBottom: 6 },
+  headerRing: {
+    width: 36, height: 36, borderRadius: 18,
+    borderWidth: 1, borderColor: "rgba(255,255,255,0.09)",
+    backgroundColor: "rgba(255,255,255,0.04)",
+    alignItems: "center", justifyContent: "center",
+  },
 
   // JADE messages — sem bolha
   msgJade:  { paddingHorizontal: 20, paddingVertical: 4, marginBottom: 20 },
   jadeText: { fontSize: 15, fontFamily: "SpaceGrotesk_400Regular", lineHeight: 24 },
-  jadeTime: { fontSize: 11, fontFamily: "SpaceGrotesk_400Regular", marginTop: 6, opacity: 0.45 },
+  jadeTime: { fontSize: 11, fontFamily: "SpaceGrotesk_400Regular", marginTop: 6, opacity: 0.4 },
 
-  // User messages — bolha
+  // User messages — bolha rosa
   msgRow:    { flexDirection: "row", marginBottom: 20, alignItems: "flex-end" },
   msgRight:  { justifyContent: "flex-end" },
   bubble:    { maxWidth: "80%", borderRadius: 18, padding: 13 },
@@ -743,18 +781,55 @@ const C = StyleSheet.create({
   handoffTitle:     { color: "#fff", fontSize: 13, fontFamily: "SpaceGrotesk_700Bold" },
   handoffSub:       { color: "rgba(255,255,255,0.85)", fontSize: 11, fontFamily: "SpaceGrotesk_400Regular", marginTop: 1 },
 
-  // Drawer
+  // Drawer — tela inteira, mesmo preto do app
   drawer: {
     position: "absolute", left: 0, top: 0, bottom: 0,
-    width: DRAWER_W, borderRightWidth: StyleSheet.hairlineWidth,
+    width: DRAWER_W, backgroundColor: BG,
+    paddingHorizontal: 0,
   },
+  drawerHeader: {
+    flexDirection: "row", alignItems: "center",
+    paddingHorizontal: 24, paddingTop: 20, paddingBottom: 24,
+  },
+  drawerTitle:  { fontSize: 17, fontFamily: "SpaceGrotesk_700Bold", color: "#fff", letterSpacing: -0.3 },
+
+  entBadge: {
+    borderWidth: 1, borderColor: "rgba(255,255,255,0.12)",
+    borderRadius: 6, paddingHorizontal: 8, paddingVertical: 3,
+    marginRight: 14,
+  },
+  entBadgeText: { fontSize: 10, fontFamily: "SpaceGrotesk_500Medium", color: "rgba(255,255,255,0.45)", letterSpacing: 0.5 },
+
+  profileThumb: {
+    width: 30, height: 30, borderRadius: 15,
+    backgroundColor: "#1E1E1E",
+    alignItems: "center", justifyContent: "center", overflow: "hidden",
+  },
+  profileImg:      { width: 30, height: 30, borderRadius: 15 },
+  profileInitials: { fontSize: 11, fontFamily: "SpaceGrotesk_600SemiBold", color: "rgba(255,255,255,0.5)" },
+
   newConvoBtn: {
     flexDirection: "row", alignItems: "center", gap: 10,
     marginHorizontal: 20, paddingHorizontal: 16, paddingVertical: 12,
-    backgroundColor: "#1A1A1A", borderRadius: 12, borderWidth: 1, borderColor: "#2A2A2A",
+    borderRadius: 10, borderWidth: 1, borderColor: "rgba(255,255,255,0.08)",
+    backgroundColor: "rgba(255,255,255,0.04)",
   },
-  recentItem: { paddingVertical: 11, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: "#1A1A1A" },
-  menuItem:   { paddingVertical: 13 },
+  newConvoText: { fontSize: 14, fontFamily: "SpaceGrotesk_500Medium", color: "rgba(255,255,255,0.7)" },
+
+  section:      { paddingHorizontal: 24, marginTop: 24 },
+  sectionLabel: { fontSize: 10, fontFamily: "SpaceGrotesk_600SemiBold", color: "#383838", letterSpacing: 1.2, textTransform: "uppercase", marginBottom: 12 },
+
+  sep: { height: StyleSheet.hairlineWidth, backgroundColor: "#181818", marginHorizontal: 24, marginTop: 24 },
+
+  recentItem: { paddingVertical: 11, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: "#141414" },
+  recentText: { fontSize: 14, fontFamily: "SpaceGrotesk_400Regular", color: "#888" },
+
+  toolRow:  { flexDirection: "row", alignItems: "center", paddingVertical: 13, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: "#141414" },
+  toolLabel:{ fontSize: 14, fontFamily: "SpaceGrotesk_500Medium", color: "#ccc" },
+  toolDesc: { fontSize: 11, fontFamily: "SpaceGrotesk_400Regular", color: "#444" },
+
+  menuItem: { paddingVertical: 13, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: "#141414" },
+  menuText: { fontSize: 14, fontFamily: "SpaceGrotesk_400Regular", color: "#666" },
 
   // Context menu
   contextMenu: {
