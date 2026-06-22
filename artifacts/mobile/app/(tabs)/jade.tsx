@@ -11,7 +11,6 @@ import {
   Platform,
   ScrollView,
   StyleSheet,
-  Switch,
   Text,
   TextInput,
   TouchableOpacity,
@@ -28,13 +27,51 @@ import { useColors } from "@/hooks/useColors";
 import { useApp } from "@/context/AppContext";
 import { useCredits } from "@/context/CreditsContext";
 import { useProfile } from "@/context/ProfileContext";
+import { usePlan } from "@/context/PlanContext";
 import { takePendingVoice } from "@/utils/voiceContext";
 import { stripMarkdown } from "@/utils/stripMarkdown";
 
-const PINK     = "#FF0080";
-const BG       = "#0B0814";
+const PINK      = "#FF0080";
+const BG        = "#0B0814";
 const { width: SCREEN_W } = Dimensions.get("window");
-const DRAWER_W = SCREEN_W;
+const DRAWER_W  = SCREEN_W;
+
+// ─── Menu data ────────────────────────────────────────────────────────────────
+type MenuItem = { label: string; route: string; requiresPlan?: "pro" | "enterprise" };
+type MenuSection = { title: string; items: MenuItem[] };
+
+const MENU_SECTIONS: MenuSection[] = [
+  {
+    title: "Ferramentas",
+    items: [
+      { label: "Chat IA",      route: "/(tabs)/jade" },
+      { label: "CRM",          route: "/(tabs)/conversas" },
+      { label: "Briefings",    route: "/briefing" },
+      { label: "Oportunidades",route: "/(tabs)/leads" },
+      { label: "Metas",        route: "/metas" },
+    ],
+  },
+  {
+    title: "Recursos Pro",
+    items: [
+      { label: "Radar",        route: "/analise",      requiresPlan: "pro" },
+      { label: "Marketing IA", route: "/marketing",    requiresPlan: "pro" },
+      { label: "Planejamento", route: "/planejamento", requiresPlan: "pro" },
+      { label: "Simulação",    route: "/roleplay",     requiresPlan: "pro" },
+      { label: "Relatórios",   route: "/relatorios",   requiresPlan: "pro" },
+    ],
+  },
+  {
+    title: "Recursos Enterprise",
+    items: [
+      { label: "Gestão Inteligente", route: "/gestao",          requiresPlan: "enterprise" },
+      { label: "Metas e KPIs",       route: "/metas",           requiresPlan: "enterprise" },
+      { label: "Painel Executivo",   route: "/painelexecutivo", requiresPlan: "enterprise" },
+      { label: "Performance",        route: "/relatoriogestor", requiresPlan: "enterprise" },
+      { label: "Check-ins",          route: "/feedbackjade",    requiresPlan: "enterprise" },
+    ],
+  },
+];
 
 const RECENT_CONVOS = [
   "Análise Comercial",
@@ -42,21 +79,6 @@ const RECENT_CONVOS = [
   "Relatório Semanal",
   "Estratégia JADE",
   "Campanhas Ativas",
-];
-
-const MENU_ITEMS: { label: string; route?: string }[] = [
-  { label: "Favoritos" },
-  { label: "Arquivos" },
-  { label: "Configurações" },
-  { label: "Plano atual" },
-];
-
-const TOOLS: { key: string; label: string; desc: string }[] = [
-  { key: "modoVendas",    label: "Modo Vendas",         desc: "Respostas orientadas a conversão" },
-  { key: "deteccaoLeads", label: "Detecção de Leads",   desc: "Identifica sinais de compra" },
-  { key: "respostasRap",  label: "Respostas Rápidas",   desc: "Sugestões automáticas de resposta" },
-  { key: "objecoes",      label: "Análise de Objeções", desc: "Detecta e rebate objeções" },
-  { key: "followUp",      label: "Follow-up Ativo",     desc: "Lembretes inteligentes de follow-up" },
 ];
 
 const CONTEXT_ITEMS = [
@@ -213,6 +235,7 @@ export default function JADEScreen() {
   const { addActivityEvent } = useApp();
   const { remaining, warnLevel, useCredit } = useCredits();
   const { displayName, photoUri } = useProfile();
+  const { canAccess } = usePlan();
 
   const topPad    = Platform.OS === "web" ? 24 : insets.top;
   const bottomPad = Platform.OS === "web" ? 20 : insets.bottom;
@@ -223,16 +246,6 @@ export default function JADEScreen() {
   const [sessionId,    setSessionId]    = useState<string | null>(null);
   const [handoffAlert, setHandoffAlert] = useState(false);
   const [attachments,  setAttachments]  = useState<AttachedFile[]>([]);
-
-  // ── Tools toggles ─────────────────────────────────────────────────────────
-  const [tools, setTools] = useState<Record<string, boolean>>({
-    modoVendas:    true,
-    deteccaoLeads: true,
-    respostasRap:  false,
-    objecoes:      false,
-    followUp:      false,
-  });
-  const toggleTool = (key: string) => setTools((prev) => ({ ...prev, [key]: !prev[key] }));
 
   // ── Drawer + menu state ───────────────────────────────────────────────────
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -271,13 +284,23 @@ export default function JADEScreen() {
     ]).start(() => { setDrawerOpen(false); drawerOpenRef.current = false; });
   };
 
-  // ── Swipe from left edge to open drawer ──────────────────────────────────
+  // ── Swipe left-edge → open, swipe left inside drawer → close ─────────────
   const swipePan = useRef(
     PanResponder.create({
       onMoveShouldSetPanResponder: (_, gs) =>
-        !drawerOpenRef.current && gs.x0 < 32 && gs.dx > 12 && Math.abs(gs.dy) < Math.abs(gs.dx),
+        !drawerOpenRef.current && gs.x0 < 32 && gs.dx > 14 && Math.abs(gs.dy) < Math.abs(gs.dx),
       onPanResponderRelease: (_, gs) => {
         if (!drawerOpenRef.current && gs.dx > 40) openDrawer();
+      },
+    })
+  ).current;
+
+  const drawerPan = useRef(
+    PanResponder.create({
+      onMoveShouldSetPanResponder: (_, gs) =>
+        drawerOpenRef.current && gs.dx < -14 && Math.abs(gs.dy) < Math.abs(gs.dx),
+      onPanResponderRelease: (_, gs) => {
+        if (drawerOpenRef.current && gs.dx < -40) closeDrawer();
       },
     })
   ).current;
@@ -354,7 +377,6 @@ export default function JADEScreen() {
     const trimmed = text.trim();
     if ((!trimmed && !files?.length) || loading) return;
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-
     const sid = await ensureSession();
     const userMsg: AIMessage = {
       id: Date.now().toString(),
@@ -365,7 +387,6 @@ export default function JADEScreen() {
     setMessages(updatedMsgs);
     setInput(""); setAttachments([]);
     setLoading(true);
-
     try {
       const controller = new AbortController();
       const tid = setTimeout(() => controller.abort(), 90000);
@@ -481,8 +502,21 @@ export default function JADEScreen() {
     if (label === "Limpar conversa") resetConversation();
   };
 
-  // ── Profile initials fallback ──────────────────────────────────────────────
   const initials = displayName.split(" ").map((w) => w[0]).slice(0, 2).join("").toUpperCase();
+
+  // Navigate from drawer item
+  const handleMenuNav = (item: MenuItem) => {
+    closeDrawer();
+    if (item.requiresPlan && !canAccess(item.requiresPlan)) {
+      router.push("/plano" as any);
+      return;
+    }
+    if (item.route === "/(tabs)/jade") {
+      // Already here — just close
+      return;
+    }
+    router.push(item.route as any);
+  };
 
   return (
     <View style={[C.container, { backgroundColor: colors.background }]} {...swipePan.panHandlers}>
@@ -601,28 +635,22 @@ export default function JADEScreen() {
       {/* ── Drawer overlay ── */}
       {drawerOpen && (
         <Animated.View style={[StyleSheet.absoluteFill, { zIndex: 300 }]} pointerEvents="box-none">
-          {/* Tap-outside to close (thin strip on the right) — tela cheia não tem backdrop */}
-          <TouchableOpacity
-            style={StyleSheet.absoluteFill}
-            onPress={closeDrawer}
-            activeOpacity={1}
-          />
+          {/* Tap outside = close (below the panel — unreachable since full screen, but kept for safety) */}
+          <TouchableOpacity style={StyleSheet.absoluteFill} onPress={closeDrawer} activeOpacity={1} />
 
-          {/* Panel — tela inteira, mesmo preto do app */}
+          {/* Panel */}
           <Animated.View
             style={[C.drawer, { transform: [{ translateX: drawerAnim }], paddingTop: insets.top }]}
             pointerEvents="auto"
+            {...drawerPan.panHandlers}
           >
-            {/* ── Cabeçalho do drawer ── */}
+            {/* ── Header ── */}
             <View style={C.drawerHeader}>
-              <View style={{ flex: 1 }}>
-                <Text style={C.drawerTitle}>JADE</Text>
-              </View>
-              {/* Badge Enterprise */}
+              <Text style={C.drawerTitle}>JADE</Text>
+              <View style={{ flex: 1 }} />
               <View style={C.entBadge}>
                 <Text style={C.entBadgeText}>Enterprise</Text>
               </View>
-              {/* Foto de perfil */}
               <TouchableOpacity
                 style={C.profileThumb}
                 onPress={() => { closeDrawer(); router.push("/perfil" as any); }}
@@ -636,15 +664,14 @@ export default function JADEScreen() {
               </TouchableOpacity>
             </View>
 
-            <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 48 }}>
-
+            <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 16 }}>
               {/* ── Nova conversa ── */}
               <TouchableOpacity
                 style={C.newConvoBtn}
                 onPress={() => { closeDrawer(); resetConversation(); }}
                 activeOpacity={0.75}
               >
-                <Feather name="plus" size={14} color="rgba(255,255,255,0.6)" />
+                <Feather name="plus" size={14} color="rgba(255,255,255,0.5)" />
                 <Text style={C.newConvoText}>Nova conversa</Text>
               </TouchableOpacity>
 
@@ -652,60 +679,64 @@ export default function JADEScreen() {
               <View style={C.section}>
                 <Text style={C.sectionLabel}>Recentes</Text>
                 {RECENT_CONVOS.map((title) => (
-                  <TouchableOpacity
-                    key={title}
-                    style={C.recentItem}
-                    onPress={() => { closeDrawer(); resetConversation(); }}
-                    activeOpacity={0.6}
-                  >
+                  <TouchableOpacity key={title} style={C.recentItem} onPress={() => { closeDrawer(); resetConversation(); }} activeOpacity={0.6}>
                     <Text style={C.recentText} numberOfLines={1}>{title}</Text>
                   </TouchableOpacity>
                 ))}
               </View>
 
-              {/* ── Separador ── */}
               <View style={C.sep} />
 
-              {/* ── Ferramentas ── */}
-              <View style={C.section}>
-                <Text style={C.sectionLabel}>Ferramentas</Text>
-                {TOOLS.map((tool) => (
-                  <View key={tool.key} style={C.toolRow}>
-                    <View style={{ flex: 1, gap: 2 }}>
-                      <Text style={C.toolLabel}>{tool.label}</Text>
-                      <Text style={C.toolDesc} numberOfLines={1}>{tool.desc}</Text>
-                    </View>
-                    <Switch
-                      value={tools[tool.key] ?? false}
-                      onValueChange={() => toggleTool(tool.key)}
-                      trackColor={{ false: "#222", true: PINK + "55" }}
-                      thumbColor={tools[tool.key] ? PINK : "#444"}
-                      ios_backgroundColor="#222"
-                    />
+              {/* ── Menu sections ── */}
+              {MENU_SECTIONS.map((section) => {
+                const sectionLocked = section.items[0].requiresPlan && !canAccess(section.items[0].requiresPlan);
+                return (
+                  <View key={section.title} style={C.section}>
+                    <Text style={C.sectionLabel}>{section.title}</Text>
+                    {section.items.map((item) => {
+                      const locked = item.requiresPlan ? !canAccess(item.requiresPlan) : false;
+                      const isCurrent = item.route === "/(tabs)/jade";
+                      return (
+                        <TouchableOpacity
+                          key={item.label}
+                          style={C.menuItem}
+                          onPress={() => handleMenuNav(item)}
+                          activeOpacity={locked ? 0.5 : 0.65}
+                        >
+                          <Text style={[
+                            C.menuText,
+                            locked && C.menuTextLocked,
+                            isCurrent && { color: "#fff" },
+                          ]} numberOfLines={1}>
+                            {item.label}
+                          </Text>
+                          {isCurrent && (
+                            <Text style={C.activeDot}>●</Text>
+                          )}
+                          {locked && (
+                            <Feather name="lock" size={11} color="#333" />
+                          )}
+                        </TouchableOpacity>
+                      );
+                    })}
+                    <View style={C.sep} />
                   </View>
-                ))}
-              </View>
-
-              {/* ── Separador ── */}
-              <View style={C.sep} />
-
-              {/* ── Menu principal ── */}
-              <View style={C.section}>
-                {MENU_ITEMS.map((item) => (
-                  <TouchableOpacity
-                    key={item.label}
-                    style={C.menuItem}
-                    activeOpacity={0.6}
-                    onPress={() => { closeDrawer(); if (item.route) router.push(item.route as any); }}
-                  >
-                    <Text style={[C.menuText, item.label === "Plano atual" && { color: PINK }]}>
-                      {item.label}
-                    </Text>
-                  </TouchableOpacity>
-                ))}
-              </View>
-
+                );
+              })}
             </ScrollView>
+
+            {/* ── Footer ── */}
+            <View style={[C.drawerFooter, { paddingBottom: insets.bottom + 16 }]}>
+              <View style={C.footerSep} />
+              <TouchableOpacity style={C.footerItem} onPress={() => { closeDrawer(); router.push("/perfil" as any); }} activeOpacity={0.65}>
+                <Text style={C.footerIcon}>⚙</Text>
+                <Text style={C.footerText}>Configurações</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={C.footerItem} onPress={() => { closeDrawer(); router.push("/login" as any); }} activeOpacity={0.65}>
+                <Text style={C.footerIcon}>↩</Text>
+                <Text style={[C.footerText, { color: "#555" }]}>Sair</Text>
+              </TouchableOpacity>
+            </View>
           </Animated.View>
         </Animated.View>
       )}
@@ -738,7 +769,6 @@ export default function JADEScreen() {
 const C = StyleSheet.create({
   container: { flex: 1 },
 
-  // Header
   header:     { flexDirection: "row", alignItems: "center", paddingHorizontal: 12, paddingBottom: 6 },
   headerRing: {
     width: 36, height: 36, borderRadius: 18,
@@ -747,12 +777,10 @@ const C = StyleSheet.create({
     alignItems: "center", justifyContent: "center",
   },
 
-  // JADE messages — sem bolha
-  msgJade:  { paddingHorizontal: 20, paddingVertical: 4, marginBottom: 20 },
-  jadeText: { fontSize: 15, fontFamily: "SpaceGrotesk_400Regular", lineHeight: 24 },
-  jadeTime: { fontSize: 11, fontFamily: "SpaceGrotesk_400Regular", marginTop: 6, opacity: 0.4 },
+  msgJade:   { paddingHorizontal: 20, paddingVertical: 4, marginBottom: 20 },
+  jadeText:  { fontSize: 15, fontFamily: "SpaceGrotesk_400Regular", lineHeight: 24 },
+  jadeTime:  { fontSize: 11, fontFamily: "SpaceGrotesk_400Regular", marginTop: 6, opacity: 0.4 },
 
-  // User messages — bolha rosa
   msgRow:    { flexDirection: "row", marginBottom: 20, alignItems: "flex-end" },
   msgRight:  { justifyContent: "flex-end" },
   bubble:    { maxWidth: "80%", borderRadius: 18, padding: 13 },
@@ -781,57 +809,70 @@ const C = StyleSheet.create({
   handoffTitle:     { color: "#fff", fontSize: 13, fontFamily: "SpaceGrotesk_700Bold" },
   handoffSub:       { color: "rgba(255,255,255,0.85)", fontSize: 11, fontFamily: "SpaceGrotesk_400Regular", marginTop: 1 },
 
-  // Drawer — tela inteira, mesmo preto do app
+  // ── Drawer ──
   drawer: {
     position: "absolute", left: 0, top: 0, bottom: 0,
     width: DRAWER_W, backgroundColor: BG,
-    paddingHorizontal: 0,
+    flexDirection: "column",
   },
   drawerHeader: {
     flexDirection: "row", alignItems: "center",
-    paddingHorizontal: 24, paddingTop: 20, paddingBottom: 24,
+    paddingHorizontal: 24, paddingTop: 20, paddingBottom: 20,
   },
-  drawerTitle:  { fontSize: 17, fontFamily: "SpaceGrotesk_700Bold", color: "#fff", letterSpacing: -0.3 },
-
+  drawerTitle: {
+    fontSize: 22, fontFamily: "SpaceGrotesk_700Bold", color: "#fff", letterSpacing: -0.5,
+  },
   entBadge: {
-    borderWidth: 1, borderColor: "rgba(255,255,255,0.12)",
-    borderRadius: 6, paddingHorizontal: 8, paddingVertical: 3,
-    marginRight: 14,
+    borderWidth: 1, borderColor: "rgba(255,255,255,0.08)",
+    borderRadius: 5, paddingHorizontal: 7, paddingVertical: 2,
+    marginRight: 12, backgroundColor: "rgba(255,255,255,0.02)",
   },
-  entBadgeText: { fontSize: 10, fontFamily: "SpaceGrotesk_500Medium", color: "rgba(255,255,255,0.45)", letterSpacing: 0.5 },
-
+  entBadgeText: {
+    fontSize: 9, fontFamily: "SpaceGrotesk_400Regular",
+    color: "rgba(255,255,255,0.25)", letterSpacing: 0.5,
+  },
   profileThumb: {
-    width: 30, height: 30, borderRadius: 15,
-    backgroundColor: "#1E1E1E",
+    width: 34, height: 34, borderRadius: 17,
+    backgroundColor: "#181818",
     alignItems: "center", justifyContent: "center", overflow: "hidden",
   },
-  profileImg:      { width: 30, height: 30, borderRadius: 15 },
-  profileInitials: { fontSize: 11, fontFamily: "SpaceGrotesk_600SemiBold", color: "rgba(255,255,255,0.5)" },
+  profileImg:      { width: 34, height: 34, borderRadius: 17 },
+  profileInitials: { fontSize: 12, fontFamily: "SpaceGrotesk_600SemiBold", color: "rgba(255,255,255,0.45)" },
 
   newConvoBtn: {
     flexDirection: "row", alignItems: "center", gap: 10,
-    marginHorizontal: 20, paddingHorizontal: 16, paddingVertical: 12,
-    borderRadius: 10, borderWidth: 1, borderColor: "rgba(255,255,255,0.08)",
-    backgroundColor: "rgba(255,255,255,0.04)",
+    marginHorizontal: 20, paddingHorizontal: 16, paddingVertical: 11,
+    borderRadius: 9, borderWidth: 1, borderColor: "rgba(255,255,255,0.07)",
+    backgroundColor: "rgba(255,255,255,0.03)",
   },
-  newConvoText: { fontSize: 14, fontFamily: "SpaceGrotesk_500Medium", color: "rgba(255,255,255,0.7)" },
+  newConvoText: { fontSize: 13, fontFamily: "SpaceGrotesk_500Medium", color: "rgba(255,255,255,0.55)" },
 
-  section:      { paddingHorizontal: 24, marginTop: 24 },
-  sectionLabel: { fontSize: 10, fontFamily: "SpaceGrotesk_600SemiBold", color: "#383838", letterSpacing: 1.2, textTransform: "uppercase", marginBottom: 12 },
+  section:      { paddingHorizontal: 24, marginTop: 20 },
+  sectionLabel: {
+    fontSize: 10, fontFamily: "SpaceGrotesk_600SemiBold", color: "#2E2E2E",
+    letterSpacing: 1.2, textTransform: "uppercase", marginBottom: 8,
+  },
+  sep: { height: StyleSheet.hairlineWidth, backgroundColor: "#161616", marginTop: 20, marginHorizontal: 24 },
 
-  sep: { height: StyleSheet.hairlineWidth, backgroundColor: "#181818", marginHorizontal: 24, marginTop: 24 },
+  recentItem: { paddingVertical: 10, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: "#121212" },
+  recentText: { fontSize: 13, fontFamily: "SpaceGrotesk_400Regular", color: "#666" },
 
-  recentItem: { paddingVertical: 11, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: "#141414" },
-  recentText: { fontSize: 14, fontFamily: "SpaceGrotesk_400Regular", color: "#888" },
+  menuItem: {
+    flexDirection: "row", alignItems: "center", gap: 8,
+    paddingVertical: 11, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: "#121212",
+  },
+  menuText:       { flex: 1, fontSize: 14, fontFamily: "SpaceGrotesk_400Regular", color: "#777" },
+  menuTextLocked: { color: "#2E2E2E" },
+  activeDot:      { fontSize: 8, color: PINK, marginRight: 2 },
 
-  toolRow:  { flexDirection: "row", alignItems: "center", paddingVertical: 13, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: "#141414" },
-  toolLabel:{ fontSize: 14, fontFamily: "SpaceGrotesk_500Medium", color: "#ccc" },
-  toolDesc: { fontSize: 11, fontFamily: "SpaceGrotesk_400Regular", color: "#444" },
+  // ── Footer ──
+  drawerFooter: { paddingHorizontal: 24 },
+  footerSep:    { height: StyleSheet.hairlineWidth, backgroundColor: "#161616", marginBottom: 8 },
+  footerItem:   { flexDirection: "row", alignItems: "center", gap: 12, paddingVertical: 13 },
+  footerIcon:   { fontSize: 14, color: "#444", width: 18, textAlign: "center" },
+  footerText:   { fontSize: 13, fontFamily: "SpaceGrotesk_400Regular", color: "#555" },
 
-  menuItem: { paddingVertical: 13, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: "#141414" },
-  menuText: { fontSize: 14, fontFamily: "SpaceGrotesk_400Regular", color: "#666" },
-
-  // Context menu
+  // ── Context menu ──
   contextMenu: {
     position: "absolute", right: 12, borderRadius: 12, borderWidth: 1,
     minWidth: 210, overflow: "hidden",
