@@ -1,0 +1,134 @@
+AJUSTAR SOMENTE A TELA DO CHAT DA JADE
+
+Não alterar splash screen.
+Não alterar tela de login.
+Não alterar onboarding.
+Não alterar logo.
+Não mexer em outras telas.
+
+Objetivo:
+Refinar apenas a tela principal de conversa da JADE, deixando ela mais limpa, premium e parecida com uma IA moderna.
+
+TOPO DO CHAT
+
+Remover completamente:
+
+* Texto “JADE”
+* Logo/anel
+* Botão voltar
+* Status online
+* Contador de mensagens
+* Ícone de edição/lápis
+
+Novo topo:
+
+* Lado esquerdo: botão transparente de menu com ícone de três linhas
+* Lado direito: botão transparente de opções com três pontos verticais
+
+Os dois botões devem ser discretos, pequenos e com fundo levemente transparente.
+
+SAUDAÇÃO INICIAL
+
+Quando a conversa estiver vazia, mostrar no centro da área útil da tela:
+
+Olá, Rodrigo.
+
+Regras:
+
+* Mostrar somente essa frase.
+* Não mostrar “Como posso te ajudar hoje?”
+* Não mostrar “JADE IA”
+* Não mostrar logo.
+* Não mostrar botões grandes no centro.
+* A frase deve ficar centralizada verticalmente na tela.
+* Fonte branca, grande, limpa e premium.
+* Usar o nome do usuário logado dinamicamente.
+
+Comportamento:
+
+* Assim que o usuário começar a digitar ou enviar a primeira mensagem, remover automaticamente a saudação.
+* Quando houver mensagens no chat, a saudação não deve aparecer.
+
+CAIXA DE MENSAGEM
+
+A caixa de mensagem deve ficar fixa no rodapé, com visual parecido com ChatGPT/Claude.
+
+Estrutura dentro da mesma caixa:
+
+[ +   Pergunte algo…   microfone   enviar ]
+
+Regras:
+
+* O botão “+” deve ficar dentro da caixa de texto, no lado esquerdo.
+* Não deixar o “+” fora da caixa.
+* Não criar botão separado para o “+”.
+* Caixa deve ocupar quase toda a largura da tela.
+* Placeholder “Pergunte algo…” em cinza/transparente.
+* Ícones de microfone e envio dentro da caixa, no lado direito.
+* Altura confortável, sem ficar espremida.
+* Cantos arredondados.
+* Fundo escuro levemente mais claro que o fundo da tela.
+* Borda sutil e elegante.
+
+AÇÕES RÁPIDAS
+
+Remover os botões rápidos da área central do chat.
+
+Botões como:
+
+* Gerar relatório
+* Encontrar oportunidades
+* Criar campanha
+* Analisar negócio
+
+não devem aparecer no meio da tela.
+
+Eles devem ser movidos para o menu lateral ou para uma área secundária do menu.
+
+MENU LATERAL
+
+Ao tocar no botão de três linhas no topo esquerdo, abrir menu lateral.
+
+Menu lateral deve ser mais clean e premium.
+
+Regras:
+
+* Fundo escuro com leve transparência.
+* Sem ícones ao lado dos itens.
+* Apenas texto.
+* Tipografia limpa.
+* Espaçamento confortável.
+* Visual minimalista.
+
+Itens do menu:
+
+JADE
+
+Nova conversa
+Histórico
+Favoritos
+Arquivos
+Configurações
+Perfil
+Plano atual
+
+O texto “JADE” deve ficar no topo, alinhado mais à esquerda, sem logo ao lado.
+
+INTERAÇÃO
+
+* O menu deve abrir deslizando suavemente da esquerda.
+* Deve fechar ao tocar fora dele.
+* Deve fechar ao arrastar para a esquerda.
+* A tela do chat ao fundo pode escurecer levemente quando o menu estiver aberto.
+
+RESULTADO ESPERADO
+
+A tela deve parecer uma conversa de IA moderna.
+
+Menos elementos visuais.
+Menos marca.
+Menos distração.
+Mais foco na conversa.
+
+Referências visuais:
+ChatGPT, Claude, Linear e Apple.

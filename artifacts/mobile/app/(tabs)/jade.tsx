@@ -25,6 +25,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useColors } from "@/hooks/useColors";
 import { useApp } from "@/context/AppContext";
 import { useCredits } from "@/context/CreditsContext";
+import { useProfile } from "@/context/ProfileContext";
 import { takePendingVoice } from "@/utils/voiceContext";
 import { stripMarkdown } from "@/utils/stripMarkdown";
 
@@ -201,34 +202,19 @@ function RecordingBar({ secs, cancelling, pulseAnim }: { secs: number; cancellin
   );
 }
 
-// ─── Empty state (centrado verticalmente) ─────────────────────────────────────
-function EmptyState({ onSend, colors }: { onSend: (t: string) => void; colors: ReturnType<typeof useColors> }) {
+// ─── Empty state ──────────────────────────────────────────────────────────────
+function EmptyState({ displayName, colors }: { displayName: string; colors: ReturnType<typeof useColors> }) {
   const fadeIn = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
-    Animated.timing(fadeIn, { toValue: 1, duration: 500, easing: Easing.out(Easing.cubic), useNativeDriver: true }).start();
+    Animated.timing(fadeIn, { toValue: 1, duration: 600, easing: Easing.out(Easing.cubic), useNativeDriver: true }).start();
   }, []);
 
   return (
-    <Animated.View style={{ flex: 1, justifyContent: "center", paddingHorizontal: 24, opacity: fadeIn }}>
-      <Text style={{ color: colors.mutedForeground, fontSize: 15, fontFamily: "SpaceGrotesk_400Regular", marginBottom: 6 }}>
-        Olá, Rodrigo.
+    <Animated.View style={{ flex: 1, justifyContent: "center", alignItems: "center", paddingHorizontal: 32, opacity: fadeIn }}>
+      <Text style={{ color: "#fff", fontSize: 30, fontFamily: "SpaceGrotesk_700Bold", textAlign: "center", letterSpacing: -0.5 }}>
+        Olá, {displayName}.
       </Text>
-      <Text style={{ color: colors.text, fontSize: 26, fontFamily: "SpaceGrotesk_700Bold", marginBottom: 28, lineHeight: 32 }}>
-        Como posso ajudar hoje?
-      </Text>
-      <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
-        {SUGGESTIONS.map((s) => (
-          <TouchableOpacity
-            key={s}
-            style={[C.suggChip, { backgroundColor: colors.surface + "55", borderColor: colors.border + "88" }]}
-            onPress={() => onSend(s)}
-            activeOpacity={0.7}
-          >
-            <Text style={{ color: colors.mutedForeground, fontSize: 12, fontFamily: "SpaceGrotesk_400Regular" }}>{s}</Text>
-          </TouchableOpacity>
-        ))}
-      </View>
     </Animated.View>
   );
 }
@@ -240,6 +226,7 @@ export default function JADEScreen() {
   const router  = useRouter();
   const { addActivityEvent } = useApp();
   const { remaining, warnLevel, useCredit } = useCredits();
+  const { displayName } = useProfile();
 
   const topPad    = Platform.OS === "web" ? 24 : insets.top;
   const bottomPad = Platform.OS === "web" ? 20 : insets.bottom;
@@ -533,7 +520,7 @@ export default function JADEScreen() {
 
         {/* ── Chat / Empty state ── */}
         {!hasConversation ? (
-          <EmptyState onSend={(t) => send(t)} colors={colors} />
+          <EmptyState displayName={displayName} colors={colors} />
         ) : (
           <FlatList
             data={renderData}
@@ -613,7 +600,7 @@ export default function JADEScreen() {
             </TouchableOpacity>
             <TextInput
               style={[C.input, { color: colors.text, fontFamily: "SpaceGrotesk_400Regular" }]}
-              placeholder="Mensagem..."
+              placeholder="Pergunte algo…"
               placeholderTextColor={colors.mutedForeground + "66"}
               value={input}
               onChangeText={setInput}
@@ -659,11 +646,10 @@ export default function JADEScreen() {
             style={[C.drawer, { backgroundColor: colors.card, borderRightColor: colors.border, transform: [{ translateX: drawerAnim }], paddingTop: insets.top + 20 }]}
             pointerEvents="auto"
           >
-            {/* Drawer logo */}
-            <View style={{ flexDirection: "row", alignItems: "center", gap: 10, paddingHorizontal: 20, marginBottom: 28 }}>
-              <Image source={jadeLogo} style={{ width: 28, height: 28, borderRadius: 14 }} resizeMode="contain" />
-              <Text style={{ fontSize: 16, fontFamily: "SpaceGrotesk_700Bold", color: colors.text }}>JADE</Text>
-            </View>
+            {/* Drawer title */}
+            <Text style={{ fontSize: 22, fontFamily: "SpaceGrotesk_700Bold", color: colors.text, paddingHorizontal: 24, marginBottom: 32, letterSpacing: -0.5 }}>
+              JADE
+            </Text>
 
             {DRAWER_ITEMS.map((item) => (
               <TouchableOpacity
@@ -675,7 +661,6 @@ export default function JADEScreen() {
                 }}
                 activeOpacity={0.7}
               >
-                <Feather name={item.icon} size={17} color={item.label === "Plano atual" ? PINK : colors.mutedForeground} />
                 <Text style={[C.drawerLabel, { color: item.label === "Plano atual" ? PINK : colors.text }]}>
                   {item.label}
                 </Text>
