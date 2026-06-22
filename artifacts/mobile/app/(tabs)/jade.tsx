@@ -197,14 +197,14 @@ function EmptyState({ onSend, colors }: { onSend: (t: string) => void; colors: R
   }, []);
 
   return (
-    <Animated.View style={{ flex: 1, alignItems: "center", justifyContent: "center", paddingHorizontal: 28, opacity: fadeIn }}>
-      <Text style={{ color: colors.mutedForeground, fontSize: 12, fontFamily: "SpaceGrotesk_500Medium", letterSpacing: 1.2, marginBottom: 10, textTransform: "uppercase" }}>
-        JADE IA
+    <Animated.View style={{ flex: 1, alignItems: "flex-start", justifyContent: "flex-end", paddingHorizontal: 20, paddingBottom: 28, opacity: fadeIn }}>
+      <Text style={{ color: colors.mutedForeground, fontSize: 16, fontFamily: "SpaceGrotesk_400Regular", marginBottom: 4 }}>
+        Olá, Rodrigo.
       </Text>
-      <Text style={{ color: colors.text, fontSize: 21, fontFamily: "SpaceGrotesk_700Bold", marginBottom: 32, textAlign: "center", lineHeight: 28 }}>
-        Como posso{"\n"}ajudar hoje?
+      <Text style={{ color: colors.text, fontSize: 22, fontFamily: "SpaceGrotesk_700Bold", marginBottom: 24, lineHeight: 28 }}>
+        Como posso ajudar hoje?
       </Text>
-      <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 10, justifyContent: "center" }}>
+      <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
         {SUGGESTIONS.map((s) => (
           <TouchableOpacity
             key={s}
@@ -212,7 +212,7 @@ function EmptyState({ onSend, colors }: { onSend: (t: string) => void; colors: R
             onPress={() => onSend(s)}
             activeOpacity={0.7}
           >
-            <Text style={{ color: colors.text, fontSize: 13, fontFamily: "SpaceGrotesk_400Regular" }}>{s}</Text>
+            <Text style={{ color: colors.mutedForeground, fontSize: 12, fontFamily: "SpaceGrotesk_400Regular" }}>{s}</Text>
           </TouchableOpacity>
         ))}
       </View>
@@ -479,47 +479,13 @@ export default function JADEScreen() {
       keyboardVerticalOffset={0}
     >
       {/* ── Header ── */}
-      <View style={[C.header, { paddingTop: topPad + 10, borderBottomColor: colors.border }]}>
+      <View style={[C.header, { paddingTop: topPad + 8, borderBottomColor: colors.border }]}>
         <TouchableOpacity style={C.backBtn} onPress={() => router.back()} activeOpacity={0.7}>
-          <Feather name="chevron-left" size={24} color={colors.text} />
+          <Feather name="chevron-left" size={22} color={colors.text} />
         </TouchableOpacity>
-
-        <Image source={jadeLogo} style={C.headerLogo} resizeMode="contain" />
-
-        <View style={{ flex: 1 }}>
-          <Text style={[C.headerTitle, { color: colors.text }]}>JADE</Text>
-          <View style={C.statusRow}>
-            <View style={C.greenDot} />
-            <Text style={[C.statusText, { color: "#00D68F" }]}>Online</Text>
-            {!!modoOp && (
-              <View style={[C.modeBadge, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-                <Text style={[C.modeText, { color: colors.mutedForeground }]}>{MODO_LABEL[modoOp] ?? modoOp}</Text>
-              </View>
-            )}
-            {!!segmento && (
-              <View style={[C.modeBadge, { backgroundColor: PINK + "14", borderColor: PINK + "30" }]}>
-                <Text style={[C.modeText, { color: PINK }]}>Especialista em {segmento}</Text>
-              </View>
-            )}
-          </View>
-        </View>
-
-        <TouchableOpacity
-          style={[C.creditsPill, {
-            backgroundColor: warnLevel === "empty" ? "#FF3B5C22" : warnLevel === "warn" ? "#FFB30022" : colors.surface,
-            borderColor:     warnLevel === "empty" ? "#FF3B5C55" : warnLevel === "warn" ? "#FFB30055" : colors.border,
-          }]}
-          onPress={() => router.push("/loja" as any)}
-          activeOpacity={0.8}
-        >
-          <Text style={{ fontSize: 11, fontFamily: "SpaceGrotesk_700Bold", color: warnLevel === "empty" ? "#FF3B5C" : warnLevel === "warn" ? "#FFB300" : colors.mutedForeground }}>
-            {remaining}
-          </Text>
-          <Text style={{ fontSize: 9, fontFamily: "SpaceGrotesk_400Regular", color: colors.mutedForeground }}>msg</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity style={[C.iconBtn, { backgroundColor: colors.surface }]} onPress={resetConversation} activeOpacity={0.8}>
-          <Feather name="plus" size={18} color={colors.mutedForeground} />
+        <Text style={[C.headerTitle, { color: colors.text, flex: 1 }]}>JADE</Text>
+        <TouchableOpacity style={C.iconBtn} onPress={resetConversation} activeOpacity={0.7}>
+          <Feather name="edit-2" size={17} color={colors.mutedForeground} />
         </TouchableOpacity>
       </View>
 
@@ -599,14 +565,13 @@ export default function JADEScreen() {
 
       {/* ── Input bar ── */}
       <View style={[C.inputBar, { borderTopColor: colors.border, backgroundColor: colors.background, paddingBottom: bottomPad + 8 }]}>
-        <TouchableOpacity style={[C.actionBtn, { backgroundColor: "transparent" }]} onPress={pickAttachment} activeOpacity={0.6}>
-          <Feather name="plus" size={22} color={colors.mutedForeground} />
-        </TouchableOpacity>
-
-        <View style={[C.inputWrap, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+        <View style={[C.inputPill, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+          <TouchableOpacity onPress={pickAttachment} activeOpacity={0.6} style={C.pillBtn}>
+            <Feather name="plus" size={20} color={colors.mutedForeground} />
+          </TouchableOpacity>
           <TextInput
             style={[C.input, { color: colors.text, fontFamily: "SpaceGrotesk_400Regular" }]}
-            placeholder="Pergunte algo para a JADE..."
+            placeholder="Pergunte algo..."
             placeholderTextColor={colors.mutedForeground}
             value={input}
             onChangeText={setInput}
@@ -616,24 +581,20 @@ export default function JADEScreen() {
             returnKeyType="send"
             editable={!loading && !recording}
           />
+          <View {...micPan.panHandlers}>
+            <Animated.View style={[C.pillBtn, recording && { backgroundColor: cancelling ? "#FF3333" : PINK, borderRadius: 18 }]}>
+              <Feather name="mic" size={18} color={recording ? "#fff" : colors.mutedForeground} />
+            </Animated.View>
+          </View>
+          <TouchableOpacity
+            style={[C.sendCircle, { backgroundColor: canSend ? PINK : "transparent" }]}
+            onPress={handleSend}
+            activeOpacity={0.8}
+            disabled={!canSend || warnLevel === "empty"}
+          >
+            <Feather name="send" size={15} color={canSend ? "#fff" : colors.mutedForeground + "60"} />
+          </TouchableOpacity>
         </View>
-
-        <View {...micPan.panHandlers}>
-          <Animated.View style={[C.actionBtn, {
-            backgroundColor: recording ? (cancelling ? "#FF3333" : PINK) : colors.surface,
-          }]}>
-            <Feather name="mic" size={18} color={recording ? "#fff" : colors.mutedForeground} />
-          </Animated.View>
-        </View>
-
-        <TouchableOpacity
-          style={[C.sendBtn, { backgroundColor: canSend ? PINK : colors.surface }]}
-          onPress={handleSend}
-          activeOpacity={0.8}
-          disabled={!canSend || warnLevel === "empty"}
-        >
-          <Feather name="send" size={17} color={canSend ? "#fff" : colors.mutedForeground} />
-        </TouchableOpacity>
       </View>
     </KeyboardAvoidingView>
   );
@@ -665,7 +626,7 @@ const C = StyleSheet.create({
   bubbleTime:{ fontSize: 11, fontFamily: "SpaceGrotesk_400Regular", marginTop: 4, textAlign: "right" },
   filePill:  { flexDirection: "row", alignItems: "center", gap: 5, padding: 5, borderRadius: 7 },
 
-  suggChip:  { paddingHorizontal: 16, paddingVertical: 10, borderRadius: 22, borderWidth: 1 },
+  suggChip:  { paddingHorizontal: 13, paddingVertical: 7, borderRadius: 18, borderWidth: 1 },
 
   recordBar: { flexDirection: "row", alignItems: "center", gap: 10, paddingHorizontal: 16, paddingVertical: 10, borderTopWidth: 1 },
   recDot:    { width: 10, height: 10, borderRadius: 5 },
@@ -675,11 +636,11 @@ const C = StyleSheet.create({
   attachStrip: { borderTopWidth: StyleSheet.hairlineWidth },
   attachChip:  { flexDirection: "row", alignItems: "center", gap: 6, paddingHorizontal: 10, paddingVertical: 6, borderRadius: 10, borderWidth: 1 },
 
-  inputBar:  { flexDirection: "row", alignItems: "flex-end", paddingHorizontal: 10, paddingTop: 8, gap: 6, borderTopWidth: StyleSheet.hairlineWidth },
-  inputWrap: { flex: 1, flexDirection: "row", alignItems: "flex-end", borderRadius: 20, borderWidth: 1, paddingHorizontal: 14, paddingVertical: 10 },
-  input:     { flex: 1, fontSize: 15, maxHeight: 100, lineHeight: 22 },
-  actionBtn: { width: 42, height: 42, borderRadius: 21, alignItems: "center", justifyContent: "center" },
-  sendBtn:   { width: 42, height: 42, borderRadius: 21, alignItems: "center", justifyContent: "center" },
+  inputBar:   { paddingHorizontal: 12, paddingTop: 8, borderTopWidth: StyleSheet.hairlineWidth },
+  inputPill:  { flexDirection: "row", alignItems: "center", borderRadius: 24, borderWidth: 1, paddingHorizontal: 6, paddingVertical: 6, gap: 2 },
+  input:      { flex: 1, fontSize: 15, maxHeight: 100, lineHeight: 22, paddingHorizontal: 6 },
+  pillBtn:    { width: 34, height: 34, borderRadius: 17, alignItems: "center", justifyContent: "center" },
+  sendCircle: { width: 34, height: 34, borderRadius: 17, alignItems: "center", justifyContent: "center" },
 
   creditBanner:     { flexDirection: "row", alignItems: "center", gap: 8, paddingHorizontal: 16, paddingVertical: 10 },
   creditBannerText: { color: "#fff", fontSize: 12, fontFamily: "SpaceGrotesk_600SemiBold", flex: 1 },

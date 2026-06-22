@@ -24,13 +24,13 @@ export default function SplashScreen() {
     Animated.parallel([
       Animated.timing(logoOpacity, {
         toValue: 1,
-        duration: 400,
+        duration: 500,
         easing: Easing.out(Easing.cubic),
         useNativeDriver: true,
       }),
       Animated.timing(logoRotate, {
         toValue: 1,
-        duration: 1200,
+        duration: 1400,
         easing: Easing.out(Easing.cubic),
         useNativeDriver: true,
       }),
@@ -38,13 +38,13 @@ export default function SplashScreen() {
       setTimeout(() => {
         Animated.timing(logoOpacity, {
           toValue: 0,
-          duration: 320,
+          duration: 420,
           easing: Easing.in(Easing.cubic),
           useNativeDriver: true,
         }).start(() => {
           router.replace("/login");
         });
-      }, 600);
+      }, 900);
     });
   }, []);
 
