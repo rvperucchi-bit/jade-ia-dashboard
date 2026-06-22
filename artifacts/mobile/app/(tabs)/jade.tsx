@@ -623,7 +623,7 @@ export default function JADEScreen() {
         {/* ── Credits banner ── */}
         {warnLevel !== "ok" && (
           <TouchableOpacity
-            style={[C.creditBanner, { backgroundColor: warnLevel === "empty" ? "#FF3B5C" : "#FFB300" }]}
+            style={[C.creditBanner, { backgroundColor: warnLevel === "empty" ? "rgba(255,255,255,0.5)" : "rgba(255,255,255,0.45)" }]}
             onPress={() => router.push("/loja" as any)} activeOpacity={0.9}
           >
             <Feather name={warnLevel === "empty" ? "x-circle" : "alert-triangle"} size={14} color="#fff" />
@@ -871,8 +871,8 @@ export default function JADEScreen() {
                 style={[C.contextItem, idx < CONTEXT_ITEMS.length - 1 && { borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: "#222" }]}
                 onPress={() => handleContextItem(item.label)} activeOpacity={0.7}
               >
-                <Feather name={item.icon} size={15} color={"danger" in item && item.danger ? "#FF3B5C" : "#666"} />
-                <Text style={[C.contextLabel, { color: "danger" in item && item.danger ? "#FF3B5C" : "#ddd" }]}>
+                <Feather name={item.icon} size={15} color={"danger" in item && item.danger ? "rgba(255,255,255,0.5)" : "#666"} />
+                <Text style={[C.contextLabel, { color: "danger" in item && item.danger ? "rgba(255,255,255,0.5)" : "#ddd" }]}>
                   {item.label}
                 </Text>
               </TouchableOpacity>

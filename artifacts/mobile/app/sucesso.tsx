@@ -11,7 +11,7 @@ const C = {
   text:    "#FFFFFF",
   muted:   "#7777AA",
   primary: "#FF0080",
-  success: "#00D68F",
+  success: "#FF0080",
   surface: "#16161F",
 };
 

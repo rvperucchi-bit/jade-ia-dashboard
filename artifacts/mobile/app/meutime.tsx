@@ -44,9 +44,9 @@ interface Vendedor {
 const AVATAR_COLORS = ["#FF0080", "#8400FF", "#FF0080", "#8400FF", "#FF0080", "#8400FF", "#FF0080"];
 
 const STATUS_OPTIONS: { key: StatusVendedor; label: string; emoji: string; color: string }[] = [
-  { key: "ativo",     label: "Ativo",    emoji: "🟢", color: "#00D68F" },
+  { key: "ativo",     label: "Ativo",    emoji: "●", color: "#FF0080" },
   { key: "ferias",    label: "Férias",   emoji: "🌴", color: "#FF0080" },
-  { key: "afastado",  label: "Afastado", emoji: "⚠️", color: "#FF3B5C" },
+  { key: "afastado",  label: "Afastado", emoji: "○", color: "#8400FF" },
 ];
 
 function pct(realizado: number, meta: number): number {
@@ -102,7 +102,7 @@ export default function MeuTimeScreen() {
 
   const ranked = [...vendedores].sort((a, b) => pct(b.realizado, b.metaMensal) - pct(a.realizado, a.metaMensal));
 
-  const barColor = (p: number) => p >= 80 ? "#00D68F" : p >= 50 ? "#FFB300" : "#FF3B5C";
+  const barColor = (p: number) => p >= 80 ? "rgba(255,255,255,0.55)" : p >= 50 ? "rgba(255,255,255,0.45)" : "rgba(255,255,255,0.5)";
 
   // ── Add vendedor ───────────────────────────────────────────────────────────
   const handleAdd = async () => {

@@ -103,12 +103,9 @@ function ConversationItem({
 function JadeBanner({ ativa, onToggle, loading }: { ativa: boolean; onToggle: () => void; loading: boolean }) {
   const colors = useColors();
   return (
-    <View style={[
-      banner.card,
-      { backgroundColor: ativa ? "#00D68F0D" : colors.card, borderColor: ativa ? "#00D68F33" : colors.border },
-    ]}>
-      <View style={[banner.iconWrap, { backgroundColor: ativa ? "#00D68F20" : "#FF008018" }]}>
-        <MaterialCommunityIcons name="robot" size={22} color={ativa ? "#00D68F" : "#FF0080"} />
+    <View style={[banner.card, { backgroundColor: colors.card, borderColor: ativa ? "#FF008040" : colors.border }]}>
+      <View style={[banner.iconWrap, { backgroundColor: "#FF008018" }]}>
+        <MaterialCommunityIcons name="robot" size={22} color="#FF0080" />
       </View>
       <View style={banner.body}>
         <Text style={[banner.title, { color: colors.text }]}>
@@ -116,12 +113,12 @@ function JadeBanner({ ativa, onToggle, loading }: { ativa: boolean; onToggle: ()
         </Text>
         <Text style={[banner.sub, { color: colors.mutedForeground }]}>
           {ativa
-            ? "Sua IA está respondendo clientes automaticamente"
-            : "Atenda seus clientes enquanto você está em reunião"}
+            ? "Respondendo clientes automaticamente"
+            : "Atenda clientes enquanto está em reunião"}
         </Text>
       </View>
       <TouchableOpacity
-        style={[banner.btn, { backgroundColor: ativa ? "#00D68F" : "#FF0080", shadowColor: ativa ? "#00D68F" : "#FF0080" }]}
+        style={[banner.btn, { backgroundColor: "#FF0080" }]}
         onPress={onToggle}
         activeOpacity={0.85}
         disabled={loading}
@@ -140,30 +137,30 @@ function AutonomoPanel({ ativa, logs, router }: { ativa: boolean; logs: string[]
   const colors = useColors();
   if (!ativa) return null;
   return (
-    <View style={[auton.card, { backgroundColor: colors.card, borderColor: "#00D68F30" }]}>
+    <View style={[auton.card, { backgroundColor: colors.card, borderColor: "rgba(255,255,255,0.06)" }]}>
       <View style={auton.statusRow}>
         <View style={auton.dot} />
-        <Text style={[auton.statusText, { color: "#00D68F" }]}>🟢 JADE ativa — respondendo automaticamente</Text>
+        <Text style={[auton.statusText, { color: "#FF0080" }]}>JADE ativa — respondendo automaticamente</Text>
       </View>
       {logs.length > 0 && (
         <View style={auton.logsSection}>
           <Text style={[auton.logsLabel, { color: colors.mutedForeground }]}>ATIVIDADE RECENTE</Text>
           {logs.map((log, i) => (
             <View key={i} style={[auton.logRow, { borderBottomColor: colors.border }]}>
-              <Feather name="zap" size={11} color="#00D68F" />
+              <Feather name="zap" size={11} color="rgba(255,255,255,0.55)" />
               <Text style={[auton.logText, { color: colors.mutedForeground }]}>{log}</Text>
             </View>
           ))}
         </View>
       )}
       <TouchableOpacity
-        style={[auton.whatsappBtn, { backgroundColor: "#25D36615", borderColor: "#25D36640" }]}
+        style={[auton.whatsappBtn, { backgroundColor: "rgba(255,255,255,0.06)", borderColor: "rgba(255,255,255,0.06)" }]}
         onPress={() => router.push("/whatsapp-config" as any)}
         activeOpacity={0.8}
       >
-        <MaterialCommunityIcons name="whatsapp" size={16} color="#25D366" />
-        <Text style={[auton.whatsappText, { color: "#25D366" }]}>Configurar integração WhatsApp</Text>
-        <View style={[auton.configBadge, { backgroundColor: "#FFB30020", borderColor: "#FFB30040" }]}>
+        <MaterialCommunityIcons name="whatsapp" size={16} color="rgba(255,255,255,0.6)" />
+        <Text style={[auton.whatsappText, { color: "rgba(255,255,255,0.6)" }]}>Configurar integração WhatsApp</Text>
+        <View style={[auton.configBadge, { backgroundColor: "rgba(255,255,255,0.06)", borderColor: "rgba(255,255,255,0.06)" }]}>
           <Text style={auton.configBadgeText}>Necessário para funcionar</Text>
         </View>
       </TouchableOpacity>
@@ -334,7 +331,7 @@ export default function ConversasScreen() {
             <Text style={[styles.headerTitle, { color: colors.text }]}>Conversas</Text>
             <Text style={[styles.headerSub, { color: colors.mutedForeground }]}>
               {conversations.filter((c) => c.unread > 0).length} não lidas
-              {jadeAtiva && <Text style={{ color: "#00D68F" }}> · JADE ON</Text>}
+              {jadeAtiva && <Text style={{ color: "#FF0080" }}> · JADE ON</Text>}
             </Text>
           </View>
           <TouchableOpacity
@@ -376,8 +373,8 @@ export default function ConversasScreen() {
               />
               {/* Inline authorize banner below the conversation item */}
               {reached && (
-                <View style={[styles.authBanner, { backgroundColor: "#FFB30012", borderColor: "#FFB30030" }]}>
-                  <Feather name="alert-triangle" size={13} color="#FFB300" />
+                <View style={[styles.authBanner, { backgroundColor: "rgba(255,255,255,0.06)", borderColor: "rgba(255,255,255,0.06)" }]}>
+                  <Feather name="alert-triangle" size={13} color="rgba(255,255,255,0.45)" />
                   <Text style={styles.authBannerText}>
                     JADE pausada — limite de {msgLimit} msgs atingido
                   </Text>
@@ -483,7 +480,7 @@ const styles = StyleSheet.create({
   avatarWrap: { position: "relative", marginRight: 14 },
   avatar: { width: 48, height: 48, borderRadius: 24, alignItems: "center", justifyContent: "center" },
   avatarText: { color: "#fff", fontSize: 16, fontFamily: "SpaceGrotesk_700Bold" },
-  onlineDot: { position: "absolute", bottom: 1, right: 1, width: 13, height: 13, borderRadius: 7, backgroundColor: "#00D68F", borderWidth: 2 },
+  onlineDot: { position: "absolute", bottom: 1, right: 1, width: 13, height: 13, borderRadius: 7, backgroundColor: "rgba(255,255,255,0.55)", borderWidth: 2 },
   itemBody: { flex: 1 },
   itemRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
   itemName: { fontSize: 15, fontFamily: "SpaceGrotesk_600SemiBold", flex: 1, marginRight: 8 },
@@ -491,10 +488,10 @@ const styles = StyleSheet.create({
   itemMsg: { flex: 1, fontSize: 13, marginTop: 3, marginRight: 8 },
   badge: { width: 20, height: 20, borderRadius: 10, alignItems: "center", justifyContent: "center", marginTop: 3 },
   badgeText: { color: "#fff", fontSize: 11, fontFamily: "SpaceGrotesk_700Bold" },
-  limitBadge: { backgroundColor: "#FFB30020", borderColor: "#FFB30060", borderWidth: 1, borderRadius: 8, paddingHorizontal: 7, paddingVertical: 2, marginTop: 3 },
-  limitBadgeText: { color: "#FFB300", fontSize: 10, fontFamily: "SpaceGrotesk_600SemiBold" },
+  limitBadge: { backgroundColor: "rgba(255,255,255,0.06)", borderColor: "rgba(255,255,255,0.06)", borderWidth: 1, borderRadius: 8, paddingHorizontal: 7, paddingVertical: 2, marginTop: 3 },
+  limitBadgeText: { color: "rgba(255,255,255,0.45)", fontSize: 10, fontFamily: "SpaceGrotesk_600SemiBold" },
   authBanner: { flexDirection: "row", alignItems: "center", gap: 8, paddingHorizontal: 20, paddingVertical: 9, borderTopWidth: StyleSheet.hairlineWidth, borderBottomWidth: StyleSheet.hairlineWidth },
-  authBannerText: { flex: 1, color: "#FFB300", fontSize: 12, fontFamily: "SpaceGrotesk_500Medium" },
+  authBannerText: { flex: 1, color: "rgba(255,255,255,0.45)", fontSize: 12, fontFamily: "SpaceGrotesk_500Medium" },
   authBtn: { backgroundColor: "#FF008020", borderColor: "#FF008050", borderWidth: 1, borderRadius: 8, paddingHorizontal: 10, paddingVertical: 5 },
   authBtnText: { color: "#FF0080", fontSize: 12, fontFamily: "SpaceGrotesk_700Bold" },
   empty: { alignItems: "center", justifyContent: "center", paddingTop: 80, gap: 12 },
@@ -514,7 +511,7 @@ const banner = StyleSheet.create({
 const auton = StyleSheet.create({
   card: { borderRadius: 12, borderWidth: 1, padding: 14, marginTop: 8, gap: 12 },
   statusRow: { flexDirection: "row", alignItems: "center", gap: 8 },
-  dot: { width: 8, height: 8, borderRadius: 4, backgroundColor: "#00D68F" },
+  dot: { width: 8, height: 8, borderRadius: 4, backgroundColor: "#FF0080" },
   statusText: { fontSize: 13, fontFamily: "SpaceGrotesk_600SemiBold" },
   logsSection: { gap: 4 },
   logsLabel: { fontSize: 10, fontFamily: "SpaceGrotesk_700Bold", letterSpacing: 0.8, marginBottom: 4 },
@@ -523,7 +520,7 @@ const auton = StyleSheet.create({
   whatsappBtn: { flexDirection: "row", alignItems: "center", gap: 8, borderRadius: 10, borderWidth: 1, padding: 10, flexWrap: "wrap" },
   whatsappText: { fontSize: 13, fontFamily: "SpaceGrotesk_600SemiBold", flex: 1 },
   configBadge: { paddingHorizontal: 8, paddingVertical: 3, borderRadius: 8, borderWidth: 1 },
-  configBadgeText: { fontSize: 10, fontFamily: "SpaceGrotesk_700Bold", color: "#FFB300" },
+  configBadgeText: { fontSize: 10, fontFamily: "SpaceGrotesk_700Bold", color: "rgba(255,255,255,0.45)" },
 });
 
 const modal = StyleSheet.create({

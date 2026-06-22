@@ -42,7 +42,7 @@ const VENDEDORES: VendedorMeta[] = [
 type Periodo = "mes" | "anterior" | "trimestre";
 
 function pct(v: number, t: number) { return t ? Math.min(Math.round((v / t) * 100), 999) : 0; }
-function barColor(p: number) { return p >= 80 ? "#00D68F" : p >= 50 ? "#FFB300" : "#FF3B5C"; }
+function barColor(p: number) { return p >= 80 ? "#FF0080" : p >= 50 ? "#8400FF" : "#555577"; }
 function fmt(n: number) { return "R$ " + n.toLocaleString("pt-BR"); }
 function initials(n: string) { return n.split(" ").map((x) => x[0]).slice(0, 2).join("").toUpperCase(); }
 
@@ -183,7 +183,7 @@ export default function MetasScreen() {
                 </View>
                 <View style={S.vAmounts}>
                   <Text style={[S.vReal, { color: colors.mutedForeground }]}>Realizado: {fmt(v.realizado)}</Text>
-                  <Text style={[S.vFor, { color: "#FFB30099" }]}>Forecast: {fmt(v.forecast)}</Text>
+                  <Text style={[S.vFor, { color: "rgba(255,255,255,0.06)" }]}>Forecast: {fmt(v.forecast)}</Text>
                 </View>
               </View>
             </View>
@@ -238,7 +238,7 @@ const S = StyleSheet.create({
   barTrack: { height: 8, borderRadius: 4, overflow: "hidden" },
   barFill: { height: "100%", borderRadius: 4 },
   barForecastTrack: { height: 3, borderRadius: 2 },
-  barForecastFill: { height: "100%", borderRadius: 2, backgroundColor: "#FFB30055" },
+  barForecastFill: { height: "100%", borderRadius: 2, backgroundColor: "rgba(255,255,255,0.06)" },
   sectionLabel: { fontSize: 11, fontFamily: "SpaceGrotesk_600SemiBold", letterSpacing: 1, marginHorizontal: 20, marginBottom: 12 },
   vCard: { marginHorizontal: 16, marginBottom: 10, padding: 16, borderRadius: 16, borderWidth: 1, gap: 10 },
   vTop: { flexDirection: "row", alignItems: "center", gap: 12 },

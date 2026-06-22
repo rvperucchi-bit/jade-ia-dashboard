@@ -13,7 +13,7 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useColors } from "@/hooks/useColors";
 
-const WHATSAPP_GREEN = "#25D366";
+const WHATSAPP_GREEN = "rgba(255,255,255,0.6)";
 
 const STEPS = [
   {
@@ -100,8 +100,8 @@ export default function WhatsAppConfigScreen() {
           </View>
         ))}
 
-        <View style={[S.infoBox, { backgroundColor: "#FFB30010", borderColor: "#FFB30030" }]}>
-          <Feather name="info" size={16} color="#FFB300" />
+        <View style={[S.infoBox, { backgroundColor: "rgba(255,255,255,0.06)", borderColor: "rgba(255,255,255,0.06)" }]}>
+          <Feather name="info" size={16} color="rgba(255,255,255,0.45)" />
           <Text style={[S.infoText, { color: colors.mutedForeground }]}>
             O toggle "Ativar JADE" na tela de Conversas já está ativo no sistema. Para que a JADE responda de verdade, a integração com o WhatsApp Business API é necessária. Entre em contato com nossa equipe para configurar.
           </Text>

@@ -120,7 +120,7 @@ export default function FeedbackJadeScreen() {
           const acima = p >= 100;
           const parcial = p >= 80;
           const baixo = p < 50;
-          const cardColor = acima ? "#00D68F" : baixo ? ENTERPRISE_PURPLE : "#FFB300";
+          const cardColor = acima ? "#FF0080" : baixo ? ENTERPRISE_PURPLE : "#555577";
           const feedback = feedbacks[v.id];
           const isLoading = loading[v.id];
 

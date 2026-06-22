@@ -24,8 +24,8 @@ const C = {
   sub:     "#AAAACC",
   primary: "#FF0080",
   surface: "#16161F",
-  success: "#00D68F",
-  warning: "#FFB300",
+  success: "#FF0080",
+  warning: "#8400FF",
 };
 
 const API_BASE =

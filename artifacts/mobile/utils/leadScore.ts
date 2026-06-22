@@ -51,10 +51,10 @@ export function calcLeadScore(lead: Lead, activitiesCount = 0): number {
 }
 
 export function getScoreInfo(score: number): ScoreInfo {
-  if (score >= 90) return { score, tier: "vip",    label: "VIP",    color: "#0088FF", emoji: "🔵" };
-  if (score >= 70) return { score, tier: "quente", label: "Quente", color: "#00D68F", emoji: "🟢" };
-  if (score >= 40) return { score, tier: "morno",  label: "Morno",  color: "#FFB300", emoji: "🟡" };
-  return                  { score, tier: "frio",   label: "Frio",   color: "#FF3B5C", emoji: "🔴" };
+  if (score >= 90) return { score, tier: "vip",    label: "VIP",    color: "#FF0080",              emoji: "🔥" };
+  if (score >= 70) return { score, tier: "quente", label: "Quente", color: "#FF0080",              emoji: "🔥" };
+  if (score >= 40) return { score, tier: "morno",  label: "Morno",  color: "rgba(255,255,255,0.5)", emoji: "·" };
+  return                  { score, tier: "frio",   label: "Frio",   color: "rgba(255,255,255,0.3)", emoji: "·" };
 }
 
 export function getLeadScoreInfo(lead: Lead, activitiesCount = 0): ScoreInfo {

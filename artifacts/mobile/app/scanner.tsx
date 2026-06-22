@@ -74,7 +74,7 @@ function StarRating({ rating, color }: { rating: number; color: string }) {
   return (
     <View style={styles.stars}>
       {[1, 2, 3, 4, 5].map((i) => (
-        <Feather key={i} name="star" size={12} color={i <= Math.round(rating) ? "#FFB300" : color + "44"} />
+        <Feather key={i} name="star" size={12} color={i <= Math.round(rating) ? "rgba(255,255,255,0.45)" : color + "44"} />
       ))}
       <Text style={[styles.ratingText, { color }]}>{rating.toFixed(1)}</Text>
     </View>
@@ -384,7 +384,7 @@ export default function ScannerScreen() {
         </Animated.View>
       ) : (
         <View style={[styles.scannerBanner, styles.scannerBannerPaused]}>
-          <Feather name="pause-circle" size={14} color="#FFB300" />
+          <Feather name="pause-circle" size={14} color="rgba(255,255,255,0.45)" />
           <Text style={styles.scannerBannerPausedText}>Scanner pausado — ative no Radar para prospecção automática</Text>
           <TouchableOpacity
             onPress={() => { toggleModule("scanner"); Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium); }}
@@ -496,10 +496,10 @@ export default function ScannerScreen() {
             <Feather
               name="zap"
               size={13}
-              color={remaining <= 1 ? "#FF3B5C" : remaining <= 5 ? "#FFB300" : "#00D68F"}
+              color={remaining <= 1 ? "rgba(255,255,255,0.5)" : remaining <= 5 ? "rgba(255,255,255,0.45)" : "rgba(255,255,255,0.55)"}
             />
             <Text style={[styles.buscasCounterText, {
-              color: remaining <= 1 ? "#FF3B5C" : remaining <= 5 ? "#FFB300" : colors.mutedForeground,
+              color: remaining <= 1 ? "rgba(255,255,255,0.5)" : remaining <= 5 ? "rgba(255,255,255,0.45)" : colors.mutedForeground,
             }]}>
               {remaining} busca{remaining !== 1 ? "s" : ""} restante{remaining !== 1 ? "s" : ""} este mês
               {remaining <= 2 ? " — Comprar mais →" : ""}
@@ -508,8 +508,8 @@ export default function ScannerScreen() {
 
           {/* Radar error */}
           {!!radarError && (
-            <View style={[styles.errorBox, { backgroundColor: "#FF3B5C18", borderColor: "#FF3B5C33" }]}>
-              <Feather name="alert-circle" size={14} color="#FF3B5C" />
+            <View style={[styles.errorBox, { backgroundColor: "rgba(255,255,255,0.06)", borderColor: "rgba(255,255,255,0.06)" }]}>
+              <Feather name="alert-circle" size={14} color="rgba(255,255,255,0.5)" />
               <Text style={styles.errorText}>{radarError}</Text>
             </View>
           )}
@@ -527,7 +527,7 @@ export default function ScannerScreen() {
                     key={place.placeId}
                     style={[styles.radarCard, {
                       backgroundColor: colors.card,
-                      borderColor: added ? "#00D68F44" : colors.border,
+                      borderColor: added ? "rgba(255,255,255,0.06)" : colors.border,
                     }]}
                   >
                     <View style={styles.radarCardRow}>
@@ -544,9 +544,9 @@ export default function ScannerScreen() {
                       </View>
                       <View style={[
                         styles.radarStatusBadge,
-                        { backgroundColor: place.hasPhone ? "#00D68F18" : "#77777A18", borderColor: place.hasPhone ? "#00D68F44" : "#77777A44" },
+                        { backgroundColor: place.hasPhone ? "rgba(255,255,255,0.06)" : "rgba(255,255,255,0.35)18", borderColor: place.hasPhone ? "rgba(255,255,255,0.06)" : "rgba(255,255,255,0.35)44" },
                       ]}>
-                        <Text style={[styles.radarStatusText, { color: place.hasPhone ? "#00D68F" : "#77777A" }]}>
+                        <Text style={[styles.radarStatusText, { color: place.hasPhone ? "rgba(255,255,255,0.55)" : "rgba(255,255,255,0.35)" }]}>
                           {place.hasPhone ? "Ativo" : "Sem tel."}
                         </Text>
                       </View>
@@ -572,15 +572,15 @@ export default function ScannerScreen() {
                       style={[
                         styles.radarAddBtn,
                         added
-                          ? { backgroundColor: "#00D68F18", borderColor: "#00D68F44", borderWidth: 1 }
+                          ? { backgroundColor: "rgba(255,255,255,0.06)", borderColor: "rgba(255,255,255,0.06)", borderWidth: 1 }
                           : { backgroundColor: "#FF0080" },
                       ]}
                       onPress={() => !added && handleRadarAdd(place)}
                       activeOpacity={0.85}
                       disabled={added}
                     >
-                      <Feather name={added ? "check" : "user-plus"} size={13} color={added ? "#00D68F" : "#fff"} />
-                      <Text style={[styles.radarAddBtnText, { color: added ? "#00D68F" : "#fff" }]}>
+                      <Feather name={added ? "check" : "user-plus"} size={13} color={added ? "rgba(255,255,255,0.55)" : "#fff"} />
+                      <Text style={[styles.radarAddBtnText, { color: added ? "rgba(255,255,255,0.55)" : "#fff" }]}>
                         {added ? "Adicionado ao CRM" : "Adicionar ao CRM"}
                       </Text>
                     </TouchableOpacity>
@@ -698,8 +698,8 @@ export default function ScannerScreen() {
 
         {/* Error */}
         {!!error && (
-          <View style={[styles.errorBox, { backgroundColor: "#FF3B5C18", borderColor: "#FF3B5C33" }]}>
-            <Feather name="alert-circle" size={16} color="#FF3B5C" />
+          <View style={[styles.errorBox, { backgroundColor: "rgba(255,255,255,0.06)", borderColor: "rgba(255,255,255,0.06)" }]}>
+            <Feather name="alert-circle" size={16} color="rgba(255,255,255,0.5)" />
             <Text style={styles.errorText}>{error}</Text>
           </View>
         )}
@@ -787,8 +787,8 @@ export default function ScannerScreen() {
       <Modal transparent animationType="fade" visible={showLimiteModal} onRequestClose={() => setShowLimiteModal(false)}>
         <View style={styles.modalOverlay}>
           <View style={[styles.modalBox, { backgroundColor: colors.card, borderColor: colors.border }]}>
-            <View style={[styles.modalIconWrap, { backgroundColor: "#FF3B5C18" }]}>
-              <Feather name="zap-off" size={28} color="#FF3B5C" />
+            <View style={[styles.modalIconWrap, { backgroundColor: "rgba(255,255,255,0.06)" }]}>
+              <Feather name="zap-off" size={28} color="rgba(255,255,255,0.5)" />
             </View>
             <Text style={[styles.modalTitle, { color: colors.text }]}>Buscas do mês esgotadas</Text>
             <Text style={[styles.modalSub, { color: colors.mutedForeground }]}>
@@ -961,15 +961,15 @@ const styles = StyleSheet.create({
   },
   searchBtnText: { fontSize: 16, fontFamily: "SpaceGrotesk_700Bold", color: "#fff" },
   scannerBanner: { flexDirection: "row", alignItems: "center", gap: 8, paddingHorizontal: 16, paddingVertical: 10, marginHorizontal: 0 },
-  scannerBannerActive: { backgroundColor: "#00D68F18", borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: "#00D68F33" },
-  scannerBannerPaused: { backgroundColor: "#FFB30012", borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: "#FFB30030" },
-  scannerDot: { width: 8, height: 8, borderRadius: 4, backgroundColor: "#00D68F" },
-  scannerBannerText:       { flex: 1, fontSize: 13, fontFamily: "SpaceGrotesk_500Medium", color: "#00D68F" },
-  scannerBannerPausedText: { flex: 1, fontSize: 13, fontFamily: "SpaceGrotesk_400Regular", color: "#FFB300" },
-  ativarBtn: { backgroundColor: "#FFB30022", borderRadius: 8, paddingHorizontal: 10, paddingVertical: 4, borderWidth: 1, borderColor: "#FFB30044" },
-  ativarBtnText: { fontSize: 11, fontFamily: "SpaceGrotesk_700Bold", color: "#FFB300" },
+  scannerBannerActive: { backgroundColor: "rgba(255,255,255,0.06)", borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: "rgba(255,255,255,0.06)" },
+  scannerBannerPaused: { backgroundColor: "rgba(255,255,255,0.06)", borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: "rgba(255,255,255,0.06)" },
+  scannerDot: { width: 8, height: 8, borderRadius: 4, backgroundColor: "rgba(255,255,255,0.55)" },
+  scannerBannerText:       { flex: 1, fontSize: 13, fontFamily: "SpaceGrotesk_500Medium", color: "rgba(255,255,255,0.55)" },
+  scannerBannerPausedText: { flex: 1, fontSize: 13, fontFamily: "SpaceGrotesk_400Regular", color: "rgba(255,255,255,0.45)" },
+  ativarBtn: { backgroundColor: "rgba(255,255,255,0.06)", borderRadius: 8, paddingHorizontal: 10, paddingVertical: 4, borderWidth: 1, borderColor: "rgba(255,255,255,0.06)" },
+  ativarBtnText: { fontSize: 11, fontFamily: "SpaceGrotesk_700Bold", color: "rgba(255,255,255,0.45)" },
   errorBox: { flexDirection: "row", alignItems: "center", gap: 10, marginHorizontal: 20, padding: 14, borderRadius: 12, borderWidth: 1 },
-  errorText: { flex: 1, fontSize: 15, fontFamily: "SpaceGrotesk_400Regular", color: "#FF3B5C" },
+  errorText: { flex: 1, fontSize: 15, fontFamily: "SpaceGrotesk_400Regular", color: "rgba(255,255,255,0.5)" },
   resultsSection: { paddingHorizontal: 16, gap: 12 },
   resultsHeader: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 4 },
   resultsTitle: { fontSize: 11, fontFamily: "SpaceGrotesk_600SemiBold", letterSpacing: 1 },

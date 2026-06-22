@@ -301,6 +301,6 @@ const S = StyleSheet.create({
     elevation: 8,
     marginBottom: 12,
   },
-  saveBtnSuccess: { backgroundColor: "#00D68F" },
+  saveBtnSuccess: { backgroundColor: "rgba(255,255,255,0.55)" },
   saveBtnText: { fontSize: 16, fontFamily: "SpaceGrotesk_700Bold", color: "#fff" },
 });

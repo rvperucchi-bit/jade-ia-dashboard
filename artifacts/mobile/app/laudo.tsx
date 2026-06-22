@@ -22,7 +22,7 @@ import { useApp } from "@/context/AppContext";
 const TIPOS = [
   { id: "completo",  label: "Diagnóstico Completo",       icon: "layers",        color: "#FF0080" },
   { id: "digital",   label: "Análise de Presença Digital", icon: "globe",         color: "#FF0080" },
-  { id: "potencial", label: "Potencial de Vendas",         icon: "trending-up",   color: "#00D68F" },
+  { id: "potencial", label: "Potencial de Vendas",         icon: "trending-up",   color: "#8400FF" },
 ];
 
 export default function LaudoScreen() {
@@ -115,7 +115,7 @@ export default function LaudoScreen() {
           </View>
 
           <TouchableOpacity
-            style={[S.genBtn, (!negocio.trim() || loading) && { opacity: 0.6 }, success && { backgroundColor: "#00D68F" }]}
+            style={[S.genBtn, (!negocio.trim() || loading) && { opacity: 0.6 }, success && { backgroundColor: "rgba(255,255,255,0.55)" }]}
             onPress={gerar}
             activeOpacity={0.85}
             disabled={!negocio.trim() || loading}

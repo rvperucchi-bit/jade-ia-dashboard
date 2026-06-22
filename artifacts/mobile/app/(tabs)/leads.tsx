@@ -20,10 +20,10 @@ import { useApp, Lead, LeadColumn, LeadActivity } from "@/context/AppContext";
 import { getLeadScoreInfo, calcLeadScore } from "@/utils/leadScore";
 
 const COLUMNS: { key: LeadColumn; label: string; color: string }[] = [
-  { key: "novo",       label: "Novo",        color: "#6C63FF" },
-  { key: "qualificado",label: "Qualificado", color: "#FFB300" },
+  { key: "novo",       label: "Novo",        color: "#8400FF" },
+  { key: "qualificado",label: "Qualificado", color: "rgba(255,255,255,0.45)" },
   { key: "proposta",   label: "Proposta",    color: "#FF0080" },
-  { key: "fechado",    label: "Fechado",     color: "#00D68F" },
+  { key: "fechado",    label: "Fechado",     color: "rgba(255,255,255,0.55)" },
 ];
 
 function formatValue(v: number) {
@@ -57,16 +57,16 @@ const JADE_SUMMARIES: string[] = [
 
 // ─── Lead semaphore status ────────────────────────────────────────────────────
 function leadStatusColor(lead: Lead): string {
-  if (lead.column === "fechado" || lead.column === "proposta") return "#0088FF";
+  if (lead.column === "fechado" || lead.column === "proposta") return "rgba(255,255,255,0.5)";
   const t = lead.time.toLowerCase();
-  if (t.includes("min") || (t.includes("h") && !t.includes("dia"))) return "#00D68F";
+  if (t.includes("min") || (t.includes("h") && !t.includes("dia"))) return "rgba(255,255,255,0.55)";
   if (t.includes("dia")) {
     const m = t.match(/(\d+)/);
     const days = m ? parseInt(m[1], 10) : 1;
-    if (days >= 7) return "#FF3B5C";
-    if (days >= 3) return "#FFB300";
+    if (days >= 7) return "rgba(255,255,255,0.5)";
+    if (days >= 3) return "rgba(255,255,255,0.45)";
   }
-  return "#00D68F";
+  return "rgba(255,255,255,0.55)";
 }
 
 function channelIcon(ch: ContactEntry["channel"], color: string) {
@@ -79,9 +79,9 @@ function channelIcon(ch: ContactEntry["channel"], color: string) {
 }
 function channelColor(ch: ContactEntry["channel"]) {
   switch (ch) {
-    case "whatsapp": return "#25D366";
-    case "email":    return "#6C63FF";
-    case "phone":    return "#FFB300";
+    case "whatsapp": return "rgba(255,255,255,0.6)";
+    case "email":    return "#8400FF";
+    case "phone":    return "rgba(255,255,255,0.45)";
     case "jade":     return "#FF0080";
   }
 }
@@ -97,30 +97,11 @@ function channelLabel(ch: ContactEntry["channel"]) {
 // ─── Score badge ──────────────────────────────────────────────────────────────
 function ScoreBadge({ lead }: { lead: Lead }) {
   const info = getLeadScoreInfo(lead);
-  const pulseAnim = useRef(new Animated.Value(1)).current;
-
-  React.useEffect(() => {
-    if (info.tier === "vip") {
-      const loop = Animated.loop(Animated.sequence([
-        Animated.timing(pulseAnim, { toValue: 1.15, duration: 700, useNativeDriver: true }),
-        Animated.timing(pulseAnim, { toValue: 1,    duration: 700, useNativeDriver: true }),
-      ]));
-      loop.start();
-      return () => loop.stop();
-    }
-  }, [info.tier]);
-
+  const isHot = info.score >= 70;
   return (
-    <Animated.View
-      style={[
-        L.scoreBadge,
-        { backgroundColor: info.color + "22", borderColor: info.color + "55" },
-        info.tier === "vip" && { transform: [{ scale: pulseAnim }] },
-      ]}
-    >
-      <View style={[L.scoreDot, { backgroundColor: info.color }]} />
-      <Text style={[L.scoreNum, { color: info.color }]}>{info.score}</Text>
-    </Animated.View>
+    <View style={[L.scoreBadge, { backgroundColor: "rgba(255,255,255,0.06)", borderColor: "rgba(255,255,255,0.1)" }]}>
+      <Text style={[L.scoreNum, { color: isHot ? "#FF0080" : "rgba(255,255,255,0.45)" }]}>{info.score}</Text>
+    </View>
   );
 }
 
@@ -152,13 +133,13 @@ function LeadCard({ lead, onPress }: { lead: Lead; onPress: () => void }) {
         <ScoreBadge lead={lead} />
         <Text style={[L.scoreLabel, { color: scoreInfo.color }]}>{scoreInfo.label}</Text>
         <View style={[L.scoreTrack, { backgroundColor: "rgba(255,255,255,0.08)" }]}>
-          <View style={[L.scoreFill, { width: `${scoreInfo.score}%` as any, backgroundColor: scoreInfo.color }]} />
+          <View style={[L.scoreFill, { width: `${scoreInfo.score}%` as any, backgroundColor: scoreInfo.score >= 70 ? "#FF0080" : "rgba(255,255,255,0.2)" }]} />
         </View>
       </View>
       <View style={L.cardFooter}>
         <Text style={[L.cardValue, { color: colors.primary }]}>{formatValue(lead.value)}</Text>
-        <View style={[L.tag, { backgroundColor: lead.tagColor + "22" }]}>
-          <Text style={[L.tagText, { color: lead.tagColor }]}>{lead.tag}</Text>
+        <View style={[L.tag, { backgroundColor: "rgba(255,255,255,0.06)" }]}>
+          <Text style={[L.tagText, { color: "rgba(255,255,255,0.45)" }]}>{lead.tag}</Text>
         </View>
       </View>
       <Text style={[L.cardTime, { color: colors.mutedForeground }]}>{lead.time}</Text>
@@ -182,7 +163,7 @@ function MoveModal({
           {COLUMNS.map((col) => (
             <TouchableOpacity
               key={col.key}
-              style={[L.moveOption, lead.column === col.key && { backgroundColor: col.color + "22" }]}
+              style={[L.moveOption, lead.column === col.key && { backgroundColor: "rgba(255,255,255,0.08)" }]}
               onPress={() => onMove(col.key)}
             >
               <View style={[L.colDot, { backgroundColor: col.color }]} />
@@ -278,7 +259,7 @@ function LeadDetailModal({
                 <Text style={[L.detailName, { color: colors.text }]}>{lead.name}</Text>
                 <Text style={[L.detailCompany, { color: colors.mutedForeground }]}>{lead.company}</Text>
                 <View style={L.detailMeta}>
-                  <View style={[L.stagePill, { backgroundColor: (stageCol?.color ?? "#888") + "22" }]}>
+                  <View style={[L.stagePill, { backgroundColor: "rgba(255,255,255,0.06)" }]}>
                     <View style={[L.stageDot, { backgroundColor: stageCol?.color }]} />
                     <Text style={[L.stagePillText, { color: stageCol?.color }]}>{stageCol?.label}</Text>
                   </View>
@@ -312,8 +293,8 @@ function LeadDetailModal({
                   <MaterialCommunityIcons name="robot" size={16} color={colors.primary} />
                 </View>
                 <Text style={[L.aiTitle, { color: colors.primary }]}>Análise JADE IA</Text>
-                <View style={[L.aiBadge, { backgroundColor: "#00D68F22" }]}>
-                  <Text style={{ fontSize: 10, fontFamily: "SpaceGrotesk_600SemiBold", color: "#00D68F" }}>
+                <View style={[L.aiBadge, { backgroundColor: "rgba(255,255,255,0.06)" }]}>
+                  <Text style={{ fontSize: 10, fontFamily: "SpaceGrotesk_600SemiBold", color: "rgba(255,255,255,0.55)" }}>
                     JADE IA
                   </Text>
                 </View>
@@ -332,7 +313,7 @@ function LeadDetailModal({
                     <View style={L.timelineItem}>
                       {/* Left line + icon */}
                       <View style={L.timelineLeft}>
-                        <View style={[L.timelineIconWrap, { backgroundColor: cc + "22" }]}>
+                        <View style={[L.timelineIconWrap, { backgroundColor: "rgba(255,255,255,0.06)" }]}>
                           {channelIcon(entry.channel, cc)}
                         </View>
                         {i < history.length - 1 && (
@@ -472,7 +453,7 @@ export default function LeadsScreen() {
               <View style={L.colHeader}>
                 <View style={[L.colDot, { backgroundColor: col.color }]} />
                 <Text style={[L.colTitle, { color: colors.text }]}>{col.label}</Text>
-                <View style={[L.colBadge, { backgroundColor: col.color + "33" }]}>
+                <View style={[L.colBadge, { backgroundColor: "rgba(255,255,255,0.08)" }]}>
                   <Text style={[L.colBadgeText, { color: col.color }]}>{colLeads.length}</Text>
                 </View>
               </View>

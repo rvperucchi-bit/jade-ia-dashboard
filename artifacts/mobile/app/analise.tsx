@@ -55,7 +55,7 @@ function KpiCard({ label, value, sub, icon, color, }: { label: string; value: st
   const colors = useColors();
   return (
     <View style={[KC.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
-      <View style={[KC.iconWrap, { backgroundColor: color + "22" }]}>
+      <View style={[KC.iconWrap, { backgroundColor: "rgba(255,255,255,0.06)" }]}>
         <Feather name={icon as any} size={18} color={color} />
       </View>
       <Text style={[KC.value, { color: colors.text }]}>{value}</Text>
@@ -98,7 +98,7 @@ export default function AnaliseScreen() {
     { label: "Leads Novos",     count: novos,           color: "#FF0080" },
     { label: "Qualificados",    count: qualif,           color: "#8400FF" },
     { label: "Proposta",        count: proposta,         color: "#FF0080" },
-    { label: "Fechados",        count: fechados.length,  color: "#00D68F" },
+    { label: "Fechados",        count: fechados.length,  color: "rgba(255,255,255,0.55)" },
   ];
 
   // Find biggest drop-off
@@ -156,14 +156,14 @@ export default function AnaliseScreen() {
             value={`${txConv}%`}
             sub={txConv >= 20 ? "▲ Acima da média" : "▼ Abaixo da média"}
             icon="trending-up"
-            color={txConv >= 20 ? "#00D68F" : "#FF3B5C"}
+            color={txConv >= 20 ? "rgba(255,255,255,0.55)" : "rgba(255,255,255,0.5)"}
           />
           <KpiCard
             label="Ticket Médio"
             value={ticket >= 1000 ? `R$${(ticket / 1000).toFixed(1)}k` : `R$${ticket}`}
             sub={`${fechados.length} contratos`}
             icon="dollar-sign"
-            color="#FFB300"
+            color="rgba(255,255,255,0.45)"
           />
           <KpiCard
             label="Leads Ativos"
@@ -177,7 +177,7 @@ export default function AnaliseScreen() {
             value={String(msgNaoLidas)}
             sub={msgNaoLidas > 0 ? "Requer atenção" : "Em dia ✓"}
             icon="message-circle"
-            color={msgNaoLidas > 0 ? "#FF0080" : "#00D68F"}
+            color={msgNaoLidas > 0 ? "#FF0080" : "rgba(255,255,255,0.55)"}
           />
         </View>
 
@@ -197,11 +197,11 @@ export default function AnaliseScreen() {
                   <Feather
                     name={d.rate < 0.3 ? "alert-circle" : d.rate < 0.6 ? "alert-triangle" : "check-circle"}
                     size={14}
-                    color={d.rate < 0.3 ? "#FF3B5C" : d.rate < 0.6 ? "#FFB300" : "#00D68F"}
+                    color={d.rate < 0.3 ? "rgba(255,255,255,0.5)" : d.rate < 0.6 ? "rgba(255,255,255,0.45)" : "rgba(255,255,255,0.55)"}
                   />
                   <Text style={[S.dropLabel, { color: colors.mutedForeground }]}>{d.from}</Text>
                   <Text style={[S.dropRate, {
-                    color: d.rate < 0.3 ? "#FF3B5C" : d.rate < 0.6 ? "#FFB300" : "#00D68F",
+                    color: d.rate < 0.3 ? "rgba(255,255,255,0.5)" : d.rate < 0.6 ? "rgba(255,255,255,0.45)" : "rgba(255,255,255,0.55)",
                   }]}>
                     {d.rate > 0 ? `${Math.round(d.rate * 100)}%` : "—"}
                   </Text>

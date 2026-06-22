@@ -22,7 +22,7 @@ import { useRadarSearches } from "@/hooks/useRadarSearches";
 
 const PINK   = "#FF0080";
 const PURPLE = "#8400FF";
-const GOLD   = "#FFB800";
+const GOLD   = "#8400FF";
 
 const C = {
   bg:      "#0B0814",
@@ -114,7 +114,7 @@ function BalanceCard({ remaining, used, total, icon, label }: {
   remaining: number; used: number; total: number; icon: string; label: string;
 }) {
   const pct = total > 0 ? remaining / total : 0;
-  const warn = remaining === 0 ? "#FF3B5C" : remaining < total * 0.2 ? "#FFB300" : "#00D68F";
+  const warn = remaining === 0 ? "rgba(255,255,255,0.5)" : remaining < total * 0.2 ? "rgba(255,255,255,0.45)" : "rgba(255,255,255,0.55)";
   return (
     <View style={S.balanceCard}>
       <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>

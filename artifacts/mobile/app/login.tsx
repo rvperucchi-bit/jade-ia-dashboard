@@ -182,7 +182,7 @@ const S = StyleSheet.create({
   input:  { flex: 1, fontSize: 15, fontFamily: "SpaceGrotesk_400Regular", color: "#fff" },
   eyeBtn: { padding: 4 },
 
-  error: { fontSize: 13, fontFamily: "SpaceGrotesk_400Regular", color: "#FF3B5C", textAlign: "center", marginTop: -4 },
+  error: { fontSize: 13, fontFamily: "SpaceGrotesk_400Regular", color: "rgba(255,255,255,0.5)", textAlign: "center", marginTop: -4 },
 
   btn: {
     backgroundColor: PINK,

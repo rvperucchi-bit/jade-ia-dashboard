@@ -132,20 +132,20 @@ async function apiFetch<T>(path: string, options?: RequestInit): Promise<T | nul
 // ─── Seed data ────────────────────────────────────────────────────────────────
 
 const SEED_LEADS: Lead[] = [
-  { id: "1", name: "Carlos Mendes", company: "TechBrasil", value: 12500, phone: "+55 11 99999-1111", column: "novo", tag: "E-commerce", tagColor: "#6C63FF", time: "2h atrás", initials: "CM", avatarColor: "#FF6B35" },
-  { id: "2", name: "Ana Souza", company: "Inova LTDA", value: 8900, phone: "+55 21 99999-2222", column: "novo", tag: "SaaS", tagColor: "#FF0080", time: "5h atrás", initials: "AS", avatarColor: "#00D68F" },
-  { id: "3", name: "Pedro Rocha", company: "Digital Hub", value: 34000, phone: "+55 31 99999-3333", column: "qualificado", tag: "Enterprise", tagColor: "#FFB300", time: "1d atrás", initials: "PR", avatarColor: "#6C63FF" },
-  { id: "4", name: "Mariana Lima", company: "StartUp XP", value: 6700, phone: "+55 41 99999-4444", column: "qualificado", tag: "PME", tagColor: "#00D68F", time: "2d atrás", initials: "ML", avatarColor: "#FF0080" },
-  { id: "5", name: "Roberto Costa", company: "Fintec Brasil", value: 52000, phone: "+55 51 99999-5555", column: "proposta", tag: "Fintech", tagColor: "#4ECDC4", time: "3d atrás", initials: "RC", avatarColor: "#FFB300" },
-  { id: "6", name: "Juliana Ferreira", company: "AutoMais", value: 18900, phone: "+55 61 99999-6666", column: "proposta", tag: "Auto", tagColor: "#FF6B35", time: "4d atrás", initials: "JF", avatarColor: "#4ECDC4" },
-  { id: "7", name: "Lucas Alves", company: "HealthPro", value: 27500, phone: "+55 71 99999-7777", column: "proposta", tag: "Health", tagColor: "#00D68F", time: "5d atrás", initials: "LA", avatarColor: "#00BCD4" },
-  { id: "8", name: "Beatriz Santos", company: "EduTech", value: 9800, phone: "+55 81 99999-8888", column: "fechado", tag: "EdTech", tagColor: "#AB47BC", time: "1sem atrás", initials: "BS", avatarColor: "#AB47BC" },
-  { id: "9", name: "Diego Nunes", company: "LogiMax", value: 41200, phone: "+55 91 99999-9999", column: "fechado", tag: "Logística", tagColor: "#FF6B35", time: "2sem atrás", initials: "DN", avatarColor: "#FF6B35" },
+  { id: "1", name: "Carlos Mendes", company: "TechBrasil", value: 12500, phone: "+55 11 99999-1111", column: "novo", tag: "E-commerce", tagColor: "rgba(255,255,255,0.35)", time: "2h atrás", initials: "CM", avatarColor: "#8400FF" },
+  { id: "2", name: "Ana Souza", company: "Inova LTDA", value: 8900, phone: "+55 21 99999-2222", column: "novo", tag: "SaaS", tagColor: "rgba(255,255,255,0.35)", time: "5h atrás", initials: "AS", avatarColor: "#FF0080" },
+  { id: "3", name: "Pedro Rocha", company: "Digital Hub", value: 34000, phone: "+55 31 99999-3333", column: "qualificado", tag: "Enterprise", tagColor: "rgba(255,255,255,0.35)", time: "1d atrás", initials: "PR", avatarColor: "#5C0FAE" },
+  { id: "4", name: "Mariana Lima", company: "StartUp XP", value: 6700, phone: "+55 41 99999-4444", column: "qualificado", tag: "PME", tagColor: "rgba(255,255,255,0.35)", time: "2d atrás", initials: "ML", avatarColor: "#A30055" },
+  { id: "5", name: "Roberto Costa", company: "Fintec Brasil", value: 52000, phone: "+55 51 99999-5555", column: "proposta", tag: "Fintech", tagColor: "rgba(255,255,255,0.35)", time: "3d atrás", initials: "RC", avatarColor: "#8400FF" },
+  { id: "6", name: "Juliana Ferreira", company: "AutoMais", value: 18900, phone: "+55 61 99999-6666", column: "proposta", tag: "Auto", tagColor: "rgba(255,255,255,0.35)", time: "4d atrás", initials: "JF", avatarColor: "#FF0080" },
+  { id: "7", name: "Lucas Alves", company: "HealthPro", value: 27500, phone: "+55 71 99999-7777", column: "proposta", tag: "Health", tagColor: "rgba(255,255,255,0.35)", time: "5d atrás", initials: "LA", avatarColor: "#5C0FAE" },
+  { id: "8", name: "Beatriz Santos", company: "EduTech", value: 9800, phone: "+55 81 99999-8888", column: "fechado", tag: "EdTech", tagColor: "rgba(255,255,255,0.35)", time: "1sem atrás", initials: "BS", avatarColor: "#A30055" },
+  { id: "9", name: "Diego Nunes", company: "LogiMax", value: 41200, phone: "+55 91 99999-9999", column: "fechado", tag: "Logística", tagColor: "rgba(255,255,255,0.35)", time: "2sem atrás", initials: "DN", avatarColor: "#8400FF" },
 ];
 
 const SEED_CONVERSATIONS: Conversation[] = [
   {
-    id: "1", contactName: "Carlos Mendes", lastMessage: "Qual o valor mensal? Preciso apresentar para minha diretoria.", time: "10:24", unread: 3, initials: "CM", avatarColor: "#FF6B35", isOnline: true,
+    id: "1", contactName: "Carlos Mendes", lastMessage: "Qual o valor mensal? Preciso apresentar para minha diretoria.", time: "10:24", unread: 3, initials: "CM", avatarColor: "#8400FF", isOnline: true,
     messages: [
       { id: "m1", text: "Olá! Vi sobre o plano Enterprise e tenho interesse em saber mais.", sender: "them", time: "10:20", read: true },
       { id: "m2", text: "Oi Carlos! Ótimo que entrou em contato. Posso te contar mais sobre nossas soluções?", sender: "me", time: "10:21", read: true },
@@ -155,7 +155,7 @@ const SEED_CONVERSATIONS: Conversation[] = [
     ],
   },
   {
-    id: "2", contactName: "Ana Souza", lastMessage: "Perfeito! Vou encaminhar para o financeiro hoje.", time: "09:15", unread: 0, initials: "AS", avatarColor: "#00D68F", isOnline: true,
+    id: "2", contactName: "Ana Souza", lastMessage: "Perfeito! Vou encaminhar para o financeiro hoje.", time: "09:15", unread: 0, initials: "AS", avatarColor: "#FF0080", isOnline: true,
     messages: [
       { id: "m6", text: "Bom dia! Conseguiu analisar nossa proposta?", sender: "me", time: "09:10", read: true },
       { id: "m7", text: "Bom dia! Sim, achei muito interessante. Os números fazem sentido.", sender: "them", time: "09:12", read: true },
@@ -164,7 +164,7 @@ const SEED_CONVERSATIONS: Conversation[] = [
     ],
   },
   {
-    id: "3", contactName: "Pedro Rocha", lastMessage: "Podemos marcar uma demo na próxima semana?", time: "Ontem", unread: 1, initials: "PR", avatarColor: "#6C63FF", isOnline: false,
+    id: "3", contactName: "Pedro Rocha", lastMessage: "Podemos marcar uma demo na próxima semana?", time: "Ontem", unread: 1, initials: "PR", avatarColor: "#5C0FAE", isOnline: false,
     messages: [
       { id: "m10", text: "Pedro, queria saber se teve chance de ver nosso material.", sender: "me", time: "Ontem 14:30", read: true },
       { id: "m11", text: "Sim, vi! A plataforma parece muito robusta.", sender: "them", time: "Ontem 15:00", read: true },
@@ -179,7 +179,7 @@ const SEED_CONVERSATIONS: Conversation[] = [
     ],
   },
   {
-    id: "5", contactName: "Roberto Costa", lastMessage: "Contrato assinado! Obrigado pela atenção.", time: "Dom", unread: 0, initials: "RC", avatarColor: "#FFB300", isOnline: false,
+    id: "5", contactName: "Roberto Costa", lastMessage: "Contrato assinado! Obrigado pela atenção.", time: "Dom", unread: 0, initials: "RC", avatarColor: "#A30055", isOnline: false,
     messages: [
       { id: "m15", text: "Roberto, a proposta foi aprovada?", sender: "me", time: "Dom 09:00", read: true },
       { id: "m16", text: "Contrato assinado! Obrigado pela atenção.", sender: "them", time: "Dom 09:30", read: true },

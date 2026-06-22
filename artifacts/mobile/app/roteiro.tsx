@@ -72,7 +72,7 @@ const ETAPAS = [
     num: "04",
     title: "Objeções",
     icon: "shield",
-    color: "#00D68F",
+    color: "rgba(255,255,255,0.55)",
     desc: "Respostas prontas para as 5 objeções mais comuns",
     steps: [
       "\"Está caro\" → Valide: 'Faz sentido querer ter certeza do retorno.' Depois mostre o custo de não fazer.",
@@ -194,7 +194,7 @@ export default function RoteiroScreen() {
 
         <View style={S.genSection}>
           <TouchableOpacity
-            style={[S.genBtn, loading && { opacity: 0.7 }, success && { backgroundColor: "#00D68F" }]}
+            style={[S.genBtn, loading && { opacity: 0.7 }, success && { backgroundColor: "rgba(255,255,255,0.55)" }]}
             onPress={gerar}
             activeOpacity={0.85}
             disabled={loading}

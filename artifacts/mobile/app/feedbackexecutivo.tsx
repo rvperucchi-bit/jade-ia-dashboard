@@ -46,8 +46,8 @@ interface AggData {
 }
 
 const HUMOR_OPTIONS: { key: Humor; emoji: string; label: string; color: string; bg: string }[] = [
-  { key: "otimo",   emoji: "😄", label: "Mandei bem!",           color: "#00D68F", bg: "#00D68F18" },
-  { key: "ok",      emoji: "😐", label: "Ok, travei em algumas", color: "#FFB300", bg: "#FFB30018" },
+  { key: "otimo",   emoji: "😄", label: "Mandei bem!",           color: "rgba(255,255,255,0.55)", bg: "rgba(255,255,255,0.06)" },
+  { key: "ok",      emoji: "😐", label: "Ok, travei em algumas", color: "rgba(255,255,255,0.45)", bg: "rgba(255,255,255,0.06)" },
   { key: "dificil", emoji: "😔", label: "Difícil, precisei de apoio", color: "#FF0080", bg: "rgba(255,0,128,0.08)" },
   { key: "ideia",   emoji: "💡", label: "Tenho uma ideia!",      color: ENTERPRISE_PURPLE, bg: "#8400FF18" },
 ];
@@ -144,9 +144,9 @@ export default function FeedbackExecutivoScreen() {
         {tab === "checkin" && (
           <>
             {enviado ? (
-              <View style={[S.successCard, { backgroundColor: "#00D68F18", borderColor: "#00D68F44" }]}>
+              <View style={[S.successCard, { backgroundColor: "rgba(255,255,255,0.06)", borderColor: "rgba(255,255,255,0.06)" }]}>
                 <Text style={S.successEmoji}>✅</Text>
-                <Text style={[S.successTitle, { color: "#00D68F" }]}>Feedback enviado!</Text>
+                <Text style={[S.successTitle, { color: "rgba(255,255,255,0.55)" }]}>Feedback enviado!</Text>
                 <Text style={[S.successSub, { color: colors.mutedForeground }]}>
                   Obrigado por compartilhar. O gestor vai ver seu check-in de hoje.
                 </Text>
@@ -260,7 +260,7 @@ export default function FeedbackExecutivoScreen() {
                     <Text style={[S.resumoLabel, { color: colors.mutedForeground }]}>no time</Text>
                   </View>
                   <View style={[S.resumoCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
-                    <Text style={[S.resumoNum, { color: "#00D68F" }]}>{aggData.humors.otimo}</Text>
+                    <Text style={[S.resumoNum, { color: "rgba(255,255,255,0.55)" }]}>{aggData.humors.otimo}</Text>
                     <Text style={[S.resumoLabel, { color: colors.mutedForeground }]}>😄 ótimo</Text>
                   </View>
                 </View>

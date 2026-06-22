@@ -52,7 +52,7 @@ function ResultCard({ icon, label, color, text }: { icon: string; label: string;
   return (
     <View style={[RC.card, { backgroundColor: colors.card, borderColor: colors.border, borderLeftColor: color, borderLeftWidth: 3 }]}>
       <View style={RC.header}>
-        <View style={[RC.iconWrap, { backgroundColor: color + "20" }]}>
+        <View style={[RC.iconWrap, { backgroundColor: "rgba(255,255,255,0.05)" }]}>
           <Feather name={icon as any} size={14} color={color} />
         </View>
         <Text style={[RC.label, { color }]}>{label}</Text>
@@ -210,8 +210,8 @@ export default function BriefingScreen() {
             </Text>
             <ResultCard icon="user"       label="PERFIL DO LEAD"         color="#FF0080" text={result.resumo} />
             <ResultCard icon="alert-circle" label="DORES PROVÁVEIS"      color="#FF0080" text={result.dores} />
-            <ResultCard icon="trending-up"  label="ARGUMENTOS DE VENDA"  color="#00D68F" text={result.argumentos} />
-            <ResultCard icon="help-circle"  label="PERGUNTAS-CHAVE"      color="#FFB300" text={result.perguntas} />
+            <ResultCard icon="trending-up"  label="ARGUMENTOS DE VENDA"  color="rgba(255,255,255,0.55)" text={result.argumentos} />
+            <ResultCard icon="help-circle"  label="PERGUNTAS-CHAVE"      color="rgba(255,255,255,0.45)" text={result.perguntas} />
             <ResultCard icon="shield"        label="ALERTAS DE OBJEÇÕES" color="#FF0080" text={result.alertas} />
           </View>
         )}

@@ -258,10 +258,10 @@ const S = StyleSheet.create({
     borderWidth: 1,
     borderColor: "transparent",
   },
-  inputErr: { borderColor: "#FF3B5C" },
+  inputErr: { borderColor: "rgba(255,255,255,0.5)" },
   input: { flex: 1, fontSize: 15, fontFamily: "SpaceGrotesk_400Regular", color: "#fff" },
   eyeBtn: { padding: 4 },
-  fieldErr: { fontSize: 12, fontFamily: "SpaceGrotesk_400Regular", color: "#FF3B5C" },
+  fieldErr: { fontSize: 12, fontFamily: "SpaceGrotesk_400Regular", color: "rgba(255,255,255,0.5)" },
 
   // ── Terms checkbox ──
   termsRow: {

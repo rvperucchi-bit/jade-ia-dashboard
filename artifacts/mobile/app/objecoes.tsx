@@ -133,7 +133,7 @@ export default function ObjectionScreen() {
         </View>
 
         <TouchableOpacity
-          style={[S.gerarBtn, (!canGerar || loading) && { opacity: 0.6 }, success && { backgroundColor: "#00D68F" }]}
+          style={[S.gerarBtn, (!canGerar || loading) && { opacity: 0.6 }, success && { backgroundColor: "rgba(255,255,255,0.55)" }]}
           onPress={gerar}
           disabled={!canGerar || loading}
           activeOpacity={0.85}
@@ -156,12 +156,12 @@ export default function ObjectionScreen() {
           <View style={[S.resultBox, { backgroundColor: colors.card, borderColor: colors.border }]}>
             <View style={S.resultHeader}>
               <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
-                <View style={[S.dot, { backgroundColor: "#00D68F" }]} />
-                <Text style={[S.resultLabel, { color: "#00D68F" }]}>Estratégia gerada pela JADE</Text>
+                <View style={[S.dot, { backgroundColor: "rgba(255,255,255,0.55)" }]} />
+                <Text style={[S.resultLabel, { color: "rgba(255,255,255,0.55)" }]}>Estratégia gerada pela JADE</Text>
               </View>
               <TouchableOpacity onPress={copy} activeOpacity={0.8} style={S.copyBtn}>
-                <Feather name={copied ? "check" : "copy"} size={15} color={copied ? "#00D68F" : colors.mutedForeground} />
-                <Text style={[S.copyText, { color: copied ? "#00D68F" : colors.mutedForeground }]}>{copied ? "Copiado!" : "Copiar"}</Text>
+                <Feather name={copied ? "check" : "copy"} size={15} color={copied ? "rgba(255,255,255,0.55)" : colors.mutedForeground} />
+                <Text style={[S.copyText, { color: copied ? "rgba(255,255,255,0.55)" : colors.mutedForeground }]}>{copied ? "Copiado!" : "Copiar"}</Text>
               </TouchableOpacity>
             </View>
             <Text style={[S.resultText, { color: colors.text }]}>{result}</Text>

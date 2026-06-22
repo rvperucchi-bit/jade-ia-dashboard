@@ -38,7 +38,7 @@ interface HubCard {
 
 const TIPO_NOTIF = [
   { id: "informativo",  label: "📋 Informativo",  color: "#8400FF" },
-  { id: "urgente",      label: "🚨 Urgente",      color: "#FF3B5C" },
+  { id: "urgente",      label: "🚨 Urgente",      color: "rgba(255,255,255,0.5)" },
   { id: "motivacional", label: "🚀 Motivacional", color: "#FF0080" },
 ];
 

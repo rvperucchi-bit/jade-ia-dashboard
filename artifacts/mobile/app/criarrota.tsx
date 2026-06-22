@@ -166,9 +166,9 @@ export default function CriarRotaScreen() {
             </Text>
           </View>
         ) : autoCarregado ? (
-          <View style={[S.infoBanner, { backgroundColor: "#00D68F10", borderColor: "#00D68F30" }]}>
-            <Feather name="check-circle" size={18} color="#00D68F" />
-            <Text style={[S.infoText, { color: "#00D68F" }]}>
+          <View style={[S.infoBanner, { backgroundColor: "rgba(255,255,255,0.06)", borderColor: "rgba(255,255,255,0.06)" }]}>
+            <Feather name="check-circle" size={18} color="rgba(255,255,255,0.55)" />
+            <Text style={[S.infoText, { color: "rgba(255,255,255,0.55)" }]}>
               Rota pré-carregada com seus agendamentos e leads quentes do dia. Remova paradas se necessário.
             </Text>
           </View>
@@ -190,8 +190,8 @@ export default function CriarRotaScreen() {
                 <Text style={[S.paradaNumText, { color: "#FF0080" }]}>{idx + 1}</Text>
               </View>
               <Text style={[S.paradaTitle, { color: colors.text }]}>{p.cliente.trim() || `Parada ${idx + 1}`}</Text>
-              <TouchableOpacity onPress={() => removeParada(p.id)} style={[S.removeBtn, { backgroundColor: "#FF3B5C18" }]} activeOpacity={0.7}>
-                <Feather name="trash-2" size={15} color="#FF3B5C" />
+              <TouchableOpacity onPress={() => removeParada(p.id)} style={[S.removeBtn, { backgroundColor: "rgba(255,255,255,0.06)" }]} activeOpacity={0.7}>
+                <Feather name="trash-2" size={15} color="rgba(255,255,255,0.5)" />
               </TouchableOpacity>
             </View>
 
@@ -242,7 +242,7 @@ export default function CriarRotaScreen() {
         </TouchableOpacity>
 
         <TouchableOpacity
-          style={[S.criarBtn, (loading || paradas.filter(p => p.cliente.trim()).length < 2) && { opacity: 0.6 }, success && { backgroundColor: "#00D68F" }]}
+          style={[S.criarBtn, (loading || paradas.filter(p => p.cliente.trim()).length < 2) && { opacity: 0.6 }, success && { backgroundColor: "rgba(255,255,255,0.55)" }]}
           onPress={criarRota}
           disabled={loading || paradas.filter(p => p.cliente.trim()).length < 2}
           activeOpacity={0.85}
@@ -265,18 +265,18 @@ export default function CriarRotaScreen() {
           <View style={[S.resultBox, { backgroundColor: colors.card, borderColor: colors.border }]}>
             <View style={S.resultHeader}>
               <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
-                <View style={[S.dot, { backgroundColor: "#00D68F" }]} />
-                <Text style={[S.resultLabel, { color: "#00D68F" }]}>Rota criada pela JADE</Text>
+                <View style={[S.dot, { backgroundColor: "rgba(255,255,255,0.55)" }]} />
+                <Text style={[S.resultLabel, { color: "rgba(255,255,255,0.55)" }]}>Rota criada pela JADE</Text>
               </View>
               <TouchableOpacity onPress={copy} activeOpacity={0.8} style={S.copyBtn}>
-                <Feather name={copied ? "check" : "copy"} size={15} color={copied ? "#00D68F" : colors.mutedForeground} />
-                <Text style={[S.copyText, { color: copied ? "#00D68F" : colors.mutedForeground }]}>{copied ? "Copiado!" : "Copiar"}</Text>
+                <Feather name={copied ? "check" : "copy"} size={15} color={copied ? "rgba(255,255,255,0.55)" : colors.mutedForeground} />
+                <Text style={[S.copyText, { color: copied ? "rgba(255,255,255,0.55)" : colors.mutedForeground }]}>{copied ? "Copiado!" : "Copiar"}</Text>
               </TouchableOpacity>
             </View>
             <Text style={[S.resultText, { color: colors.text }]}>{result}</Text>
-            <TouchableOpacity style={[S.mapsBtn, { backgroundColor: "#4285F420", borderColor: "#4285F440" }]} onPress={openMaps} activeOpacity={0.85}>
-              <Feather name="map" size={16} color="#4285F4" />
-              <Text style={[S.mapsBtnText, { color: "#4285F4" }]}>Abrir no Google Maps</Text>
+            <TouchableOpacity style={[S.mapsBtn, { backgroundColor: "rgba(255,255,255,0.06)", borderColor: "rgba(255,255,255,0.06)" }]} onPress={openMaps} activeOpacity={0.85}>
+              <Feather name="map" size={16} color="rgba(255,255,255,0.5)" />
+              <Text style={[S.mapsBtnText, { color: "rgba(255,255,255,0.5)" }]}>Abrir no Google Maps</Text>
             </TouchableOpacity>
           </View>
         )}

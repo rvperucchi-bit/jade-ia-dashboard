@@ -17,7 +17,7 @@ import { useColors } from "@/hooks/useColors";
 const PURPLE = "#8400FF";
 
 const PINK   = "#FF0080";
-const GREEN  = "#00D68F";
+const GREEN  = "#FF0080";
 
 type Period = "hoje" | "semana" | "mes";
 
@@ -74,7 +74,7 @@ const KPI_DATA: Record<Period, {
 // ─── Progress Ring ───────────────────────────────────────────────────────────
 function ProgressBar({ value, max, color }: { value: number; max: number; color: string }) {
   const pct = Math.min(1, value / Math.max(max, 1));
-  const statusColor = pct >= 0.8 ? GREEN : pct >= 0.5 ? PINK : "#FF3B5C";
+  const statusColor = pct >= 0.8 ? GREEN : pct >= 0.5 ? PINK : "#555577";
   return (
     <View style={{ gap: 6 }}>
       <View style={[PB.track]}>
@@ -104,9 +104,9 @@ function KpiCard({ label, value, meta, up, color }: { label: string; value: stri
       <View style={[K.dot, { backgroundColor: color }]} />
       <Text style={[K.val, { color: colors.text }]}>{value}</Text>
       <Text style={[K.lbl, { color: colors.mutedForeground }]}>{label}</Text>
-      <View style={[K.chip, { backgroundColor: up ? "#00D68F18" : "#FF3B5C18" }]}>
-        <Feather name={up ? "trending-up" : "trending-down"} size={9} color={up ? GREEN : "#FF3B5C"} />
-        <Text style={[K.chipText, { color: up ? GREEN : "#FF3B5C" }]}>{meta}</Text>
+      <View style={[K.chip, { backgroundColor: up ? "rgba(255,255,255,0.06)" : "rgba(255,255,255,0.06)" }]}>
+        <Feather name={up ? "trending-up" : "trending-down"} size={9} color={up ? GREEN : "rgba(255,255,255,0.5)"} />
+        <Text style={[K.chipText, { color: up ? GREEN : "rgba(255,255,255,0.5)" }]}>{meta}</Text>
       </View>
     </View>
   );
@@ -128,12 +128,12 @@ function TeamRow({ member, rank }: { member: typeof TEAM[0]; rank: number }) {
   const pctN   = Math.round(pct * 100);
   const isLeader = rank === 1;
   const isDanger = pct < 0.5;
-  const barColor = isLeader ? PINK : isDanger ? "#FF3B5C" : PURPLE;
+  const barColor = isLeader ? PINK : isDanger ? "#555577" : PURPLE;
 
   return (
     <View style={[TR.row, { borderBottomColor: colors.border }]}>
-      <View style={[TR.rankBadge, { backgroundColor: isLeader ? PINK + "22" : isDanger ? "#FF3B5C18" : "#1A1A2E" }]}>
-        <Text style={[TR.rankText, { color: isLeader ? PINK : isDanger ? "#FF3B5C" : colors.mutedForeground }]}>
+      <View style={[TR.rankBadge, { backgroundColor: isLeader ? PINK + "22" : isDanger ? "rgba(255,255,255,0.06)" : "#1A1A2E" }]}>
+        <Text style={[TR.rankText, { color: isLeader ? PINK : isDanger ? "rgba(255,255,255,0.5)" : colors.mutedForeground }]}>
           {isLeader ? "🥇" : `#${rank}`}
         </Text>
       </View>
@@ -181,7 +181,7 @@ export default function PainelExecutivoScreen() {
   const kpi      = KPI_DATA[period];
   const pct      = Math.min(1, kpi.realizado / kpi.metaTotal);
   const pctN     = Math.round(pct * 100);
-  const barColor = pct >= 0.8 ? GREEN : pct >= 0.5 ? PINK : "#FF3B5C";
+  const barColor = pct >= 0.8 ? GREEN : pct >= 0.5 ? PINK : "#555577";
   const statusMsg = pct >= 0.8 ? "🟢 No caminho certo" : pct >= 0.5 ? "🟡 Atenção necessária" : "🔴 Requer ação imediata";
 
   const topPad    = Platform.OS === "web" ? 67 : insets.top;

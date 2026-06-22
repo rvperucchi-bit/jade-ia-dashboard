@@ -36,7 +36,7 @@ const C = {
   sub: "#AAAACC",
   primary: "#FF0080",
   purple: "#8400FF",
-  success: "#00D68F",
+  success: "rgba(255,255,255,0.55)",
 };
 
 interface TomCard {
@@ -50,7 +50,7 @@ interface TomCard {
 const TOMS: TomCard[] = [
   { id: "formal",       label: "Formal",       emoji: "👔", desc: "Linguagem corporativa e técnica",      color: "#FF0080" },
   { id: "consultivo",   label: "Consultivo",   emoji: "🎯", desc: "Consultora estratégica e parceira",    color: "#FF0080" },
-  { id: "descontraido", label: "Descontraído", emoji: "😊", desc: "Próximo, leve e autêntico",            color: "#00D68F" },
+  { id: "descontraido", label: "Descontraído", emoji: "😊", desc: "Próximo, leve e autêntico",            color: "#8400FF" },
   { id: "agressivo",    label: "Vendas",       emoji: "🔥", desc: "Direto ao ponto, foco em fechamento", color: "#FF0080" },
   { id: "empatico",     label: "Empático",     emoji: "💜", desc: "Acolhedor, escuta ativa e humanizado", color: "#8400FF" },
 ];
@@ -82,7 +82,7 @@ interface ModoCard {
 const MODOS: ModoCard[] = [
   { id: "fechamento",            label: "Direto ao Fechamento",        emoji: "🎯", desc: "Produto simples, decide na hora. JADE vai direto pra venda.",        color: "#FF0080" },
   { id: "consultivo_presencial", label: "Agendar + Fechar Presencial", emoji: "📅", desc: "Venda consultiva, ticket alto. JADE agenda reuniões.",              color: "#FF0080" },
-  { id: "nutricao",              label: "Nutrição + Relacionamento",   emoji: "🌱", desc: "Ciclo longo. JADE nutre o lead até ele estar pronto.",              color: "#00D68F" },
+  { id: "nutricao",              label: "Nutrição + Relacionamento",   emoji: "🌱", desc: "Ciclo longo. JADE nutre o lead até ele estar pronto.",              color: "#8400FF" },
 ];
 
 function novoProduto(): Produto {
@@ -330,11 +330,11 @@ export default function EmpresaScreen() {
                 {produto.nome.trim() || `Produto ${idx + 1}`}
               </Text>
               <TouchableOpacity
-                style={[S.removeBtn, { backgroundColor: "#FF3B5C18" }]}
+                style={[S.removeBtn, { backgroundColor: "rgba(255,255,255,0.06)" }]}
                 onPress={() => removeProduto(produto.id)}
                 activeOpacity={0.7}
               >
-                <Feather name="trash-2" size={16} color="#FF3B5C" />
+                <Feather name="trash-2" size={16} color="rgba(255,255,255,0.5)" />
               </TouchableOpacity>
             </View>
 
@@ -499,6 +499,6 @@ const S = StyleSheet.create({
 
   saveBtn: { backgroundColor: C.primary, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 10, height: 54, borderRadius: 14, marginTop: 8, shadowColor: C.primary, shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.4, shadowRadius: 18, elevation: 10 },
   saveBtnText: { fontSize: 16, fontFamily: "SpaceGrotesk_700Bold", color: "#fff" },
-  savedNote: { backgroundColor: "#00D68F18", borderRadius: 12, borderWidth: 1, borderColor: "#00D68F33", padding: 14 },
-  savedNoteText: { fontSize: 15, fontFamily: "SpaceGrotesk_400Regular", color: "#00D68F", textAlign: "center", lineHeight: 20 },
+  savedNote: { backgroundColor: "rgba(255,255,255,0.06)", borderRadius: 12, borderWidth: 1, borderColor: "rgba(255,255,255,0.06)", padding: 14 },
+  savedNoteText: { fontSize: 15, fontFamily: "SpaceGrotesk_400Regular", color: "rgba(255,255,255,0.55)", textAlign: "center", lineHeight: 20 },
 });

@@ -30,7 +30,7 @@ const TIPO_CONFIG = {
   compromisso: { icon: "calendar",  color: "#FF0080", label: "Compromisso" },
   lead_quente: { icon: "zap",       color: "#FF0080", label: "Lead quente" },
   followup:    { icon: "clock",     color: "#FF0080", label: "Follow-up"   },
-  meta:        { icon: "target",    color: "#00D68F", label: "Meta do dia" },
+  meta:        { icon: "target",    color: "#8400FF", label: "Meta do dia" },
 } as const;
 
 type TipoItem = keyof typeof TIPO_CONFIG;
@@ -286,9 +286,9 @@ export default function PlanejamentoScreen() {
           <Text style={[S.headerSub, { color: colors.mutedForeground }]}>{hoje()}</Text>
         </View>
         {plano?.confirmado && (
-          <View style={[S.confirmBadge, { backgroundColor: "#00D68F20", borderColor: "#00D68F40" }]}>
-            <Feather name="check-circle" size={13} color="#00D68F" />
-            <Text style={[S.confirmBadgeText, { color: "#00D68F" }]}>Confirmado</Text>
+          <View style={[S.confirmBadge, { backgroundColor: "rgba(255,255,255,0.06)", borderColor: "rgba(255,255,255,0.06)" }]}>
+            <Feather name="check-circle" size={13} color="rgba(255,255,255,0.55)" />
+            <Text style={[S.confirmBadgeText, { color: "rgba(255,255,255,0.55)" }]}>Confirmado</Text>
           </View>
         )}
       </View>
@@ -377,10 +377,10 @@ export default function PlanejamentoScreen() {
             </TouchableOpacity>
           </View>
         ) : (
-          <View style={[S.confirmedBox, { backgroundColor: "#00D68F10", borderColor: "#00D68F30" }]}>
-            <Feather name="check-circle" size={22} color="#00D68F" />
+          <View style={[S.confirmedBox, { backgroundColor: "rgba(255,255,255,0.06)", borderColor: "rgba(255,255,255,0.06)" }]}>
+            <Feather name="check-circle" size={22} color="rgba(255,255,255,0.55)" />
             <View style={{ flex: 1 }}>
-              <Text style={[S.confirmedTitle, { color: "#00D68F" }]}>Dia confirmado! Bora vender 🚀</Text>
+              <Text style={[S.confirmedTitle, { color: "rgba(255,255,255,0.55)" }]}>Dia confirmado! Bora vender 🚀</Text>
               <Text style={[S.confirmedSub, { color: colors.mutedForeground }]}>
                 Confirmado {plano.confirmadoEm ? new Date(plano.confirmadoEm).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }) : ""}
               </Text>
@@ -426,7 +426,7 @@ const S = StyleSheet.create({
   sugestaoHeader: { flexDirection: "row", alignItems: "center", gap: 8, padding: 12 },
   sugestaoLabel: { fontSize: 13, fontFamily: "SpaceGrotesk_600SemiBold" },
   sugestaoText: { fontSize: 16, fontFamily: "SpaceGrotesk_400Regular", lineHeight: 22, padding: 16, paddingTop: 4 },
-  confirmBtn: { backgroundColor: "#00D68F", flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 10, height: 54, borderRadius: 14, shadowColor: "#00D68F", shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.3, shadowRadius: 12, elevation: 6 },
+  confirmBtn: { backgroundColor: "rgba(255,255,255,0.55)", flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 10, height: 54, borderRadius: 14, shadowColor: "rgba(255,255,255,0.55)", shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.3, shadowRadius: 12, elevation: 6 },
   confirmBtnText: { color: "#fff", fontSize: 16, fontFamily: "SpaceGrotesk_700Bold" },
   ajustarBtn: { flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8, height: 48, borderRadius: 14, borderWidth: 1 },
   ajustarBtnText: { fontSize: 15, fontFamily: "SpaceGrotesk_600SemiBold" },

@@ -22,9 +22,9 @@ import { useCredits } from "@/context/CreditsContext";
 import { useRadarSearches } from "@/hooks/useRadarSearches";
 
 const PURPLE = "#8400FF";
-const GOLD   = "#FFB800";
+const GOLD   = "#8400FF";
 const PINK   = "#FF0080";
-const INDIGO = "#6C63FF";
+const INDIGO = "#8400FF";
 const GRID_SIZE = 48;
 
 const DEV_PLAN_KEY = "@jade_dev_plan";
@@ -229,7 +229,7 @@ function DevToolsModal({ visible, currentPlan, isRealPlan, onClose, onChangePlan
           </View>
           {!isRealPlan && (
             <TouchableOpacity style={DV.exitBtn} onPress={onExitDev} activeOpacity={0.85}>
-              <Feather name="x-circle" size={15} color="#FF3B5C" />
+              <Feather name="x-circle" size={15} color="rgba(255,255,255,0.5)" />
               <Text style={DV.exitText}>Voltar ao plano real</Text>
             </TouchableOpacity>
           )}
@@ -255,8 +255,8 @@ const DV = StyleSheet.create({
   planDot:  { width: 8, height: 8, borderRadius: 4 },
   planLabel:{ fontSize: 15, fontFamily: "SpaceGrotesk_700Bold", flex: 1 },
   planPrice:{ fontSize: 12, fontFamily: "SpaceGrotesk_400Regular" },
-  exitBtn:  { flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8, backgroundColor: "#FF3B5C18", borderRadius: 13, height: 44 },
-  exitText: { color: "#FF3B5C", fontSize: 14, fontFamily: "SpaceGrotesk_600SemiBold" },
+  exitBtn:  { flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8, backgroundColor: "rgba(255,255,255,0.06)", borderRadius: 13, height: 44 },
+  exitText: { color: "rgba(255,255,255,0.5)", fontSize: 14, fontFamily: "SpaceGrotesk_600SemiBold" },
   closeBtn: { backgroundColor: "#1A1A2E", borderRadius: 13, height: 46, alignItems: "center", justifyContent: "center" },
   closeBtnText: { color: "#AAAACC", fontSize: 14, fontFamily: "SpaceGrotesk_600SemiBold" },
 });
@@ -533,10 +533,10 @@ export default function MaisScreen() {
       {/* ── Premium Account Card ── */}
       {(() => {
         const msgPct   = credits.total > 0 ? Math.round((credits.remaining / credits.total) * 100) : 0;
-        const msgBar   = credits.warnLevel === "empty" ? "#FF3B5C" : credits.warnLevel === "warn" ? "#FFB300" : "#00D68F";
+        const msgBar   = credits.warnLevel === "empty" ? "rgba(255,255,255,0.5)" : credits.warnLevel === "warn" ? "rgba(255,255,255,0.45)" : "rgba(255,255,255,0.55)";
         const radarWarn= radar.remaining === 0 ? "empty" : radar.remaining < radar.total * 0.2 ? "warn" : "ok";
         const radarPct = radar.total > 0 ? Math.round((radar.remaining / radar.total) * 100) : 0;
-        const radarBar = radarWarn === "empty" ? "#FF3B5C" : radarWarn === "warn" ? "#FFB300" : "#00D68F";
+        const radarBar = radarWarn === "empty" ? "rgba(255,255,255,0.5)" : radarWarn === "warn" ? "rgba(255,255,255,0.45)" : "rgba(255,255,255,0.55)";
         const MONTHS   = ["janeiro","fevereiro","março","abril","maio","junho","julho","agosto","setembro","outubro","novembro","dezembro"];
         const nxt = new Date(); nxt.setMonth(nxt.getMonth() + 1);
         const renewalStr = `12 de ${MONTHS[nxt.getMonth()]}`;
@@ -734,7 +734,7 @@ export default function MaisScreen() {
               {["Objeções IA", "Criar Rota", "Planejamento", "Roleplay de Vendas", "Marketing IA"].map((f) => (
                 <View key={f} style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
                   <Feather name="check-circle" size={14} color={PURPLE} />
-                  <Text style={{ color: "#CCAAFF", fontSize: 13, fontFamily: "SpaceGrotesk_400Regular" }}>{f}</Text>
+                  <Text style={{ color: "rgba(255,255,255,0.7)", fontSize: 13, fontFamily: "SpaceGrotesk_400Regular" }}>{f}</Text>
                 </View>
               ))}
               <View style={{ backgroundColor: PURPLE, borderRadius: 10, height: 40, alignItems: "center", justifyContent: "center", marginTop: 8 }}>
@@ -789,11 +789,11 @@ export default function MaisScreen() {
                 <View style={{
                   position: "absolute", top: 0, left: 0, bottom: 0,
                   width: `${credits.total > 0 ? Math.round((credits.remaining / credits.total) * 100) : 0}%` as any,
-                  backgroundColor: credits.warnLevel === "empty" ? "#FF3B5C" : credits.warnLevel === "warn" ? "#FFB300" : "#00D68F",
+                  backgroundColor: credits.warnLevel === "empty" ? "rgba(255,255,255,0.5)" : credits.warnLevel === "warn" ? "rgba(255,255,255,0.45)" : "rgba(255,255,255,0.55)",
                   borderRadius: 4,
                 }} />
               </View>
-              <Text style={{ fontSize: 12, fontFamily: "SpaceGrotesk_600SemiBold", color: credits.warnLevel === "ok" ? "#00D68F" : credits.warnLevel === "warn" ? "#FFB300" : "#FF3B5C" }}>
+              <Text style={{ fontSize: 12, fontFamily: "SpaceGrotesk_600SemiBold", color: credits.warnLevel === "ok" ? "rgba(255,255,255,0.55)" : credits.warnLevel === "warn" ? "rgba(255,255,255,0.45)" : "rgba(255,255,255,0.5)" }}>
                 {credits.remaining} mensagens restantes
               </Text>
             </View>

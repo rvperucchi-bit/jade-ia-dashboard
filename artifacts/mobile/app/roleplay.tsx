@@ -30,7 +30,7 @@ const CENARIOS = [
 ];
 
 const DIFICULDADES = [
-  { id: "iniciante",     label: "Iniciante",     color: "#00D68F" },
+  { id: "iniciante",     label: "Iniciante",     color: "rgba(255,255,255,0.55)" },
   { id: "intermediario", label: "Intermediário", color: "#FF0080" },
   { id: "avancado",      label: "Avançado",      color: "#FF0080" },
 ];
@@ -300,8 +300,8 @@ Seja honesto, específico e encorajador.`;
 
       {stage === "feedback" && (
         <ScrollView contentContainerStyle={{ padding: 20, gap: 16, paddingBottom: 120 }}>
-          <View style={[S.feedbackHeader, { backgroundColor: "#00D68F15", borderColor: "#00D68F40" }]}>
-            <Feather name="award" size={28} color="#00D68F" />
+          <View style={[S.feedbackHeader, { backgroundColor: "rgba(255,255,255,0.06)", borderColor: "rgba(255,255,255,0.06)" }]}>
+            <Feather name="award" size={28} color="rgba(255,255,255,0.55)" />
             <View>
               <Text style={[S.feedbackTitle, { color: colors.text }]}>Treino Encerrado!</Text>
               <Text style={[S.feedbackSub, { color: colors.mutedForeground }]}>Aqui está o seu feedback da JADE</Text>

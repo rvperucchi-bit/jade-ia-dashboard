@@ -32,7 +32,7 @@ const VENDEDORES = [
 
 function pct(v: number, t: number) { return t ? Math.min(Math.round((v / t) * 100), 999) : 0; }
 function fmt(n: number) { return "R$ " + n.toLocaleString("pt-BR"); }
-function barColor(p: number) { return p >= 80 ? "#00D68F" : p >= 50 ? "#FFB300" : "#FF3B5C"; }
+function barColor(p: number) { return p >= 80 ? "rgba(255,255,255,0.55)" : p >= 50 ? "rgba(255,255,255,0.45)" : "rgba(255,255,255,0.5)"; }
 function initials(n: string) { return n.split(" ").map((x) => x[0]).slice(0, 2).join("").toUpperCase(); }
 
 export default function RelatorioGestorScreen() {
@@ -150,7 +150,7 @@ export default function RelatorioGestorScreen() {
             </View>
             <View style={S.kpi}>
               <Text style={[S.kpiLabel, { color: colors.mutedForeground }]}>Gap</Text>
-              <Text style={[S.kpiValue, { color: "#FF3B5C" }]}>{fmt(metaTotal - realTotal)}</Text>
+              <Text style={[S.kpiValue, { color: "rgba(255,255,255,0.5)" }]}>{fmt(metaTotal - realTotal)}</Text>
             </View>
             <View style={S.kpi}>
               <Text style={[S.kpiLabel, { color: colors.mutedForeground }]}>Time</Text>
@@ -160,15 +160,15 @@ export default function RelatorioGestorScreen() {
         </View>
 
         <View style={S.spotlightRow}>
-          <View style={[S.spotCard, { backgroundColor: "#00D68F14", borderColor: "#00D68F40" }]}>
-            <Text style={[S.spotLabel, { color: "#00D68F" }]}>🏆 Top Performer</Text>
+          <View style={[S.spotCard, { backgroundColor: "rgba(255,255,255,0.06)", borderColor: "rgba(255,255,255,0.06)" }]}>
+            <Text style={[S.spotLabel, { color: "rgba(255,255,255,0.55)" }]}>🏆 Top Performer</Text>
             <Text style={[S.spotNome, { color: colors.text }]}>{topPerformer.nome}</Text>
-            <Text style={[S.spotPct, { color: "#00D68F" }]}>{pct(topPerformer.realizado, topPerformer.meta)}%</Text>
+            <Text style={[S.spotPct, { color: "rgba(255,255,255,0.55)" }]}>{pct(topPerformer.realizado, topPerformer.meta)}%</Text>
           </View>
-          <View style={[S.spotCard, { backgroundColor: "#FF3B5C14", borderColor: "#FF3B5C40" }]}>
-            <Text style={[S.spotLabel, { color: "#FF3B5C" }]}>⚠️ Precisa de atenção</Text>
+          <View style={[S.spotCard, { backgroundColor: "rgba(255,255,255,0.06)", borderColor: "rgba(255,255,255,0.06)" }]}>
+            <Text style={[S.spotLabel, { color: "rgba(255,255,255,0.5)" }]}>⚠️ Precisa de atenção</Text>
             <Text style={[S.spotNome, { color: colors.text }]}>{precisaAtencao.nome}</Text>
-            <Text style={[S.spotPct, { color: "#FF3B5C" }]}>{pct(precisaAtencao.realizado, precisaAtencao.meta)}%</Text>
+            <Text style={[S.spotPct, { color: "rgba(255,255,255,0.5)" }]}>{pct(precisaAtencao.realizado, precisaAtencao.meta)}%</Text>
           </View>
         </View>
 

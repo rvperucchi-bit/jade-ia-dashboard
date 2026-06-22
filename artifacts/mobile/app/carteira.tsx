@@ -51,16 +51,16 @@ const SEED: Cliente[] = [
 ];
 
 const STATUS_TABS: { key: ClienteStatus; label: string; color: string }[] = [
-  { key: "em_dia",   label: "Em dia",   color: "#00D68F" },
-  { key: "atencao",  label: "Atenção",  color: "#FFB300" },
-  { key: "em_risco", label: "Em risco", color: "#FF3B5C" },
+  { key: "em_dia",   label: "Em dia",   color: "rgba(255,255,255,0.55)" },
+  { key: "atencao",  label: "Atenção",  color: "rgba(255,255,255,0.45)" },
+  { key: "em_risco", label: "Em risco", color: "rgba(255,255,255,0.5)" },
   { key: "inativo",  label: "Inativos", color: "#555577" },
 ];
 
 function diasColor(d: number) {
-  if (d < 15) return "#00D68F";
-  if (d < 30) return "#FFB300";
-  return "#FF3B5C";
+  if (d < 15) return "rgba(255,255,255,0.55)";
+  if (d < 30) return "rgba(255,255,255,0.45)";
+  return "rgba(255,255,255,0.5)";
 }
 
 export default function CarteiraScreen() {
@@ -151,13 +151,13 @@ export default function CarteiraScreen() {
         {(emRisco > 0 || semVisita30 > 0) && (
           <View style={S.alerts}>
             {semVisita30 > 0 && (
-              <View style={[S.alertCard, { backgroundColor: "#FFB30018", borderColor: "#FFB30040" }]}>
-                <Text style={[S.alertText, { color: "#FFB300" }]}>⚠️ {semVisita30} clientes sem visita há mais de 30 dias</Text>
+              <View style={[S.alertCard, { backgroundColor: "rgba(255,255,255,0.06)", borderColor: "rgba(255,255,255,0.06)" }]}>
+                <Text style={[S.alertText, { color: "rgba(255,255,255,0.45)" }]}>⚠️ {semVisita30} clientes sem visita há mais de 30 dias</Text>
               </View>
             )}
             {emRisco > 0 && (
-              <View style={[S.alertCard, { backgroundColor: "#FF3B5C18", borderColor: "#FF3B5C40" }]}>
-                <Text style={[S.alertText, { color: "#FF3B5C" }]}>🔴 {emRisco} clientes em risco de churn</Text>
+              <View style={[S.alertCard, { backgroundColor: "rgba(255,255,255,0.06)", borderColor: "rgba(255,255,255,0.06)" }]}>
+                <Text style={[S.alertText, { color: "rgba(255,255,255,0.5)" }]}>🔴 {emRisco} clientes em risco de churn</Text>
               </View>
             )}
           </View>
@@ -170,7 +170,7 @@ export default function CarteiraScreen() {
             return (
               <TouchableOpacity
                 key={t.key}
-                style={[S.tabBtn, active && { backgroundColor: t.color + "22", borderColor: t.color }]}
+                style={[S.tabBtn, active && { backgroundColor: `rgba(255,255,255,0.08)`, borderColor: t.color }]}
                 onPress={() => setTab(t.key)}
                 activeOpacity={0.8}
               >
@@ -203,7 +203,7 @@ export default function CarteiraScreen() {
                     <Text style={[S.cardContato, { color: colors.mutedForeground }]}>{c.contato} · {c.responsavel}</Text>
                     <Text style={[S.cardData, { color: colors.mutedForeground }]}>Última interação: {c.ultimaInteracao}</Text>
                   </View>
-                  <View style={[S.diasBadge, { backgroundColor: dc + "22" }]}>
+                  <View style={[S.diasBadge, { backgroundColor: `rgba(255,255,255,0.06)` }]}>
                     <Text style={[S.diasText, { color: dc }]}>{c.diasSemContato}d</Text>
                   </View>
                 </View>
@@ -316,7 +316,7 @@ const S = StyleSheet.create({
   visitaBtn: { flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8, paddingVertical: 10, borderRadius: 12, borderWidth: 1 },
   visitaBtnText: { fontSize: 15, fontFamily: "SpaceGrotesk_600SemiBold" },
   analiseSection: { padding: 20, gap: 16 },
-  analiseBtn: { backgroundColor: "#00D68F", flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 10, height: 52, borderRadius: 14, shadowColor: "#00D68F", shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 10, elevation: 6 },
+  analiseBtn: { backgroundColor: "rgba(255,255,255,0.55)", flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 10, height: 52, borderRadius: 14, shadowColor: "rgba(255,255,255,0.55)", shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 10, elevation: 6 },
   analiseBtnText: { color: "#fff", fontSize: 16, fontFamily: "SpaceGrotesk_700Bold" },
   analiseBox: { borderRadius: 14, borderWidth: 1, overflow: "hidden" },
   analiseHeader: { flexDirection: "row", alignItems: "center", gap: 8, padding: 12 },

@@ -28,7 +28,7 @@ const DAILY_METRICS: DailyMetric[] = [
   { label: "Leads abordados",    value: 8,  icon: "users",         color: "#FF0080" },
   { label: "Conversas iniciadas",value: 5,  icon: "message-circle",color: "#FF0080" },
   { label: "Propostas enviadas", value: 2,  icon: "send",          color: "#FF0080" },
-  { label: "Fechamentos",        value: 1,  icon: "check-circle",  color: "#00D68F" },
+  { label: "Fechamentos",        value: 1,  icon: "check-circle",  color: "#8400FF" },
 ];
 
 const HOUR_BARS: HourBar[] = [
@@ -44,7 +44,7 @@ const WEEKLY_METRICS = [
   { label: "Leads totais",        value: 42,  prev: 38,  icon: "users",         color: "#FF0080" },
   { label: "Conversas",          value: 31,  prev: 28,  icon: "message-circle",color: "#FF0080" },
   { label: "Propostas",          value: 14,  prev: 11,  icon: "send",          color: "#FF0080" },
-  { label: "Fechamentos",        value: 6,   prev: 4,   icon: "check-circle",  color: "#00D68F" },
+  { label: "Fechamentos",        value: 6,   prev: 4,   icon: "check-circle",  color: "#8400FF" },
   { label: "Receita estimada",   value: 18600, prev: 12400, icon: "dollar-sign", color: "#FF0080", unit: "R$" },
 ];
 
@@ -191,9 +191,9 @@ export default function RelatoriosScreen() {
                       </View>
                       <Text style={[S.weekValue, { color: colors.text }]}>{display}</Text>
                       <Text style={[S.weekLabel, { color: colors.mutedForeground }]}>{m.label}</Text>
-                      <View style={[S.pctBadge, { backgroundColor: positive ? "#00D68F22" : "#FF3B5C22" }]}>
-                        <Feather name={positive ? "trending-up" : "trending-down"} size={10} color={positive ? "#00D68F" : "#FF3B5C"} />
-                        <Text style={[S.pctText, { color: positive ? "#00D68F" : "#FF3B5C" }]}>{p}</Text>
+                      <View style={[S.pctBadge, { backgroundColor: positive ? "rgba(255,255,255,0.06)" : "rgba(255,255,255,0.06)" }]}>
+                        <Feather name={positive ? "trending-up" : "trending-down"} size={10} color={positive ? "rgba(255,255,255,0.55)" : "rgba(255,255,255,0.5)"} />
+                        <Text style={[S.pctText, { color: positive ? "rgba(255,255,255,0.55)" : "rgba(255,255,255,0.5)" }]}>{p}</Text>
                       </View>
                     </View>
                   );
