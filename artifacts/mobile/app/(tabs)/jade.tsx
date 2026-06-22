@@ -666,12 +666,10 @@ export default function JADEScreen() {
         {/* ── Recording bar ── */}
         {recording && <RecordingBar secs={recordSecs} cancelling={cancelling} pulseAnim={pulseAnim} />}
 
-        {/* ── Input bar ── */}
-        <View style={[C.inputBar, { borderTopColor: colors.border, backgroundColor: colors.background, paddingBottom: bottomPad + 8 }]}>
-          <View style={[C.inputPill, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-            <TouchableOpacity onPress={pickAttachment} activeOpacity={0.6} style={C.pillBtn}>
-              <Feather name="plus" size={17} color={colors.mutedForeground + "BB"} />
-            </TouchableOpacity>
+        {/* ── Input bar — Claude style ── */}
+        <View style={[C.inputBar, { backgroundColor: colors.background, paddingBottom: bottomPad + 10 }]}>
+          <View style={[C.inputCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+            {/* Text row */}
             <TextInput
               style={[C.input, { color: colors.text, fontFamily: "SpaceGrotesk_400Regular" }]}
               placeholder="Pergunte algo…"
@@ -681,18 +679,25 @@ export default function JADEScreen() {
               onSubmitEditing={handleSend} returnKeyType="send"
               editable={!loading && !recording}
             />
-            <View {...micPan.panHandlers}>
-              <Animated.View style={[C.pillBtn, recording && { backgroundColor: cancelling ? "#FF3333" : PINK, borderRadius: 18 }]}>
-                <Feather name="mic" size={16} color={recording ? "#fff" : colors.mutedForeground + "BB"} />
-              </Animated.View>
+            {/* Action row */}
+            <View style={C.inputActions}>
+              <TouchableOpacity onPress={pickAttachment} activeOpacity={0.6} style={C.actionBtn}>
+                <Feather name="plus" size={18} color={colors.mutedForeground} />
+              </TouchableOpacity>
+              <View style={{ flex: 1 }} />
+              <View {...micPan.panHandlers}>
+                <Animated.View style={[C.actionBtn, recording && { backgroundColor: cancelling ? "#FF3333" : PINK }]}>
+                  <Feather name="mic" size={17} color={recording ? "#fff" : colors.mutedForeground} />
+                </Animated.View>
+              </View>
+              <TouchableOpacity
+                style={[C.actionBtnSend, { backgroundColor: canSend ? PINK : "rgba(255,255,255,0.05)" }]}
+                onPress={handleSend} activeOpacity={0.8}
+                disabled={!canSend || warnLevel === "empty"}
+              >
+                <Feather name="send" size={16} color={canSend ? "#fff" : colors.mutedForeground + "40"} />
+              </TouchableOpacity>
             </View>
-            <TouchableOpacity
-              style={[C.sendCircle, { backgroundColor: canSend ? PINK : colors.surface }]}
-              onPress={handleSend} activeOpacity={0.8}
-              disabled={!canSend || warnLevel === "empty"}
-            >
-              <Feather name="send" size={14} color={canSend ? "#fff" : colors.mutedForeground + "40"} />
-            </TouchableOpacity>
           </View>
         </View>
       </KeyboardAvoidingView>
@@ -885,22 +890,22 @@ const C = StyleSheet.create({
 
   header:     { flexDirection: "row", alignItems: "center", paddingHorizontal: 12, paddingBottom: 6 },
   headerRing: {
-    width: 36, height: 36, borderRadius: 18,
+    width: 37, height: 37, borderRadius: 19,
     borderWidth: 1, borderColor: "rgba(255,255,255,0.09)",
     backgroundColor: "rgba(255,255,255,0.04)",
     alignItems: "center", justifyContent: "center",
   },
 
   msgJade:   { paddingHorizontal: 20, paddingVertical: 4, marginBottom: 20 },
-  jadeText:  { fontSize: 15, fontFamily: "SpaceGrotesk_400Regular", lineHeight: 24 },
-  jadeTime:  { fontSize: 11, fontFamily: "SpaceGrotesk_400Regular", marginTop: 6, opacity: 0.4 },
+  jadeText:  { fontSize: 17, fontFamily: "SpaceGrotesk_400Regular", lineHeight: 26 },
+  jadeTime:  { fontSize: 12, fontFamily: "SpaceGrotesk_400Regular", marginTop: 6, opacity: 0.4 },
 
   msgRow:    { flexDirection: "row", marginBottom: 20, alignItems: "flex-end" },
   msgRight:  { justifyContent: "flex-end" },
-  bubble:    { maxWidth: "80%", borderRadius: 18, padding: 13 },
+  bubble:    { maxWidth: "80%", borderRadius: 18, padding: 14 },
   bubbleUser:{ borderBottomRightRadius: 4 },
-  bubbleText:{ fontSize: 15, fontFamily: "SpaceGrotesk_400Regular", lineHeight: 22 },
-  bubbleTime:{ fontSize: 11, fontFamily: "SpaceGrotesk_400Regular", marginTop: 4, textAlign: "right" },
+  bubbleText:{ fontSize: 17, fontFamily: "SpaceGrotesk_400Regular", lineHeight: 25 },
+  bubbleTime:{ fontSize: 12, fontFamily: "SpaceGrotesk_400Regular", marginTop: 4, textAlign: "right" },
   filePill:  { flexDirection: "row", alignItems: "center", gap: 5, padding: 5, borderRadius: 7 },
 
   recordBar: { flexDirection: "row", alignItems: "center", gap: 10, paddingHorizontal: 16, paddingVertical: 10, borderTopWidth: 1 },
@@ -911,11 +916,24 @@ const C = StyleSheet.create({
   attachStrip: { borderTopWidth: StyleSheet.hairlineWidth },
   attachChip:  { flexDirection: "row", alignItems: "center", gap: 6, paddingHorizontal: 10, paddingVertical: 6, borderRadius: 10, borderWidth: 1 },
 
-  inputBar:   { paddingHorizontal: 12, paddingTop: 8, borderTopWidth: StyleSheet.hairlineWidth },
-  inputPill:  { flexDirection: "row", alignItems: "center", borderRadius: 24, borderWidth: 1, paddingHorizontal: 6, paddingVertical: 6, gap: 2 },
-  input:      { flex: 1, fontSize: 15, maxHeight: 100, lineHeight: 22, paddingHorizontal: 6 },
-  pillBtn:    { width: 32, height: 32, borderRadius: 16, alignItems: "center", justifyContent: "center" },
-  sendCircle: { width: 32, height: 32, borderRadius: 16, alignItems: "center", justifyContent: "center" },
+  inputBar:     { paddingHorizontal: 14, paddingTop: 8 },
+  inputCard:    {
+    borderRadius: 20, borderWidth: 1,
+    paddingHorizontal: 16, paddingTop: 14, paddingBottom: 10,
+  },
+  input:        { fontSize: 16, maxHeight: 120, lineHeight: 24, marginBottom: 10, minHeight: 26 },
+  inputActions: { flexDirection: "row", alignItems: "center", gap: 8 },
+  actionBtn:    {
+    width: 36, height: 36, borderRadius: 18,
+    backgroundColor: "rgba(255,255,255,0.07)",
+    alignItems: "center", justifyContent: "center",
+  },
+  actionBtnSend: {
+    width: 36, height: 36, borderRadius: 18,
+    alignItems: "center", justifyContent: "center",
+  },
+  pillBtn:    { width: 36, height: 36, borderRadius: 18, alignItems: "center", justifyContent: "center" },
+  sendCircle: { width: 36, height: 36, borderRadius: 18, alignItems: "center", justifyContent: "center" },
 
   creditBanner:     { flexDirection: "row", alignItems: "center", gap: 8, paddingHorizontal: 16, paddingVertical: 10 },
   creditBannerText: { color: "#fff", fontSize: 12, fontFamily: "SpaceGrotesk_600SemiBold", flex: 1 },
@@ -946,12 +964,12 @@ const C = StyleSheet.create({
     color: "rgba(255,255,255,0.18)", letterSpacing: 0.4,
   },
   profileThumb: {
-    width: 37, height: 37, borderRadius: 19,
+    width: 42, height: 42, borderRadius: 21,
     backgroundColor: "#181818",
     alignItems: "center", justifyContent: "center", overflow: "hidden",
   },
-  profileImg:      { width: 37, height: 37, borderRadius: 19 },
-  profileInitials: { fontSize: 13, fontFamily: "SpaceGrotesk_600SemiBold", color: "rgba(255,255,255,0.45)" },
+  profileImg:      { width: 42, height: 42, borderRadius: 21 },
+  profileInitials: { fontSize: 15, fontFamily: "SpaceGrotesk_600SemiBold", color: "rgba(255,255,255,0.45)" },
 
   newConvoBtn: {
     flexDirection: "row", alignItems: "center", gap: 10,
@@ -959,23 +977,23 @@ const C = StyleSheet.create({
     borderRadius: 9, borderWidth: 1, borderColor: "rgba(255,255,255,0.07)",
     backgroundColor: "rgba(255,255,255,0.03)",
   },
-  newConvoText: { fontSize: 13, fontFamily: "SpaceGrotesk_500Medium", color: "rgba(255,255,255,0.55)" },
+  newConvoText: { fontSize: 15, fontFamily: "SpaceGrotesk_500Medium", color: "rgba(255,255,255,0.55)" },
 
   section:      { paddingHorizontal: 24, marginTop: 20 },
   sectionLabel: {
-    fontSize: 10, fontFamily: "SpaceGrotesk_600SemiBold", color: "#2E2E2E",
+    fontSize: 11, fontFamily: "SpaceGrotesk_600SemiBold", color: "#2E2E2E",
     letterSpacing: 1.2, textTransform: "uppercase", marginBottom: 8,
   },
   sep: { height: StyleSheet.hairlineWidth, backgroundColor: "#161616", marginTop: 20, marginHorizontal: 24 },
 
-  recentItem: { paddingVertical: 10, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: "#121212" },
-  recentText: { fontSize: 13, fontFamily: "SpaceGrotesk_400Regular", color: "#666" },
+  recentItem: { paddingVertical: 11, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: "#121212" },
+  recentText: { fontSize: 15, fontFamily: "SpaceGrotesk_400Regular", color: "#666" },
 
   menuItem: {
     flexDirection: "row", alignItems: "center", gap: 8,
-    paddingVertical: 11, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: "#121212",
+    paddingVertical: 13, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: "#121212",
   },
-  menuText:       { flex: 1, fontSize: 14, fontFamily: "SpaceGrotesk_400Regular", color: "#777" },
+  menuText:       { flex: 1, fontSize: 16, fontFamily: "SpaceGrotesk_400Regular", color: "#777" },
   menuTextLocked: { color: "#2E2E2E" },
   activeDot:      { fontSize: 8, color: PINK, marginRight: 2 },
 
