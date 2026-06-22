@@ -64,7 +64,7 @@ export default function LaudoScreen() {
   return (
     <View style={[S.root, { backgroundColor: colors.background }]}>
       <View style={[S.header, { paddingTop: topPad, borderBottomColor: colors.border }]}>
-        <TouchableOpacity style={[S.backBtn, { backgroundColor: colors.surface }]} onPress={() => router.back()} activeOpacity={0.8}>
+        <TouchableOpacity style={S.backBtn} onPress={() => router.back()} activeOpacity={0.8}>
           <Feather name="arrow-left" size={20} color={colors.text} />
         </TouchableOpacity>
         <View style={{ flex: 1 }}>
@@ -128,7 +128,7 @@ export default function LaudoScreen() {
           </TouchableOpacity>
           {!!error && (
             <View style={S.errorBox}>
-              <Feather name="alert-circle" size={14} color="#FF6B6B" />
+              <Feather name="alert-circle" size={14} color="#FF0080" />
               <Text style={S.errorText}>{error}</Text>
             </View>
           )}
@@ -196,6 +196,6 @@ const S = StyleSheet.create({
   copyBtn: { flexDirection: "row", alignItems: "center", gap: 6, padding: 6 },
   copyText: { fontSize: 15, fontFamily: "SpaceGrotesk_500Medium" },
   resultText: { fontSize: 16, fontFamily: "SpaceGrotesk_400Regular", lineHeight: 22 },
-  errorBox: { flexDirection: "row", alignItems: "center", gap: 8, padding: 12, borderRadius: 10, backgroundColor: "#FF6B6B18", borderWidth: 1, borderColor: "#FF6B6B40" },
-  errorText: { flex: 1, fontSize: 15, fontFamily: "SpaceGrotesk_400Regular", color: "#FF6B6B", lineHeight: 20 },
+  errorBox: { flexDirection: "row", alignItems: "center", gap: 8, padding: 12, borderRadius: 10, backgroundColor: "#FF008018", borderWidth: 1, borderColor: "#FF008040" },
+  errorText: { flex: 1, fontSize: 15, fontFamily: "SpaceGrotesk_400Regular", color: "#FF0080", lineHeight: 20 },
 });

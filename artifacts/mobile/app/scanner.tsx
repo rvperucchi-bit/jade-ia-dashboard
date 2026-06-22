@@ -357,7 +357,7 @@ export default function ScannerScreen() {
       <View style={[styles.header, { paddingTop: topPad, borderBottomColor: colors.border }]}>
 
         <TouchableOpacity
-          style={[styles.backBtn, { backgroundColor: colors.surface }]}
+          style={styles.backBtn}
           onPress={() => router.back()}
           activeOpacity={0.8}
         >

@@ -292,7 +292,7 @@ export default function PainelExecutivoScreen() {
           value={String(kpi.propostas)}
           meta="enviadas"
           up
-          color="#00B4D8"
+          color="#8400FF"
         />
       </View>
 

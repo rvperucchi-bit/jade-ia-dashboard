@@ -19,8 +19,8 @@ const C = {
   sub: "#AAAACC",
   primary: "#FF0080",
   surface: "#16161F",
-  success: "rgba(255,255,255,0.55)",
-  warning: "rgba(255,255,255,0.45)",
+  success: "#FF0080",
+  warning: "#8400FF",
 };
 
 const MODULES = [

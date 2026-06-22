@@ -125,7 +125,7 @@ export default function AnaliseScreen() {
   return (
     <View style={[S.root, { backgroundColor: colors.background }]}>
       <View style={[S.header, { paddingTop: topPad, borderBottomColor: colors.border }]}>
-        <TouchableOpacity style={[S.backBtn, { backgroundColor: colors.surface }]} onPress={() => router.back()} activeOpacity={0.8}>
+        <TouchableOpacity style={S.backBtn} onPress={() => router.back()} activeOpacity={0.8}>
           <Feather name="arrow-left" size={20} color={colors.text} />
         </TouchableOpacity>
         <View style={{ flex: 1 }}>
@@ -226,7 +226,7 @@ export default function AnaliseScreen() {
 
         {!!jadeError && (
           <View style={[S.errorBox]}>
-            <Feather name="alert-circle" size={14} color="#FF6B6B" />
+            <Feather name="alert-circle" size={14} color="#FF0080" />
             <Text style={S.errorText}>{jadeError}</Text>
           </View>
         )}
@@ -255,7 +255,7 @@ const S = StyleSheet.create({
   enterpriseBadgeText:{ fontSize: 10, fontFamily: "SpaceGrotesk_700Bold", color: "#8400FF" },
   scroll: { padding: 16, gap: 16 },
   jadeBanner: { flexDirection: "row", alignItems: "flex-start", gap: 10, borderRadius: 14, borderWidth: 1, padding: 14 },
-  jadeBannerText: { flex: 1, fontSize: 15, fontFamily: "SpaceGrotesk_400Regular", color: "#FF8080", lineHeight: 20 },
+  jadeBannerText: { flex: 1, fontSize: 15, fontFamily: "SpaceGrotesk_400Regular", color: "#FF0080", lineHeight: 20 },
   sectionLabel: { fontSize: 11, fontFamily: "SpaceGrotesk_700Bold", letterSpacing: 1 },
   kpiGrid: { flexDirection: "row", flexWrap: "wrap", gap: 10 },
   gapCard: { borderRadius: 16, borderWidth: 1, padding: 16 },
@@ -274,6 +274,6 @@ const S = StyleSheet.create({
   analiseHeader:{ flexDirection: "row", alignItems: "center", gap: 8, padding: 12 },
   analiseLabel: { fontSize: 13, fontFamily: "SpaceGrotesk_600SemiBold", color: "#FF0080" },
   analiseText:  { fontSize: 16, fontFamily: "SpaceGrotesk_400Regular", lineHeight: 22, padding: 16, paddingTop: 4, color: "#FFFFFF" },
-  errorBox: { flexDirection: "row", alignItems: "center", gap: 8, padding: 12, borderRadius: 10, backgroundColor: "#FF6B6B18", borderWidth: 1, borderColor: "#FF6B6B40" },
-  errorText: { flex: 1, fontSize: 15, fontFamily: "SpaceGrotesk_400Regular", color: "#FF6B6B", lineHeight: 20 },
+  errorBox: { flexDirection: "row", alignItems: "center", gap: 8, padding: 12, borderRadius: 10, backgroundColor: "#FF008018", borderWidth: 1, borderColor: "#FF008040" },
+  errorText: { flex: 1, fontSize: 15, fontFamily: "SpaceGrotesk_400Regular", color: "#FF0080", lineHeight: 20 },
 });

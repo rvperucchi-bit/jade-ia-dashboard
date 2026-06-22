@@ -214,12 +214,12 @@ function RecordingBar({ secs, cancelling, pulseAnim }: { secs: number; cancellin
   const ss = String(secs % 60).padStart(2, "0");
   return (
     <View style={[C.recordBar, { backgroundColor: cancelling ? "#22001A" : "#1A0010", borderColor: cancelling ? "#FF003355" : "#FF008055" }]}>
-      <Animated.View style={[C.recDot, { backgroundColor: cancelling ? "#FF3333" : PINK, transform: [{ scale }], opacity }]} />
-      <Text style={[C.recTimer, { color: cancelling ? "#FF3333" : PINK }]}>{mm}:{ss}</Text>
-      <Text style={[C.recHint, { color: cancelling ? "#FF3333" : "#7777AA" }]}>
+      <Animated.View style={[C.recDot, { backgroundColor: cancelling ? "#FF0080" : PINK, transform: [{ scale }], opacity }]} />
+      <Text style={[C.recTimer, { color: cancelling ? "#FF0080" : PINK }]}>{mm}:{ss}</Text>
+      <Text style={[C.recHint, { color: cancelling ? "#FF0080" : "#7777AA" }]}>
         {cancelling ? "✕ Solte para cancelar" : "← Deslize para cancelar"}
       </Text>
-      <AudioWave color={cancelling ? "#FF3333" : PINK} />
+      <AudioWave color={cancelling ? "#FF0080" : PINK} />
     </View>
   );
 }
@@ -686,7 +686,7 @@ export default function JADEScreen() {
               </TouchableOpacity>
               <View style={{ flex: 1 }} />
               <View {...micPan.panHandlers}>
-                <Animated.View style={[C.actionBtn, recording && { backgroundColor: cancelling ? "#FF3333" : PINK }]}>
+                <Animated.View style={[C.actionBtn, recording && { backgroundColor: cancelling ? "#FF0080" : PINK }]}>
                   <Feather name="mic" size={17} color={recording ? "#fff" : colors.mutedForeground} />
                 </Animated.View>
               </View>

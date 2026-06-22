@@ -128,7 +128,7 @@ export default function BibliotecaScreen() {
     <View style={[S.root, { backgroundColor: colors.background }]}>
       <View style={[S.header, { paddingTop: topPad, borderBottomColor: colors.border }]}>
         <TouchableOpacity
-          style={[S.backBtn, { backgroundColor: colors.surface }]}
+          style={S.backBtn}
           onPress={() => router.back()}
           activeOpacity={0.8}
         >

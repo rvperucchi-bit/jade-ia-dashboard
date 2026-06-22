@@ -96,7 +96,7 @@ export default function FeedbackJadeScreen() {
   return (
     <View style={[S.root, { backgroundColor: colors.background }]}>
       <View style={[S.header, { paddingTop: topPad, borderBottomColor: colors.border }]}>
-        <TouchableOpacity style={[S.backBtn, { backgroundColor: colors.surface }]} onPress={() => router.back()} activeOpacity={0.8}>
+        <TouchableOpacity style={S.backBtn} onPress={() => router.back()} activeOpacity={0.8}>
           <Feather name="arrow-left" size={20} color={colors.text} />
         </TouchableOpacity>
         <View style={{ flex: 1 }}>

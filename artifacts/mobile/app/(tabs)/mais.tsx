@@ -449,13 +449,13 @@ export default function MaisScreen() {
           label: "Metas",
           iconNode: <Feather name="target" size={20} color={canAccess("enterprise") ? pinkIc : grayIc} />,
           locked: !canAccess("enterprise"),
-          onPress: () => navEnterprise("/gestao", "Metas"),
+          onPress: () => navEnterprise("/metas", "Metas"),
         },
         {
           label: "Carteira",
           iconNode: <Feather name="briefcase" size={20} color={canAccess("enterprise") ? pinkIc : grayIc} />,
           locked: !canAccess("enterprise"),
-          onPress: () => navEnterprise("/gestao", "Carteira"),
+          onPress: () => navEnterprise("/carteira", "Carteira"),
         },
         {
           label: "Painel Exec.",
@@ -467,7 +467,7 @@ export default function MaisScreen() {
           label: "Meu Time",
           iconNode: <Feather name="user-plus" size={20} color={canAccess("enterprise") ? pinkIc : grayIc} />,
           locked: !canAccess("enterprise"),
-          onPress: () => navEnterprise("/gestao", "Meu Time"),
+          onPress: () => navEnterprise("/meutime", "Meu Time"),
         },
       ],
     },
@@ -492,11 +492,23 @@ export default function MaisScreen() {
           locked: false,
           onPress: () => { tap(); router.push("/laudo" as any); },
         },
+        {
+          label: "Radar",
+          iconNode: <Feather name="radio" size={20} color={pinkIc} />,
+          locked: false,
+          onPress: () => { tap(); router.push("/scanner" as any); },
+        },
       ],
     },
     {
       label: "SISTEMA",
       items: [
+        {
+          label: "Treinamento",
+          iconNode: <Feather name="zap" size={20} color={pinkIc} />,
+          locked: false,
+          onPress: () => { tap(); router.push("/treinamento" as any); },
+        },
         {
           label: "Biblioteca",
           iconNode: <Feather name="book-open" size={20} color={pinkIc} />,
@@ -756,7 +768,7 @@ export default function MaisScreen() {
               {["Tudo do Pro", "Meu Time", "Metas avançadas", "Carteira de Clientes", "Painel Executivo"].map((f) => (
                 <View key={f} style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
                   <Feather name="check-circle" size={14} color={GOLD} />
-                  <Text style={{ color: "#FFDDAA", fontSize: 13, fontFamily: "SpaceGrotesk_400Regular" }}>{f}</Text>
+                  <Text style={{ color: "rgba(255,255,255,0.4)", fontSize: 13, fontFamily: "SpaceGrotesk_400Regular" }}>{f}</Text>
                 </View>
               ))}
               <View style={{ backgroundColor: GOLD, borderRadius: 10, height: 40, alignItems: "center", justifyContent: "center", marginTop: 8 }}>
