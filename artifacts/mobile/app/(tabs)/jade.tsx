@@ -35,6 +35,7 @@ const PINK      = "#FF0080";
 const BG        = "#0B0814";
 const { width: SCREEN_W } = Dimensions.get("window");
 const DRAWER_W  = SCREEN_W;
+const RDRAWER_W = 72;
 
 // ─── Menu data ────────────────────────────────────────────────────────────────
 type MenuItem = { label: string; route: string; requiresPlan?: "pro" | "enterprise" };
@@ -88,6 +89,17 @@ const CONTEXT_ITEMS = [
   { icon: "share-2"  as const, label: "Compartilhar" },
   { icon: "sliders"  as const, label: "Configurações do chat" },
 ] as const;
+
+// ─── AI Modules (right drawer) ────────────────────────────────────────────────
+const MODULES = [
+  { key: "radar",     icon: "activity"       as const, label: "Radar" },
+  { key: "vendas",    icon: "trending-up"    as const, label: "Vendas" },
+  { key: "whatsapp",  icon: "message-circle" as const, label: "WhatsApp" },
+  { key: "marketing", icon: "volume-2"       as const, label: "Marketing" },
+  { key: "analise",   icon: "pie-chart"      as const, label: "Análise" },
+  { key: "briefing",  icon: "file-text"      as const, label: "Briefing" },
+  { key: "rotas",     icon: "map-pin"        as const, label: "Rotas" },
+];
 
 const API_BASE = Platform.OS === "web" ? "" : `https://${process.env.EXPO_PUBLIC_DOMAIN ?? ""}`;
 
@@ -247,12 +259,27 @@ export default function JADEScreen() {
   const [handoffAlert, setHandoffAlert] = useState(false);
   const [attachments,  setAttachments]  = useState<AttachedFile[]>([]);
 
-  // ── Drawer + menu state ───────────────────────────────────────────────────
+  // ── Modules (right drawer toggles) ───────────────────────────────────────
+  const [modules, setModules] = useState<Record<string, boolean>>({
+    radar: false, vendas: false, whatsapp: false, marketing: false,
+    analise: false, briefing: false, rotas: false,
+  });
+  const toggleModule = (key: string) => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    setModules((prev) => ({ ...prev, [key]: !prev[key] }));
+  };
+
+  // ── Left drawer + menu state ──────────────────────────────────────────────
   const [drawerOpen, setDrawerOpen] = useState(false);
   const drawerOpenRef = useRef(false);
   const [menuOpen,   setMenuOpen]   = useState(false);
   const drawerAnim  = useRef(new Animated.Value(-DRAWER_W)).current;
   const drawerBg    = useRef(new Animated.Value(0)).current;
+
+  // ── Right drawer state ────────────────────────────────────────────────────
+  const [rDrawerOpen, setRDrawerOpen] = useState(false);
+  const rDrawerOpenRef = useRef(false);
+  const rDrawerAnim = useRef(new Animated.Value(RDRAWER_W)).current;
 
   // ── Audio state ───────────────────────────────────────────────────────────
   const [recording,  setRecording]  = useState(false);
@@ -267,7 +294,7 @@ export default function JADEScreen() {
   const handoffTimer    = useRef<ReturnType<typeof setTimeout> | null>(null);
   const sessionCreating = useRef(false);
 
-  // ── Drawer open / close ───────────────────────────────────────────────────
+  // ── Left drawer open / close ──────────────────────────────────────────────
   const openDrawer = () => {
     drawerOpenRef.current = true;
     setDrawerOpen(true);
@@ -284,23 +311,58 @@ export default function JADEScreen() {
     ]).start(() => { setDrawerOpen(false); drawerOpenRef.current = false; });
   };
 
-  // ── Swipe left-edge → open, swipe left inside drawer → close ─────────────
+  // ── Right drawer open / close ─────────────────────────────────────────────
+  const openRDrawer = () => {
+    rDrawerOpenRef.current = true;
+    setRDrawerOpen(true);
+    Animated.timing(rDrawerAnim, { toValue: 0, duration: 260, easing: Easing.out(Easing.cubic), useNativeDriver: true }).start();
+  };
+
+  const closeRDrawer = () => {
+    Animated.timing(rDrawerAnim, { toValue: RDRAWER_W, duration: 220, easing: Easing.in(Easing.cubic), useNativeDriver: true })
+      .start(() => { setRDrawerOpen(false); rDrawerOpenRef.current = false; });
+  };
+
+  // ── Swipe left-edge → open left drawer ───────────────────────────────────
   const swipePan = useRef(
     PanResponder.create({
       onMoveShouldSetPanResponder: (_, gs) =>
-        !drawerOpenRef.current && gs.x0 < 32 && gs.dx > 14 && Math.abs(gs.dy) < Math.abs(gs.dx),
+        !drawerOpenRef.current && !rDrawerOpenRef.current && gs.x0 < 32 && gs.dx > 14 && Math.abs(gs.dy) < Math.abs(gs.dx),
       onPanResponderRelease: (_, gs) => {
         if (!drawerOpenRef.current && gs.dx > 40) openDrawer();
       },
     })
   ).current;
 
+  // ── Swipe left inside left drawer → close ────────────────────────────────
   const drawerPan = useRef(
     PanResponder.create({
       onMoveShouldSetPanResponder: (_, gs) =>
         drawerOpenRef.current && gs.dx < -14 && Math.abs(gs.dy) < Math.abs(gs.dx),
       onPanResponderRelease: (_, gs) => {
         if (drawerOpenRef.current && gs.dx < -40) closeDrawer();
+      },
+    })
+  ).current;
+
+  // ── Right-edge swipe zone → open right drawer ────────────────────────────
+  const rightEdgePan = useRef(
+    PanResponder.create({
+      onMoveShouldSetPanResponder: (_, gs) =>
+        !rDrawerOpenRef.current && !drawerOpenRef.current && gs.x0 > SCREEN_W - 28 && gs.dx < -12 && Math.abs(gs.dy) < Math.abs(gs.dx),
+      onPanResponderRelease: (_, gs) => {
+        if (!rDrawerOpenRef.current && gs.dx < -35) openRDrawer();
+      },
+    })
+  ).current;
+
+  // ── Swipe right inside right drawer → close ───────────────────────────────
+  const rDrawerPan = useRef(
+    PanResponder.create({
+      onMoveShouldSetPanResponder: (_, gs) =>
+        rDrawerOpenRef.current && gs.dx > 12 && Math.abs(gs.dy) < Math.abs(gs.dx),
+      onPanResponderRelease: (_, gs) => {
+        if (rDrawerOpenRef.current && gs.dx > 35) closeRDrawer();
       },
     })
   ).current;
@@ -531,7 +593,10 @@ export default function JADEScreen() {
             <Feather name="menu" size={17} color={colors.mutedForeground} />
           </TouchableOpacity>
           <View style={{ flex: 1 }} />
-          <TouchableOpacity style={C.headerRing} onPress={() => setMenuOpen((v) => !v)} activeOpacity={0.6}>
+          <TouchableOpacity style={C.headerRing} onPress={openRDrawer} activeOpacity={0.6}>
+            <Feather name="grid" size={16} color={colors.mutedForeground} />
+          </TouchableOpacity>
+          <TouchableOpacity style={[C.headerRing, { marginLeft: 4 }]} onPress={() => setMenuOpen((v) => !v)} activeOpacity={0.6}>
             <Feather name="more-vertical" size={17} color={colors.mutedForeground} />
           </TouchableOpacity>
         </View>
@@ -741,6 +806,42 @@ export default function JADEScreen() {
         </Animated.View>
       )}
 
+      {/* ── Right edge swipe zone ── */}
+      <View
+        style={{ position: "absolute", right: 0, top: 0, bottom: 0, width: 22, zIndex: 50 }}
+        {...rightEdgePan.panHandlers}
+      />
+
+      {/* ── Right drawer (AI Modules) ── */}
+      {rDrawerOpen && (
+        <Animated.View style={[StyleSheet.absoluteFill, { zIndex: 400 }]} pointerEvents="box-none">
+          <TouchableOpacity style={StyleSheet.absoluteFill} onPress={closeRDrawer} activeOpacity={1} />
+          <Animated.View
+            style={[C.rDrawer, { transform: [{ translateX: rDrawerAnim }], paddingTop: insets.top + 24, paddingBottom: insets.bottom + 24 }]}
+            pointerEvents="auto"
+            {...rDrawerPan.panHandlers}
+          >
+            {MODULES.map((mod) => {
+              const active = modules[mod.key] ?? false;
+              return (
+                <TouchableOpacity
+                  key={mod.key}
+                  style={[C.modBtn, active && C.modBtnActive]}
+                  onPress={() => toggleModule(mod.key)}
+                  activeOpacity={0.7}
+                >
+                  <Feather
+                    name={mod.icon}
+                    size={19}
+                    color={active ? "#fff" : "rgba(255,255,255,0.22)"}
+                  />
+                </TouchableOpacity>
+              );
+            })}
+          </Animated.View>
+        </Animated.View>
+      )}
+
       {/* ── Context menu ── */}
       {menuOpen && (
         <>
@@ -880,4 +981,32 @@ const C = StyleSheet.create({
   },
   contextItem:  { flexDirection: "row", alignItems: "center", gap: 12, paddingHorizontal: 16, paddingVertical: 13 },
   contextLabel: { fontSize: 13, fontFamily: "SpaceGrotesk_400Regular" },
+
+  // ── Right drawer (AI Modules) ──
+  rDrawer: {
+    position: "absolute", right: 0, top: 0, bottom: 0,
+    width: RDRAWER_W,
+    backgroundColor: "#080710",
+    borderLeftWidth: StyleSheet.hairlineWidth,
+    borderLeftColor: "rgba(255,255,255,0.06)",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 6,
+    shadowColor: "#000",
+    shadowOffset: { width: -4, height: 0 },
+    shadowOpacity: 0.6,
+    shadowRadius: 16,
+    elevation: 20,
+  },
+  modBtn: {
+    width: 44, height: 44, borderRadius: 22,
+    alignItems: "center", justifyContent: "center",
+  },
+  modBtnActive: {
+    backgroundColor: "rgba(255,255,255,0.10)",
+    shadowColor: "#fff",
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.12,
+    shadowRadius: 10,
+  },
 });

@@ -1,0 +1,73 @@
+IMPLEMENTAR MENU DESLIZANTE À DIREITA PARA MÓDULOS IA
+
+Criar um menu lateral direito que abre deslizando da direita para a esquerda.
+
+Esse menu deve ser pequeno, compacto e conter apenas os ícones dos Módulos IA.
+
+NÃO criar dashboard.
+NÃO criar cards.
+NÃO criar novo menu esquerdo.
+NÃO recriar a tela principal.
+NÃO colocar textos grandes.
+NÃO misturar com o menu lateral esquerdo.
+
+MÓDULOS IA DO MENU DIREITO
+
+Exibir apenas estes módulos:
+
+1. Radar
+2. Vendas
+3. WhatsApp
+4. Marketing
+5. Análise
+6. Briefing
+7. Rotas
+
+VISUAL
+
+* Menu vertical pequeno na lateral direita.
+* Fundo escuro/transparente, premium e discreto.
+* Ícones alinhados na vertical.
+* Sem texto fixo, apenas ícones.
+* Ícones desligados: cinza/transparente.
+* Ícones ligados: brancos, com fundo branco translúcido e glow suave.
+* Espaçamento uniforme.
+* Mobile first.
+
+COMPORTAMENTO
+
+* O menu abre pela lateral direita.
+* Deve poder fechar arrastando com o dedo para a direita.
+* Também pode fechar tocando fora do menu.
+* Ao tocar em um ícone, alternar entre ativado/desativado.
+* Manter o estado visual do módulo ativado.
+* Exibir tooltip pequeno apenas se necessário, com o nome do módulo.
+
+IMPORTANTE
+
+Esse menu serve apenas para ligar e desligar os módulos IA da JADE.
+
+Ele NÃO navega para páginas.
+
+Quando um módulo estiver ativo, a JADE deve considerar esse módulo nas respostas e automações.
+
+Exemplo:
+
+* Radar ativado: JADE considera prospecção.
+* Vendas ativado: JADE considera CRM/Pipeline.
+* WhatsApp ativado: JADE considera atendimento e mensagens.
+* Marketing ativado: JADE considera campanhas.
+* Análise ativada: JADE considera relatórios e dados.
+* Briefing ativado: JADE considera contexto da empresa.
+* Rotas ativado: JADE considera planejamento de visitas.
+
+BOTÃO DE VOLTAR
+
+Adicionar botão de voltar em todas as telas internas do app.
+
+Regras:
+
+* Toda tela que não for a tela principal deve ter botão de voltar.
+* O botão deve retornar corretamente para a tela anterior.
+* Não deixar nenhuma tela sem saída.
+* Manter o visual premium da JADE.

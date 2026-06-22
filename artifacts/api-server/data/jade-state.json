@@ -1180,6 +1180,25 @@
   ],
   "activity_events": [
     {
+      "id": "ae4c286921571dbd",
+      "type": "message",
+      "text": "JADE respondeu a uma mensagem",
+      "icon": "robot",
+      "color": "#FF0080",
+      "metadata": {
+        "session_id": "2a6c3eb4dc5527fe"
+      },
+      "created_at": "2026-06-22T20:07:39.643Z"
+    },
+    {
+      "id": "d34e5e716360879a",
+      "type": "message",
+      "text": "JADE ativada no modo autônomo",
+      "icon": "robot",
+      "color": "#00D68F",
+      "created_at": "2026-06-22T20:04:01.578Z"
+    },
+    {
       "id": "d3ff9717aeda80f2",
       "type": "message",
       "text": "JADE respondeu: \"Olá\"",
@@ -3180,22 +3199,6 @@
       "icon": "user-plus",
       "color": "#6C63FF",
       "created_at": "2026-06-21T03:21:02.960Z"
-    },
-    {
-      "id": "9f6572841490ca5c",
-      "type": "lead",
-      "text": "Novo lead adicionado: Ricardo Silva (Loja de Conveniência Mais Perto)",
-      "icon": "user-plus",
-      "color": "#6C63FF",
-      "created_at": "2026-06-21T03:21:02.948Z"
-    },
-    {
-      "id": "8d00f7ba42f76b5e",
-      "type": "lead",
-      "text": "Novo lead adicionado: Ricardo Almeida (Tech & Lar Eletrônicos)",
-      "icon": "user-plus",
-      "color": "#6C63FF",
-      "created_at": "2026-06-21T03:21:02.816Z"
     }
   ],
   "marketing_campaigns": [
@@ -3221,6 +3224,38 @@
     }
   ],
   "jade_sessions": [
+    {
+      "id": "2a6c3eb4dc5527fe",
+      "title": "O usuário enviou uma mensagem de voz de …",
+      "messages": [
+        {
+          "role": "user",
+          "content": "O usuário enviou uma mensagem de voz de 3s. Responda ajudando com vendas ou negócio.",
+          "time": "2026-06-22T20:07:39.637Z"
+        },
+        {
+          "role": "model",
+          "content": "Olá! Recebi sua mensagem de voz. Como posso te ajudar hoje com as vendas ou o negócio do Já delivery?",
+          "time": "2026-06-22T20:07:39.640Z"
+        }
+      ],
+      "created_at": "2026-06-22T20:07:37.544Z",
+      "updated_at": "2026-06-22T20:07:39.640Z"
+    },
+    {
+      "id": "892ecb7aef6bf152",
+      "title": "Nova conversa",
+      "messages": [],
+      "created_at": "2026-06-22T20:07:12.020Z",
+      "updated_at": "2026-06-22T20:07:12.020Z"
+    },
+    {
+      "id": "e24983fd0e79435d",
+      "title": "Nova conversa",
+      "messages": [],
+      "created_at": "2026-06-22T20:05:54.894Z",
+      "updated_at": "2026-06-22T20:05:54.894Z"
+    },
     {
       "id": "7f1b4886d04c9914",
       "title": "Nova conversa",

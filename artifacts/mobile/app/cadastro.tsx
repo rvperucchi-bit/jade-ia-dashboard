@@ -1,6 +1,7 @@
 import { Feather } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
+import { BackButton } from "@/components/BackButton";
 import {
   ActivityIndicator,
   Alert,
@@ -105,6 +106,7 @@ export default function CadastroScreen() {
       style={[S.root, { paddingTop: insets.top, paddingBottom: insets.bottom }]}
       behavior={Platform.OS === "ios" ? "padding" : "height"}
     >
+      <BackButton />
       <ScrollView
         contentContainerStyle={S.scroll}
         keyboardShouldPersistTaps="handled"
