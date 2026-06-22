@@ -3239,6 +3239,13 @@
   ],
   "jade_sessions": [
     {
+      "id": "c54bd5ae4b9e1ee0",
+      "title": "Nova conversa",
+      "messages": [],
+      "created_at": "2026-06-22T22:00:41.228Z",
+      "updated_at": "2026-06-22T22:00:41.228Z"
+    },
+    {
       "id": "2a6c3eb4dc5527fe",
       "title": "O usuário enviou uma mensagem de voz de …",
       "messages": [
