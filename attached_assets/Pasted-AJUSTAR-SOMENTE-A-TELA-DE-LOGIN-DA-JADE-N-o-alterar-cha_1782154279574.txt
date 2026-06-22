@@ -1,0 +1,150 @@
+AJUSTAR SOMENTE A TELA DE LOGIN DA JADE
+
+Não alterar chat.
+Não alterar splash screen.
+Não alterar menu lateral.
+Não alterar onboarding.
+Não alterar logo.
+
+Objetivo:
+Refinar a tela de login para ficar mais premium, limpa e parecida com aplicativos modernos.
+
+LAYOUT GERAL
+
+Manter fundo preto/dark premium.
+
+Remover qualquer logo ou anel da tela de login.
+
+A tela deve ter apenas:
+
+* Título “Login”
+* Campo de e-mail
+* Campo de senha
+* Botão principal “Login”
+* Separador “ou”
+* Botões sociais Google e Apple
+* Link “Criar conta”
+
+TÍTULO
+
+* Usar “Login”
+* Centralizado
+* Branco
+* Fonte grande e limpa
+* Sem frase abaixo
+* Sem slogan
+* Sem “Bem-vindo de volta”
+
+CAMPOS
+
+Campo de e-mail:
+
+* Label “E-mail”
+* Placeholder: “seu@email.com”
+* Ícone de e-mail discreto
+* Fundo escuro translúcido
+* Borda sutil
+* Cantos arredondados
+
+Campo de senha:
+
+* Label “Senha”
+* Placeholder com pontos
+* Ícone de cadeado discreto
+* Ícone de olho no lado direito
+* Mesmo estilo do campo de e-mail
+
+BOTÃO PRINCIPAL
+
+Botão rosa “Login”:
+
+* Reduzir um pouco a altura atual
+* Não deixar exageradamente grande
+* Manter largura alinhada com os campos
+* Cantos arredondados
+* Rosa da marca
+* Texto branco
+* Sem glow exagerado
+* Visual premium e limpo
+
+ESQUECI MINHA SENHA
+
+Adicionar o link:
+
+“Esqueci minha senha”
+
+Regras:
+
+* Ficar logo abaixo do campo de senha ou abaixo do botão Login
+* Texto pequeno
+* Cor cinza clara ou rosa discreto
+* Não competir com o botão principal
+
+SEPARADOR
+
+Separador “ou”:
+
+* Mais sutil
+* Linhas finas
+* Texto pequeno
+* Cor cinza discreta
+* Espaçamento equilibrado
+
+BOTÕES SOCIAIS
+
+Os botões Google e Apple devem ficar lado a lado.
+
+Formato:
+
+[ Google ]   [ Apple ]
+
+Regras:
+
+* Menores que o botão principal
+* Mais discretos
+* Altura menor
+* Fundo escuro/transparente
+* Borda fina
+* Cantos arredondados
+* Ícone oficial pequeno
+* Texto curto: “Google” e “Apple”
+* Não usar “Continuar com Google”
+* Não usar “Continuar com Apple”
+* Não usar ícone errado no Apple
+* Não deixar botões sociais mais chamativos que o botão Login
+
+CRIAR CONTA
+
+Na parte inferior do bloco:
+
+“Não tem uma conta? Criar conta”
+
+Regras:
+
+* Texto cinza
+* “Criar conta” em rosa
+* Centralizado
+* Espaçamento confortável
+
+HIERARQUIA VISUAL
+
+Prioridade da tela:
+
+1. Login
+2. Campos
+3. Botão principal
+4. Login social
+5. Criar conta
+
+Nada deve competir com o botão principal.
+
+RESULTADO ESPERADO
+
+Tela escura, limpa, premium e funcional.
+
+Referências visuais:
+ChatGPT, Claude, Linear, Apple e apps modernos de SaaS.
+
+Menos decoração.
+Mais clareza.
+Mais equilíbrio visual.

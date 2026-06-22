@@ -1180,6 +1180,25 @@
   ],
   "activity_events": [
     {
+      "id": "cbb1c0a90cf94bd7",
+      "type": "message",
+      "text": "JADE respondeu: \"Oi jade\"",
+      "icon": "robot",
+      "color": "#FF0080",
+      "created_at": "2026-06-22T18:47:53.115Z"
+    },
+    {
+      "id": "4c3798e775eced3e",
+      "type": "message",
+      "text": "JADE respondeu a uma mensagem",
+      "icon": "robot",
+      "color": "#FF0080",
+      "metadata": {
+        "session_id": "57cfb859f947280a"
+      },
+      "created_at": "2026-06-22T18:47:52.818Z"
+    },
+    {
       "id": "a816fa29735c659b",
       "type": "module",
       "text": "CRM/Leads desativado",
@@ -3175,26 +3194,6 @@
         "cidade": "São Paulo"
       },
       "created_at": "2026-06-21T03:21:01.993Z"
-    },
-    {
-      "id": "dbc72cfeea199224",
-      "type": "scan",
-      "text": "JADE encontrou 3 novos leads via radar em São Paulo",
-      "icon": "crosshair",
-      "color": "#6C63FF",
-      "metadata": {
-        "count": 3,
-        "cidade": "São Paulo"
-      },
-      "created_at": "2026-06-21T03:21:01.832Z"
-    },
-    {
-      "id": "280d5cc0ae1e1ed7",
-      "type": "lead",
-      "text": "Novo lead adicionado: Fernando Oliveira (Livraria Cultura & Café)",
-      "icon": "user-plus",
-      "color": "#6C63FF",
-      "created_at": "2026-06-21T03:21:00.553Z"
     }
   ],
   "marketing_campaigns": [
@@ -3220,6 +3219,24 @@
     }
   ],
   "jade_sessions": [
+    {
+      "id": "57cfb859f947280a",
+      "title": "Oi jade",
+      "messages": [
+        {
+          "role": "user",
+          "content": "Oi jade",
+          "time": "2026-06-22T18:47:52.813Z"
+        },
+        {
+          "role": "model",
+          "content": "Oi! Tudo bem? Como posso te ajudar hoje?",
+          "time": "2026-06-22T18:47:52.815Z"
+        }
+      ],
+      "created_at": "2026-06-22T18:47:51.204Z",
+      "updated_at": "2026-06-22T18:47:52.815Z"
+    },
     {
       "id": "5fdf7fc14686d639",
       "title": "O usuário enviou uma mensagem de voz com…",
