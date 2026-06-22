@@ -793,14 +793,22 @@ export default function JADEScreen() {
             {/* ── Footer ── */}
             <View style={[C.drawerFooter, { paddingBottom: insets.bottom + 16 }]}>
               <View style={C.footerSep} />
-              <TouchableOpacity style={C.footerItem} onPress={() => { closeDrawer(); router.push("/perfil" as any); }} activeOpacity={0.65}>
-                <Text style={C.footerIcon}>⚙</Text>
-                <Text style={C.footerText}>Configurações</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={C.footerItem} onPress={() => { closeDrawer(); router.push("/login" as any); }} activeOpacity={0.65}>
-                <Text style={C.footerIcon}>↩</Text>
-                <Text style={[C.footerText, { color: "#555" }]}>Sair</Text>
-              </TouchableOpacity>
+              <View style={C.footerRow}>
+                <TouchableOpacity
+                  style={C.footerIconBtn}
+                  onPress={() => { closeDrawer(); router.push("/perfil" as any); }}
+                  activeOpacity={0.65}
+                >
+                  <Feather name="settings" size={16} color="rgba(255,255,255,0.45)" />
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={C.footerIconBtn}
+                  onPress={() => { closeDrawer(); router.push("/login" as any); }}
+                  activeOpacity={0.65}
+                >
+                  <Feather name="log-out" size={16} color="rgba(255,255,255,0.28)" />
+                </TouchableOpacity>
+              </View>
             </View>
           </Animated.View>
         </Animated.View>
@@ -926,24 +934,24 @@ const C = StyleSheet.create({
     paddingHorizontal: 24, paddingTop: 20, paddingBottom: 20,
   },
   drawerTitle: {
-    fontSize: 22, fontFamily: "SpaceGrotesk_700Bold", color: "#fff", letterSpacing: -0.5,
+    fontSize: 24, fontFamily: "SpaceGrotesk_700Bold", color: "#fff", letterSpacing: -0.5,
   },
   entBadge: {
-    borderWidth: 1, borderColor: "rgba(255,255,255,0.08)",
-    borderRadius: 5, paddingHorizontal: 7, paddingVertical: 2,
-    marginRight: 12, backgroundColor: "rgba(255,255,255,0.02)",
+    borderWidth: 1, borderColor: "rgba(255,255,255,0.06)",
+    borderRadius: 4, paddingHorizontal: 5, paddingVertical: 1,
+    marginRight: 10, backgroundColor: "rgba(255,255,255,0.01)",
   },
   entBadgeText: {
-    fontSize: 9, fontFamily: "SpaceGrotesk_400Regular",
-    color: "rgba(255,255,255,0.25)", letterSpacing: 0.5,
+    fontSize: 7, fontFamily: "SpaceGrotesk_400Regular",
+    color: "rgba(255,255,255,0.18)", letterSpacing: 0.4,
   },
   profileThumb: {
-    width: 34, height: 34, borderRadius: 17,
+    width: 37, height: 37, borderRadius: 19,
     backgroundColor: "#181818",
     alignItems: "center", justifyContent: "center", overflow: "hidden",
   },
-  profileImg:      { width: 34, height: 34, borderRadius: 17 },
-  profileInitials: { fontSize: 12, fontFamily: "SpaceGrotesk_600SemiBold", color: "rgba(255,255,255,0.45)" },
+  profileImg:      { width: 37, height: 37, borderRadius: 19 },
+  profileInitials: { fontSize: 13, fontFamily: "SpaceGrotesk_600SemiBold", color: "rgba(255,255,255,0.45)" },
 
   newConvoBtn: {
     flexDirection: "row", alignItems: "center", gap: 10,
@@ -972,11 +980,19 @@ const C = StyleSheet.create({
   activeDot:      { fontSize: 8, color: PINK, marginRight: 2 },
 
   // ── Footer ──
-  drawerFooter: { paddingHorizontal: 24 },
-  footerSep:    { height: StyleSheet.hairlineWidth, backgroundColor: "#161616", marginBottom: 8 },
-  footerItem:   { flexDirection: "row", alignItems: "center", gap: 12, paddingVertical: 13 },
-  footerIcon:   { fontSize: 14, color: "#444", width: 18, textAlign: "center" },
-  footerText:   { fontSize: 13, fontFamily: "SpaceGrotesk_400Regular", color: "#555" },
+  drawerFooter: { paddingHorizontal: 20 },
+  footerSep:    { height: StyleSheet.hairlineWidth, backgroundColor: "#161616", marginBottom: 12 },
+  footerRow: {
+    flexDirection: "row", alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: 4,
+  },
+  footerIconBtn: {
+    width: 38, height: 38, borderRadius: 19,
+    borderWidth: 1, borderColor: "rgba(255,255,255,0.07)",
+    backgroundColor: "rgba(255,255,255,0.03)",
+    alignItems: "center", justifyContent: "center",
+  },
 
   // ── Context menu ──
   contextMenu: {
