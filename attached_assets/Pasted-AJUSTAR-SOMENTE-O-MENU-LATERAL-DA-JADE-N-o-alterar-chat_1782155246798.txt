@@ -1,0 +1,159 @@
+AJUSTAR SOMENTE O MENU LATERAL DA JADE
+
+Não alterar chat.
+Não alterar login.
+Não alterar splash.
+Não alterar onboarding.
+
+Objetivo:
+Transformar o menu lateral da JADE em uma área de trabalho premium, inspirada em Claude, ChatGPT e aplicativos modernos.
+
+LARGURA DO MENU
+
+Problema atual:
+
+O menu abre pouco e parece apertado.
+
+Corrigir:
+
+* Aumentar largura para aproximadamente 80% a 85% da tela.
+* Quando aberto, deve parecer uma área de trabalho e não uma pequena gaveta lateral.
+* O conteúdo deve respirar melhor.
+
+FUNDO
+
+Aplicar:
+
+* Fundo dark premium.
+* Leve transparência.
+* Leve efeito blur no conteúdo atrás.
+* Escurecer suavemente a tela principal quando o menu estiver aberto.
+
+Evitar:
+
+* Fundo totalmente sólido.
+* Visual pesado.
+* Aparência de menu Android antigo.
+
+CABEÇALHO
+
+Reduzir o destaque atual.
+
+Trocar:
+
+JADE
+
+Por:
+
+JADE
+Plano Master
+
+ou
+
+JADE
+Seu espaço de trabalho
+
+Tipografia menor, mais elegante e menos agressiva.
+
+Não usar logo.
+Não usar anel.
+Não usar elementos decorativos.
+
+NOVA CONVERSA
+
+Adicionar logo abaixo do cabeçalho:
+
+* Nova conversa
+
+Visual:
+
+* Botão destacado.
+* Fácil acesso.
+* Primeira ação do menu.
+
+HISTÓRICO
+
+Criar uma seção chamada:
+
+Recentes
+
+Logo abaixo de Nova conversa.
+
+Exibir as últimas conversas do usuário.
+
+Exemplo:
+
+Recentes
+
+Análise Comercial
+
+Plano de Marketing
+
+Relatório Semanal
+
+Estratégia JADE
+
+Campanhas Ativas
+
+Regras:
+
+* Mostrar título da conversa.
+* Limitar tamanho do texto.
+* Caso necessário usar reticências (…).
+* Rolagem independente quando houver muitas conversas.
+
+MENU PRINCIPAL
+
+Abaixo do histórico:
+
+Favoritos
+
+Arquivos
+
+Configurações
+
+Perfil
+
+Plano atual
+
+Não usar ícones.
+
+Apenas texto.
+
+VISUAL
+
+Objetivo:
+
+Menos aparência de menu.
+Mais aparência de central de trabalho.
+
+Referência:
+
+Claude.
+
+O menu deve parecer um espaço onde o usuário continua seu trabalho e acessa conversas anteriores.
+
+ANIMAÇÃO
+
+Ao abrir:
+
+* Deslizar suavemente da esquerda.
+* Sem travamentos.
+* Sem animações exageradas.
+
+Ao fechar:
+
+* Tocar fora fecha.
+* Arrastar para a esquerda fecha.
+
+RESULTADO ESPERADO
+
+O menu lateral deve transmitir sensação de produto premium.
+
+Menos vazio.
+Mais organização.
+Mais contexto.
+Mais histórico.
+Mais produtividade.
+
+O usuário deve sentir que está entrando no seu ambiente de trabalho, e não apenas abrindo uma lista de opções.

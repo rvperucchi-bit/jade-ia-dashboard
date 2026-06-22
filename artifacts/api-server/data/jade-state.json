@@ -1180,6 +1180,25 @@
   ],
   "activity_events": [
     {
+      "id": "4756f6efd286a16f",
+      "type": "message",
+      "text": "JADE respondeu: \"Oi\"",
+      "icon": "robot",
+      "color": "#FF0080",
+      "created_at": "2026-06-22T19:03:56.134Z"
+    },
+    {
+      "id": "9f51f361c51fb22c",
+      "type": "message",
+      "text": "JADE respondeu a uma mensagem",
+      "icon": "robot",
+      "color": "#FF0080",
+      "metadata": {
+        "session_id": "1db5b9b53f63934f"
+      },
+      "created_at": "2026-06-22T19:03:55.820Z"
+    },
+    {
       "id": "cbb1c0a90cf94bd7",
       "type": "message",
       "text": "JADE respondeu: \"Oi jade\"",
@@ -3174,26 +3193,6 @@
       "icon": "user-plus",
       "color": "#6C63FF",
       "created_at": "2026-06-21T03:21:02.174Z"
-    },
-    {
-      "id": "a783dc5defb2d32a",
-      "type": "lead",
-      "text": "Novo lead adicionado: Mariana Costa (Divina Moda Boutique)",
-      "icon": "user-plus",
-      "color": "#6C63FF",
-      "created_at": "2026-06-21T03:21:02.171Z"
-    },
-    {
-      "id": "b089aff1f3a56e31",
-      "type": "scan",
-      "text": "JADE encontrou 3 novos leads via radar em São Paulo",
-      "icon": "crosshair",
-      "color": "#6C63FF",
-      "metadata": {
-        "count": 3,
-        "cidade": "São Paulo"
-      },
-      "created_at": "2026-06-21T03:21:01.993Z"
     }
   ],
   "marketing_campaigns": [
@@ -3219,6 +3218,24 @@
     }
   ],
   "jade_sessions": [
+    {
+      "id": "1db5b9b53f63934f",
+      "title": "Nova conversa",
+      "messages": [
+        {
+          "role": "user",
+          "content": "Oi",
+          "time": "2026-06-22T19:03:55.816Z"
+        },
+        {
+          "role": "model",
+          "content": "Olá! Que bom te ver por aqui.\n\nComo posso te ajudar a impulsionar seu negócio de alimentação hoje?",
+          "time": "2026-06-22T19:03:55.818Z"
+        }
+      ],
+      "created_at": "2026-06-22T19:03:53.896Z",
+      "updated_at": "2026-06-22T19:03:55.818Z"
+    },
     {
       "id": "57cfb859f947280a",
       "title": "Oi jade",

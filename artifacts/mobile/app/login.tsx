@@ -133,12 +133,12 @@ export default function LoginScreen() {
           {/* ── Social: lado a lado ── */}
           <View style={S.socialRow}>
             <TouchableOpacity style={S.socialBtn} activeOpacity={0.75}>
-              <FontAwesome name="google" size={16} color="#EA4335" />
+              <FontAwesome name="google" size={20} color="#EA4335" />
               <Text style={S.socialText}>Google</Text>
             </TouchableOpacity>
 
             <TouchableOpacity style={S.socialBtn} activeOpacity={0.75}>
-              <FontAwesome name="apple" size={17} color="#fff" />
+              <FontAwesome name="apple" size={22} color="#fff" />
               <Text style={S.socialText}>Apple</Text>
             </TouchableOpacity>
           </View>

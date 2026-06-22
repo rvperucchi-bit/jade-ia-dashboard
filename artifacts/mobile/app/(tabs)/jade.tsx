@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
   Alert,
   Animated,
+  Dimensions,
   Easing,
   FlatList,
   Image,
@@ -31,33 +32,33 @@ import { stripMarkdown } from "@/utils/stripMarkdown";
 
 const jadeLogo = require("../../assets/images/jade-logo.png");
 
-const PINK       = "#FF0080";
-const DRAWER_W   = 270;
+const PINK      = "#FF0080";
+const { width: SCREEN_W } = Dimensions.get("window");
+const DRAWER_W  = Math.round(SCREEN_W * 0.82);
 
-const DRAWER_ITEMS = [
-  { icon: "plus-square" as const, label: "Nova conversa" },
-  { icon: "clock"       as const, label: "Histórico" },
-  { icon: "star"        as const, label: "Favoritos" },
-  { icon: "folder"      as const, label: "Arquivos" },
-  { icon: "settings"   as const, label: "Configurações" },
-  { icon: "user"        as const, label: "Perfil" },
-  { icon: "zap"         as const, label: "Plano atual" },
+const RECENT_CONVOS = [
+  "Análise Comercial",
+  "Plano de Marketing",
+  "Relatório Semanal",
+  "Estratégia JADE",
+  "Campanhas Ativas",
+];
+
+const MENU_ITEMS = [
+  "Favoritos",
+  "Arquivos",
+  "Configurações",
+  "Perfil",
+  "Plano atual",
 ] as const;
 
 const CONTEXT_ITEMS = [
-  { icon: "edit-2"      as const, label: "Renomear conversa" },
-  { icon: "trash-2"     as const, label: "Limpar conversa",  danger: true },
-  { icon: "download"    as const, label: "Exportar conversa" },
-  { icon: "share-2"     as const, label: "Compartilhar" },
-  { icon: "sliders"     as const, label: "Configurações do chat" },
+  { icon: "edit-2"   as const, label: "Renomear conversa" },
+  { icon: "trash-2"  as const, label: "Limpar conversa",  danger: true },
+  { icon: "download" as const, label: "Exportar conversa" },
+  { icon: "share-2"  as const, label: "Compartilhar" },
+  { icon: "sliders"  as const, label: "Configurações do chat" },
 ] as const;
-
-const SUGGESTIONS = [
-  "Gerar relatório",
-  "Encontrar oportunidades",
-  "Criar campanha",
-  "Analisar negócio",
-];
 
 const API_BASE = Platform.OS === "web" ? "" : `https://${process.env.EXPO_PUBLIC_DOMAIN ?? ""}`;
 
@@ -66,20 +67,10 @@ function nowTime() {
 }
 
 // ─── Types ────────────────────────────────────────────────────────────────────
-interface AttachedFile {
-  uri: string;
-  name: string;
-  type: "image" | "doc";
-}
-
+interface AttachedFile { uri: string; name: string; type: "image" | "doc" }
 interface AIMessage {
-  id: string;
-  text: string;
-  sender: "user" | "jade";
-  time: string;
-  isAudio?: boolean;
-  audioDuration?: number;
-  files?: AttachedFile[];
+  id: string; text: string; sender: "user" | "jade"; time: string;
+  isAudio?: boolean; audioDuration?: number; files?: AttachedFile[];
 }
 
 // ─── Audio wave ───────────────────────────────────────────────────────────────
@@ -93,21 +84,13 @@ function AudioWave({ color }: { color: string }) {
   );
 }
 
-// ─── JADE avatar ─────────────────────────────────────────────────────────────
-function JadeAvatar({ size = 26 }: { size?: number }) {
-  return (
-    <Image
-      source={jadeLogo}
-      style={{ width: size, height: size, borderRadius: size / 2 }}
-      resizeMode="contain"
-    />
-  );
-}
-
 // ─── Message bubble ───────────────────────────────────────────────────────────
+// JADE: sem avatar, sem bolha — texto corrido como Claude/ChatGPT
+// User: bolha rosa à direita
 function MessageBubble({ msg, colors }: { msg: AIMessage; colors: ReturnType<typeof useColors> }) {
   const isJade = msg.sender === "jade";
 
+  // Áudio do usuário
   if (msg.isAudio && !isJade) {
     return (
       <View style={[C.msgRow, C.msgRight]}>
@@ -124,21 +107,16 @@ function MessageBubble({ msg, colors }: { msg: AIMessage; colors: ReturnType<typ
     );
   }
 
-  return (
-    <View style={[C.msgRow, isJade ? C.msgLeft : C.msgRight]}>
-      {isJade && <JadeAvatar size={26} />}
-      <View style={[
-        C.bubble,
-        isJade
-          ? [C.bubbleJade, { backgroundColor: colors.surface, borderColor: colors.border }]
-          : [C.bubbleUser, { backgroundColor: PINK }],
-      ]}>
+  // Mensagem da JADE — sem bolha, sem avatar
+  if (isJade) {
+    return (
+      <View style={C.msgJade}>
         {msg.files && msg.files.length > 0 && (
-          <View style={{ gap: 5, marginBottom: 6 }}>
+          <View style={{ gap: 5, marginBottom: 8 }}>
             {msg.files.map((f, i) => (
-              <View key={i} style={[C.filePill, { backgroundColor: isJade ? "rgba(255,255,255,0.07)" : "rgba(0,0,0,0.15)" }]}>
-                <Feather name={f.type === "image" ? "image" : "file"} size={12} color={isJade ? colors.mutedForeground : "rgba(255,255,255,0.8)"} />
-                <Text style={{ fontSize: 11, color: isJade ? colors.mutedForeground : "rgba(255,255,255,0.9)", fontFamily: "SpaceGrotesk_400Regular", flex: 1 }} numberOfLines={1}>
+              <View key={i} style={[C.filePill, { backgroundColor: "rgba(255,255,255,0.06)" }]}>
+                <Feather name={f.type === "image" ? "image" : "file"} size={12} color={colors.mutedForeground} />
+                <Text style={{ fontSize: 11, color: colors.mutedForeground, fontFamily: "SpaceGrotesk_400Regular", flex: 1 }} numberOfLines={1}>
                   {f.name}
                 </Text>
               </View>
@@ -146,23 +124,47 @@ function MessageBubble({ msg, colors }: { msg: AIMessage; colors: ReturnType<typ
           </View>
         )}
         {!!msg.text && (
-          <Text style={[C.bubbleText, { color: isJade ? colors.text : "#fff" }]}>{msg.text}</Text>
+          <Text style={[C.jadeText, { color: colors.text }]}>{msg.text}</Text>
         )}
-        <Text style={[C.bubbleTime, { color: isJade ? colors.mutedForeground : "rgba(255,255,255,0.6)" }]}>{msg.time}</Text>
+        <Text style={[C.jadeTime, { color: colors.mutedForeground }]}>{msg.time}</Text>
+      </View>
+    );
+  }
+
+  // Mensagem do usuário — bolha rosa
+  return (
+    <View style={[C.msgRow, C.msgRight]}>
+      <View style={[C.bubble, C.bubbleUser, { backgroundColor: PINK }]}>
+        {msg.files && msg.files.length > 0 && (
+          <View style={{ gap: 5, marginBottom: 6 }}>
+            {msg.files.map((f, i) => (
+              <View key={i} style={[C.filePill, { backgroundColor: "rgba(0,0,0,0.15)" }]}>
+                <Feather name={f.type === "image" ? "image" : "file"} size={12} color="rgba(255,255,255,0.8)" />
+                <Text style={{ fontSize: 11, color: "rgba(255,255,255,0.9)", fontFamily: "SpaceGrotesk_400Regular", flex: 1 }} numberOfLines={1}>
+                  {f.name}
+                </Text>
+              </View>
+            ))}
+          </View>
+        )}
+        {!!msg.text && (
+          <Text style={[C.bubbleText, { color: "#fff" }]}>{msg.text}</Text>
+        )}
+        <Text style={[C.bubbleTime, { color: "rgba(255,255,255,0.6)" }]}>{msg.time}</Text>
       </View>
     </View>
   );
 }
 
-// ─── Typing indicator ────────────────────────────────────────────────────────
+// ─── Pensando… indicator ──────────────────────────────────────────────────────
 function TypingBubble({ colors }: { colors: ReturnType<typeof useColors> }) {
-  const fade = useRef(new Animated.Value(0.35)).current;
+  const fade = useRef(new Animated.Value(0.3)).current;
 
   useEffect(() => {
     const loop = Animated.loop(
       Animated.sequence([
-        Animated.timing(fade, { toValue: 1, duration: 850, easing: Easing.inOut(Easing.ease), useNativeDriver: true }),
-        Animated.timing(fade, { toValue: 0.35, duration: 850, easing: Easing.inOut(Easing.ease), useNativeDriver: true }),
+        Animated.timing(fade, { toValue: 0.85, duration: 900, easing: Easing.inOut(Easing.ease), useNativeDriver: true }),
+        Animated.timing(fade, { toValue: 0.3,  duration: 900, easing: Easing.inOut(Easing.ease), useNativeDriver: true }),
       ])
     );
     loop.start();
@@ -170,16 +172,11 @@ function TypingBubble({ colors }: { colors: ReturnType<typeof useColors> }) {
   }, []);
 
   return (
-    <View style={[C.msgRow, C.msgLeft]}>
-      <Animated.Image source={jadeLogo} style={{ width: 26, height: 26, borderRadius: 13, opacity: fade }} resizeMode="contain" />
-      <View style={[C.bubble, C.bubbleJade, { backgroundColor: colors.surface, borderColor: colors.border, paddingVertical: 14, paddingHorizontal: 16 }]}>
-        <View style={{ flexDirection: "row", gap: 5, alignItems: "center" }}>
-          {[0, 1, 2].map((i) => (
-            <View key={i} style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: colors.mutedForeground, opacity: 0.55 }} />
-          ))}
-        </View>
-      </View>
-    </View>
+    <Animated.View style={{ paddingHorizontal: 20, paddingVertical: 10, opacity: fade }}>
+      <Text style={{ color: colors.mutedForeground, fontSize: 14, fontFamily: "SpaceGrotesk_400Regular", fontStyle: "italic" }}>
+        Pensando…
+      </Text>
+    </Animated.View>
   );
 }
 
@@ -189,7 +186,6 @@ function RecordingBar({ secs, cancelling, pulseAnim }: { secs: number; cancellin
   const opacity = pulseAnim.interpolate({ inputRange: [0, 1], outputRange: [0.7, 1] });
   const mm = String(Math.floor(secs / 60)).padStart(2, "0");
   const ss = String(secs % 60).padStart(2, "0");
-
   return (
     <View style={[C.recordBar, { backgroundColor: cancelling ? "#22001A" : "#1A0010", borderColor: cancelling ? "#FF003355" : "#FF008055" }]}>
       <Animated.View style={[C.recDot, { backgroundColor: cancelling ? "#FF3333" : PINK, transform: [{ scale }], opacity }]} />
@@ -205,11 +201,9 @@ function RecordingBar({ secs, cancelling, pulseAnim }: { secs: number; cancellin
 // ─── Empty state ──────────────────────────────────────────────────────────────
 function EmptyState({ displayName, colors }: { displayName: string; colors: ReturnType<typeof useColors> }) {
   const fadeIn = useRef(new Animated.Value(0)).current;
-
   useEffect(() => {
     Animated.timing(fadeIn, { toValue: 1, duration: 600, easing: Easing.out(Easing.cubic), useNativeDriver: true }).start();
   }, []);
-
   return (
     <Animated.View style={{ flex: 1, justifyContent: "center", alignItems: "center", paddingHorizontal: 32, opacity: fadeIn }}>
       <Text style={{ color: "#fff", fontSize: 30, fontFamily: "SpaceGrotesk_700Bold", textAlign: "center", letterSpacing: -0.5 }}>
@@ -274,8 +268,8 @@ export default function JADEScreen() {
   const openDrawer = () => {
     setDrawerOpen(true);
     Animated.parallel([
-      Animated.timing(drawerAnim, { toValue: 0, duration: 280, easing: Easing.out(Easing.cubic), useNativeDriver: true }),
-      Animated.timing(drawerBg,   { toValue: 1, duration: 280, easing: Easing.out(Easing.cubic), useNativeDriver: true }),
+      Animated.timing(drawerAnim, { toValue: 0,         duration: 290, easing: Easing.out(Easing.cubic), useNativeDriver: true }),
+      Animated.timing(drawerBg,   { toValue: 1,         duration: 290, easing: Easing.out(Easing.cubic), useNativeDriver: true }),
     ]).start();
   };
 
@@ -309,11 +303,7 @@ export default function JADEScreen() {
         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
         recordTimer.current = setInterval(() => { secsRef.current += 1; setRecordSecs(secsRef.current); }, 1000);
       },
-      onPanResponderMove: (_, gs) => {
-        const c = gs.dx < -50;
-        cancelRef.current = c;
-        setCancelling(c);
-      },
+      onPanResponderMove: (_, gs) => { const c = gs.dx < -50; cancelRef.current = c; setCancelling(c); },
       onPanResponderRelease: () => {
         if (recordTimer.current) clearInterval(recordTimer.current);
         stopPulse();
@@ -368,9 +358,7 @@ export default function JADEScreen() {
     const userMsg: AIMessage = {
       id: Date.now().toString(),
       text: trimmed || (files?.length ? `[${files.length} arquivo(s) anexado(s)]` : ""),
-      sender: "user",
-      time: nowTime(),
-      files,
+      sender: "user", time: nowTime(), files,
     };
     const updatedMsgs = [userMsg, ...messages];
     setMessages(updatedMsgs);
@@ -463,13 +451,9 @@ export default function JADEScreen() {
         onPress: async () => {
           const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
           if (status !== "granted") { Alert.alert("Permissão necessária", "Precisamos de acesso à sua galeria."); return; }
-          const result = await ImagePicker.launchImageLibraryAsync({
-            mediaTypes: ["images"], allowsMultipleSelection: true, quality: 0.85,
-          });
+          const result = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ["images"], allowsMultipleSelection: true, quality: 0.85 });
           if (!result.canceled) {
-            const newFiles: AttachedFile[] = result.assets.map((a) => ({
-              uri: a.uri, name: a.fileName ?? `imagem_${Date.now()}.jpg`, type: "image" as const,
-            }));
+            const newFiles: AttachedFile[] = result.assets.map((a) => ({ uri: a.uri, name: a.fileName ?? `imagem_${Date.now()}.jpg`, type: "image" as const }));
             setAttachments((prev) => [...prev, ...newFiles].slice(0, 5));
           }
         },
@@ -494,7 +478,6 @@ export default function JADEScreen() {
   const hasConversation = messages.length > 0 || loading;
   const canSend = (input.trim().length > 0 || attachments.length > 0) && !loading && !recording;
 
-  // ── Context menu action ────────────────────────────────────────────────────
   const handleContextItem = (label: string) => {
     setMenuOpen(false);
     if (label === "Limpar conversa") resetConversation();
@@ -531,7 +514,7 @@ export default function JADEScreen() {
             }}
             inverted
             showsVerticalScrollIndicator={false}
-            contentContainerStyle={{ paddingHorizontal: 14, paddingTop: 10, paddingBottom: 10 }}
+            contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 16, paddingBottom: 16 }}
             keyboardDismissMode="interactive"
             keyboardShouldPersistTaps="handled"
           />
@@ -541,8 +524,7 @@ export default function JADEScreen() {
         {warnLevel !== "ok" && (
           <TouchableOpacity
             style={[C.creditBanner, { backgroundColor: warnLevel === "empty" ? "#FF3B5C" : "#FFB300" }]}
-            onPress={() => router.push("/loja" as any)}
-            activeOpacity={0.9}
+            onPress={() => router.push("/loja" as any)} activeOpacity={0.9}
           >
             <Feather name={warnLevel === "empty" ? "x-circle" : "alert-triangle"} size={14} color="#fff" />
             <Text style={C.creditBannerText}>
@@ -553,11 +535,7 @@ export default function JADEScreen() {
 
         {/* ── Handoff banner ── */}
         {handoffAlert && (
-          <TouchableOpacity
-            style={C.handoffBanner}
-            onPress={() => { setHandoffAlert(false); router.push("/leads" as any); }}
-            activeOpacity={0.9}
-          >
+          <TouchableOpacity style={C.handoffBanner} onPress={() => { setHandoffAlert(false); router.push("/leads" as any); }} activeOpacity={0.9}>
             <Text style={{ fontSize: 20 }}>🔥</Text>
             <View style={{ flex: 1 }}>
               <Text style={C.handoffTitle}>Lead Quente Detectado!</Text>
@@ -575,9 +553,7 @@ export default function JADEScreen() {
               {attachments.map((f, i) => (
                 <View key={i} style={[C.attachChip, { backgroundColor: colors.card, borderColor: colors.border }]}>
                   <Feather name={f.type === "image" ? "image" : "file"} size={13} color={PINK} />
-                  <Text style={{ fontSize: 11, color: colors.text, fontFamily: "SpaceGrotesk_400Regular", maxWidth: 90 }} numberOfLines={1}>
-                    {f.name}
-                  </Text>
+                  <Text style={{ fontSize: 11, color: colors.text, fontFamily: "SpaceGrotesk_400Regular", maxWidth: 90 }} numberOfLines={1}>{f.name}</Text>
                   <TouchableOpacity onPress={() => removeAttachment(i)} activeOpacity={0.7}>
                     <Feather name="x" size={13} color={colors.mutedForeground} />
                   </TouchableOpacity>
@@ -588,9 +564,7 @@ export default function JADEScreen() {
         )}
 
         {/* ── Recording bar ── */}
-        {recording && (
-          <RecordingBar secs={recordSecs} cancelling={cancelling} pulseAnim={pulseAnim} />
-        )}
+        {recording && <RecordingBar secs={recordSecs} cancelling={cancelling} pulseAnim={pulseAnim} />}
 
         {/* ── Input bar ── */}
         <View style={[C.inputBar, { borderTopColor: colors.border, backgroundColor: colors.background, paddingBottom: bottomPad + 8 }]}>
@@ -602,12 +576,9 @@ export default function JADEScreen() {
               style={[C.input, { color: colors.text, fontFamily: "SpaceGrotesk_400Regular" }]}
               placeholder="Pergunte algo…"
               placeholderTextColor={colors.mutedForeground + "66"}
-              value={input}
-              onChangeText={setInput}
-              multiline
-              maxLength={500}
-              onSubmitEditing={handleSend}
-              returnKeyType="send"
+              value={input} onChangeText={setInput}
+              multiline maxLength={500}
+              onSubmitEditing={handleSend} returnKeyType="send"
               editable={!loading && !recording}
             />
             <View {...micPan.panHandlers}>
@@ -617,8 +588,7 @@ export default function JADEScreen() {
             </View>
             <TouchableOpacity
               style={[C.sendCircle, { backgroundColor: canSend ? PINK : colors.surface }]}
-              onPress={handleSend}
-              activeOpacity={0.8}
+              onPress={handleSend} activeOpacity={0.8}
               disabled={!canSend || warnLevel === "empty"}
             >
               <Feather name="send" size={14} color={canSend ? "#fff" : colors.mutedForeground + "40"} />
@@ -629,13 +599,10 @@ export default function JADEScreen() {
 
       {/* ── Drawer overlay ── */}
       {drawerOpen && (
-        <Animated.View
-          style={[StyleSheet.absoluteFill, { zIndex: 300 }]}
-          pointerEvents="box-none"
-        >
+        <Animated.View style={[StyleSheet.absoluteFill, { zIndex: 300 }]} pointerEvents="box-none">
           {/* Backdrop */}
           <Animated.View
-            style={[StyleSheet.absoluteFill, { backgroundColor: "rgba(0,0,0,0.6)", opacity: drawerBg }]}
+            style={[StyleSheet.absoluteFill, { backgroundColor: "rgba(0,0,0,0.65)", opacity: drawerBg }]}
             pointerEvents="auto"
           >
             <TouchableOpacity style={{ flex: 1 }} onPress={closeDrawer} activeOpacity={1} />
@@ -643,29 +610,67 @@ export default function JADEScreen() {
 
           {/* Panel */}
           <Animated.View
-            style={[C.drawer, { backgroundColor: colors.card, borderRightColor: colors.border, transform: [{ translateX: drawerAnim }], paddingTop: insets.top + 20 }]}
+            style={[C.drawer, { backgroundColor: "#0F0F0F", borderRightColor: "#1E1E1E", transform: [{ translateX: drawerAnim }], paddingTop: insets.top + 28 }]}
             pointerEvents="auto"
           >
-            {/* Drawer title */}
-            <Text style={{ fontSize: 22, fontFamily: "SpaceGrotesk_700Bold", color: colors.text, paddingHorizontal: 24, marginBottom: 32, letterSpacing: -0.5 }}>
-              JADE
-            </Text>
+            <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 40 }}>
 
-            {DRAWER_ITEMS.map((item) => (
+              {/* ── Cabeçalho ── */}
+              <View style={{ paddingHorizontal: 24, marginBottom: 28 }}>
+                <Text style={{ fontSize: 18, fontFamily: "SpaceGrotesk_700Bold", color: "#fff", letterSpacing: -0.4 }}>
+                  JADE
+                </Text>
+                <Text style={{ fontSize: 12, fontFamily: "SpaceGrotesk_400Regular", color: "#555", marginTop: 2 }}>
+                  Plano Master
+                </Text>
+              </View>
+
+              {/* ── Nova conversa ── */}
               <TouchableOpacity
-                key={item.label}
-                style={C.drawerItem}
-                onPress={() => {
-                  closeDrawer();
-                  if (item.label === "Nova conversa") resetConversation();
-                }}
-                activeOpacity={0.7}
+                style={C.newConvoBtn}
+                onPress={() => { closeDrawer(); resetConversation(); }}
+                activeOpacity={0.8}
               >
-                <Text style={[C.drawerLabel, { color: item.label === "Plano atual" ? PINK : colors.text }]}>
-                  {item.label}
+                <Feather name="plus" size={15} color="#fff" />
+                <Text style={{ fontSize: 14, fontFamily: "SpaceGrotesk_600SemiBold", color: "#fff" }}>
+                  Nova conversa
                 </Text>
               </TouchableOpacity>
-            ))}
+
+              {/* ── Recentes ── */}
+              <View style={{ marginTop: 28, paddingHorizontal: 24 }}>
+                <Text style={{ fontSize: 11, fontFamily: "SpaceGrotesk_600SemiBold", color: "#444", letterSpacing: 1, textTransform: "uppercase", marginBottom: 10 }}>
+                  Recentes
+                </Text>
+                {RECENT_CONVOS.map((title) => (
+                  <TouchableOpacity
+                    key={title}
+                    style={C.recentItem}
+                    onPress={() => { closeDrawer(); resetConversation(); }}
+                    activeOpacity={0.65}
+                  >
+                    <Text style={{ fontSize: 14, fontFamily: "SpaceGrotesk_400Regular", color: "#ccc" }} numberOfLines={1}>
+                      {title}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+
+              {/* ── Divisor ── */}
+              <View style={{ height: StyleSheet.hairlineWidth, backgroundColor: "#1E1E1E", marginHorizontal: 24, marginTop: 24, marginBottom: 20 }} />
+
+              {/* ── Menu principal (texto) ── */}
+              <View style={{ paddingHorizontal: 24 }}>
+                {MENU_ITEMS.map((label) => (
+                  <TouchableOpacity key={label} style={C.menuItem} activeOpacity={0.65}>
+                    <Text style={{ fontSize: 14, fontFamily: "SpaceGrotesk_400Regular", color: label === "Plano atual" ? PINK : "#aaa" }}>
+                      {label}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+
+            </ScrollView>
           </Animated.View>
         </Animated.View>
       )}
@@ -675,19 +680,17 @@ export default function JADEScreen() {
         <>
           <TouchableOpacity
             style={[StyleSheet.absoluteFill, { zIndex: 200 }]}
-            onPress={() => setMenuOpen(false)}
-            activeOpacity={1}
+            onPress={() => setMenuOpen(false)} activeOpacity={1}
           />
-          <View style={[C.contextMenu, { backgroundColor: colors.card, borderColor: colors.border, top: topPad + 48, zIndex: 201 }]}>
+          <View style={[C.contextMenu, { backgroundColor: "#111", borderColor: "#222", top: topPad + 48, zIndex: 201 }]}>
             {CONTEXT_ITEMS.map((item, idx) => (
               <TouchableOpacity
                 key={item.label}
-                style={[C.contextItem, idx < CONTEXT_ITEMS.length - 1 && { borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.border }]}
-                onPress={() => handleContextItem(item.label)}
-                activeOpacity={0.7}
+                style={[C.contextItem, idx < CONTEXT_ITEMS.length - 1 && { borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: "#222" }]}
+                onPress={() => handleContextItem(item.label)} activeOpacity={0.7}
               >
-                <Feather name={item.icon} size={15} color={"danger" in item && item.danger ? "#FF3B5C" : colors.mutedForeground} />
-                <Text style={[C.contextLabel, { color: "danger" in item && item.danger ? "#FF3B5C" : colors.text }]}>
+                <Feather name={item.icon} size={15} color={"danger" in item && item.danger ? "#FF3B5C" : "#666"} />
+                <Text style={[C.contextLabel, { color: "danger" in item && item.danger ? "#FF3B5C" : "#ddd" }]}>
                   {item.label}
                 </Text>
               </TouchableOpacity>
@@ -706,17 +709,19 @@ const C = StyleSheet.create({
   header:    { flexDirection: "row", alignItems: "center", paddingHorizontal: 8, paddingBottom: 6 },
   headerBtn: { width: 40, height: 40, alignItems: "center", justifyContent: "center" },
 
-  msgRow:    { flexDirection: "row", marginBottom: 10, alignItems: "flex-end", gap: 8 },
-  msgLeft:   { justifyContent: "flex-start" },
+  // JADE messages — sem bolha
+  msgJade:  { paddingHorizontal: 20, paddingVertical: 4, marginBottom: 20 },
+  jadeText: { fontSize: 15, fontFamily: "SpaceGrotesk_400Regular", lineHeight: 24 },
+  jadeTime: { fontSize: 11, fontFamily: "SpaceGrotesk_400Regular", marginTop: 6, opacity: 0.45 },
+
+  // User messages — bolha
+  msgRow:    { flexDirection: "row", marginBottom: 20, alignItems: "flex-end" },
   msgRight:  { justifyContent: "flex-end" },
-  bubble:    { maxWidth: "78%", borderRadius: 16, padding: 12 },
-  bubbleJade:{ borderTopLeftRadius: 4, borderWidth: 1 },
-  bubbleUser:{ borderTopRightRadius: 4 },
-  bubbleText:{ fontSize: 14, fontFamily: "SpaceGrotesk_400Regular", lineHeight: 20 },
+  bubble:    { maxWidth: "80%", borderRadius: 18, padding: 13 },
+  bubbleUser:{ borderBottomRightRadius: 4 },
+  bubbleText:{ fontSize: 15, fontFamily: "SpaceGrotesk_400Regular", lineHeight: 22 },
   bubbleTime:{ fontSize: 11, fontFamily: "SpaceGrotesk_400Regular", marginTop: 4, textAlign: "right" },
   filePill:  { flexDirection: "row", alignItems: "center", gap: 5, padding: 5, borderRadius: 7 },
-
-  suggChip:  { paddingHorizontal: 13, paddingVertical: 7, borderRadius: 18, borderWidth: 1 },
 
   recordBar: { flexDirection: "row", alignItems: "center", gap: 10, paddingHorizontal: 16, paddingVertical: 10, borderTopWidth: 1 },
   recDot:    { width: 10, height: 10, borderRadius: 5 },
@@ -738,19 +743,24 @@ const C = StyleSheet.create({
   handoffTitle:     { color: "#fff", fontSize: 13, fontFamily: "SpaceGrotesk_700Bold" },
   handoffSub:       { color: "rgba(255,255,255,0.85)", fontSize: 11, fontFamily: "SpaceGrotesk_400Regular", marginTop: 1 },
 
+  // Drawer
   drawer: {
     position: "absolute", left: 0, top: 0, bottom: 0,
     width: DRAWER_W, borderRightWidth: StyleSheet.hairlineWidth,
-    paddingBottom: 30,
   },
-  drawerItem:  { flexDirection: "row", alignItems: "center", gap: 14, paddingHorizontal: 20, paddingVertical: 13 },
-  drawerLabel: { fontSize: 14, fontFamily: "SpaceGrotesk_500Medium" },
+  newConvoBtn: {
+    flexDirection: "row", alignItems: "center", gap: 10,
+    marginHorizontal: 20, paddingHorizontal: 16, paddingVertical: 12,
+    backgroundColor: "#1A1A1A", borderRadius: 12, borderWidth: 1, borderColor: "#2A2A2A",
+  },
+  recentItem: { paddingVertical: 11, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: "#1A1A1A" },
+  menuItem:   { paddingVertical: 13 },
 
+  // Context menu
   contextMenu: {
-    position: "absolute", right: 12,
-    borderRadius: 12, borderWidth: 1,
-    minWidth: 200, overflow: "hidden",
-    shadowColor: "#000", shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.4, shadowRadius: 20, elevation: 20,
+    position: "absolute", right: 12, borderRadius: 12, borderWidth: 1,
+    minWidth: 210, overflow: "hidden",
+    shadowColor: "#000", shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.5, shadowRadius: 20, elevation: 20,
   },
   contextItem:  { flexDirection: "row", alignItems: "center", gap: 12, paddingHorizontal: 16, paddingVertical: 13 },
   contextLabel: { fontSize: 13, fontFamily: "SpaceGrotesk_400Regular" },
