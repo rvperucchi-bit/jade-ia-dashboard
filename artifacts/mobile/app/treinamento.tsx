@@ -181,7 +181,7 @@ const S = StyleSheet.create({
     borderBottomWidth: StyleSheet.hairlineWidth,
     borderBottomColor: C.border,
   },
-  backBtn: { width: 40, height: 40, alignItems: "center", justifyContent: "center" },
+  backBtn: { width: 44, height: 44, alignItems: "center", justifyContent: "center" },
   headerTitle: { fontSize: 17, fontFamily: "SpaceGrotesk_700Bold", color: C.text },
   scroll: { paddingHorizontal: 20, paddingTop: 8 },
 

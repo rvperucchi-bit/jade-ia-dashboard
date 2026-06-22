@@ -9,7 +9,7 @@ interface Props {
   topOffset?: number;
 }
 
-export function BackButton({ color = "rgba(255,255,255,0.65)", topOffset = 8 }: Props) {
+export function BackButton({ color = "rgba(255,255,255,0.8)", topOffset = 8 }: Props) {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const top = (Platform.OS === "web" ? 24 : insets.top) + topOffset;
@@ -19,9 +19,9 @@ export function BackButton({ color = "rgba(255,255,255,0.65)", topOffset = 8 }: 
       style={[S.btn, { top }]}
       onPress={() => router.back()}
       activeOpacity={0.7}
-      hitSlop={{ top: 14, bottom: 14, left: 14, right: 14 }}
+      hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
     >
-      <Feather name="arrow-left" size={19} color={color} />
+      <Feather name="arrow-left" size={20} color={color} />
     </TouchableOpacity>
   );
 }
@@ -29,13 +29,13 @@ export function BackButton({ color = "rgba(255,255,255,0.65)", topOffset = 8 }: 
 const S = StyleSheet.create({
   btn: {
     position: "absolute",
-    left: 14,
+    left: 16,
     zIndex: 100,
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.09)",
+    borderColor: "rgba(255,255,255,0.08)",
     backgroundColor: "rgba(255,255,255,0.04)",
     alignItems: "center",
     justifyContent: "center",
