@@ -4,12 +4,9 @@ import React, { useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Animated,
-  Dimensions,
   Easing,
-  Image,
   KeyboardAvoidingView,
   Platform,
-  ScrollView,
   StyleSheet,
   Text,
   TextInput,
@@ -20,62 +17,26 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { useAuth } from "@/context/AuthContext";
 
-const jadeLogo = require("../assets/images/jade-logo.png");
-
-const { width: SW } = Dimensions.get("window");
-const LOGO_W = Math.min(SW * 0.24, 96);
-const LOGO_H = LOGO_W;
+const PINK = "#FF0080";
 
 export default function LoginScreen() {
   const { login } = useAuth();
-  const router = useRouter();
-  const insets = useSafeAreaInsets();
+  const router   = useRouter();
+  const insets   = useSafeAreaInsets();
 
-  const [email, setEmail] = useState("");
+  const [email,    setEmail]    = useState("");
   const [password, setPassword] = useState("");
-  const [showPw, setShowPw] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [showPw,   setShowPw]   = useState(false);
+  const [loading,  setLoading]  = useState(false);
+  const [error,    setError]    = useState("");
 
-  // ── Logo entrance animation ──────────────────────────────────────────────
-  const logoOpacity = useRef(new Animated.Value(0)).current;
-  const logoScale   = useRef(new Animated.Value(0.78)).current;
-  const logoY       = useRef(new Animated.Value(18)).current;
-  const formOpacity = useRef(new Animated.Value(0)).current;
-  const formY       = useRef(new Animated.Value(24)).current;
+  const opacity = useRef(new Animated.Value(0)).current;
+  const slideY  = useRef(new Animated.Value(28)).current;
 
   useEffect(() => {
     Animated.parallel([
-      Animated.timing(logoOpacity, {
-        toValue: 1,
-        duration: 380,
-        easing: Easing.out(Easing.cubic),
-        useNativeDriver: true,
-      }),
-      Animated.timing(logoScale, {
-        toValue: 1,
-        duration: 420,
-        easing: Easing.out(Easing.back(1.06)),
-        useNativeDriver: true,
-      }),
-      Animated.timing(logoY, {
-        toValue: 0,
-        duration: 420,
-        easing: Easing.out(Easing.cubic),
-        useNativeDriver: true,
-      }),
-      Animated.timing(formOpacity, {
-        toValue: 1,
-        duration: 420,
-        easing: Easing.out(Easing.cubic),
-        useNativeDriver: true,
-      }),
-      Animated.timing(formY, {
-        toValue: 0,
-        duration: 420,
-        easing: Easing.out(Easing.cubic),
-        useNativeDriver: true,
-      }),
+      Animated.timing(opacity, { toValue: 1, duration: 440, easing: Easing.out(Easing.cubic), useNativeDriver: true }),
+      Animated.timing(slideY,  { toValue: 0, duration: 440, easing: Easing.out(Easing.cubic), useNativeDriver: true }),
     ]).start();
   }, []);
 
@@ -94,193 +55,141 @@ export default function LoginScreen() {
       style={[S.root, { paddingTop: insets.top, paddingBottom: insets.bottom }]}
       behavior={Platform.OS === "ios" ? "padding" : "height"}
     >
-      <ScrollView
-        contentContainerStyle={S.scroll}
-        keyboardShouldPersistTaps="handled"
-        showsVerticalScrollIndicator={false}
-      >
-        {/* ── Logo com animação de entrada ── */}
-        <Animated.View
-          style={[
-            S.logoSection,
-            {
-              opacity: logoOpacity,
-              transform: [{ scale: logoScale }, { translateY: logoY }],
-            },
-          ]}
-        >
-          <Image
-            source={jadeLogo}
-            style={{ width: LOGO_W, height: LOGO_H }}
-            resizeMode="contain"
-          />
-        </Animated.View>
+      <Animated.View style={[S.inner, { opacity, transform: [{ translateY: slideY }] }]}>
 
-        {/* ── Form ── */}
-        <Animated.View
-          style={[
-            S.form,
-            { opacity: formOpacity, transform: [{ translateY: formY }] },
-          ]}
-        >
-          <Text style={S.formTitle}>Entrar</Text>
+        {/* ── Título ── */}
+        <Text style={S.title}>Entrar</Text>
+        <Text style={S.subtitle}>Bem-vindo de volta à JADE.</Text>
 
-          <View style={S.fieldGroup}>
-            <Text style={S.label}>E-mail</Text>
-            <View style={S.inputRow}>
-              <Feather name="mail" size={18} color="#555" />
-              <TextInput
-                style={S.input}
-                value={email}
-                onChangeText={setEmail}
-                placeholder="rodrigo@jadeia.com.br"
-                placeholderTextColor="#444"
-                keyboardType="email-address"
-                autoCapitalize="none"
-                autoCorrect={false}
-              />
-            </View>
+        {/* ── Campos ── */}
+        <View style={S.fieldGroup}>
+          <Text style={S.label}>E-mail</Text>
+          <View style={S.inputRow}>
+            <Feather name="mail" size={16} color="#555" />
+            <TextInput
+              style={S.input}
+              value={email}
+              onChangeText={setEmail}
+              placeholder="seu@email.com"
+              placeholderTextColor="#3A3A3A"
+              keyboardType="email-address"
+              autoCapitalize="none"
+              autoCorrect={false}
+            />
           </View>
+        </View>
 
-          <View style={S.fieldGroup}>
-            <Text style={S.label}>Senha</Text>
-            <View style={S.inputRow}>
-              <Feather name="lock" size={18} color="#555" />
-              <TextInput
-                style={S.input}
-                value={password}
-                onChangeText={setPassword}
-                placeholder="••••••••"
-                placeholderTextColor="#444"
-                secureTextEntry={!showPw}
-                autoCapitalize="none"
-              />
-              <TouchableOpacity onPress={() => setShowPw((v) => !v)} activeOpacity={0.7} style={S.eyeBtn}>
-                <Feather name={showPw ? "eye-off" : "eye"} size={18} color="#555" />
-              </TouchableOpacity>
-            </View>
+        <View style={S.fieldGroup}>
+          <Text style={S.label}>Senha</Text>
+          <View style={S.inputRow}>
+            <Feather name="lock" size={16} color="#555" />
+            <TextInput
+              style={S.input}
+              value={password}
+              onChangeText={setPassword}
+              placeholder="••••••••"
+              placeholderTextColor="#3A3A3A"
+              secureTextEntry={!showPw}
+              autoCapitalize="none"
+            />
+            <TouchableOpacity onPress={() => setShowPw((v) => !v)} activeOpacity={0.7} style={S.eyeBtn}>
+              <Feather name={showPw ? "eye-off" : "eye"} size={16} color="#555" />
+            </TouchableOpacity>
           </View>
+        </View>
 
-          {!!error && <Text style={S.error}>{error}</Text>}
+        {!!error && <Text style={S.error}>{error}</Text>}
 
-          <TouchableOpacity
-            style={[S.btn, loading && { opacity: 0.65 }]}
-            onPress={handleLogin}
-            activeOpacity={0.85}
-            disabled={loading}
-          >
-            {loading
-              ? <ActivityIndicator color="#fff" />
-              : <Text style={S.btnText}>Entrar</Text>}
-          </TouchableOpacity>
+        <TouchableOpacity
+          style={[S.btn, loading && { opacity: 0.65 }]}
+          onPress={handleLogin}
+          activeOpacity={0.85}
+          disabled={loading}
+        >
+          {loading
+            ? <ActivityIndicator color="#fff" />
+            : <Text style={S.btnText}>Entrar</Text>}
+        </TouchableOpacity>
 
-          <TouchableOpacity style={S.forgotBtn} activeOpacity={0.7}>
-            <Text style={S.forgotText}>Esqueci minha senha</Text>
-          </TouchableOpacity>
-        </Animated.View>
+        <TouchableOpacity style={S.forgotBtn} activeOpacity={0.7}>
+          <Text style={S.forgotText}>Esqueci minha senha</Text>
+        </TouchableOpacity>
+
+        {/* ── Separador ── */}
+        <View style={S.separator}>
+          <View style={S.sepLine} />
+          <Text style={S.sepText}>ou</Text>
+          <View style={S.sepLine} />
+        </View>
+
+        {/* ── Social ── */}
+        <TouchableOpacity style={S.socialBtn} activeOpacity={0.8}>
+          <Text style={S.socialIcon}>G</Text>
+          <Text style={S.socialText}>Continuar com Google</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity style={S.socialBtn} activeOpacity={0.8}>
+          <Feather name="smartphone" size={16} color="#ccc" />
+          <Text style={S.socialText}>Continuar com Apple</Text>
+        </TouchableOpacity>
 
         {/* ── Footer ── */}
-        <Animated.View style={[S.footer, { opacity: formOpacity }]}>
+        <View style={S.footer}>
           <Text style={S.footerText}>Não tem uma conta?</Text>
           <TouchableOpacity activeOpacity={0.7} onPress={() => router.push("/cadastro" as any)}>
             <Text style={S.footerLink}> Criar conta</Text>
           </TouchableOpacity>
-        </Animated.View>
-      </ScrollView>
+        </View>
+
+      </Animated.View>
     </KeyboardAvoidingView>
   );
 }
 
 const S = StyleSheet.create({
-  root: { flex: 1, backgroundColor: "#000000" },
-  scroll: { flexGrow: 1, paddingHorizontal: 28, paddingBottom: 36 },
+  root:  { flex: 1, backgroundColor: "#000" },
+  inner: { flex: 1, justifyContent: "center", paddingHorizontal: 28, paddingTop: 100, paddingBottom: 40, gap: 14 },
 
-  logoSection: {
-    alignItems: "center",
-    justifyContent: "center",
-    paddingTop: 40,
-    paddingBottom: 32,
-  },
-
-  tagline: {
-    marginTop: 10,
-    fontSize: 11,
-    color: "#555",
-    letterSpacing: 3,
-    textAlign: "center",
-    fontFamily: "SpaceGrotesk_400Regular",
-  },
-
-  form: { gap: 16 },
-  formTitle: {
-    fontSize: 28,
-    fontFamily: "SpaceGrotesk_700Bold",
-    color: "#fff",
-    marginBottom: 2,
-  },
+  title:    { fontSize: 30, fontFamily: "SpaceGrotesk_700Bold", color: "#fff", marginBottom: 2 },
+  subtitle: { fontSize: 14, fontFamily: "SpaceGrotesk_400Regular", color: "#555", marginBottom: 8 },
 
   fieldGroup: { gap: 6 },
-  label: { fontSize: 14, fontFamily: "SpaceGrotesk_500Medium", color: "#fff" },
+  label:      { fontSize: 13, fontFamily: "SpaceGrotesk_500Medium", color: "#888" },
   inputRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#1A1A1A",
-    borderRadius: 12,
-    height: 52,
-    paddingHorizontal: 14,
-    gap: 10,
+    flexDirection: "row", alignItems: "center",
+    backgroundColor: "#111", borderRadius: 12,
+    height: 50, paddingHorizontal: 14, gap: 10,
+    borderWidth: 1, borderColor: "#222",
   },
-  input: {
-    flex: 1,
-    fontSize: 15,
-    fontFamily: "SpaceGrotesk_400Regular",
-    color: "#fff",
-  },
+  input:  { flex: 1, fontSize: 15, fontFamily: "SpaceGrotesk_400Regular", color: "#fff" },
   eyeBtn: { padding: 4 },
 
-  error: {
-    fontSize: 13,
-    fontFamily: "SpaceGrotesk_400Regular",
-    color: "#FF3B5C",
-    textAlign: "center",
-  },
+  error: { fontSize: 13, fontFamily: "SpaceGrotesk_400Regular", color: "#FF3B5C", textAlign: "center" },
 
   btn: {
-    backgroundColor: "#FF0080",
-    height: 52,
-    borderRadius: 12,
-    alignItems: "center",
-    justifyContent: "center",
-    marginTop: 4,
-    shadowColor: "#FF0080",
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.45,
-    shadowRadius: 20,
-    elevation: 10,
+    backgroundColor: PINK, height: 50, borderRadius: 12,
+    alignItems: "center", justifyContent: "center", marginTop: 2,
+    shadowColor: PINK, shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.4, shadowRadius: 18, elevation: 10,
   },
   btnText: { fontSize: 16, fontFamily: "SpaceGrotesk_700Bold", color: "#fff" },
 
-  forgotBtn: { alignItems: "center", paddingVertical: 6 },
-  forgotText: {
-    fontSize: 14,
-    fontFamily: "SpaceGrotesk_400Regular",
-    color: "#FF0080",
-  },
+  forgotBtn:  { alignItems: "center", paddingVertical: 4 },
+  forgotText: { fontSize: 13, fontFamily: "SpaceGrotesk_400Regular", color: PINK },
 
-  footer: {
-    flexDirection: "row",
-    justifyContent: "center",
-    alignItems: "center",
-    marginTop: 28,
+  separator: { flexDirection: "row", alignItems: "center", gap: 12, marginVertical: 4 },
+  sepLine:   { flex: 1, height: 1, backgroundColor: "#222" },
+  sepText:   { fontSize: 12, fontFamily: "SpaceGrotesk_400Regular", color: "#444" },
+
+  socialBtn: {
+    flexDirection: "row", alignItems: "center", gap: 10,
+    backgroundColor: "#111", borderRadius: 12, height: 48,
+    paddingHorizontal: 16, borderWidth: 1, borderColor: "#222",
   },
-  footerText: {
-    fontSize: 14,
-    fontFamily: "SpaceGrotesk_400Regular",
-    color: "#888",
-  },
-  footerLink: {
-    fontSize: 14,
-    fontFamily: "SpaceGrotesk_600SemiBold",
-    color: "#FF0080",
-  },
+  socialIcon: { fontSize: 15, fontFamily: "SpaceGrotesk_700Bold", color: "#ccc", width: 16, textAlign: "center" },
+  socialText: { fontSize: 14, fontFamily: "SpaceGrotesk_500Medium", color: "#ccc" },
+
+  footer:     { flexDirection: "row", justifyContent: "center", alignItems: "center", marginTop: 8 },
+  footerText: { fontSize: 13, fontFamily: "SpaceGrotesk_400Regular", color: "#555" },
+  footerLink: { fontSize: 13, fontFamily: "SpaceGrotesk_600SemiBold", color: PINK },
 });
