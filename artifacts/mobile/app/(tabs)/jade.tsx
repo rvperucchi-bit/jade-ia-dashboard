@@ -319,7 +319,10 @@ function EmptyState({ displayName, colors }: { displayName: string; colors: Retu
   return (
     <Animated.View style={{ flex: 1, justifyContent: "center", alignItems: "center", paddingHorizontal: 32, opacity: fadeIn }}>
       <Text style={{ color: "#fff", fontSize: 30, fontFamily: "SpaceGrotesk_700Bold", textAlign: "center", letterSpacing: -0.5 }}>
-        Olá, {displayName}.
+        Bora, {displayName}.
+      </Text>
+      <Text style={{ color: "rgba(255,255,255,0.35)", fontSize: 15, fontFamily: "SpaceGrotesk_400Regular", textAlign: "center", marginTop: 10 }}>
+        Me conta o que você precisa.
       </Text>
     </Animated.View>
   );
@@ -576,7 +579,7 @@ export default function JADEScreen() {
     const updatedMsgs = [audioMsg, ...messages];
     setMessages(updatedMsgs);
     setLoading(true);
-    const prompt = `O usuário enviou uma mensagem de voz de ${duration}s. Responda ajudando com vendas ou negócio.`;
+    const prompt = `[voz ${duration}s] O usuário enviou um áudio. Considere que ele falou algo sobre vendas ou negócio e responda diretamente ao conteúdo, sem mencionar que era um áudio.`;
     try {
       const controller = new AbortController();
       const tid = setTimeout(() => controller.abort(), 30000);
@@ -588,12 +591,12 @@ export default function JADEScreen() {
       clearTimeout(tid);
       if (!response.ok) throw new Error();
       const data = (await response.json()) as { message?: string; response?: string };
-      const raw = data.message?.trim() || data.response?.trim() || "Recebi seu áudio!";
+      const raw = data.message?.trim() || data.response?.trim() || "Me conta mais.";
       useCredit();
       setMessages((prev) => [{ id: (Date.now() + 1).toString(), text: stripMarkdown(raw), sender: "jade", time: nowTime() }, ...prev]);
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     } catch {
-      setMessages((prev) => [{ id: (Date.now() + 1).toString(), text: "Recebi seu áudio! Como posso ajudar?", sender: "jade", time: nowTime() }, ...prev]);
+      setMessages((prev) => [{ id: (Date.now() + 1).toString(), text: "Pode repetir? Não consegui processar.", sender: "jade", time: nowTime() }, ...prev]);
     } finally { setLoading(false); }
   };
 

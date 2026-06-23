@@ -41,3 +41,9 @@ id = "xHQUhi0xFfRGgRAIR6XyP"
 uri = "file://exports/auditoria-jade-2026-06-23b.pdf"
 type = "pdf"
 title = "Auditoria — Correção de Navegação"
+
+[[outputs]]
+id = "CXKM_iM8W8Ap716B0nqWQ"
+uri = "file://exports/auditoria-jade-2026-06-23c.pdf"
+type = "pdf"
+title = "Auditoria — System Prompt v10.0 + Tom"
