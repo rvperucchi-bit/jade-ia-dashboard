@@ -281,7 +281,16 @@ function MessageBubble({ msg, colors }: { msg: AIMessage; colors: ReturnType<typ
 
 // ─── Prospecting keyword detector ─────────────────────────────────────────────
 function isProspectingMsg(text: string): boolean {
-  return /busca\s*leads?|prospecta|encontra\s*leads?|me\s*traz\s*leads?|acha\s*leads?|quero\s*leads?|me\s*d[aá]\s*leads?|lista\s*de\s*leads?|prospec[çc][aã]o/i.test(text);
+  const lower = text.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  if (/prospeccao|prospectar|lead/.test(lower)) return true;
+  const hasVerb   = /\b(busca|encontra|acha|traz|procura|lista|mostra|manda)\b/.test(lower);
+  const hasTarget = /\b(cliente|empresa|estabelecimento|negocio|clinica|restaurante|loja|dentista|contato|prospect|barbearia|salao|oficina|escola|academia|comercio|farmacia|hotel|academia)\b/.test(lower);
+  return hasVerb && hasTarget;
+}
+
+function extractCityHint(text: string): string {
+  const match = text.match(/\bem\s+([A-Za-záàãâéêíóôõúç]{3,}(?:\s+[A-Za-záàãâéêíóôõúç]{3,})?)/i);
+  return match ? match[1] : "sua região";
 }
 
 // ─── Pensando… / Status indicator ─────────────────────────────────────────────
@@ -356,11 +365,8 @@ function EmptyState({ displayName, colors }: { displayName: string; colors: Retu
   }, []);
   return (
     <Animated.View style={{ flex: 1, justifyContent: "center", alignItems: "center", paddingHorizontal: 32, opacity: fadeIn }}>
-      <Text style={{ color: "#fff", fontSize: 30, fontFamily: "SpaceGrotesk_700Bold", textAlign: "center", letterSpacing: -0.5 }}>
-        Bora, {displayName}.
-      </Text>
-      <Text style={{ color: "rgba(255,255,255,0.35)", fontSize: 15, fontFamily: "SpaceGrotesk_400Regular", textAlign: "center", marginTop: 10 }}>
-        Me conta o que você precisa.
+      <Text style={{ color: "#fff", fontSize: 34, fontFamily: "SpaceGrotesk_700Bold", textAlign: "center", letterSpacing: -0.5 }}>
+        {displayName}
       </Text>
     </Animated.View>
   );
@@ -571,8 +577,9 @@ export default function JADEScreen() {
     if (statusTimerB.current) { clearTimeout(statusTimerB.current); statusTimerB.current = null; }
   };
 
-  const startStatusCycle = () => {
-    setTypingStatus("🔍 Buscando no Radar...");
+  const startStatusCycle = (msgText: string) => {
+    const city = extractCityHint(msgText);
+    setTypingStatus(`🔍 Buscando em ${city}...`);
     statusTimerA.current = setTimeout(() => {
       setTypingStatus("📍 Analisando resultados...");
       statusTimerB.current = setTimeout(() => {
@@ -598,7 +605,7 @@ export default function JADEScreen() {
 
     const prospecting = isProspectingMsg(trimmed);
     if (prospecting) {
-      startStatusCycle();
+      startStatusCycle(trimmed);
     } else {
       setTypingStatus("Pensando…");
     }

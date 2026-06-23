@@ -272,7 +272,11 @@ const sessionPendingLeads = new Map<string, {
 }>();
 
 function detectProspectingIntent(text: string): boolean {
-  return /busca\s*leads?|prospecta|encontra\s*leads?|me\s*traz\s*leads?|acha\s*leads?|quero\s*leads?|me\s*d[aá]\s*leads?|lista\s*de\s*leads?|prospec[çc][aã]o/i.test(text);
+  const lower = text.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  if (/prospeccao|prospectar|lead/.test(lower)) return true;
+  const hasVerb   = /\b(busca|encontra|acha|traz|procura|lista|mostra|manda)\b/.test(lower);
+  const hasTarget = /\b(cliente|empresa|estabelecimento|negocio|clinica|restaurante|loja|dentista|contato|prospect|barbearia|salao|oficina|escola|academia|comercio|farmacia|hotel)\b/.test(lower);
+  return hasVerb && hasTarget;
 }
 
 function detectNextLeadRequest(text: string): boolean {
@@ -393,28 +397,43 @@ function buildLeadPrompt(
   city: string,
   hasMore: boolean,
 ): string {
-  const phoneStr  = lead.phone  ? `📞 ${lead.phone}`                                        : '';
-  const ratingStr = lead.rating ? `⭐ ${lead.rating} (${lead.totalRatings} avaliações)` : '';
-  const closing   = hasMore
-    ? 'Quer a abordagem pra esse, ou vejo o próximo?'
-    : 'Esse é o último da lista. Quer a abordagem personalizada pra algum deles?';
+  const infoLine = (() => {
+    const parts: string[] = [];
+    if (lead.phone)  parts.push(lead.phone);
+    if (lead.rating) parts.push(`⭐ ${lead.rating}`);
+    return parts.join(' • ');
+  })();
 
-  const card = [
-    `📍 ${lead.name}`,
-    lead.address,
-    phoneStr,
-    ratingStr,
-    '',
-    'Dor provável: [escreva EXATAMENTE 1 frase curta e específica sobre a dor real desse tipo de negócio, baseado no nome e perfil do estabelecimento — não use frases genéricas]',
-    '',
-    closing,
-  ].filter((l) => l !== undefined && (l !== '' || true)).join('\n');
+  const closing = hasMore
+    ? 'Próximo ou quer a abordagem pra esse?'
+    : 'Esse é o último. Quer a abordagem pra algum deles?';
 
-  const intro = idx === 1
-    ? `Você encontrou ${total} negócios reais via Google Maps em ${city}. Apresente o primeiro no formato abaixo — sem introdução adicional, sem lista, sem outros leads:\n\nEncontrei ${total} opções em ${city}. Começando pelo mais relevante:\n\n${card}`
-    : `Apresente o próximo lead (${idx}/${total}) no formato abaixo — direto, sem intro:\n\n${card}`;
+  const introLine = idx === 1
+    ? `Encontrei ${total} opções em ${city}. Aqui vai o primeiro:\n\n`
+    : '';
 
-  return `${intro}\n\nDados reais (use SOMENTE estes — não invente nada):\nNome: ${lead.name}\nEndereço: ${lead.address}\nTelefone: ${lead.phone || 'não disponível'}\nAvaliação: ${lead.rating ? `${lead.rating} estrelas (${lead.totalRatings} avaliações)` : 'não disponível'}`;
+  return `Você tem dados reais do Google Maps. Responda EXATAMENTE neste formato — sem texto antes ou depois, sem variações:
+
+${introLine}📍 ${lead.name}
+${lead.address}
+${infoLine}
+
+[1 frase curta e específica sobre a dor provável desse negócio — baseada no nome e tipo de estabelecimento, NÃO genérica]
+
+${closing}
+
+DADOS REAIS (use somente estes, não invente):
+Nome: ${lead.name}
+Endereço: ${lead.address}
+Telefone: ${lead.phone || 'não disponível'}
+Avaliação: ${lead.rating ? `${lead.rating} estrelas` : 'não disponível'}
+
+REGRAS:
+- A linha de dor provável deve substituir o colchete acima — escreva apenas a frase, sem colchetes.
+- Se o telefone e avaliação estiverem disponíveis, mostre-os separados por " • " (ex: (48) 3433-1234 • ⭐ 4.3).
+- Se apenas um estiver disponível, mostre somente esse.
+- Se nenhum estiver disponível, omita a linha de contato/avaliação.
+- NÃO adicione nenhum texto fora do formato acima.`;
 }
 
 // POST /jade/chat

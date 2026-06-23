@@ -1230,6 +1230,25 @@
   ],
   "activity_events": [
     {
+      "id": "8948d9a72388a0e2",
+      "type": "message",
+      "text": "JADE respondeu: \"Buscar restaurantes em Criciúm…\"",
+      "icon": "robot",
+      "color": "#FF0080",
+      "created_at": "2026-06-23T22:04:13.138Z"
+    },
+    {
+      "id": "861683aac1f7c377",
+      "type": "message",
+      "text": "JADE respondeu a uma mensagem",
+      "icon": "robot",
+      "color": "#FF0080",
+      "metadata": {
+        "session_id": "ef4f5ceabaf91e1c"
+      },
+      "created_at": "2026-06-23T22:04:12.858Z"
+    },
+    {
       "id": "54aec7058c5b4e60",
       "type": "message",
       "text": "JADE respondeu: \"Pode ser\"",
@@ -3203,22 +3222,6 @@
         "active": true
       },
       "created_at": "2026-06-21T03:38:47.914Z"
-    },
-    {
-      "id": "89b2edca2e894f2d",
-      "type": "lead",
-      "text": "Novo lead adicionado: Ricardo Almeida (Padaria Pão Fresco)",
-      "icon": "user-plus",
-      "color": "#6C63FF",
-      "created_at": "2026-06-21T03:36:25.278Z"
-    },
-    {
-      "id": "ebab1912c998eb9c",
-      "type": "lead",
-      "text": "Novo lead adicionado: Patrícia Ferreira (Livraria Conhecer)",
-      "icon": "user-plus",
-      "color": "#6C63FF",
-      "created_at": "2026-06-21T03:36:24.655Z"
     }
   ],
   "marketing_campaigns": [
@@ -3297,10 +3300,20 @@
           "role": "model",
           "content": "Aqui estão mais leads para abordar em Criciúma:\n\n1.  Padaria com serviço de entrega — dor: gestão manual de pedidos e entregadores, causando atrasos → \"Como você tem garantido que todos os pedidos cheguem quentinhos e no prazo, sem perder o controle?\"\n2.  Restaurante de comida japonesa — dor: alto custo de embalagens especiais e manutenção da qualidade no transporte → \"Seu sistema de delivery te ajuda a otimizar o custo de embalagem e garantir a experiência premium do cliente?\"\n3.  Food truck com ponto fixo — dor: expandir o alcance sem perder a agilidade do atendimento presencial → \"Como você tem feito para levar seu sabor a mais clientes sem aumentar a sua carga operacional?\"\n4.  Doceria artesanal — dor: dificuldade em escalar as vendas online e gerenciar um catálogo variado → \"Sua vitrine digital consegue mostrar todo o encanto dos seus doces e facilitar a compra em poucos cliques?\"\n5.  Bar/Pub com petiscos e delivery — dor: queda de faturamento fora do horário de pico e nos dias de semana → \"Como você tem transformado os horários de menor movimento em oportunidades de venda com o delivery?\"\n6.  Mercado/Hortifruti com entrega — dor: concorrência de grandes redes e dificuldade em personalizar a experiência → \"Você consegue oferecer uma experiência de compra online tão personalizada quanto a da sua loja física?\"",
           "time": "2026-06-23T22:03:22.069Z"
+        },
+        {
+          "role": "user",
+          "content": "Buscar restaurantes em Criciúma",
+          "time": "2026-06-23T22:04:12.841Z"
+        },
+        {
+          "role": "model",
+          "content": "Aqui estão leads de restaurantes para abordar em Criciúma:\n\n1.  Restaurante de comida caseira — dor: dificuldade em escalar delivery sem perder a qualidade e o toque pessoal → \"Como você tem feito para levar o sabor da sua cozinha caseira a mais lares sem sobrecarregar a equipe?\"\n2.  Churrascaria com opções de delivery — dor: embalagem e logística para manter a qualidade da carne e acompanhamentos → \"Seu sistema de delivery garante que a picanha chegue no ponto e os acompanhamentos quentinhos, mantendo a experiência do salão?\"\n3.  Restaurante vegetariano/vegano — dor: educar o público sobre o menu e atrair clientes fora do nicho → \"Como você tem expandido seu alcance e mostrado a diversidade do seu cardápio para um público mais amplo no delivery?\"\n4.  Restaurante italiano — dor: gestão de pedidos complexos (massas, molhos, adicionais) e tempo de preparo → \"Você consegue gerenciar a complexidade dos pedidos italianos e garantir que o tempo de entrega seja sempre o ideal para o cliente?\"\n5.  Boteco/Restaurante com petiscos — dor: otimizar o delivery de porções e bebidas sem prejudicar o atendimento presencial → \"Seu delivery de petiscos e bebidas está funcionando sem tirar a atenção do movimento do balcão? Posso te ajudar a equilibrar isso.\"\n6.  Restaurante de frutos do mar — dor: logística de ingredientes frescos e manutenção da qualidade durante o transporte → \"Como você assegura que a frescura dos seus frutos do mar seja mantida do preparo à entrega, garantindo a satisfação do cliente?\"",
+          "time": "2026-06-23T22:04:12.849Z"
         }
       ],
       "created_at": "2026-06-23T22:02:29.809Z",
-      "updated_at": "2026-06-23T22:03:22.069Z"
+      "updated_at": "2026-06-23T22:04:12.849Z"
     },
     {
       "id": "5822d32e9cd3c58f",
