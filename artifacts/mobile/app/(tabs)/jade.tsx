@@ -204,9 +204,15 @@ function nowTime() {
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 interface AttachedFile { uri: string; name: string; type: "image" | "doc" }
+interface LeadCardData {
+  name: string; address: string; phone: string;
+  rating: number | null; totalRatings: number; cidade: string;
+  analysis: { dor: string; angulo: string; pergunta: string };
+}
 interface AIMessage {
   id: string; text: string; sender: "user" | "jade"; time: string;
   isAudio?: boolean; audioDuration?: number; files?: AttachedFile[];
+  leadData?: LeadCardData;
 }
 
 // ─── Audio wave ───────────────────────────────────────────────────────────────
@@ -238,6 +244,10 @@ function MessageBubble({ msg, colors }: { msg: AIMessage; colors: ReturnType<typ
         </View>
       </View>
     );
+  }
+
+  if (isJade && msg.leadData) {
+    return <LeadCard msg={msg} colors={colors} />;
   }
 
   if (isJade) {
@@ -282,60 +292,109 @@ function MessageBubble({ msg, colors }: { msg: AIMessage; colors: ReturnType<typ
 // ─── Prospecting keyword detector ─────────────────────────────────────────────
 function isProspectingMsg(text: string): boolean {
   const lower = text.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-  if (/prospeccao|prospectar|lead/.test(lower)) return true;
-  const hasVerb   = /\b(busca|encontra|acha|traz|procura|lista|mostra|manda)\b/.test(lower);
-  const hasTarget = /\b(cliente|empresa|estabelecimento|negocio|clinica|restaurante|loja|dentista|contato|prospect|barbearia|salao|oficina|escola|academia|comercio|farmacia|hotel|academia)\b/.test(lower);
-  return hasVerb && hasTarget;
+  return /preciso\s+de\s+(leads?|clientes?|mais\s+clientes?|novos?\s+clientes?)|quero\s+(leads?|clientes?|prospectar)|busca\s+leads?|busca\s+empresas?|busca\s+no\s+radar|encontra\s+clientes?|acha\s+clientes?|quem\s+posso\s+abordar|novos?\s+leads?|mais\s+leads?|busca\s+mais|me\s+d[aá]\s+opções?|prospec[çc][aã]o|prospectar|radar/.test(lower)
+    || (/\b(busca|encontra|acha|traz|procura|lista|mostra|manda)\b/.test(lower)
+        && /\b(cliente|empresa|estabelecimento|negocio|clinica|restaurante|loja|dentista|contato|prospect|barbearia|salao|oficina|escola|academia|comercio|farmacia|hotel)\b/.test(lower));
 }
 
-function extractCityHint(text: string): string {
-  const match = text.match(/\bem\s+([A-Za-záàãâéêíóôõúç]{3,}(?:\s+[A-Za-záàãâéêíóôõúç]{3,})?)/i);
-  return match ? match[1] : "sua região";
-}
-
-// ─── Pensando… / Status indicator ─────────────────────────────────────────────
-function TypingBubble({ colors, status }: { colors: ReturnType<typeof useColors>; status?: string }) {
-  const fade = useRef(new Animated.Value(0.3)).current;
-  const isStatusMsg = !!status && status !== "Pensando…";
+// ─── Typing indicator (3 dots, no background) ─────────────────────────────────
+function TypingBubble({ colors }: { colors: ReturnType<typeof useColors> }) {
+  const d1 = useRef(new Animated.Value(0)).current;
+  const d2 = useRef(new Animated.Value(0)).current;
+  const d3 = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
-    if (isStatusMsg) { fade.setValue(1); return; }
-    const loop = Animated.loop(
-      Animated.sequence([
-        Animated.timing(fade, { toValue: 0.85, duration: 900, easing: Easing.inOut(Easing.ease), useNativeDriver: true }),
-        Animated.timing(fade, { toValue: 0.3,  duration: 900, easing: Easing.inOut(Easing.ease), useNativeDriver: true }),
-      ])
-    );
-    loop.start();
-    return () => loop.stop();
-  }, [isStatusMsg]);
+    const pulse = (val: Animated.Value, delay: number) =>
+      Animated.loop(
+        Animated.sequence([
+          Animated.delay(delay),
+          Animated.timing(val, { toValue: 1, duration: 280, useNativeDriver: true }),
+          Animated.timing(val, { toValue: 0, duration: 280, useNativeDriver: true }),
+          Animated.delay(560),
+        ])
+      );
+    const a1 = pulse(d1, 0);
+    const a2 = pulse(d2, 180);
+    const a3 = pulse(d3, 360);
+    a1.start(); a2.start(); a3.start();
+    return () => { a1.stop(); a2.stop(); a3.stop(); };
+  }, []);
 
-  if (isStatusMsg) {
-    return (
-      <View style={{ paddingHorizontal: 20, paddingVertical: 8 }}>
-        <View style={{
-          alignSelf: "flex-start",
-          backgroundColor: "rgba(255,0,128,0.10)",
-          borderColor: "rgba(255,0,128,0.25)",
-          borderWidth: 1,
-          borderRadius: 20,
-          paddingHorizontal: 14,
-          paddingVertical: 7,
-        }}>
-          <Text style={{ color: "#FF0080", fontSize: 13, fontFamily: "SpaceGrotesk_500Medium" }}>
-            {status}
-          </Text>
-        </View>
-      </View>
-    );
-  }
+  const dotAnim = (val: Animated.Value) => ({
+    opacity: val.interpolate({ inputRange: [0, 1], outputRange: [0.25, 1] }),
+    transform: [{ translateY: val.interpolate({ inputRange: [0, 1], outputRange: [0, -4] }) }],
+  });
 
   return (
-    <Animated.View style={{ paddingHorizontal: 20, paddingVertical: 10, opacity: fade }}>
-      <Text style={{ color: colors.mutedForeground, fontSize: 14, fontFamily: "SpaceGrotesk_400Regular", fontStyle: "italic" }}>
-        Pensando…
+    <View style={[C.msgJade, { paddingVertical: 14 }]}>
+      <View style={{ flexDirection: "row", alignItems: "center", gap: 5 }}>
+        {[d1, d2, d3].map((d, i) => (
+          <Animated.View
+            key={i}
+            style={[{ width: 7, height: 7, borderRadius: 3.5, backgroundColor: colors.mutedForeground }, dotAnim(d)]}
+          />
+        ))}
+      </View>
+    </View>
+  );
+}
+
+// ─── Lead card (expandable) ────────────────────────────────────────────────────
+function LeadCard({ msg, colors }: { msg: AIMessage; colors: ReturnType<typeof useColors> }) {
+  const [expanded, setExpanded] = useState(false);
+  const ld = msg.leadData!;
+
+  return (
+    <TouchableOpacity style={C.msgJade} onPress={() => setExpanded((v) => !v)} activeOpacity={0.85}>
+      {!!msg.text && (
+        <Text style={[C.jadeText, { color: colors.text }]}>{msg.text}</Text>
+      )}
+      {expanded && (
+        <View style={{ marginTop: 14, borderTopWidth: 1, borderTopColor: "rgba(255,255,255,0.08)", paddingTop: 14, gap: 12 }}>
+          <Text style={{ color: PINK, fontSize: 10, fontFamily: "SpaceGrotesk_700Bold", letterSpacing: 1.2 }}>
+            ANÁLISE JADE
+          </Text>
+          <View style={{ gap: 3 }}>
+            <Text style={{ color: "rgba(255,255,255,0.4)", fontSize: 10, fontFamily: "SpaceGrotesk_500Medium", letterSpacing: 0.6 }}>
+              🎯 DOR PROVÁVEL
+            </Text>
+            <Text style={{ color: colors.text, fontSize: 13, fontFamily: "SpaceGrotesk_400Regular" }}>
+              {ld.analysis.dor}
+            </Text>
+          </View>
+          <View style={{ gap: 3 }}>
+            <Text style={{ color: "rgba(255,255,255,0.4)", fontSize: 10, fontFamily: "SpaceGrotesk_500Medium", letterSpacing: 0.6 }}>
+              💡 MELHOR ÂNGULO
+            </Text>
+            <Text style={{ color: colors.text, fontSize: 13, fontFamily: "SpaceGrotesk_400Regular" }}>
+              {ld.analysis.angulo}
+            </Text>
+          </View>
+          <View style={{ gap: 3 }}>
+            <Text style={{ color: "rgba(255,255,255,0.4)", fontSize: 10, fontFamily: "SpaceGrotesk_500Medium", letterSpacing: 0.6 }}>
+              💬 PERGUNTA DE ABERTURA
+            </Text>
+            <Text style={{ color: colors.text, fontSize: 13, fontFamily: "SpaceGrotesk_400Regular", fontStyle: "italic" }}>
+              "{ld.analysis.pergunta}"
+            </Text>
+          </View>
+          {ld.rating ? (
+            <View style={{ gap: 3 }}>
+              <Text style={{ color: "rgba(255,255,255,0.4)", fontSize: 10, fontFamily: "SpaceGrotesk_500Medium", letterSpacing: 0.6 }}>
+                ⭐ AVALIAÇÃO
+              </Text>
+              <Text style={{ color: colors.text, fontSize: 13, fontFamily: "SpaceGrotesk_400Regular" }}>
+                {ld.rating} estrelas · {ld.totalRatings} avaliações
+              </Text>
+            </View>
+          ) : null}
+        </View>
+      )}
+      <Text style={[C.jadeTime, { color: colors.mutedForeground }]}>
+        {msg.time}{"  "}
+        <Text style={{ color: PINK, fontSize: 10 }}>{expanded ? "↑ fechar" : "↓ ver análise"}</Text>
       </Text>
-    </Animated.View>
+    </TouchableOpacity>
   );
 }
 
@@ -366,7 +425,7 @@ function EmptyState({ displayName, colors }: { displayName: string; colors: Retu
   return (
     <Animated.View style={{ flex: 1, justifyContent: "center", alignItems: "center", paddingHorizontal: 32, opacity: fadeIn }}>
       <Text style={{ color: "#fff", fontSize: 34, fontFamily: "SpaceGrotesk_700Bold", textAlign: "center", letterSpacing: -0.5 }}>
-        {displayName}
+        {displayName.split(" ")[0]}
       </Text>
     </Animated.View>
   );
@@ -385,13 +444,10 @@ export default function JADEScreen() {
   const topPad    = Platform.OS === "web" ? 24 : insets.top;
   const bottomPad = Platform.OS === "web" ? 20 : insets.bottom;
 
-  const [messages,      setMessages]      = useState<AIMessage[]>([]);
-  const [input,         setInput]         = useState("");
-  const [loading,       setLoading]       = useState(false);
-  const [typingStatus,  setTypingStatus]  = useState("Pensando…");
-  const statusTimerA    = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const statusTimerB    = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const [sessionId,     setSessionId]     = useState<string | null>(null);
+  const [messages,     setMessages]     = useState<AIMessage[]>([]);
+  const [input,        setInput]        = useState("");
+  const [loading,      setLoading]      = useState(false);
+  const [sessionId,    setSessionId]    = useState<string | null>(null);
   const [handoffAlert, setHandoffAlert] = useState(false);
   const [attachments,  setAttachments]  = useState<AttachedFile[]>([]);
 
@@ -571,23 +627,6 @@ export default function JADEScreen() {
       content: m.isAudio ? `[Mensagem de voz de ${m.audioDuration}s]` : m.text,
     }));
 
-  // ── Status timer helpers ───────────────────────────────────────────────────
-  const clearStatusTimers = () => {
-    if (statusTimerA.current) { clearTimeout(statusTimerA.current); statusTimerA.current = null; }
-    if (statusTimerB.current) { clearTimeout(statusTimerB.current); statusTimerB.current = null; }
-  };
-
-  const startStatusCycle = (msgText: string) => {
-    const city = extractCityHint(msgText);
-    setTypingStatus(`🔍 Buscando em ${city}...`);
-    statusTimerA.current = setTimeout(() => {
-      setTypingStatus("📍 Analisando resultados...");
-      statusTimerB.current = setTimeout(() => {
-        setTypingStatus("✅ Quase pronto...");
-      }, 2800);
-    }, 2200);
-  };
-
   // ── Send ──────────────────────────────────────────────────────────────────
   const send = async (text: string, files?: AttachedFile[]) => {
     const trimmed = text.trim();
@@ -602,13 +641,6 @@ export default function JADEScreen() {
     const updatedMsgs = [userMsg, ...messages];
     setMessages(updatedMsgs);
     setInput(""); setAttachments([]);
-
-    const prospecting = isProspectingMsg(trimmed);
-    if (prospecting) {
-      startStatusCycle(trimmed);
-    } else {
-      setTypingStatus("Pensando…");
-    }
     setLoading(true);
 
     try {
@@ -616,15 +648,27 @@ export default function JADEScreen() {
       const tid = setTimeout(() => controller.abort(), 90000);
       const response = await fetch(`${API_BASE}/api/jade/chat`, {
         method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ messages: buildHistory(updatedMsgs), session_id: sid }),
+        body: JSON.stringify({
+          messages: buildHistory(updatedMsgs),
+          session_id: sid,
+          radar_on: modules.radar,
+        }),
         signal: controller.signal,
       });
       clearTimeout(tid);
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
-      const data = (await response.json()) as { message?: string; response?: string; handoff?: boolean };
+      const data = (await response.json()) as {
+        message?: string; response?: string; handoff?: boolean; leadData?: LeadCardData;
+      };
       const raw = data.message?.trim() || data.response?.trim() || "Desculpe, não consegui processar. Tente novamente.";
       useCredit();
-      setMessages((prev) => [{ id: (Date.now() + 1).toString(), text: stripMarkdown(raw), sender: "jade", time: nowTime() }, ...prev]);
+      setMessages((prev) => [{
+        id: (Date.now() + 1).toString(),
+        text: stripMarkdown(raw),
+        sender: "jade",
+        time: nowTime(),
+        leadData: data.leadData,
+      }, ...prev]);
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
       if (data.handoff) {
         if (handoffTimer.current) clearTimeout(handoffTimer.current);
@@ -641,8 +685,6 @@ export default function JADEScreen() {
         sender: "jade", time: nowTime(),
       }, ...prev]);
     } finally {
-      clearStatusTimers();
-      setTypingStatus("Pensando…");
       setLoading(false);
     }
   };
@@ -784,7 +826,7 @@ export default function JADEScreen() {
             data={renderData}
             keyExtractor={(item) => item.id}
             renderItem={({ item }) => {
-              if (item.id === "__typing__") return <TypingBubble colors={colors} status={typingStatus} />;
+              if (item.id === "__typing__") return <TypingBubble colors={colors} />;
               return <MessageBubble msg={item} colors={colors} />;
             }}
             inverted

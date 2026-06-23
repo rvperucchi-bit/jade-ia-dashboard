@@ -283,11 +283,15 @@ function detectNextLeadRequest(text: string): boolean {
   return /pr[oó]xim[oa]|seguinte|ver?\s+o?\s*pr[oó]x|mais\s+um\s+lead|outro\s+lead|continua|pr[oó]ximo\s+por\s+favor/i.test(text);
 }
 
-function extractSearchParams(text: string, companyConfig: null | { segmento?: string; cidade?: string }): { tipo: string; cidade: string } {
+function extractSearchParams(
+  text: string,
+  companyConfig: null | { segmento?: string; cidade?: string },
+  useCompanyAsPrimary = false,
+): { tipo: string; cidade: string } {
   // Normalise (strip diacritics for matching)
   const lower = text.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
 
-  // City: word(s) after "em "
+  // City: when radar ON and company has city, prefer company city unless message explicitly says "em [outra cidade]"
   const cityMatch = lower.match(/\bem\s+([a-z]{3,}(?:\s+[a-z]{3,})?)/);
   const rawCity = cityMatch ? cityMatch[1] : null;
   const cidade = rawCity
@@ -390,18 +394,47 @@ async function searchPlacesForJade(tipo: string, cidade: string, apiKey: string)
   }
 }
 
+const SEGMENT_EMOJI: [RegExp, string][] = [
+  [/clinic|dentist|medic|saude|odont/,          '🦷'],
+  [/restaur|comida|food|pizza|padari|lanchon/,  '🍽️'],
+  [/salao|barb[ea]|estetica|beleza|cosmet/,     '✂️'],
+  [/imovel|imobil|corretor/,                    '🏠'],
+  [/advogad|advocac|juridic/,                   '⚖️'],
+  [/academia|fitness|personal|ginast/,          '💪'],
+  [/oficina|mecanica|automobil/,                '🔧'],
+  [/escola|educa|faculdad|curso/,               '📚'],
+  [/hotel|pousad|turism/,                       '🏨'],
+  [/farma|drogari/,                             '💊'],
+  [/petshop|veterina/,                          '🐾'],
+  [/marketing|publicidad|agencia/,              '📣'],
+  [/consult|tecnolog|software|b2b/,             '💼'],
+  [/seguro|financ|credito|consorcio/,           '🛡️'],
+  [/construt|reform|empreit|engenh/,            '🏗️'],
+  [/loja|varej|comercio|moda/,                  '🛍️'],
+];
+
+function segmentEmoji(tipo: string): string {
+  const lower = tipo.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  for (const [re, emoji] of SEGMENT_EMOJI) {
+    if (re.test(lower)) return emoji;
+  }
+  return '🏢';
+}
+
 function buildLeadPrompt(
   lead: PendingLeadResult,
   idx: number,
   total: number,
   city: string,
   hasMore: boolean,
+  tipo = '',
 ): string {
+  const emoji = segmentEmoji(tipo || lead.name);
   const infoLine = (() => {
     const parts: string[] = [];
-    if (lead.phone)  parts.push(lead.phone);
+    if (lead.phone)  parts.push(`📞 ${lead.phone}`);
     if (lead.rating) parts.push(`⭐ ${lead.rating}`);
-    return parts.join(' • ');
+    return parts.join(' · ');
   })();
 
   const closing = hasMore
@@ -412,28 +445,47 @@ function buildLeadPrompt(
     ? `Encontrei ${total} opções em ${city}. Aqui vai o primeiro:\n\n`
     : '';
 
-  return `Você tem dados reais do Google Maps. Responda EXATAMENTE neste formato — sem texto antes ou depois, sem variações:
+  return `Você tem dados reais do Google Maps. Responda em DOIS blocos separados:
 
-${introLine}📍 ${lead.name}
-${lead.address}
-${infoLine}
-
-[1 frase curta e específica sobre a dor provável desse negócio — baseada no nome e tipo de estabelecimento, NÃO genérica]
+BLOCO 1 (o que o usuário vê — siga o formato EXATO, sem variações):
+${introLine}${emoji} ${lead.name}
+📍 ${lead.address}
+${infoLine ? infoLine + '\n' : ''}
+[1 frase de dor provável — específica para esse negócio, NÃO genérica]
 
 ${closing}
 
-DADOS REAIS (use somente estes, não invente):
+BLOCO 2 (análise de vendas — separado por ---ANALISE---):
+---ANALISE---
+DOR: [1 frase de dor provável]
+ANGULO: [1 frase sobre o melhor ângulo de abordagem]
+PERGUNTA: [1 frase de pergunta de abertura ideal]
+---FIM---
+
+DADOS REAIS (use SOMENTE estes — não invente):
 Nome: ${lead.name}
 Endereço: ${lead.address}
 Telefone: ${lead.phone || 'não disponível'}
 Avaliação: ${lead.rating ? `${lead.rating} estrelas` : 'não disponível'}
 
-REGRAS:
-- A linha de dor provável deve substituir o colchete acima — escreva apenas a frase, sem colchetes.
-- Se o telefone e avaliação estiverem disponíveis, mostre-os separados por " • " (ex: (48) 3433-1234 • ⭐ 4.3).
-- Se apenas um estiver disponível, mostre somente esse.
-- Se nenhum estiver disponível, omita a linha de contato/avaliação.
-- NÃO adicione nenhum texto fora do formato acima.`;
+REGRAS DO BLOCO 1:
+- Substitua o colchete da dor provável por uma frase real e específica.
+- Se não houver telefone nem avaliação, omita a linha de contato.
+- NÃO adicione texto extra fora do formato.`;
+}
+
+function parseLeadResponse(raw: string): { cardText: string; analysis: { dor: string; angulo: string; pergunta: string } } {
+  const parts = raw.split('---ANALISE---');
+  const cardText = parts[0].trim();
+  const section  = parts[1] ?? '';
+  return {
+    cardText,
+    analysis: {
+      dor:      section.match(/DOR:\s*(.+)/)?.[1]?.trim()      ?? '',
+      angulo:   section.match(/ANGULO:\s*(.+)/)?.[1]?.trim()   ?? '',
+      pergunta: section.match(/PERGUNTA:\s*(.+)/)?.[1]?.trim()?.replace(/^["']|["']$/g, '') ?? '',
+    },
+  };
 }
 
 // POST /jade/chat
@@ -444,7 +496,9 @@ router.post('/chat', async (req: Request, res: Response) => {
       messages?: Array<{ role: string; content: string }>;
       message?: string;
       session_id?: string;
+      radar_on?: boolean;
     };
+    const radarOn = body.radar_on === true;
 
     let messagesArray: Array<{ role: string; content: string }>;
 
@@ -503,7 +557,7 @@ router.post('/chat', async (req: Request, res: Response) => {
         consultivo_presencial: "Agendar + Fechar Presencial — venda consultiva, ticket alto. Agende reuniões.",
         nutricao: "Nutrição + Relacionamento — ciclo longo. Nutra o lead até estar pronto para comprar.",
       };
-      systemPrompt += `\n\n## CONFIGURAÇÃO PERSONALIZADA DA EMPRESA\n\nEmpresa: ${companyConfig.nome}\nProduto/Serviço principal: ${companyConfig.produto}\nSegmento: ${companyConfig.segmento}\nTom preferido: ${TOM_MAP[companyConfig.tom] ?? companyConfig.tom}`;
+      systemPrompt += `\n\n## CONFIGURAÇÃO PERSONALIZADA DA EMPRESA\n\nO usuário trabalha com ${companyConfig.segmento} em ${(companyConfig as any).cidade ?? 'sua cidade'}. Empresa: ${companyConfig.nome}. Use esses dados automaticamente em buscas e respostas.\n\nEmpresa: ${companyConfig.nome}\nProduto/Serviço principal: ${companyConfig.produto}\nSegmento: ${companyConfig.segmento}\nCidade: ${(companyConfig as any).cidade ?? 'não informada'}\nTom preferido: ${TOM_MAP[companyConfig.tom] ?? companyConfig.tom}`;
       if ((companyConfig as any).modoOperacao) {
         systemPrompt += `\nModo de operação: ${MODO_MAP[(companyConfig as any).modoOperacao] ?? (companyConfig as any).modoOperacao}`;
       }
@@ -546,23 +600,28 @@ router.post('/chat', async (req: Request, res: Response) => {
         const lead = pending.leads.shift()!;
         pending.shown++;
         const hasMore = pending.leads.length > 0;
-        const prompt = buildLeadPrompt(lead, pending.shown, pending.total, pending.city, hasMore);
+        const prompt = buildLeadPrompt(lead, pending.shown, pending.total, pending.city, hasMore, pending.tipo);
 
         const nr = await chat.sendMessage(prompt);
-        const ntext = nr.response.text();
+        const rawText = nr.response.text();
+        const { cardText, analysis } = parseLeadResponse(rawText);
 
         appendJadeMessage(body.session_id, 'user', lastUserText);
-        appendJadeMessage(body.session_id, 'model', ntext);
+        appendJadeMessage(body.session_id, 'model', cardText);
         addActivityEvent({ type: 'lead', text: `JADE apresentou lead ${pending.shown}/${pending.total} em ${pending.city}`, icon: 'map-pin', color: '#FF0080' });
 
         req.log.info({ shown: pending.shown, total: pending.total, city: pending.city }, 'pending lead delivered');
-        return res.json({ message: ntext, session_id: body.session_id, handoff: false, statusType: 'lead' });
+        return res.json({
+          message: cardText,
+          leadData: { name: lead.name, address: lead.address, phone: lead.phone, rating: lead.rating, totalRatings: lead.totalRatings, cidade: pending.city, analysis },
+          session_id: body.session_id, handoff: false, statusType: 'lead',
+        });
       }
     }
 
-    // ─── Path B: New prospecting request → call Google Places ────────────────
-    if (mapsApiKey && detectProspectingIntent(lastUserText)) {
-      const { tipo, cidade } = extractSearchParams(lastUserText, companyConfig);
+    // ─── Path B: New prospecting request → call Google Places (Radar ON) ────
+    if (radarOn && mapsApiKey && detectProspectingIntent(lastUserText)) {
+      const { tipo, cidade } = extractSearchParams(lastUserText, companyConfig, true);
       req.log.info({ tipo, cidade }, 'prospecting intent → calling Google Places');
 
       const places = await searchPlacesForJade(tipo, cidade, mapsApiKey);
@@ -577,13 +636,14 @@ router.post('/chat', async (req: Request, res: Response) => {
           });
         }
 
-        const prompt = buildLeadPrompt(firstLead, 1, places.length, cidade, remaining.length > 0);
+        const prompt = buildLeadPrompt(firstLead, 1, places.length, cidade, remaining.length > 0, tipo);
         const pr = await chat.sendMessage(prompt);
-        const ptext = pr.response.text();
+        const rawText = pr.response.text();
+        const { cardText, analysis } = parseLeadResponse(rawText);
 
         if (body.session_id) {
           appendJadeMessage(body.session_id, 'user', lastUserText);
-          appendJadeMessage(body.session_id, 'model', ptext);
+          appendJadeMessage(body.session_id, 'model', cardText);
         }
         addActivityEvent({
           type: 'lead',
@@ -593,7 +653,11 @@ router.post('/chat', async (req: Request, res: Response) => {
         });
 
         req.log.info({ count: places.length, cidade, tipo }, 'Google Places leads delivered');
-        return res.json({ message: ptext, session_id: body.session_id, handoff: false, statusType: 'radar', leadsFound: places.length });
+        return res.json({
+          message: cardText,
+          leadData: { name: firstLead.name, address: firstLead.address, phone: firstLead.phone, rating: firstLead.rating, totalRatings: firstLead.totalRatings, cidade, analysis },
+          session_id: body.session_id, handoff: false, statusType: 'radar', leadsFound: places.length,
+        });
       }
       // Zero results → fall through so Gemini can explain
     }
