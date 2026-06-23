@@ -24,10 +24,13 @@ const SEGMENT_KEYWORDS: Record<string, string> = {
 // ─── POST /places/radar ─── Google Places Nearby Search + Details ─────────────
 router.post('/radar', async (req: Request, res: Response) => {
   try {
-    const { segmento, cidade, raio = 5000 } = req.body as {
+    const { segmento, cidade, estado, raio = 5000, lat: bodyLat, lng: bodyLng } = req.body as {
       segmento?: string;
       cidade?: string;
+      estado?: string;
       raio?: number;
+      lat?: number;
+      lng?: number;
     };
 
     const apiKey = process.env.GOOGLE_MAPS_PLATFORM_KEY ?? process.env.GOOGLE_MAPS_API_KEY;
@@ -37,26 +40,32 @@ router.post('/radar', async (req: Request, res: Response) => {
 
     const keyword = SEGMENT_KEYWORDS[segmento ?? ''] ?? 'empresa';
 
-    // Step 1: Geocode city to get lat/lng
-    const geocodeUrl = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent((cidade ?? 'São Paulo') + ', Brasil')}&language=pt-BR&key=${apiKey}`;
-    const geocodeResp = await fetch(geocodeUrl);
-    const geocodeData = (await geocodeResp.json()) as { status: string; results: Array<{ geometry: { location: { lat: number; lng: number } } }> };
+    let rawPlaces: any[];
 
-    if (geocodeData.status !== 'OK' || !geocodeData.results?.length) {
-      return res.status(400).json({ error: `Cidade não encontrada: ${cidade}` });
+    if (typeof bodyLat === 'number' && typeof bodyLng === 'number') {
+      // Path A — GPS coords provided: use Nearby Search directly (no geocoding needed)
+      const nearbyUrl = `https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=${bodyLat},${bodyLng}&radius=${raio}&keyword=${encodeURIComponent(keyword)}&language=pt-BR&key=${apiKey}`;
+      const nearbyResp = await fetch(nearbyUrl);
+      const nearbyData = (await nearbyResp.json()) as { status: string; results: any[]; error_message?: string };
+      if (nearbyData.status !== 'OK' && nearbyData.status !== 'ZERO_RESULTS') {
+        return res.status(502).json({ error: nearbyData.error_message ?? nearbyData.status });
+      }
+      rawPlaces = (nearbyData.results ?? []).slice(0, 15);
+    } else {
+      // Path B — City name: use Text Search (Geocoding API not required)
+      // Build query like: "clínica médica dentista em Criciúma, SC, Brasil"
+      const locationParts = [cidade, estado, 'Brasil'].filter(Boolean).join(', ');
+      const textQuery = locationParts ? `${keyword} em ${locationParts}` : keyword;
+      const textUrl = `https://maps.googleapis.com/maps/api/place/textsearch/json?query=${encodeURIComponent(textQuery)}&language=pt-BR&key=${apiKey}`;
+      const textResp = await fetch(textUrl);
+      const textData = (await textResp.json()) as { status: string; results: any[]; error_message?: string };
+      if (textData.status !== 'OK' && textData.status !== 'ZERO_RESULTS') {
+        return res.status(502).json({ error: textData.error_message ?? textData.status });
+      }
+      rawPlaces = (textData.results ?? []).slice(0, 15);
     }
-    const { lat, lng } = geocodeData.results[0]!.geometry.location;
 
-    // Step 2: Nearby Search
-    const nearbyUrl = `https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=${lat},${lng}&radius=${raio}&keyword=${encodeURIComponent(keyword)}&language=pt-BR&key=${apiKey}`;
-    const nearbyResp = await fetch(nearbyUrl);
-    const nearbyData = (await nearbyResp.json()) as { status: string; results: any[]; error_message?: string };
-
-    if (nearbyData.status !== 'OK' && nearbyData.status !== 'ZERO_RESULTS') {
-      return res.status(502).json({ error: nearbyData.error_message ?? nearbyData.status });
-    }
-
-    const places = (nearbyData.results ?? []).slice(0, 15);
+    const places = rawPlaces;
 
     // Step 3: Enrich each place with phone number via Place Details
     const enriched = await Promise.all(

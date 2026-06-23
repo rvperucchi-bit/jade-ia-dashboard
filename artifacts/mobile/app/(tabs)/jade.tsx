@@ -109,10 +109,11 @@ const ACCORDION_SECTIONS: AccordionSection[] = [
     title: "Configurações",
     icon: "settings",
     items: [
-      { label: "Perfil",      route: "/perfil" },
-      { label: "Plano",       route: "/plano" },
-      { label: "Uso",         route: "/uso" },
-      { label: "Integrações", route: "/whatsapp-config" },
+      { label: "Minha Empresa", route: "/empresa" },
+      { label: "Perfil",        route: "/perfil" },
+      { label: "Plano",         route: "/plano" },
+      { label: "Uso",           route: "/uso" },
+      { label: "Integrações",   route: "/whatsapp-config" },
     ],
   },
 ];

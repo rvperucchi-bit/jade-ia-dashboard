@@ -11,13 +11,14 @@ router.get('/', (_req: Request, res: Response) => {
 
 // POST /empresa — save company config
 router.post('/', (req: Request, res: Response) => {
-  const { nome, produto, segmento, tom, planos, cidade, modoOperacao } = req.body as {
+  const { nome, produto, segmento, tom, planos, cidade, estado, modoOperacao } = req.body as {
     nome?: string;
     produto?: string;
     segmento?: string;
     tom?: string;
     planos?: string;
     cidade?: string;
+    estado?: string;
     modoOperacao?: string;
   };
 
@@ -32,6 +33,7 @@ router.post('/', (req: Request, res: Response) => {
     tom: tom?.trim() ?? 'consultivo',
     planos: planos?.trim() ?? '',
     cidade: cidade?.trim() ?? '',
+    estado: estado?.trim() ?? '',
     modoOperacao: modoOperacao?.trim() ?? 'fechamento',
   });
 

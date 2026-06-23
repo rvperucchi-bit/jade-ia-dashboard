@@ -25,6 +25,7 @@ import { useColors } from "@/hooks/useColors";
 import { useApp } from "@/context/AppContext";
 import type { Lead } from "@/context/AppContext";
 import { useRadarSearches } from "@/hooks/useRadarSearches";
+import { BRAZIL_STATES } from "@/constants/brazil-locations";
 
 const TIPOS = ["Restaurante", "Lanchonete", "Açaí", "Pizzaria", "Padaria", "Mercado", "Farmácia", "Academia", "Salão", "Outros"];
 
@@ -132,6 +133,7 @@ export default function ScannerScreen() {
 
   // ── Radar (Buscar Leads) state ─────────────────────────────────────────────
   const [radarSegmento,    setRadarSegmento]    = useState("Outros");
+  const [radarEstado,      setRadarEstado]      = useState("SC");
   const [radarCidade,      setRadarCidade]      = useState("Criciúma");
   const [radarRaioIdx,     setRadarRaioIdx]     = useState(1); // 5 km default
   const [radarLoading,     setRadarLoading]     = useState(false);
@@ -143,6 +145,14 @@ export default function ScannerScreen() {
   const [showLojaModal,    setShowLojaModal]    = useState(false);
   const [selectedPacote,   setSelectedPacote]   = useState<string | null>(null);
   const [buyingPacote,     setBuyingPacote]     = useState(false);
+  const [showRadarEstadoPicker, setShowRadarEstadoPicker] = useState(false);
+  const [showRadarCidadePicker, setShowRadarCidadePicker] = useState(false);
+  const [radarUserCoords,  setRadarUserCoords]  = useState<{ lat: number; lng: number } | null>(null);
+  const [radarLocationLabel, setRadarLocationLabel] = useState("");
+  const [loadingRadarLocation, setLoadingRadarLocation] = useState(false);
+
+  const radarEstadoData = BRAZIL_STATES.find((s) => s.sigla === radarEstado);
+  const cidadesDoRadarEstado = radarEstadoData?.cidades ?? [];
 
   // Pre-fill from empresa config
   useEffect(() => {
@@ -151,11 +161,46 @@ export default function ScannerScreen() {
       try {
         const parsed = JSON.parse(raw);
         if (parsed.segmento) setRadarSegmento(parsed.segmento);
+        if (parsed.estado)   setRadarEstado(parsed.estado);
         if (parsed.cidade)   setRadarCidade(parsed.cidade);
-        else if (parsed.nome) { /* use existing cidade default */ }
       } catch { /* ignore */ }
     });
   }, []);
+
+  const getRadarLocation = async () => {
+    if (Platform.OS === "web") {
+      setRadarError("Geolocalização não disponível na versão web.");
+      return;
+    }
+    setLoadingRadarLocation(true);
+    setRadarError("");
+    try {
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== "granted") {
+        setRadarError("Permissão de localização negada. Ative nas configurações do celular.");
+        return;
+      }
+      const loc = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
+      const { latitude, longitude } = loc.coords;
+      setRadarUserCoords({ lat: latitude, lng: longitude });
+
+      const geocoded = await Location.reverseGeocodeAsync({ latitude, longitude });
+      if (geocoded.length > 0) {
+        const g = geocoded[0];
+        const cidadeFound = g?.city ?? g?.subregion ?? "";
+        const estadoFound = g?.region ?? "";
+        setRadarLocationLabel(`📍 ${cidadeFound}${estadoFound ? `, ${estadoFound}` : ""}`);
+        if (cidadeFound) setRadarCidade(cidadeFound);
+      } else {
+        setRadarLocationLabel(`📍 ${latitude.toFixed(4)}, ${longitude.toFixed(4)}`);
+      }
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    } catch {
+      setRadarError("Não foi possível obter sua localização. Verifique se o GPS está ativo.");
+    } finally {
+      setLoadingRadarLocation(false);
+    }
+  };
 
   const radarSearch = async () => {
     if (!canSearch) { setShowLimiteModal(true); return; }
@@ -167,14 +212,20 @@ export default function ScannerScreen() {
     decrement();
 
     try {
+      const body: Record<string, unknown> = {
+        segmento: radarSegmento,
+        cidade:   radarCidade,
+        estado:   radarEstado,
+        raio:     RAIO_OPTIONS[radarRaioIdx]!.value,
+      };
+      if (radarUserCoords) {
+        body.lat = radarUserCoords.lat;
+        body.lng = radarUserCoords.lng;
+      }
       const res = await fetch(`${API_BASE}/api/places/radar`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          segmento: radarSegmento,
-          cidade:   radarCidade,
-          raio:     RAIO_OPTIONS[radarRaioIdx]!.value,
-        }),
+        body: JSON.stringify(body),
       });
       const data = (await res.json()) as { results?: RadarLead[]; error?: string };
       if (!res.ok) { setRadarError(data.error ?? "Erro ao buscar leads."); return; }
@@ -437,19 +488,106 @@ export default function ScannerScreen() {
             </View>
           </View>
 
+          {/* GPS para radar */}
+          <View style={styles.radarField}>
+            <TouchableOpacity
+              style={[styles.radarInput, {
+                backgroundColor: radarUserCoords ? "#FF008018" : colors.surface,
+                borderColor: radarUserCoords ? "#FF008044" : colors.border,
+                justifyContent: "center",
+              }]}
+              onPress={getRadarLocation}
+              activeOpacity={0.8}
+              disabled={loadingRadarLocation}
+            >
+              {loadingRadarLocation
+                ? <ActivityIndicator size="small" color="#FF0080" />
+                : <Feather name="navigation" size={15} color={radarUserCoords ? "#FF0080" : colors.mutedForeground} />
+              }
+              <Text style={[styles.radarInputText, { color: radarUserCoords ? "#FF0080" : colors.mutedForeground, marginLeft: 8 }]}>
+                {loadingRadarLocation ? "Obtendo localização..." : radarLocationLabel || "Usar minha localização atual"}
+              </Text>
+              {radarUserCoords && <Feather name="check-circle" size={15} color="#FF0080" style={{ marginLeft: "auto" }} />}
+            </TouchableOpacity>
+          </View>
+
+          <View style={[styles.radarField]}>
+            <View style={styles.orRow2}>
+              <View style={[styles.orLine2, { backgroundColor: colors.border }]} />
+              <Text style={[styles.orText2, { color: colors.mutedForeground }]}>ou selecione a localização</Text>
+              <View style={[styles.orLine2, { backgroundColor: colors.border }]} />
+            </View>
+          </View>
+
+          {/* Estado */}
+          <View style={styles.radarField}>
+            <Text style={[styles.radarLabel, { color: colors.mutedForeground }]}>Estado</Text>
+            <TouchableOpacity
+              style={[styles.radarInput, { backgroundColor: colors.card, borderColor: colors.border }]}
+              onPress={() => { setShowRadarEstadoPicker((v) => !v); setShowRadarCidadePicker(false); }}
+              activeOpacity={0.8}
+            >
+              <Feather name="map" size={14} color={colors.mutedForeground} style={{ marginRight: 8 }} />
+              <Text style={[styles.radarInputText, { color: radarEstado ? colors.text : colors.mutedForeground, flex: 1 }]}>
+                {radarEstadoData ? `${radarEstadoData.nome} (${radarEstado})` : "Selecione o estado"}
+              </Text>
+              <Feather name={showRadarEstadoPicker ? "chevron-up" : "chevron-down"} size={14} color={colors.mutedForeground} />
+            </TouchableOpacity>
+            {showRadarEstadoPicker && (
+              <ScrollView style={[styles.radarPicker, { backgroundColor: colors.card, borderColor: colors.border }]} nestedScrollEnabled>
+                {BRAZIL_STATES.map((s) => (
+                  <TouchableOpacity
+                    key={s.sigla}
+                    style={[styles.radarPickerItem, s.sigla === radarEstado && { backgroundColor: "#FF008018" }]}
+                    onPress={() => {
+                      setRadarEstado(s.sigla);
+                      setRadarCidade(s.cidades[0] ?? "");
+                      setRadarUserCoords(null);
+                      setRadarLocationLabel("");
+                      setShowRadarEstadoPicker(false);
+                      Haptics.selectionAsync();
+                    }}
+                    activeOpacity={0.8}
+                  >
+                    <Text style={[styles.radarPickerText, { color: s.sigla === radarEstado ? "#FF0080" : colors.text }]}>
+                      {s.nome} <Text style={{ color: colors.mutedForeground }}>({s.sigla})</Text>
+                    </Text>
+                    {s.sigla === radarEstado && <Feather name="check" size={13} color="#FF0080" />}
+                  </TouchableOpacity>
+                ))}
+              </ScrollView>
+            )}
+          </View>
+
           {/* Cidade */}
           <View style={styles.radarField}>
             <Text style={[styles.radarLabel, { color: colors.mutedForeground }]}>Cidade</Text>
-            <View style={[styles.radarInput, { backgroundColor: colors.card, borderColor: colors.border }]}>
+            <TouchableOpacity
+              style={[styles.radarInput, { backgroundColor: colors.card, borderColor: colors.border, opacity: cidadesDoRadarEstado.length === 0 ? 0.5 : 1 }]}
+              onPress={() => { if (cidadesDoRadarEstado.length > 0) { setShowRadarCidadePicker((v) => !v); setShowRadarEstadoPicker(false); } }}
+              activeOpacity={0.8}
+            >
               <Feather name="map-pin" size={14} color={colors.mutedForeground} style={{ marginRight: 8 }} />
-              <TextInput
-                style={[styles.radarInputText, { color: colors.text }]}
-                value={radarCidade}
-                onChangeText={setRadarCidade}
-                placeholder="Ex: São Paulo"
-                placeholderTextColor={colors.mutedForeground}
-              />
-            </View>
+              <Text style={[styles.radarInputText, { color: radarCidade ? colors.text : colors.mutedForeground, flex: 1 }]}>
+                {radarCidade || "Selecione a cidade"}
+              </Text>
+              <Feather name={showRadarCidadePicker ? "chevron-up" : "chevron-down"} size={14} color={colors.mutedForeground} />
+            </TouchableOpacity>
+            {showRadarCidadePicker && cidadesDoRadarEstado.length > 0 && (
+              <ScrollView style={[styles.radarPicker, { backgroundColor: colors.card, borderColor: colors.border }]} nestedScrollEnabled>
+                {cidadesDoRadarEstado.map((c) => (
+                  <TouchableOpacity
+                    key={c}
+                    style={[styles.radarPickerItem, c === radarCidade && { backgroundColor: "#FF008018" }]}
+                    onPress={() => { setRadarCidade(c); setRadarUserCoords(null); setRadarLocationLabel(""); setShowRadarCidadePicker(false); Haptics.selectionAsync(); }}
+                    activeOpacity={0.8}
+                  >
+                    <Text style={[styles.radarPickerText, { color: c === radarCidade ? "#FF0080" : colors.text }]}>{c}</Text>
+                    {c === radarCidade && <Feather name="check" size={13} color="#FF0080" />}
+                  </TouchableOpacity>
+                ))}
+              </ScrollView>
+            )}
           </View>
 
           {/* Raio */}
@@ -879,7 +1017,13 @@ const styles = StyleSheet.create({
   radarField: { gap: 5 },
   radarLabel: { fontSize: 11, fontFamily: "SpaceGrotesk_500Medium", textTransform: "uppercase", letterSpacing: 0.5 },
   radarInput: { flexDirection: "row", alignItems: "center", borderRadius: 12, borderWidth: 1, paddingHorizontal: 14, height: 46 },
-  radarInputText: { flex: 1, fontSize: 16, fontFamily: "SpaceGrotesk_400Regular" },
+  radarInputText: { flex: 1, fontSize: 15, fontFamily: "SpaceGrotesk_400Regular" },
+  radarPicker: { borderRadius: 12, borderWidth: 1, marginTop: 4, maxHeight: 220, overflow: "hidden" },
+  radarPickerItem: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: 14, paddingVertical: 11 },
+  radarPickerText: { fontSize: 14, fontFamily: "SpaceGrotesk_500Medium" },
+  orRow2: { flexDirection: "row", alignItems: "center", gap: 8, marginVertical: 4 },
+  orLine2: { flex: 1, height: StyleSheet.hairlineWidth },
+  orText2: { fontSize: 11, fontFamily: "SpaceGrotesk_400Regular" },
   raioRow: { flexDirection: "row", gap: 6 },
   raioBtn: { flex: 1, alignItems: "center", justifyContent: "center", height: 36, borderRadius: 9, borderWidth: 1 },
   raioBtnText: { fontSize: 11, fontFamily: "SpaceGrotesk_600SemiBold" },

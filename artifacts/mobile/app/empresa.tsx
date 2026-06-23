@@ -3,6 +3,7 @@ import { Feather } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
+import { BRAZIL_STATES } from "@/constants/brazil-locations";
 import {
   ActivityIndicator,
   Alert,
@@ -66,6 +67,7 @@ interface Produto {
 interface EmpresaConfig {
   nome: string;
   cidade: string;
+  estado: string;
   segmento: string;
   tom: string;
   modoOperacao: string;
@@ -93,6 +95,7 @@ function novoProduto(): Produto {
 const DEFAULT: EmpresaConfig = {
   nome: "",
   cidade: "",
+  estado: "",
   segmento: "Alimentação",
   tom: "consultivo",
   modoOperacao: "fechamento",
@@ -104,8 +107,13 @@ export default function EmpresaScreen() {
   const insets = useSafeAreaInsets();
   const [config, setConfig] = useState<EmpresaConfig>(DEFAULT);
   const [showSegPicker, setShowSegPicker] = useState(false);
+  const [showEstadoPicker, setShowEstadoPicker] = useState(false);
+  const [showCidadePicker, setShowCidadePicker] = useState(false);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+
+  const estadoData = BRAZIL_STATES.find((s) => s.sigla === config.estado || s.nome === config.estado);
+  const cidadesDoEstado = estadoData?.cidades ?? [];
 
   const topPad = Platform.OS === "web" ? 67 : insets.top;
 
@@ -230,19 +238,75 @@ export default function EmpresaScreen() {
           </View>
         </View>
 
+        {/* Estado */}
+        <View style={S.fieldGroup}>
+          <Text style={S.label}>Estado</Text>
+          <TouchableOpacity
+            style={[S.inputWrap, { borderColor: config.estado ? C.primary + "60" : C.border }]}
+            onPress={() => { setShowEstadoPicker((v) => !v); setShowCidadePicker(false); }}
+            activeOpacity={0.8}
+          >
+            <Feather name="map" size={16} color={C.muted} style={S.inputIcon} />
+            <Text style={[S.input, { color: config.estado ? C.text : C.muted }]}>
+              {config.estado
+                ? `${BRAZIL_STATES.find((s) => s.sigla === config.estado)?.nome ?? config.estado} (${config.estado})`
+                : "Selecione o estado"}
+            </Text>
+            <Feather name={showEstadoPicker ? "chevron-up" : "chevron-down"} size={16} color={C.muted} />
+          </TouchableOpacity>
+          {showEstadoPicker && (
+            <ScrollView style={[S.picker, { maxHeight: 220 }]} nestedScrollEnabled>
+              {BRAZIL_STATES.map((s) => (
+                <TouchableOpacity
+                  key={s.sigla}
+                  style={[S.pickerItem, s.sigla === config.estado && S.pickerItemActive]}
+                  onPress={() => {
+                    updateField("estado")(s.sigla);
+                    updateField("cidade")("");
+                    setShowEstadoPicker(false);
+                    Haptics.selectionAsync();
+                  }}
+                  activeOpacity={0.8}
+                >
+                  <Text style={[S.pickerText, { color: s.sigla === config.estado ? C.primary : C.text }]}>
+                    {s.nome} <Text style={{ color: C.muted }}>({s.sigla})</Text>
+                  </Text>
+                  {s.sigla === config.estado && <Feather name="check" size={14} color={C.primary} />}
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          )}
+        </View>
+
+        {/* Cidade */}
         <View style={S.fieldGroup}>
           <Text style={S.label}>Cidade principal</Text>
-          <View style={[S.inputWrap, { borderColor: config.cidade ? C.primary + "60" : C.border }]}>
+          <TouchableOpacity
+            style={[S.inputWrap, { borderColor: config.cidade ? C.primary + "60" : C.border, opacity: cidadesDoEstado.length === 0 ? 0.5 : 1 }]}
+            onPress={() => { if (cidadesDoEstado.length > 0) { setShowCidadePicker((v) => !v); setShowEstadoPicker(false); } }}
+            activeOpacity={0.8}
+          >
             <Feather name="map-pin" size={16} color={C.muted} style={S.inputIcon} />
-            <TextInput
-              style={S.input}
-              placeholder="Ex: Florianópolis"
-              placeholderTextColor={C.muted}
-              value={config.cidade}
-              onChangeText={updateField("cidade")}
-              returnKeyType="next"
-            />
-          </View>
+            <Text style={[S.input, { color: config.cidade ? C.text : C.muted }]}>
+              {config.cidade || (cidadesDoEstado.length === 0 ? "Selecione o estado primeiro" : "Selecione a cidade")}
+            </Text>
+            <Feather name={showCidadePicker ? "chevron-up" : "chevron-down"} size={16} color={C.muted} />
+          </TouchableOpacity>
+          {showCidadePicker && cidadesDoEstado.length > 0 && (
+            <ScrollView style={[S.picker, { maxHeight: 220 }]} nestedScrollEnabled>
+              {cidadesDoEstado.map((c) => (
+                <TouchableOpacity
+                  key={c}
+                  style={[S.pickerItem, c === config.cidade && S.pickerItemActive]}
+                  onPress={() => { updateField("cidade")(c); setShowCidadePicker(false); Haptics.selectionAsync(); }}
+                  activeOpacity={0.8}
+                >
+                  <Text style={[S.pickerText, { color: c === config.cidade ? C.primary : C.text }]}>{c}</Text>
+                  {c === config.cidade && <Feather name="check" size={14} color={C.primary} />}
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          )}
         </View>
 
         <View style={S.fieldGroup}>

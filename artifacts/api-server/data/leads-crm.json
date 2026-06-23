@@ -1,5 +1,20 @@
 [
   {
+    "id": "e793c905ab517b6f",
+    "name": "Criciúma Trade Ltda.",
+    "phone": "(48) 3519-0580",
+    "address": "R. Francisco Milioli, 369 - sala 02 - São Luiz, Criciúma - SC, 88803-420, Brasil",
+    "segment": "empresa comércio",
+    "city": "Criciuma",
+    "status": "Primeiro Contato",
+    "pipeline": "Novo",
+    "followUpDate": null,
+    "attempts": 1,
+    "notes": "",
+    "created_at": "2026-06-23T23:09:00.888Z",
+    "updated_at": "2026-06-23T23:09:00.888Z"
+  },
+  {
     "id": "f9b1cb23ef14cabe",
     "name": "Center Comercios Intermediações Comerciais",
     "phone": "(11) 99999-2116",

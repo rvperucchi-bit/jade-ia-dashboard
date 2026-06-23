@@ -1250,6 +1250,43 @@
   ],
   "activity_events": [
     {
+      "id": "87275b09fdbd4441",
+      "type": "message",
+      "text": "JADE respondeu: \"Leads em Criciúma\"",
+      "icon": "robot",
+      "color": "#FF0080",
+      "created_at": "2026-06-23T23:09:01.595Z"
+    },
+    {
+      "id": "0950ebe07af0ddc7",
+      "type": "lead",
+      "text": "CRM: Criciúma Trade Ltda. → Primeiro Contato",
+      "icon": "user-plus",
+      "color": "#FF0080",
+      "created_at": "2026-06-23T23:09:00.890Z"
+    },
+    {
+      "id": "38ffa85d7a7d24df",
+      "type": "lead",
+      "text": "JADE encontrou 10 leads reais em Criciuma",
+      "icon": "map-pin",
+      "color": "#FF0080",
+      "metadata": {
+        "cidade": "Criciuma",
+        "tipo": "empresa comércio",
+        "count": 10
+      },
+      "created_at": "2026-06-23T23:09:00.640Z"
+    },
+    {
+      "id": "1c28f351b2013f2d",
+      "type": "message",
+      "text": "JADE respondeu: \"Oi jade\"",
+      "icon": "robot",
+      "color": "#FF0080",
+      "created_at": "2026-06-23T23:08:51.093Z"
+    },
+    {
       "id": "30e1ec85654979b1",
       "type": "lead",
       "text": "JADE encontrou 10 leads reais em Curitiba",
@@ -3204,42 +3241,6 @@
         "cidade": "São Paulo"
       },
       "created_at": "2026-06-21T04:01:17.861Z"
-    },
-    {
-      "id": "c4683f23325b6724",
-      "type": "lead",
-      "text": "Novo lead adicionado: Carlos Eduardo Mendes (Livraria Ponto e Vírgula)",
-      "icon": "user-plus",
-      "color": "#6C63FF",
-      "created_at": "2026-06-21T04:01:17.682Z"
-    },
-    {
-      "id": "bc63df4da3aab1f9",
-      "type": "lead",
-      "text": "Novo lead adicionado: Fernanda Costa Lima (Loja Essência Urbana)",
-      "icon": "user-plus",
-      "color": "#6C63FF",
-      "created_at": "2026-06-21T04:01:17.478Z"
-    },
-    {
-      "id": "97e759ecbf6bd836",
-      "type": "lead",
-      "text": "Novo lead adicionado: Ana Paula Silva (Empório Sabor & Arte)",
-      "icon": "user-plus",
-      "color": "#6C63FF",
-      "created_at": "2026-06-21T04:01:17.471Z"
-    },
-    {
-      "id": "6f3a75b097caaf02",
-      "type": "scan",
-      "text": "JADE encontrou 3 novos leads via radar em São Paulo",
-      "icon": "crosshair",
-      "color": "#6C63FF",
-      "metadata": {
-        "count": 3,
-        "cidade": "São Paulo"
-      },
-      "created_at": "2026-06-21T04:01:17.149Z"
     }
   ],
   "marketing_campaigns": [
@@ -3265,6 +3266,34 @@
     }
   ],
   "jade_sessions": [
+    {
+      "id": "99ac09ff50c4800e",
+      "title": "Oi jade",
+      "messages": [
+        {
+          "role": "user",
+          "content": "Oi jade",
+          "time": "2026-06-23T23:08:50.812Z"
+        },
+        {
+          "role": "model",
+          "content": "Olá, Rodrigo! O que você precisa hoje?",
+          "time": "2026-06-23T23:08:50.815Z"
+        },
+        {
+          "role": "user",
+          "content": "Leads em Criciúma",
+          "time": "2026-06-23T23:09:00.633Z"
+        },
+        {
+          "role": "model",
+          "content": "Encontrei 10 opções em Criciuma. Aqui vai o primeiro:\n\n🛍️ Criciúma Trade Ltda.\n📍 R. Francisco Milioli, 369 - sala 02 - São Luiz, Criciúma - SC, 88803-420, Brasil\n📞 (48) 3519-0580 · ⭐ 5\n\nManter a alta satisfação e eficiência operacional enquanto expandem o volume de negócios e\n\nAbordo esse ou você mesmo fala com ele?",
+          "time": "2026-06-23T23:09:00.638Z"
+        }
+      ],
+      "created_at": "2026-06-23T23:08:50.538Z",
+      "updated_at": "2026-06-23T23:09:00.638Z"
+    },
     {
       "id": "7fe56bd5519f5ad4",
       "title": "Oi jade",
