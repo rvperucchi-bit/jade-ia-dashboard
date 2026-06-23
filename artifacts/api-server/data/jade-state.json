@@ -1230,6 +1230,101 @@
   ],
   "activity_events": [
     {
+      "id": "ba75a4e102372b44",
+      "type": "message",
+      "text": "JADE respondeu: \"Todos 1 por 1\"",
+      "icon": "robot",
+      "color": "#FF0080",
+      "created_at": "2026-06-23T21:35:31.590Z"
+    },
+    {
+      "id": "78a8d4f95b1449ff",
+      "type": "message",
+      "text": "JADE respondeu a uma mensagem",
+      "icon": "robot",
+      "color": "#FF0080",
+      "metadata": {
+        "session_id": "5822d32e9cd3c58f"
+      },
+      "created_at": "2026-06-23T21:35:31.311Z"
+    },
+    {
+      "id": "110cbfaef3d06751",
+      "type": "message",
+      "text": "JADE respondeu: \"Quero que vc começa a abordar\"",
+      "icon": "robot",
+      "color": "#FF0080",
+      "created_at": "2026-06-23T21:35:23.685Z"
+    },
+    {
+      "id": "dec3ca601a2fffed",
+      "type": "message",
+      "text": "JADE respondeu a uma mensagem",
+      "icon": "robot",
+      "color": "#FF0080",
+      "metadata": {
+        "session_id": "5822d32e9cd3c58f"
+      },
+      "created_at": "2026-06-23T21:35:23.439Z"
+    },
+    {
+      "id": "e3e264a416333b80",
+      "type": "message",
+      "text": "JADE respondeu: \"Preciso de mais leads\"",
+      "icon": "robot",
+      "color": "#FF0080",
+      "created_at": "2026-06-23T21:35:04.507Z"
+    },
+    {
+      "id": "5e638a8d09f6a417",
+      "type": "message",
+      "text": "JADE respondeu a uma mensagem",
+      "icon": "robot",
+      "color": "#FF0080",
+      "metadata": {
+        "session_id": "5822d32e9cd3c58f"
+      },
+      "created_at": "2026-06-23T21:35:04.224Z"
+    },
+    {
+      "id": "b4ae9aa6d09751f5",
+      "type": "message",
+      "text": "JADE respondeu: \"O que vc pode fazer por mim?\"",
+      "icon": "robot",
+      "color": "#FF0080",
+      "created_at": "2026-06-23T21:34:42.927Z"
+    },
+    {
+      "id": "7f11bb5fef873c54",
+      "type": "message",
+      "text": "JADE respondeu a uma mensagem",
+      "icon": "robot",
+      "color": "#FF0080",
+      "metadata": {
+        "session_id": "5822d32e9cd3c58f"
+      },
+      "created_at": "2026-06-23T21:34:42.648Z"
+    },
+    {
+      "id": "686ca9fcff24377d",
+      "type": "message",
+      "text": "JADE respondeu: \"Tudo bem?\"",
+      "icon": "robot",
+      "color": "#FF0080",
+      "created_at": "2026-06-23T21:34:31.225Z"
+    },
+    {
+      "id": "64d159372885be8a",
+      "type": "message",
+      "text": "JADE respondeu a uma mensagem",
+      "icon": "robot",
+      "color": "#FF0080",
+      "metadata": {
+        "session_id": "5822d32e9cd3c58f"
+      },
+      "created_at": "2026-06-23T21:34:30.933Z"
+    },
+    {
       "id": "9dbab7787e1ca310",
       "type": "module",
       "text": "Scanner Radar desativado",
@@ -3149,114 +3244,6 @@
         "active": false
       },
       "created_at": "2026-06-21T03:34:30.589Z"
-    },
-    {
-      "id": "31079c151b401b4e",
-      "type": "module",
-      "text": "Scanner Radar desativado",
-      "icon": "crosshair",
-      "color": "#6C63FF",
-      "metadata": {
-        "module": "scanner",
-        "active": false
-      },
-      "created_at": "2026-06-21T03:34:30.583Z"
-    },
-    {
-      "id": "5d49ff99a1460725",
-      "type": "scan",
-      "text": "JADE encontrou 3 novos leads via radar em São Paulo",
-      "icon": "crosshair",
-      "color": "#6C63FF",
-      "metadata": {
-        "count": 3,
-        "cidade": "São Paulo"
-      },
-      "created_at": "2026-06-21T03:33:28.662Z"
-    },
-    {
-      "id": "60c5afef459f306c",
-      "type": "scan",
-      "text": "JADE encontrou 3 novos leads via radar em São Paulo",
-      "icon": "crosshair",
-      "color": "#6C63FF",
-      "metadata": {
-        "count": 3,
-        "cidade": "São Paulo"
-      },
-      "created_at": "2026-06-21T03:33:27.918Z"
-    },
-    {
-      "id": "89fc95092bc8a1b2",
-      "type": "module",
-      "text": "Scanner Radar ativado",
-      "icon": "crosshair",
-      "color": "#6C63FF",
-      "metadata": {
-        "module": "scanner",
-        "active": true
-      },
-      "created_at": "2026-06-21T03:33:20.979Z"
-    },
-    {
-      "id": "cf47cec30a172dd6",
-      "type": "lead",
-      "text": "Novo lead adicionado: Fernanda Oliveira (Eletrônicos Mega Store)",
-      "icon": "user-plus",
-      "color": "#6C63FF",
-      "created_at": "2026-06-21T03:33:08.829Z"
-    },
-    {
-      "id": "c0f8aeede0d8ae48",
-      "type": "lead",
-      "text": "Novo lead adicionado: Roberto Santos (Pão Dourado Confeitaria)",
-      "icon": "user-plus",
-      "color": "#6C63FF",
-      "created_at": "2026-06-21T03:33:08.819Z"
-    },
-    {
-      "id": "b0a7dc279a9ad525",
-      "type": "lead",
-      "text": "Novo lead adicionado: Ana Paula Silva (Moda Urbana Chic)",
-      "icon": "user-plus",
-      "color": "#6C63FF",
-      "created_at": "2026-06-21T03:33:07.891Z"
-    },
-    {
-      "id": "a6304ffdc35b85ba",
-      "type": "module",
-      "text": "Scanner Radar desativado",
-      "icon": "crosshair",
-      "color": "#6C63FF",
-      "metadata": {
-        "module": "scanner",
-        "active": false
-      },
-      "created_at": "2026-06-21T03:33:07.800Z"
-    },
-    {
-      "id": "c3aa98eb1a2bdb1f",
-      "type": "scan",
-      "text": "JADE encontrou 3 novos leads via radar em São Paulo",
-      "icon": "crosshair",
-      "color": "#6C63FF",
-      "metadata": {
-        "count": 3,
-        "cidade": "São Paulo"
-      },
-      "created_at": "2026-06-21T03:33:07.478Z"
-    },
-    {
-      "id": "6de1f363c962867e",
-      "type": "module",
-      "text": "Scanner Radar ativado",
-      "icon": "crosshair",
-      "color": "#6C63FF",
-      "metadata": {
-        "module": "scanner",
-        "active": true
-      },
-      "created_at": "2026-06-21T03:32:59.901Z"
     }
   ],
   "marketing_campaigns": [
@@ -3282,6 +3269,64 @@
     }
   ],
   "jade_sessions": [
+    {
+      "id": "5822d32e9cd3c58f",
+      "title": "Tudo bem?",
+      "messages": [
+        {
+          "role": "user",
+          "content": "Tudo bem?",
+          "time": "2026-06-23T21:34:30.923Z"
+        },
+        {
+          "role": "model",
+          "content": "Tudo. O que precisa?",
+          "time": "2026-06-23T21:34:30.926Z"
+        },
+        {
+          "role": "user",
+          "content": "O que vc pode fazer por mim?",
+          "time": "2026-06-23T21:34:42.640Z"
+        },
+        {
+          "role": "model",
+          "content": "Ajudo times de vendas a prospectar mais rápido, abordar melhor e fechar mais. No seu caso, focando em leads de alimentação para o seu Plano. O que está travando agora?",
+          "time": "2026-06-23T21:34:42.644Z"
+        },
+        {
+          "role": "user",
+          "content": "Preciso de mais leads",
+          "time": "2026-06-23T21:35:04.220Z"
+        },
+        {
+          "role": "model",
+          "content": "Aqui estão leads para abordar:\n1.  **Restaurante Tradicional** — dor: Perda de faturamento por delivery desorganizado → Seu delivery pode faturar o dobro com a gestão certa, sem perder a essência do seu restaurante.\n2.  **Hamburgueria Artesanal** — dor: Gargalo na cozinha e entrega em picos, afetando a qualidade → Organize pedidos e entregas para manter o padrão e a satisfação do cliente, mesmo nas horas mais quentes.\n3.  **Pizzaria** — dor: Dificuldade em gerenciar motoboys e rotas, gerando atrasos → Otimize suas rotas e a gestão de entregadores, garantindo rapidez e clientes mais felizes com o Plano.\n4.  **Confeitaria/Doceria** — dor: Medo de expandir o delivery pela fragilidade dos produtos → Expanda seu delivery com segurança, garantindo que a qualidade dos seus doces chegue intacta e no prazo.\n5.  **Dark Kitchen** — dor: Necessidade de otimização máxima e dados para lucratividade → Maximize sua margem e controle cada detalhe da operação com dados que impulsionam seu faturamento.\n6.  **Restaurante de Comida Saudável/Marmitas** — dor: Gestão de assinaturas ou pedidos recorrentes e logística complexa → Simplifique a gestão de pedidos recorrentes e fidelize clientes com um delivery eficiente e sem falhas.",
+          "time": "2026-06-23T21:35:04.221Z"
+        },
+        {
+          "role": "user",
+          "content": "Quero que vc começa a abordar",
+          "time": "2026-06-23T21:35:23.422Z"
+        },
+        {
+          "role": "model",
+          "content": "Para qual lead da lista quer a abordagem? Me diz qual tipo.",
+          "time": "2026-06-23T21:35:23.425Z"
+        },
+        {
+          "role": "user",
+          "content": "Todos 1 por 1",
+          "time": "2026-06-23T21:35:31.307Z"
+        },
+        {
+          "role": "model",
+          "content": "Entendido. Vamos com o Restaurante Tradicional.\n\nAbertura (Dia 0):\n\"Vi que o [Nome do Restaurante] tem uma história forte. Muitos restaurantes com essa tradição sentem que o delivery pode ser uma dor de cabeça, mas também uma mina de ouro. Como vocês estão vendo isso hoje?\"\n\nQual o próximo?",
+          "time": "2026-06-23T21:35:31.309Z"
+        }
+      ],
+      "created_at": "2026-06-23T21:34:18.046Z",
+      "updated_at": "2026-06-23T21:35:31.309Z"
+    },
     {
       "id": "d8b1e461ce25c19b",
       "title": "[voz 2s] O usuário enviou um áudio. Cons…",

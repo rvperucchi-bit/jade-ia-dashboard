@@ -48,7 +48,7 @@ const ACCORDION_SECTIONS: AccordionSection[] = [
     icon: "message-circle",
     items: [
       { label: "Nova conversa", action: "nova-conversa" },
-      { label: "Histórico",     route: "/(tabs)/conversas" },
+      { label: "Histórico",     route: "/historico" },
     ],
   },
   {
@@ -56,7 +56,8 @@ const ACCORDION_SECTIONS: AccordionSection[] = [
     title: "Comercial",
     icon: "trending-up",
     items: [
-      { label: "Conversas",     route: "/painelexecutivo" },
+      { label: "Dashboard",     route: "/painelexecutivo" },
+      { label: "Conversas",     route: "/(tabs)/conversas" },
       { label: "CRM",           route: "/crm" },
       { label: "Pipeline",      route: "/pipeline" },
       { label: "Oportunidades", route: "/(tabs)/leads" },

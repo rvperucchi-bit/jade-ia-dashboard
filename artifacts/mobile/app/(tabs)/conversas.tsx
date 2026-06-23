@@ -22,74 +22,115 @@ import { useRouter } from "expo-router";
 import { useColors } from "@/hooks/useColors";
 import { useApp, Conversation } from "@/context/AppContext";
 
+const PINK = "#FF0080";
 const API_BASE =
   Platform.OS === "web"
     ? ""
     : `https://${process.env.EXPO_PUBLIC_DOMAIN ?? ""}`;
 
-const JADE_STATUS_KEY  = "jade_ativa";
-const MSG_LIMIT_KEY    = "@jade_ia:wa_msg_settings";
+const JADE_STATUS_KEY = "jade_ativa";
+const MSG_LIMIT_KEY   = "@jade_ia:wa_msg_settings";
+const DEFAULT_LIMIT   = 10;
 
-const DEFAULT_LIMIT    = 10;
+type FilterType = "todas" | "em_andamento" | "sem_resposta" | "qualificados" | "arquivadas";
 
-const FAKE_LOGS = [
-  "JADE respondeu a Carlos Mendes às 09:14",
-  "JADE enviou follow-up para Fernanda Souza às 10:32",
-  "JADE qualificou lead StartUp Hub às 11:05",
-  "JADE respondeu a Roberto Lima às 13:47",
+const FILTERS: { key: FilterType; label: string }[] = [
+  { key: "todas",        label: "Todas" },
+  { key: "em_andamento", label: "Em andamento" },
+  { key: "sem_resposta", label: "Sem resposta" },
+  { key: "qualificados", label: "Qualificados" },
+  { key: "arquivadas",   label: "Arquivadas" },
 ];
 
-// ─── ConversationItem ─────────────────────────────────────────────────────────
+function deriveStatus(c: Conversation): "ativo" | "aguardando" | "frio" {
+  if (c.isOnline) return "ativo";
+  if (c.unread > 0) return "aguardando";
+  return "frio";
+}
+
+function deriveTag(c: Conversation): { label: string; color: string } {
+  if (c.unread > 5)               return { label: "Qualificado",      color: "#22CC88" };
+  if (c.unread > 2)               return { label: "Follow-up",        color: "#FF8800" };
+  if (c.isOnline)                 return { label: "Em andamento",      color: PINK };
+  if (!c.isOnline && c.unread === 0) return { label: "Sem resposta",  color: "#AA4444" };
+  return                                  { label: "Novo lead",        color: "#5577FF" };
+}
+
+function applyFilter(conversations: Conversation[], filter: FilterType): Conversation[] {
+  switch (filter) {
+    case "em_andamento": return conversations.filter(c => c.isOnline);
+    case "sem_resposta": return conversations.filter(c => !c.isOnline && c.unread === 0);
+    case "qualificados": return conversations.filter(c => c.unread > 5);
+    case "arquivadas":   return conversations.filter(c => !c.isOnline && c.unread === 0 && c.messages.length > 5);
+    default:             return conversations;
+  }
+}
+
+// ─── ConversationItem (redesigned) ────────────────────────────────────────────
 function ConversationItem({
-  item,
-  onPress,
-  limitReached,
-}: {
-  item: Conversation;
-  onPress: () => void;
-  limitReached?: boolean;
-}) {
+  item, onPress, limitReached,
+}: { item: Conversation; onPress: () => void; limitReached?: boolean }) {
   const colors = useColors();
+  const status = deriveStatus(item);
+  const tag    = deriveTag(item);
+
+  const statusColor =
+    status === "ativo"     ? "#22CC88" :
+    status === "aguardando"? "#FF8800" : "#AA4444";
+
   return (
     <TouchableOpacity
-      style={[styles.item, { borderBottomColor: colors.border }]}
+      style={[S.item, { borderBottomColor: colors.border }]}
       onPress={onPress}
       activeOpacity={0.7}
     >
-      <View style={styles.avatarWrap}>
-        <View style={[styles.avatar, { backgroundColor: item.avatarColor }]}>
-          <Text style={styles.avatarText}>{item.initials}</Text>
+      {/* Status bar (left border) */}
+      <View style={[S.statusBar, { backgroundColor: statusColor }]} />
+
+      <View style={S.avatarWrap}>
+        <View style={[S.avatar, { backgroundColor: item.avatarColor }]}>
+          <Text style={S.avatarText}>{item.initials}</Text>
         </View>
-        {item.isOnline && <View style={[styles.onlineDot, { borderColor: colors.background }]} />}
+        {/* Status dot */}
+        <View style={[S.statusDot, { backgroundColor: statusColor, borderColor: colors.background }]} />
       </View>
-      <View style={styles.itemBody}>
-        <View style={styles.itemRow}>
-          <Text style={[styles.itemName, { color: colors.text }]} numberOfLines={1}>
+
+      <View style={S.itemBody}>
+        <View style={S.itemRow}>
+          <Text style={[S.itemName, { color: colors.text }]} numberOfLines={1}>
             {item.contactName}
           </Text>
-          <Text style={[styles.itemTime, { color: item.unread > 0 ? colors.primary : colors.mutedForeground }]}>
+          <Text style={[S.itemTime, { color: item.unread > 0 ? PINK : colors.mutedForeground }]}>
             {item.time}
           </Text>
         </View>
-        <View style={styles.itemRow}>
-          <Text
-            style={[styles.itemMsg, {
-              color: item.unread > 0 ? colors.text : colors.mutedForeground,
-              fontFamily: item.unread > 0 ? "SpaceGrotesk_500Medium" : "SpaceGrotesk_400Regular",
-            }]}
-            numberOfLines={1}
-          >
-            {item.lastMessage}
-          </Text>
+
+        <Text
+          style={[S.itemMsg, {
+            color: item.unread > 0 ? colors.text : colors.mutedForeground,
+            fontFamily: item.unread > 0 ? "SpaceGrotesk_500Medium" : "SpaceGrotesk_400Regular",
+          }]}
+          numberOfLines={1}
+        >
+          {item.lastMessage}
+        </Text>
+
+        <View style={S.bottomRow}>
+          {/* Commercial tag */}
+          <View style={[S.tagChip, { backgroundColor: tag.color + "20" }]}>
+            <View style={[S.tagDot, { backgroundColor: tag.color }]} />
+            <Text style={[S.tagText, { color: tag.color }]}>{tag.label}</Text>
+          </View>
+
           <View style={{ flexDirection: "row", gap: 6, alignItems: "center" }}>
             {limitReached && (
-              <View style={styles.limitBadge}>
-                <Text style={styles.limitBadgeText}>Limite atingido</Text>
+              <View style={S.limitBadge}>
+                <Text style={S.limitBadgeText}>Limite</Text>
               </View>
             )}
             {item.unread > 0 && !limitReached && (
-              <View style={[styles.badge, { backgroundColor: colors.primary }]}>
-                <Text style={styles.badgeText}>{item.unread}</Text>
+              <View style={[S.badge, { backgroundColor: PINK }]}>
+                <Text style={S.badgeText}>{item.unread}</Text>
               </View>
             )}
           </View>
@@ -99,96 +140,19 @@ function ConversationItem({
   );
 }
 
-// ─── JadeBanner ───────────────────────────────────────────────────────────────
-function JadeBanner({ ativa, onToggle, loading }: { ativa: boolean; onToggle: () => void; loading: boolean }) {
-  const colors = useColors();
-  return (
-    <View style={[banner.card, { backgroundColor: colors.card, borderColor: ativa ? "#FF008040" : colors.border }]}>
-      <View style={[banner.iconWrap, { backgroundColor: "#FF008018" }]}>
-        <MaterialCommunityIcons name="robot" size={22} color="#FF0080" />
-      </View>
-      <View style={banner.body}>
-        <Text style={[banner.title, { color: colors.text }]}>
-          {ativa ? "JADE está atendendo" : "Ative a JADE no WhatsApp"}
-        </Text>
-        <Text style={[banner.sub, { color: colors.mutedForeground }]}>
-          {ativa
-            ? "Respondendo clientes automaticamente"
-            : "Atenda clientes enquanto está em reunião"}
-        </Text>
-      </View>
-      <TouchableOpacity
-        style={[banner.btn, { backgroundColor: "#FF0080" }]}
-        onPress={onToggle}
-        activeOpacity={0.85}
-        disabled={loading}
-      >
-        {loading
-          ? <ActivityIndicator color="#fff" size="small" style={{ paddingHorizontal: 6 }} />
-          : <Text style={banner.btnText}>{ativa ? "Ativa ✓" : "Ativar"}</Text>
-        }
-      </TouchableOpacity>
-    </View>
-  );
-}
-
-// ─── AutonomoPanel ────────────────────────────────────────────────────────────
-function AutonomoPanel({ ativa, logs, router }: { ativa: boolean; logs: string[]; router: ReturnType<typeof useRouter> }) {
-  const colors = useColors();
-  if (!ativa) return null;
-  return (
-    <View style={[auton.card, { backgroundColor: colors.card, borderColor: "rgba(255,255,255,0.06)" }]}>
-      <View style={auton.statusRow}>
-        <View style={auton.dot} />
-        <Text style={[auton.statusText, { color: "#FF0080" }]}>JADE ativa — respondendo automaticamente</Text>
-      </View>
-      {logs.length > 0 && (
-        <View style={auton.logsSection}>
-          <Text style={[auton.logsLabel, { color: colors.mutedForeground }]}>ATIVIDADE RECENTE</Text>
-          {logs.map((log, i) => (
-            <View key={i} style={[auton.logRow, { borderBottomColor: colors.border }]}>
-              <Feather name="zap" size={11} color="rgba(255,255,255,0.55)" />
-              <Text style={[auton.logText, { color: colors.mutedForeground }]}>{log}</Text>
-            </View>
-          ))}
-        </View>
-      )}
-      <TouchableOpacity
-        style={[auton.whatsappBtn, { backgroundColor: "rgba(255,255,255,0.06)", borderColor: "rgba(255,255,255,0.06)" }]}
-        onPress={() => router.push("/whatsapp-config" as any)}
-        activeOpacity={0.8}
-      >
-        <MaterialCommunityIcons name="whatsapp" size={16} color="rgba(255,255,255,0.6)" />
-        <Text style={[auton.whatsappText, { color: "rgba(255,255,255,0.6)" }]}>Configurar integração WhatsApp</Text>
-        <View style={[auton.configBadge, { backgroundColor: "rgba(255,255,255,0.06)", borderColor: "rgba(255,255,255,0.06)" }]}>
-          <Text style={auton.configBadgeText}>Necessário para funcionar</Text>
-        </View>
-      </TouchableOpacity>
-    </View>
-  );
-}
-
 // ─── LimitCounter ─────────────────────────────────────────────────────────────
 function LimitCounter({ value, onChange, min, max }: { value: number; onChange: (v: number) => void; min: number; max: number }) {
   const colors = useColors();
   return (
     <View style={lc.row}>
-      <TouchableOpacity
-        style={[lc.btn, { backgroundColor: colors.surface, borderColor: colors.border }]}
-        onPress={() => onChange(Math.max(min, value - 5))}
-        activeOpacity={0.7}
-      >
+      <TouchableOpacity style={[lc.btn, { backgroundColor: colors.surface, borderColor: colors.border }]} onPress={() => onChange(Math.max(min, value - 5))} activeOpacity={0.7}>
         <Feather name="minus" size={16} color={colors.text} />
       </TouchableOpacity>
-      <View style={[lc.display, { backgroundColor: colors.surface, borderColor: "#FF008040" }]}>
-        <Text style={[lc.val, { color: "#FF0080" }]}>{value}</Text>
+      <View style={[lc.display, { backgroundColor: colors.surface, borderColor: PINK + "40" }]}>
+        <Text style={[lc.val, { color: PINK }]}>{value}</Text>
         <Text style={[lc.unit, { color: colors.mutedForeground }]}>msgs</Text>
       </View>
-      <TouchableOpacity
-        style={[lc.btn, { backgroundColor: colors.surface, borderColor: colors.border }]}
-        onPress={() => onChange(Math.min(max, value + 5))}
-        activeOpacity={0.7}
-      >
+      <TouchableOpacity style={[lc.btn, { backgroundColor: colors.surface, borderColor: colors.border }]} onPress={() => onChange(Math.min(max, value + 5))} activeOpacity={0.7}>
         <Feather name="plus" size={16} color={colors.text} />
       </TouchableOpacity>
     </View>
@@ -197,39 +161,29 @@ function LimitCounter({ value, onChange, min, max }: { value: number; onChange: 
 
 // ─── Screen ───────────────────────────────────────────────────────────────────
 export default function ConversasScreen() {
-  const colors      = useColors();
-  const insets      = useSafeAreaInsets();
-  const router      = useRouter();
+  const colors = useColors();
+  const insets = useSafeAreaInsets();
+  const router = useRouter();
   const { conversations } = useApp();
 
   const [query,        setQuery]       = useState("");
+  const [showSearch,   setShowSearch]  = useState(false);
+  const [activeFilter, setActiveFilter]= useState<FilterType>("todas");
   const [jadeAtiva,    setJadeAtiva]   = useState(false);
   const [toggling,     setToggling]    = useState(false);
-  const [activityLogs, setActivityLogs] = useState<string[]>([]);
-
-  // Settings state
   const [settingsModal, setSettingsModal] = useState(false);
   const [msgLimit,      setMsgLimit]     = useState(DEFAULT_LIMIT);
   const [warnOnLimit,   setWarnOnLimit]  = useState(true);
   const [autoStop,      setAutoStop]     = useState(false);
-  // Draft values while modal is open
   const [draftLimit,    setDraftLimit]   = useState(DEFAULT_LIMIT);
   const [draftWarn,     setDraftWarn]    = useState(true);
   const [draftAuto,     setDraftAuto]    = useState(false);
-
-  // Conversations that have hit the limit
   const [limitReachedIds, setLimitReachedIds] = useState<Set<string>>(new Set());
-  // Extra budget granted per conversation
-  const [extraBudget, setExtraBudget] = useState<Record<string, number>>({});
+  const [extraBudget,     setExtraBudget]     = useState<Record<string, number>>({});
 
   const topPad    = Platform.OS === "web" ? 67 : insets.top;
   const bottomPad = Platform.OS === "web" ? 84 : insets.bottom + 60;
 
-  const filtered = conversations.filter((c) =>
-    c.contactName.toLowerCase().includes(query.toLowerCase())
-  );
-
-  // Load settings from AsyncStorage
   useEffect(() => {
     AsyncStorage.getItem(MSG_LIMIT_KEY).then((raw) => {
       if (!raw) return;
@@ -242,7 +196,6 @@ export default function ConversasScreen() {
     });
   }, []);
 
-  // Load JADE status
   useEffect(() => {
     const load = async () => {
       try {
@@ -262,7 +215,6 @@ export default function ConversasScreen() {
     load();
   }, []);
 
-  // Simulate limit detection: conversations with unread ≥ msgLimit are "over limit"
   useEffect(() => {
     const reached = new Set<string>();
     conversations.forEach((c) => {
@@ -272,20 +224,13 @@ export default function ConversasScreen() {
     setLimitReachedIds(reached);
   }, [conversations, msgLimit, extraBudget]);
 
-  useEffect(() => {
-    if (!jadeAtiva) { setActivityLogs([]); return; }
-    const timer = setTimeout(() => setActivityLogs(FAKE_LOGS.slice(0, 3)), 800);
-    return () => clearTimeout(timer);
-  }, [jadeAtiva]);
-
   const handleToggle = async () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     const novoEstado = !jadeAtiva;
     setToggling(true);
     try {
       const res = await fetch(`${API_BASE}/api/jade/status`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+        method: "POST", headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ ativo: novoEstado }),
       });
       if (!res.ok) throw new Error("API error");
@@ -297,21 +242,13 @@ export default function ConversasScreen() {
   };
 
   const openSettings = () => {
-    setDraftLimit(msgLimit);
-    setDraftWarn(warnOnLimit);
-    setDraftAuto(autoStop);
+    setDraftLimit(msgLimit); setDraftWarn(warnOnLimit); setDraftAuto(autoStop);
     setSettingsModal(true);
   };
 
   const saveSettings = async () => {
-    setMsgLimit(draftLimit);
-    setWarnOnLimit(draftWarn);
-    setAutoStop(draftAuto);
-    try {
-      await AsyncStorage.setItem(MSG_LIMIT_KEY, JSON.stringify({
-        msgLimit: draftLimit, warnOnLimit: draftWarn, autoStop: draftAuto,
-      }));
-    } catch {}
+    setMsgLimit(draftLimit); setWarnOnLimit(draftWarn); setAutoStop(draftAuto);
+    try { await AsyncStorage.setItem(MSG_LIMIT_KEY, JSON.stringify({ msgLimit: draftLimit, warnOnLimit: draftWarn, autoStop: draftAuto })); } catch {}
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     setSettingsModal(false);
   };
@@ -322,64 +259,84 @@ export default function ConversasScreen() {
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
   };
 
-  return (
-    <View style={[styles.container, { backgroundColor: colors.background }]}>
-      {/* ── Header ── */}
-      <View style={[styles.header, { paddingTop: topPad + 8 }]}>
+  const filtered = applyFilter(conversations, activeFilter)
+    .filter(c => !query || c.contactName.toLowerCase().includes(query.toLowerCase()));
 
-        {/* Back + title row */}
-        <View style={styles.headerRow}>
-          <TouchableOpacity
-            style={styles.backBtn}
-            onPress={() => router.push("/(tabs)/jade" as any)}
-            activeOpacity={0.7}
-            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-          >
-            <Feather name="arrow-left" size={22} color="rgba(255,255,255,0.7)" />
-          </TouchableOpacity>
-          <View style={{ flex: 1 }}>
-            <Text style={[styles.headerTitle, { color: colors.text }]}>Conversas</Text>
-            <Text style={[styles.headerSub, { color: colors.mutedForeground }]}>
-              {conversations.filter((c) => c.unread > 0).length} não lidas
-              {jadeAtiva && <Text style={{ color: "#FF0080" }}> · JADE ativa</Text>}
-            </Text>
-          </View>
-          {/* JADE toggle — compact inline */}
-          <TouchableOpacity
-            style={[styles.jadeToggle, { backgroundColor: jadeAtiva ? "#FF008020" : colors.surface, borderColor: jadeAtiva ? "#FF008050" : colors.border }]}
-            onPress={handleToggle}
-            activeOpacity={0.8}
-            disabled={toggling}
-          >
-            {toggling
-              ? <ActivityIndicator size="small" color="#FF0080" />
-              : <Text style={[styles.jadeToggleText, { color: jadeAtiva ? "#FF0080" : colors.mutedForeground }]}>
-                  {jadeAtiva ? "JADE ON" : "JADE OFF"}
-                </Text>
-            }
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[styles.iconBtn, { backgroundColor: colors.surface }]}
-            onPress={openSettings}
-            activeOpacity={0.8}
-          >
-            <Feather name="sliders" size={17} color={colors.mutedForeground} />
-          </TouchableOpacity>
+  const unreadCount = conversations.filter(c => c.unread > 0).length;
+
+  return (
+    <View style={[S.root, { backgroundColor: colors.background }]}>
+
+      {/* ── Header ── */}
+      <View style={[S.header, { paddingTop: topPad + 6 }]}>
+        <TouchableOpacity style={S.backBtn} onPress={() => router.push("/(tabs)/jade" as any)} activeOpacity={0.7}>
+          <Feather name="arrow-left" size={22} color={colors.text} />
+        </TouchableOpacity>
+
+        <View style={{ flex: 1 }}>
+          <Text style={[S.title, { color: colors.text }]}>Conversas</Text>
+          <Text style={[S.subtitle, { color: colors.mutedForeground }]}>
+            {unreadCount > 0 ? `${unreadCount} sem resposta` : "Central comercial"}
+          </Text>
         </View>
 
-        <View style={[styles.search, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-          <Feather name="search" size={16} color={colors.mutedForeground} />
+        {/* Status dot + label */}
+        <TouchableOpacity style={S.statusPill} onPress={handleToggle} activeOpacity={0.8} disabled={toggling}>
+          {toggling
+            ? <ActivityIndicator size="small" color={PINK} style={{ width: 8, height: 8 }} />
+            : <View style={[S.statusDotHeader, { backgroundColor: jadeAtiva ? "#22CC88" : "#666677" }]} />
+          }
+        </TouchableOpacity>
+
+        {/* Lupa */}
+        <TouchableOpacity style={[S.iconBtn, { backgroundColor: colors.surface }]} onPress={() => setShowSearch(v => !v)} activeOpacity={0.8}>
+          <Feather name="search" size={17} color={showSearch ? PINK : colors.mutedForeground} />
+        </TouchableOpacity>
+
+        {/* Filtros */}
+        <TouchableOpacity style={[S.iconBtn, { backgroundColor: colors.surface }]} onPress={openSettings} activeOpacity={0.8}>
+          <Feather name="sliders" size={17} color={colors.mutedForeground} />
+        </TouchableOpacity>
+      </View>
+
+      {/* ── Search bar (conditional) ── */}
+      {showSearch && (
+        <View style={[S.searchBar, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+          <Feather name="search" size={15} color={colors.mutedForeground} />
           <TextInput
-            style={[styles.searchInput, { color: colors.text, fontFamily: "SpaceGrotesk_400Regular" }]}
+            style={[S.searchInput, { color: colors.text }]}
             placeholder="Buscar conversa..."
             placeholderTextColor={colors.mutedForeground}
             value={query}
             onChangeText={setQuery}
+            autoFocus
           />
+          {query.length > 0 && (
+            <TouchableOpacity onPress={() => setQuery("")}>
+              <Feather name="x" size={15} color={colors.mutedForeground} />
+            </TouchableOpacity>
+          )}
         </View>
-      </View>
+      )}
 
-      {/* ── Conversation List ── */}
+      {/* ── Filter tabs ── */}
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={S.filterScroll}>
+        {FILTERS.map(f => {
+          const active = activeFilter === f.key;
+          return (
+            <TouchableOpacity
+              key={f.key}
+              style={[S.filterTab, { borderColor: active ? PINK + "66" : "transparent", backgroundColor: active ? PINK + "18" : "transparent" }]}
+              onPress={() => { setActiveFilter(f.key); Haptics.selectionAsync(); }}
+              activeOpacity={0.75}
+            >
+              <Text style={[S.filterText, { color: active ? PINK : colors.mutedForeground }]}>{f.label}</Text>
+            </TouchableOpacity>
+          );
+        })}
+      </ScrollView>
+
+      {/* ── Conversation list ── */}
       <FlatList
         data={filtered}
         keyExtractor={(item) => item.id}
@@ -392,19 +349,12 @@ export default function ConversasScreen() {
                 onPress={() => router.push(`/conversa/${item.id}` as any)}
                 limitReached={reached}
               />
-              {/* Inline authorize banner below the conversation item */}
               {reached && (
-                <View style={[styles.authBanner, { backgroundColor: "rgba(255,255,255,0.06)", borderColor: "rgba(255,255,255,0.06)" }]}>
+                <View style={[S.authBanner, { backgroundColor: "rgba(255,255,255,0.04)", borderColor: "rgba(255,255,255,0.06)" }]}>
                   <Feather name="alert-triangle" size={13} color="rgba(255,255,255,0.45)" />
-                  <Text style={styles.authBannerText}>
-                    JADE pausada — limite de {msgLimit} msgs atingido
-                  </Text>
-                  <TouchableOpacity
-                    style={styles.authBtn}
-                    onPress={() => authorizeMore(item.id)}
-                    activeOpacity={0.8}
-                  >
-                    <Text style={styles.authBtnText}>+10 msgs</Text>
+                  <Text style={S.authBannerText}>JADE pausada — limite de {msgLimit} msgs</Text>
+                  <TouchableOpacity style={S.authBtn} onPress={() => authorizeMore(item.id)} activeOpacity={0.8}>
+                    <Text style={S.authBtnText}>+10 msgs</Text>
                   </TouchableOpacity>
                 </View>
               )}
@@ -414,9 +364,12 @@ export default function ConversasScreen() {
         contentContainerStyle={{ paddingBottom: bottomPad }}
         showsVerticalScrollIndicator={false}
         ListEmptyComponent={
-          <View style={styles.empty}>
+          <View style={S.empty}>
             <Feather name="message-circle" size={40} color={colors.mutedForeground} />
-            <Text style={[styles.emptyText, { color: colors.mutedForeground }]}>Nenhuma conversa encontrada</Text>
+            <Text style={[S.emptyTitle, { color: colors.text }]}>Nenhuma conversa</Text>
+            <Text style={[S.emptyText, { color: colors.mutedForeground }]}>
+              {activeFilter !== "todas" ? "Sem resultados para esse filtro." : "As conversas comerciais da JADE aparecerão aqui."}
+            </Text>
           </View>
         }
       />
@@ -425,58 +378,31 @@ export default function ConversasScreen() {
       <Modal visible={settingsModal} transparent animationType="slide" onRequestClose={() => setSettingsModal(false)}>
         <Pressable style={modal.overlay} onPress={() => setSettingsModal(false)}>
           <Pressable style={[modal.box, { backgroundColor: colors.card }]} onPress={() => {}}>
-            {/* Handle */}
             <View style={[modal.handle, { backgroundColor: colors.border }]} />
-
             <Text style={[modal.title, { color: colors.text }]}>Limite de mensagens por lead</Text>
-            <Text style={[modal.sub, { color: colors.mutedForeground }]}>
-              JADE pausa automaticamente ao atingir o limite configurado
-            </Text>
-
-            {/* Limit counter */}
+            <Text style={[modal.sub, { color: colors.mutedForeground }]}>JADE pausa automaticamente ao atingir o limite</Text>
             <View style={[modal.section, { backgroundColor: colors.surface, borderColor: colors.border }]}>
               <View style={modal.sectionHeader}>
-                <Feather name="message-circle" size={15} color="#FF0080" />
+                <Feather name="message-circle" size={15} color={PINK} />
                 <Text style={[modal.sectionTitle, { color: colors.text }]}>Máximo por lead</Text>
               </View>
               <LimitCounter value={draftLimit} onChange={setDraftLimit} min={5} max={50} />
-              <Text style={[modal.hint, { color: colors.mutedForeground }]}>
-                Entre 5 e 50 mensagens · atual: {draftLimit} msgs
-              </Text>
+              <Text style={[modal.hint, { color: colors.mutedForeground }]}>Entre 5 e 50 mensagens · atual: {draftLimit} msgs</Text>
             </View>
-
-            {/* Warn toggle */}
             <View style={[modal.toggle, { borderColor: colors.border }]}>
               <View style={{ flex: 1 }}>
                 <Text style={[modal.toggleTitle, { color: colors.text }]}>Avisar ao atingir o limite</Text>
-                <Text style={[modal.toggleSub, { color: colors.mutedForeground }]}>
-                  Receba uma notificação quando JADE atingir o máximo
-                </Text>
+                <Text style={[modal.toggleSub, { color: colors.mutedForeground }]}>Notificação ao atingir o máximo</Text>
               </View>
-              <Switch
-                value={draftWarn}
-                onValueChange={setDraftWarn}
-                trackColor={{ false: colors.border, true: "#FF008060" }}
-                thumbColor={draftWarn ? "#FF0080" : colors.mutedForeground}
-              />
+              <Switch value={draftWarn} onValueChange={setDraftWarn} trackColor={{ false: colors.border, true: PINK + "60" }} thumbColor={draftWarn ? PINK : colors.mutedForeground} />
             </View>
-
-            {/* Auto-stop toggle */}
             <View style={[modal.toggle, { borderColor: colors.border }]}>
               <View style={{ flex: 1 }}>
                 <Text style={[modal.toggleTitle, { color: colors.text }]}>Pausar automaticamente</Text>
-                <Text style={[modal.toggleSub, { color: colors.mutedForeground }]}>
-                  JADE para de responder e aguarda sua autorização
-                </Text>
+                <Text style={[modal.toggleSub, { color: colors.mutedForeground }]}>JADE aguarda autorização para continuar</Text>
               </View>
-              <Switch
-                value={draftAuto}
-                onValueChange={setDraftAuto}
-                trackColor={{ false: colors.border, true: "#FF008060" }}
-                thumbColor={draftAuto ? "#FF0080" : colors.mutedForeground}
-              />
+              <Switch value={draftAuto} onValueChange={setDraftAuto} trackColor={{ false: colors.border, true: PINK + "60" }} thumbColor={draftAuto ? PINK : colors.mutedForeground} />
             </View>
-
             <TouchableOpacity style={modal.saveBtn} onPress={saveSettings} activeOpacity={0.85}>
               <Text style={modal.saveBtnText}>Confirmar</Text>
             </TouchableOpacity>
@@ -488,86 +414,70 @@ export default function ConversasScreen() {
 }
 
 // ─── Styles ───────────────────────────────────────────────────────────────────
-const styles = StyleSheet.create({
-  container: { flex: 1 },
-  header: { paddingHorizontal: 16, paddingBottom: 8 },
-  backBtn: { width: 36, height: 36, alignItems: "center", justifyContent: "center", marginRight: 4 },
-  headerRow: { flexDirection: "row", alignItems: "center", gap: 6, marginBottom: 12 },
-  headerTitle: { fontSize: 22, fontFamily: "SpaceGrotesk_700Bold" },
-  headerSub: { fontSize: 12, fontFamily: "SpaceGrotesk_400Regular", marginTop: 1 },
-  jadeToggle: { paddingHorizontal: 10, paddingVertical: 6, borderRadius: 10, borderWidth: 1 },
-  jadeToggleText: { fontSize: 11, fontFamily: "SpaceGrotesk_700Bold" },
-  iconBtn: { width: 36, height: 36, borderRadius: 18, alignItems: "center", justifyContent: "center" },
-  search: { flexDirection: "row", alignItems: "center", gap: 10, borderRadius: 14, borderWidth: 1, paddingHorizontal: 14, paddingVertical: 10, marginBottom: 8 },
-  searchInput: { flex: 1, fontSize: 15 },
-  item: { flexDirection: "row", alignItems: "center", paddingHorizontal: 20, paddingVertical: 14, borderBottomWidth: StyleSheet.hairlineWidth },
-  avatarWrap: { position: "relative", marginRight: 14 },
-  avatar: { width: 48, height: 48, borderRadius: 24, alignItems: "center", justifyContent: "center" },
-  avatarText: { color: "#fff", fontSize: 16, fontFamily: "SpaceGrotesk_700Bold" },
-  onlineDot: { position: "absolute", bottom: 1, right: 1, width: 13, height: 13, borderRadius: 7, backgroundColor: "rgba(255,255,255,0.55)", borderWidth: 2 },
-  itemBody: { flex: 1 },
-  itemRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
-  itemName: { fontSize: 15, fontFamily: "SpaceGrotesk_600SemiBold", flex: 1, marginRight: 8 },
-  itemTime: { fontSize: 12, fontFamily: "SpaceGrotesk_400Regular" },
-  itemMsg: { flex: 1, fontSize: 13, marginTop: 3, marginRight: 8 },
-  badge: { width: 20, height: 20, borderRadius: 10, alignItems: "center", justifyContent: "center", marginTop: 3 },
-  badgeText: { color: "#fff", fontSize: 11, fontFamily: "SpaceGrotesk_700Bold" },
-  limitBadge: { backgroundColor: "rgba(255,255,255,0.06)", borderColor: "rgba(255,255,255,0.06)", borderWidth: 1, borderRadius: 8, paddingHorizontal: 7, paddingVertical: 2, marginTop: 3 },
+const S = StyleSheet.create({
+  root:           { flex: 1 },
+  header:         { flexDirection: "row", alignItems: "center", paddingHorizontal: 16, paddingBottom: 10, gap: 8 },
+  backBtn:        { padding: 4 },
+  title:          { fontSize: 20, fontFamily: "SpaceGrotesk_700Bold" },
+  subtitle:       { fontSize: 11, fontFamily: "SpaceGrotesk_400Regular", marginTop: 1 },
+  statusPill:     { width: 28, height: 28, alignItems: "center", justifyContent: "center" },
+  statusDotHeader:{ width: 9, height: 9, borderRadius: 5 },
+  iconBtn:        { width: 34, height: 34, borderRadius: 17, alignItems: "center", justifyContent: "center" },
+  searchBar:      { flexDirection: "row", alignItems: "center", gap: 10, marginHorizontal: 16, marginBottom: 6, borderRadius: 12, borderWidth: 1, paddingHorizontal: 12, paddingVertical: 9 },
+  searchInput:    { flex: 1, fontSize: 14, fontFamily: "SpaceGrotesk_400Regular" },
+  filterScroll:   { paddingHorizontal: 16, paddingBottom: 8, gap: 6 },
+  filterTab:      { paddingHorizontal: 14, paddingVertical: 6, borderRadius: 20, borderWidth: 1 },
+  filterText:     { fontSize: 13, fontFamily: "SpaceGrotesk_500Medium" },
+  // Conversation item
+  item:           { flexDirection: "row", alignItems: "center", paddingRight: 16, paddingVertical: 12, borderBottomWidth: StyleSheet.hairlineWidth },
+  statusBar:      { width: 3, height: "100%", marginRight: 12 },
+  avatarWrap:     { position: "relative", marginRight: 12 },
+  avatar:         { width: 46, height: 46, borderRadius: 23, alignItems: "center", justifyContent: "center" },
+  avatarText:     { color: "#fff", fontSize: 16, fontFamily: "SpaceGrotesk_700Bold" },
+  statusDot:      { position: "absolute", bottom: 1, right: 1, width: 11, height: 11, borderRadius: 6, borderWidth: 2 },
+  itemBody:       { flex: 1, gap: 3 },
+  itemRow:        { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
+  itemName:       { fontSize: 14, fontFamily: "SpaceGrotesk_600SemiBold", flex: 1, marginRight: 8 },
+  itemTime:       { fontSize: 11, fontFamily: "SpaceGrotesk_400Regular" },
+  itemMsg:        { fontSize: 12, marginRight: 8 },
+  bottomRow:      { flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginTop: 2 },
+  tagChip:        { flexDirection: "row", alignItems: "center", gap: 4, paddingHorizontal: 7, paddingVertical: 3, borderRadius: 8 },
+  tagDot:         { width: 5, height: 5, borderRadius: 3 },
+  tagText:        { fontSize: 10, fontFamily: "SpaceGrotesk_600SemiBold" },
+  badge:          { width: 18, height: 18, borderRadius: 9, alignItems: "center", justifyContent: "center" },
+  badgeText:      { color: "#fff", fontSize: 10, fontFamily: "SpaceGrotesk_700Bold" },
+  limitBadge:     { backgroundColor: "rgba(255,255,255,0.06)", borderRadius: 8, paddingHorizontal: 6, paddingVertical: 2 },
   limitBadgeText: { color: "rgba(255,255,255,0.45)", fontSize: 10, fontFamily: "SpaceGrotesk_600SemiBold" },
-  authBanner: { flexDirection: "row", alignItems: "center", gap: 8, paddingHorizontal: 20, paddingVertical: 9, borderTopWidth: StyleSheet.hairlineWidth, borderBottomWidth: StyleSheet.hairlineWidth },
+  authBanner:     { flexDirection: "row", alignItems: "center", gap: 8, paddingHorizontal: 16, paddingVertical: 8, borderTopWidth: StyleSheet.hairlineWidth, borderBottomWidth: StyleSheet.hairlineWidth },
   authBannerText: { flex: 1, color: "rgba(255,255,255,0.45)", fontSize: 12, fontFamily: "SpaceGrotesk_500Medium" },
-  authBtn: { backgroundColor: "#FF008020", borderColor: "#FF008050", borderWidth: 1, borderRadius: 8, paddingHorizontal: 10, paddingVertical: 5 },
-  authBtnText: { color: "#FF0080", fontSize: 12, fontFamily: "SpaceGrotesk_700Bold" },
-  empty: { alignItems: "center", justifyContent: "center", paddingTop: 80, gap: 12 },
-  emptyText: { fontSize: 15, fontFamily: "SpaceGrotesk_400Regular" },
-});
-
-const banner = StyleSheet.create({
-  card: { flexDirection: "row", alignItems: "center", gap: 12, borderRadius: 16, borderWidth: 1.5, padding: 14 },
-  iconWrap: { width: 42, height: 42, borderRadius: 12, alignItems: "center", justifyContent: "center", flexShrink: 0 },
-  body: { flex: 1 },
-  title: { fontSize: 14, fontFamily: "SpaceGrotesk_600SemiBold" },
-  sub: { fontSize: 11, fontFamily: "SpaceGrotesk_400Regular", marginTop: 2, lineHeight: 16 },
-  btn: { paddingHorizontal: 14, paddingVertical: 8, borderRadius: 10, shadowOffset: { width: 0, height: 3 }, shadowOpacity: 0.3, shadowRadius: 8, elevation: 4 },
-  btnText: { fontSize: 13, fontFamily: "SpaceGrotesk_700Bold", color: "#fff" },
-});
-
-const auton = StyleSheet.create({
-  card: { borderRadius: 12, borderWidth: 1, padding: 14, marginTop: 8, gap: 12 },
-  statusRow: { flexDirection: "row", alignItems: "center", gap: 8 },
-  dot: { width: 8, height: 8, borderRadius: 4, backgroundColor: "#FF0080" },
-  statusText: { fontSize: 13, fontFamily: "SpaceGrotesk_600SemiBold" },
-  logsSection: { gap: 4 },
-  logsLabel: { fontSize: 10, fontFamily: "SpaceGrotesk_700Bold", letterSpacing: 0.8, marginBottom: 4 },
-  logRow: { flexDirection: "row", alignItems: "center", gap: 6, paddingVertical: 5, borderBottomWidth: StyleSheet.hairlineWidth },
-  logText: { fontSize: 12, fontFamily: "SpaceGrotesk_400Regular", flex: 1 },
-  whatsappBtn: { flexDirection: "row", alignItems: "center", gap: 8, borderRadius: 10, borderWidth: 1, padding: 10, flexWrap: "wrap" },
-  whatsappText: { fontSize: 13, fontFamily: "SpaceGrotesk_600SemiBold", flex: 1 },
-  configBadge: { paddingHorizontal: 8, paddingVertical: 3, borderRadius: 8, borderWidth: 1 },
-  configBadgeText: { fontSize: 10, fontFamily: "SpaceGrotesk_700Bold", color: "rgba(255,255,255,0.45)" },
+  authBtn:        { backgroundColor: "#FF008020", borderColor: "#FF008050", borderWidth: 1, borderRadius: 8, paddingHorizontal: 10, paddingVertical: 5 },
+  authBtnText:    { color: "#FF0080", fontSize: 12, fontFamily: "SpaceGrotesk_700Bold" },
+  empty:          { alignItems: "center", justifyContent: "center", paddingTop: 80, gap: 10 },
+  emptyTitle:     { fontSize: 16, fontFamily: "SpaceGrotesk_600SemiBold" },
+  emptyText:      { fontSize: 13, fontFamily: "SpaceGrotesk_400Regular", textAlign: "center", paddingHorizontal: 32 },
 });
 
 const modal = StyleSheet.create({
-  overlay: { flex: 1, backgroundColor: "rgba(0,0,0,0.65)", justifyContent: "flex-end" },
-  box: { borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 24, paddingBottom: 40, gap: 16 },
-  handle: { width: 36, height: 4, borderRadius: 2, alignSelf: "center", marginBottom: 8 },
-  title: { fontSize: 20, fontFamily: "SpaceGrotesk_700Bold" },
-  sub: { fontSize: 13, fontFamily: "SpaceGrotesk_400Regular", lineHeight: 19, marginTop: -8 },
-  section: { borderRadius: 14, borderWidth: 1, padding: 16, gap: 12 },
-  sectionHeader: { flexDirection: "row", alignItems: "center", gap: 8 },
+  overlay:      { flex: 1, backgroundColor: "rgba(0,0,0,0.65)", justifyContent: "flex-end" },
+  box:          { borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 24, paddingBottom: 40, gap: 16 },
+  handle:       { width: 36, height: 4, borderRadius: 2, alignSelf: "center", marginBottom: 8 },
+  title:        { fontSize: 18, fontFamily: "SpaceGrotesk_700Bold" },
+  sub:          { fontSize: 13, fontFamily: "SpaceGrotesk_400Regular", lineHeight: 19, marginTop: -8 },
+  section:      { borderRadius: 14, borderWidth: 1, padding: 16, gap: 12 },
+  sectionHeader:{ flexDirection: "row", alignItems: "center", gap: 8 },
   sectionTitle: { fontSize: 14, fontFamily: "SpaceGrotesk_600SemiBold" },
-  hint: { fontSize: 11, fontFamily: "SpaceGrotesk_400Regular", textAlign: "center" },
-  toggle: { flexDirection: "row", alignItems: "center", gap: 12, borderTopWidth: StyleSheet.hairlineWidth, paddingTop: 14 },
-  toggleTitle: { fontSize: 14, fontFamily: "SpaceGrotesk_600SemiBold" },
-  toggleSub: { fontSize: 12, fontFamily: "SpaceGrotesk_400Regular", marginTop: 2, lineHeight: 16 },
-  saveBtn: { backgroundColor: "#FF0080", borderRadius: 14, paddingVertical: 15, alignItems: "center", marginTop: 4, shadowColor: "#FF0080", shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.4, shadowRadius: 12, elevation: 6 },
-  saveBtnText: { color: "#fff", fontSize: 16, fontFamily: "SpaceGrotesk_700Bold" },
+  hint:         { fontSize: 11, fontFamily: "SpaceGrotesk_400Regular", textAlign: "center" },
+  toggle:       { flexDirection: "row", alignItems: "center", gap: 12, borderTopWidth: StyleSheet.hairlineWidth, paddingTop: 14 },
+  toggleTitle:  { fontSize: 14, fontFamily: "SpaceGrotesk_600SemiBold" },
+  toggleSub:    { fontSize: 12, fontFamily: "SpaceGrotesk_400Regular", marginTop: 2, lineHeight: 16 },
+  saveBtn:      { backgroundColor: "#FF0080", borderRadius: 14, paddingVertical: 15, alignItems: "center", marginTop: 4 },
+  saveBtnText:  { color: "#fff", fontSize: 16, fontFamily: "SpaceGrotesk_700Bold" },
 });
 
 const lc = StyleSheet.create({
-  row: { flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 16 },
-  btn: { width: 40, height: 40, borderRadius: 12, borderWidth: 1, alignItems: "center", justifyContent: "center" },
+  row:     { flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 16 },
+  btn:     { width: 40, height: 40, borderRadius: 12, borderWidth: 1, alignItems: "center", justifyContent: "center" },
   display: { flexDirection: "row", alignItems: "baseline", gap: 4, borderRadius: 12, borderWidth: 1.5, paddingHorizontal: 20, paddingVertical: 10 },
-  val: { fontSize: 28, fontFamily: "SpaceGrotesk_700Bold" },
-  unit: { fontSize: 12, fontFamily: "SpaceGrotesk_500Medium" },
+  val:     { fontSize: 28, fontFamily: "SpaceGrotesk_700Bold" },
+  unit:    { fontSize: 12, fontFamily: "SpaceGrotesk_500Medium" },
 });
