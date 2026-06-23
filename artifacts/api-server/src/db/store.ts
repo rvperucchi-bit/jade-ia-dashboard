@@ -299,3 +299,67 @@ export function addScannerHistory(entry: Omit<ScannerHistory, "id" | "created_at
 export function getScannerHistory(limit = 20): ScannerHistory[] {
   return load().scanner_history.slice(0, limit);
 }
+
+// ─── CRM Leads ────────────────────────────────────────────────────────────────
+
+export type CrmStatus =
+  | 'Primeiro Contato' | 'Em andamento' | 'Morno' | 'Quente'
+  | 'Frio' | 'Fechado' | 'Descartado' | 'Inválido' | 'Arquivado';
+
+export type CrmPipeline = 'Novo' | 'Em negociação' | 'Ganho' | 'Perdido' | 'Arquivado';
+
+export interface CrmLead {
+  id: string;
+  name: string;
+  phone: string;
+  address: string;
+  segment: string;
+  city: string;
+  status: CrmStatus;
+  pipeline: CrmPipeline;
+  followUpDate: string | null;
+  attempts: number;
+  notes: string;
+  created_at: string;
+  updated_at: string;
+}
+
+const CRM_FILE = path.join(DATA_DIR, 'leads-crm.json');
+
+function loadCrm(): CrmLead[] {
+  try {
+    if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
+    if (!fs.existsSync(CRM_FILE)) return [];
+    return JSON.parse(fs.readFileSync(CRM_FILE, 'utf-8')) as CrmLead[];
+  } catch { return []; }
+}
+
+function saveCrmStore(leads: CrmLead[]): void {
+  if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
+  fs.writeFileSync(CRM_FILE, JSON.stringify(leads, null, 2), 'utf-8');
+}
+
+export function saveCrmLead(data: Omit<CrmLead, 'id' | 'created_at' | 'updated_at'>): CrmLead {
+  const leads = loadCrm();
+  const entry: CrmLead = { id: uid(), ...data, created_at: now(), updated_at: now() };
+  leads.unshift(entry);
+  if (leads.length > 500) leads.splice(500);
+  saveCrmStore(leads);
+  return entry;
+}
+
+export function getCrmLeads(): CrmLead[] {
+  return loadCrm();
+}
+
+export function updateCrmLead(
+  id: string,
+  updates: Partial<Pick<CrmLead, 'status' | 'pipeline' | 'followUpDate' | 'attempts' | 'notes'>>,
+): CrmLead | null {
+  const leads = loadCrm();
+  const idx = leads.findIndex((l) => l.id === id);
+  if (idx < 0) return null;
+  leads[idx] = { ...leads[idx]!, ...updates, updated_at: now() };
+  saveCrmStore(leads);
+  return leads[idx]!;
+}

@@ -3,8 +3,11 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 import {
   createJadeSession, getJadeSessions, getJadeSession,
   appendJadeMessage, deleteJadeSession, addActivityEvent,
-  getCompanyConfig,
+  getCompanyConfig, saveCrmLead, getCrmLeads, updateCrmLead,
+  type CrmStatus, type CrmPipeline,
 } from '../db/store.js';
+
+const BATCH_SIZE = 5;
 
 const router = Router();
 
@@ -360,11 +363,12 @@ async function searchPlacesForJade(tipo: string, cidade: string, apiKey: string)
     const data = (await resp.json()) as { status: string; results: any[] };
     if (data.status !== 'OK' || !data.results?.length) return [];
 
-    const places = data.results.slice(0, 8);
+    // Take top 10 results then sort by rating — deliver BATCH_SIZE at a time
+    const rawPlaces = data.results.slice(0, 10);
 
     // Enrich with phone numbers in parallel (best-effort, 5s each)
     const enriched = await Promise.all(
-      places.map(async (p: any): Promise<PendingLeadResult> => {
+      rawPlaces.map(async (p: any): Promise<PendingLeadResult> => {
         let phone = '';
         try {
           const c2 = new AbortController();
@@ -388,6 +392,8 @@ async function searchPlacesForJade(tipo: string, cidade: string, apiKey: string)
       })
     );
 
+    // Sort by rating descending (nulls last)
+    enriched.sort((a, b) => (b.rating ?? 0) - (a.rating ?? 0));
     return enriched;
   } catch {
     return [];
@@ -428,6 +434,7 @@ function buildLeadPrompt(
   city: string,
   hasMore: boolean,
   tipo = '',
+  isBatchEnd = false,
 ): string {
   const emoji = segmentEmoji(tipo || lead.name);
   const infoLine = (() => {
@@ -437,9 +444,9 @@ function buildLeadPrompt(
     return parts.join(' · ');
   })();
 
-  const closing = hasMore
-    ? 'Próximo ou quer a abordagem pra esse?'
-    : 'Esse é o último. Quer a abordagem pra algum deles?';
+  const closing = isBatchEnd
+    ? `Quer mais ${BATCH_SIZE} opções em ${city}?`
+    : 'Abordo esse ou você mesmo fala com ele?';
 
   const introLine = idx === 1
     ? `Encontrei ${total} opções em ${city}. Aqui vai o primeiro:\n\n`
@@ -600,7 +607,8 @@ router.post('/chat', async (req: Request, res: Response) => {
         const lead = pending.leads.shift()!;
         pending.shown++;
         const hasMore = pending.leads.length > 0;
-        const prompt = buildLeadPrompt(lead, pending.shown, pending.total, pending.city, hasMore, pending.tipo);
+        const isBatchEnd = hasMore && pending.shown % BATCH_SIZE === 0;
+        const prompt = buildLeadPrompt(lead, pending.shown, pending.total, pending.city, hasMore, pending.tipo, isBatchEnd);
 
         const nr = await chat.sendMessage(prompt);
         const rawText = nr.response.text();
@@ -613,7 +621,7 @@ router.post('/chat', async (req: Request, res: Response) => {
         req.log.info({ shown: pending.shown, total: pending.total, city: pending.city }, 'pending lead delivered');
         return res.json({
           message: cardText,
-          leadData: { name: lead.name, address: lead.address, phone: lead.phone, rating: lead.rating, totalRatings: lead.totalRatings, cidade: pending.city, analysis },
+          leadData: { name: lead.name, address: lead.address, phone: lead.phone, rating: lead.rating, totalRatings: lead.totalRatings, cidade: pending.city, segment: pending.tipo, analysis },
           session_id: body.session_id, handoff: false, statusType: 'lead',
         });
       }
@@ -655,7 +663,7 @@ router.post('/chat', async (req: Request, res: Response) => {
         req.log.info({ count: places.length, cidade, tipo }, 'Google Places leads delivered');
         return res.json({
           message: cardText,
-          leadData: { name: firstLead.name, address: firstLead.address, phone: firstLead.phone, rating: firstLead.rating, totalRatings: firstLead.totalRatings, cidade, analysis },
+          leadData: { name: firstLead.name, address: firstLead.address, phone: firstLead.phone, rating: firstLead.rating, totalRatings: firstLead.totalRatings, cidade, segment: tipo, analysis },
           session_id: body.session_id, handoff: false, statusType: 'radar', leadsFound: places.length,
         });
       }
@@ -813,6 +821,111 @@ router.delete('/sessions/:id', (req: Request, res: Response) => {
   const deleted = deleteJadeSession(req.params.id ?? '');
   if (!deleted) return res.status(404).json({ error: 'Sessão não encontrada' });
   return res.json({ ok: true });
+});
+
+// ─── CRM ──────────────────────────────────────────────────────────────────────
+
+// POST /jade/crm — save a lead to CRM
+router.post('/crm', (req: Request, res: Response) => {
+  try {
+    const body = req.body as {
+      name?: string; phone?: string; address?: string;
+      segment?: string; city?: string; status?: CrmStatus;
+      pipeline?: CrmPipeline; notes?: string;
+    };
+    if (!body.name) return res.status(400).json({ error: 'name is required' });
+    const lead = saveCrmLead({
+      name: body.name,
+      phone: body.phone ?? '',
+      address: body.address ?? '',
+      segment: body.segment ?? '',
+      city: body.city ?? '',
+      status: body.status ?? 'Primeiro Contato',
+      pipeline: body.pipeline ?? 'Novo',
+      followUpDate: null,
+      attempts: 1,
+      notes: body.notes ?? '',
+    });
+    addActivityEvent({ type: 'lead', text: `CRM: ${lead.name} → ${lead.status}`, icon: 'user-plus', color: '#FF0080' });
+    req.log.info({ id: lead.id, name: lead.name }, 'CRM lead saved');
+    return res.json({ success: true, lead });
+  } catch (err) {
+    req.log.error(err, 'CRM save failed');
+    return res.status(500).json({ error: 'Failed to save lead' });
+  }
+});
+
+// GET /jade/crm — list all CRM leads
+router.get('/crm', (_req: Request, res: Response) => {
+  return res.json({ leads: getCrmLeads() });
+});
+
+// PATCH /jade/crm/:id — update lead status / follow-up date
+router.patch('/crm/:id', (req: Request, res: Response) => {
+  const id = String(req.params['id'] ?? '');
+  const updates = req.body as Partial<{
+    status: CrmStatus; pipeline: CrmPipeline;
+    followUpDate: string | null; attempts: number; notes: string;
+  }>;
+  const lead = updateCrmLead(id, updates);
+  if (!lead) return res.status(404).json({ error: 'Lead not found' });
+  return res.json({ success: true, lead });
+});
+
+// ─── Approach message ─────────────────────────────────────────────────────────
+
+// POST /jade/approach — generate WhatsApp approach message for a given lead
+router.post('/approach', async (req: Request, res: Response) => {
+  try {
+    const body = req.body as {
+      name: string; address?: string; phone?: string;
+      segment?: string; city?: string;
+      analysis?: { dor?: string; angulo?: string };
+    };
+    if (!body.name) return res.status(400).json({ error: 'name is required' });
+
+    const apiKey = process.env.GEMINI_API_KEY;
+    if (!apiKey) return res.status(500).json({ error: 'GEMINI_API_KEY not configured' });
+
+    const companyConfig = getCompanyConfig();
+    const genAI = new GoogleGenerativeAI(apiKey);
+    const model = genAI.getGenerativeModel({
+      model: 'gemini-2.5-flash',
+      generationConfig: { maxOutputTokens: 200, temperature: 0.85 },
+    });
+
+    const companyLine = companyConfig
+      ? `Empresa prospectando: ${companyConfig.nome}, vende: ${companyConfig.produto}.`
+      : '';
+    const dorLine = body.analysis?.dor ? `Dor provável: ${body.analysis.dor}.` : '';
+    const cityLine = body.city ? `${body.city}.` : '';
+
+    const prompt = `Escreva uma mensagem de WhatsApp para prospecção fria. Seja direto, humano e informal. Máximo 3 linhas. Sem saudação formal.
+
+Lead: ${body.name}${cityLine ? `, ${cityLine}` : ''}${body.segment ? ` — ${body.segment}` : ''}
+${dorLine}
+${companyLine}
+
+Responda APENAS com o texto da mensagem, sem aspas, sem markdown, sem emojis no início.`;
+
+    const result = await model.generateContent(prompt);
+    const messageText = result.response.text().trim();
+
+    // Format phone for WhatsApp: strip non-digits, prepend 55 if needed
+    const digits = (body.phone ?? '').replace(/\D/g, '');
+    const intlPhone = digits
+      ? digits.startsWith('55') && digits.length >= 12 ? digits : '55' + digits
+      : '';
+    const whatsappUrl = intlPhone
+      ? `https://wa.me/${intlPhone}?text=${encodeURIComponent(messageText)}`
+      : null;
+
+    req.log.info({ name: body.name, hasPhone: !!intlPhone }, 'approach message generated');
+    return res.json({ messageText, whatsappUrl });
+  } catch (err) {
+    req.log.error(err, 'approach generation failed');
+    return res.status(500).json({ error: 'Failed to generate approach message' });
+  }
 });
 
 export default router;

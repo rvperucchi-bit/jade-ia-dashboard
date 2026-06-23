@@ -7,6 +7,7 @@ import {
   FlatList,
   Image,
   KeyboardAvoidingView,
+  Linking,
   PanResponder,
   Platform,
   ScrollView,
@@ -207,12 +208,14 @@ interface AttachedFile { uri: string; name: string; type: "image" | "doc" }
 interface LeadCardData {
   name: string; address: string; phone: string;
   rating: number | null; totalRatings: number; cidade: string;
+  segment?: string;
   analysis: { dor: string; angulo: string; pergunta: string };
 }
 interface AIMessage {
   id: string; text: string; sender: "user" | "jade"; time: string;
   isAudio?: boolean; audioDuration?: number; files?: AttachedFile[];
   leadData?: LeadCardData;
+  crmSaved?: boolean;
 }
 
 // ─── Audio wave ───────────────────────────────────────────────────────────────
@@ -227,7 +230,14 @@ function AudioWave({ color }: { color: string }) {
 }
 
 // ─── Message bubble ───────────────────────────────────────────────────────────
-function MessageBubble({ msg, colors }: { msg: AIMessage; colors: ReturnType<typeof useColors> }) {
+function MessageBubble({
+  msg, colors, onSendMsg, onNotify,
+}: {
+  msg: AIMessage;
+  colors: ReturnType<typeof useColors>;
+  onSendMsg?: (text: string) => void;
+  onNotify?: (text: string) => void;
+}) {
   const isJade = msg.sender === "jade";
 
   if (msg.isAudio && !isJade) {
@@ -247,25 +257,61 @@ function MessageBubble({ msg, colors }: { msg: AIMessage; colors: ReturnType<typ
   }
 
   if (isJade && msg.leadData) {
-    return <LeadCard msg={msg} colors={colors} />;
+    return <LeadCard msg={msg} colors={colors} onNotify={onNotify} />;
   }
 
   if (isJade) {
+    const lower = msg.text.toLowerCase();
+    const quickReplies: Array<{ label: string; value: string }> = [];
+    if (/quer mais.{0,6}5\b|mais 5 op/.test(lower)) {
+      quickReplies.push(
+        { label: "✅ Sim, mais 5", value: "sim, quero mais 5" },
+        { label: "❌ Encerrar busca", value: "encerrar busca, obrigado" }
+      );
+    } else if (/quantos dias/.test(lower)) {
+      quickReplies.push(
+        { label: "1 dia", value: "1 dia" },
+        { label: "3 dias", value: "3 dias" },
+        { label: "7 dias", value: "7 dias" },
+        { label: "15 dias", value: "15 dias" }
+      );
+    }
     return (
-      <View style={C.msgJade}>
-        {msg.files && msg.files.length > 0 && (
-          <View style={{ gap: 5, marginBottom: 8 }}>
-            {msg.files.map((f, i) => (
-              <View key={i} style={[C.filePill, { backgroundColor: "rgba(255,255,255,0.06)" }]}>
-                <Feather name={f.type === "image" ? "image" : "file"} size={12} color={colors.mutedForeground} />
-                <Text style={{ fontSize: 11, color: colors.mutedForeground, fontFamily: "SpaceGrotesk_400Regular", flex: 1 }} numberOfLines={1}>{f.name}</Text>
-              </View>
+      <>
+        <View style={C.msgJade}>
+          {msg.files && msg.files.length > 0 && (
+            <View style={{ gap: 5, marginBottom: 8 }}>
+              {msg.files.map((f, i) => (
+                <View key={i} style={[C.filePill, { backgroundColor: "rgba(255,255,255,0.06)" }]}>
+                  <Feather name={f.type === "image" ? "image" : "file"} size={12} color={colors.mutedForeground} />
+                  <Text style={{ fontSize: 11, color: colors.mutedForeground, fontFamily: "SpaceGrotesk_400Regular", flex: 1 }} numberOfLines={1}>{f.name}</Text>
+                </View>
+              ))}
+            </View>
+          )}
+          {!!msg.text && <Text style={[C.jadeText, { color: colors.text }]}>{msg.text}</Text>}
+          <Text style={[C.jadeTime, { color: colors.mutedForeground }]}>{msg.time}</Text>
+        </View>
+        {quickReplies.length > 0 && (
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            style={{ marginTop: 6, marginBottom: 4 }}
+            contentContainerStyle={{ gap: 6, paddingHorizontal: 16 }}
+          >
+            {quickReplies.map((r) => (
+              <TouchableOpacity
+                key={r.value}
+                onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); onSendMsg?.(r.value); }}
+                activeOpacity={0.8}
+                style={{ backgroundColor: "rgba(132,0,255,0.12)", borderRadius: 16, paddingVertical: 7, paddingHorizontal: 14, borderWidth: 1, borderColor: "rgba(132,0,255,0.35)" }}
+              >
+                <Text style={{ color: "#B44FFF", fontSize: 12, fontFamily: "SpaceGrotesk_500Medium" }}>{r.label}</Text>
+              </TouchableOpacity>
             ))}
-          </View>
+          </ScrollView>
         )}
-        {!!msg.text && <Text style={[C.jadeText, { color: colors.text }]}>{msg.text}</Text>}
-        <Text style={[C.jadeTime, { color: colors.mutedForeground }]}>{msg.time}</Text>
-      </View>
+      </>
     );
   }
 
@@ -339,10 +385,72 @@ function TypingBubble({ colors }: { colors: ReturnType<typeof useColors> }) {
   );
 }
 
-// ─── Lead card (expandable) ────────────────────────────────────────────────────
-function LeadCard({ msg, colors }: { msg: AIMessage; colors: ReturnType<typeof useColors> }) {
-  const [expanded, setExpanded] = useState(false);
+// ─── Lead card (expandable + WhatsApp + CRM) ──────────────────────────────────
+function LeadCard({
+  msg, colors, onNotify,
+}: {
+  msg: AIMessage;
+  colors: ReturnType<typeof useColors>;
+  onNotify?: (text: string) => void;
+}) {
+  const [expanded,   setExpanded]   = useState(false);
+  const [loadingWA,  setLoadingWA]  = useState(false);
+  const [crmDone,    setCrmDone]    = useState(msg.crmSaved ?? false);
+  const [crmLoading, setCrmLoading] = useState(false);
   const ld = msg.leadData!;
+
+  // Reflect external crmSaved changes (auto-save from send())
+  useEffect(() => { if (msg.crmSaved && !crmDone) setCrmDone(true); }, [msg.crmSaved]);
+
+  const saveToCrm = async () => {
+    if (crmDone || crmLoading) return;
+    setCrmLoading(true);
+    try {
+      await fetch(`${API_BASE}/api/jade/crm`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: ld.name, phone: ld.phone, address: ld.address,
+          segment: ld.segment ?? "", city: ld.cidade,
+        }),
+      });
+      setCrmDone(true);
+      onNotify?.(`✅ ${ld.name} registrado. Status: Primeiro Contato. Pipeline: Novo.`);
+    } catch {
+      onNotify?.("❌ Erro ao salvar no CRM. Tente novamente.");
+    } finally {
+      setCrmLoading(false);
+    }
+  };
+
+  const handleWhatsApp = async () => {
+    if (loadingWA) return;
+    setLoadingWA(true);
+    try {
+      const resp = await fetch(`${API_BASE}/api/jade/approach`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: ld.name, phone: ld.phone, address: ld.address,
+          segment: ld.segment ?? "", city: ld.cidade,
+          analysis: ld.analysis,
+        }),
+      });
+      const data = (await resp.json()) as { whatsappUrl?: string | null; messageText?: string };
+      if (data.whatsappUrl) {
+        await Linking.openURL(data.whatsappUrl);
+        onNotify?.(`📱 WhatsApp aberto para ${ld.name}`);
+        if (!crmDone) await saveToCrm().catch(() => {});
+      } else if (data.messageText) {
+        Alert.alert("Mensagem de abordagem", data.messageText, [{ text: "OK" }]);
+        onNotify?.(`💡 Mensagem gerada para ${ld.name} (sem telefone cadastrado)`);
+      }
+    } catch {
+      onNotify?.("❌ Erro ao gerar mensagem. Verifique a conexão.");
+    } finally {
+      setLoadingWA(false);
+    }
+  };
 
   return (
     <TouchableOpacity style={C.msgJade} onPress={() => setExpanded((v) => !v)} activeOpacity={0.85}>
@@ -355,37 +463,21 @@ function LeadCard({ msg, colors }: { msg: AIMessage; colors: ReturnType<typeof u
             ANÁLISE JADE
           </Text>
           <View style={{ gap: 3 }}>
-            <Text style={{ color: "rgba(255,255,255,0.4)", fontSize: 10, fontFamily: "SpaceGrotesk_500Medium", letterSpacing: 0.6 }}>
-              🎯 DOR PROVÁVEL
-            </Text>
-            <Text style={{ color: colors.text, fontSize: 13, fontFamily: "SpaceGrotesk_400Regular" }}>
-              {ld.analysis.dor}
-            </Text>
+            <Text style={{ color: "rgba(255,255,255,0.4)", fontSize: 10, fontFamily: "SpaceGrotesk_500Medium", letterSpacing: 0.6 }}>🎯 DOR PROVÁVEL</Text>
+            <Text style={{ color: colors.text, fontSize: 13, fontFamily: "SpaceGrotesk_400Regular" }}>{ld.analysis.dor}</Text>
           </View>
           <View style={{ gap: 3 }}>
-            <Text style={{ color: "rgba(255,255,255,0.4)", fontSize: 10, fontFamily: "SpaceGrotesk_500Medium", letterSpacing: 0.6 }}>
-              💡 MELHOR ÂNGULO
-            </Text>
-            <Text style={{ color: colors.text, fontSize: 13, fontFamily: "SpaceGrotesk_400Regular" }}>
-              {ld.analysis.angulo}
-            </Text>
+            <Text style={{ color: "rgba(255,255,255,0.4)", fontSize: 10, fontFamily: "SpaceGrotesk_500Medium", letterSpacing: 0.6 }}>💡 MELHOR ÂNGULO</Text>
+            <Text style={{ color: colors.text, fontSize: 13, fontFamily: "SpaceGrotesk_400Regular" }}>{ld.analysis.angulo}</Text>
           </View>
           <View style={{ gap: 3 }}>
-            <Text style={{ color: "rgba(255,255,255,0.4)", fontSize: 10, fontFamily: "SpaceGrotesk_500Medium", letterSpacing: 0.6 }}>
-              💬 PERGUNTA DE ABERTURA
-            </Text>
-            <Text style={{ color: colors.text, fontSize: 13, fontFamily: "SpaceGrotesk_400Regular", fontStyle: "italic" }}>
-              "{ld.analysis.pergunta}"
-            </Text>
+            <Text style={{ color: "rgba(255,255,255,0.4)", fontSize: 10, fontFamily: "SpaceGrotesk_500Medium", letterSpacing: 0.6 }}>💬 PERGUNTA DE ABERTURA</Text>
+            <Text style={{ color: colors.text, fontSize: 13, fontFamily: "SpaceGrotesk_400Regular", fontStyle: "italic" }}>"{ld.analysis.pergunta}"</Text>
           </View>
           {ld.rating ? (
             <View style={{ gap: 3 }}>
-              <Text style={{ color: "rgba(255,255,255,0.4)", fontSize: 10, fontFamily: "SpaceGrotesk_500Medium", letterSpacing: 0.6 }}>
-                ⭐ AVALIAÇÃO
-              </Text>
-              <Text style={{ color: colors.text, fontSize: 13, fontFamily: "SpaceGrotesk_400Regular" }}>
-                {ld.rating} estrelas · {ld.totalRatings} avaliações
-              </Text>
+              <Text style={{ color: "rgba(255,255,255,0.4)", fontSize: 10, fontFamily: "SpaceGrotesk_500Medium", letterSpacing: 0.6 }}>⭐ AVALIAÇÃO</Text>
+              <Text style={{ color: colors.text, fontSize: 13, fontFamily: "SpaceGrotesk_400Regular" }}>{ld.rating} estrelas · {ld.totalRatings} avaliações</Text>
             </View>
           ) : null}
         </View>
@@ -394,6 +486,38 @@ function LeadCard({ msg, colors }: { msg: AIMessage; colors: ReturnType<typeof u
         {msg.time}{"  "}
         <Text style={{ color: PINK, fontSize: 10 }}>{expanded ? "↑ fechar" : "↓ ver análise"}</Text>
       </Text>
+
+      {/* ── Action buttons ── */}
+      <View style={{ flexDirection: "row", gap: 8, marginTop: 10 }}>
+        {ld.phone ? (
+          <TouchableOpacity
+            onPress={(e) => { e.stopPropagation?.(); handleWhatsApp(); }}
+            activeOpacity={0.8}
+            disabled={loadingWA}
+            style={{ flex: 1, backgroundColor: "#0A3D33", borderRadius: 8, paddingVertical: 9, paddingHorizontal: 10, alignItems: "center", borderWidth: 1, borderColor: "#128C7E", opacity: loadingWA ? 0.6 : 1 }}
+          >
+            <Text style={{ color: "#25D366", fontSize: 12, fontFamily: "SpaceGrotesk_600SemiBold" }}>
+              {loadingWA ? "gerando…" : "📱 Abordar no WhatsApp"}
+            </Text>
+          </TouchableOpacity>
+        ) : null}
+        <TouchableOpacity
+          onPress={(e) => { e.stopPropagation?.(); saveToCrm(); }}
+          activeOpacity={0.8}
+          disabled={crmDone || crmLoading}
+          style={{
+            flex: ld.phone ? undefined : 1,
+            backgroundColor: crmDone ? "rgba(0,170,68,0.08)" : "rgba(255,0,128,0.06)",
+            borderRadius: 8, paddingVertical: 9, paddingHorizontal: 10, alignItems: "center",
+            borderWidth: 1, borderColor: crmDone ? "rgba(0,170,68,0.4)" : "rgba(255,0,128,0.3)",
+            opacity: crmLoading ? 0.6 : 1,
+          }}
+        >
+          <Text style={{ color: crmDone ? "#00AA44" : PINK, fontSize: 12, fontFamily: "SpaceGrotesk_600SemiBold" }}>
+            {crmDone ? "✅ No CRM" : crmLoading ? "salvando…" : "💾 Salvar no CRM"}
+          </Text>
+        </TouchableOpacity>
+      </View>
     </TouchableOpacity>
   );
 }
@@ -416,6 +540,33 @@ function RecordingBar({ secs, cancelling, pulseAnim }: { secs: number; cancellin
   );
 }
 
+// ─── In-app notification banner ───────────────────────────────────────────────
+function InAppNotification({ text, topOffset }: { text: string; topOffset: number }) {
+  const fade = useRef(new Animated.Value(0)).current;
+  useEffect(() => {
+    fade.setValue(0);
+    Animated.sequence([
+      Animated.timing(fade, { toValue: 1, duration: 240, useNativeDriver: true }),
+      Animated.delay(3600),
+      Animated.timing(fade, { toValue: 0, duration: 380, useNativeDriver: true }),
+    ]).start();
+  }, [text]);
+  return (
+    <Animated.View style={{
+      opacity: fade,
+      position: "absolute", top: topOffset, left: 16, right: 16, zIndex: 200,
+      backgroundColor: "#120920", borderRadius: 12, padding: 14,
+      borderWidth: 1, borderColor: "rgba(255,0,128,0.38)",
+      flexDirection: "row", alignItems: "center", gap: 10,
+      shadowColor: "#FF0080", shadowOffset: { width: 0, height: 3 },
+      shadowOpacity: 0.22, shadowRadius: 10, elevation: 8,
+    }}>
+      <Text style={{ fontSize: 15 }}>✅</Text>
+      <Text style={{ color: "#fff", fontSize: 12, fontFamily: "SpaceGrotesk_500Medium", flex: 1, lineHeight: 18 }}>{text}</Text>
+    </Animated.View>
+  );
+}
+
 // ─── Empty state ──────────────────────────────────────────────────────────────
 function EmptyState({ displayName, colors }: { displayName: string; colors: ReturnType<typeof useColors> }) {
   const fadeIn = useRef(new Animated.Value(0)).current;
@@ -425,7 +576,7 @@ function EmptyState({ displayName, colors }: { displayName: string; colors: Retu
   return (
     <Animated.View style={{ flex: 1, justifyContent: "center", alignItems: "center", paddingHorizontal: 32, opacity: fadeIn }}>
       <Text style={{ color: "#fff", fontSize: 34, fontFamily: "SpaceGrotesk_700Bold", textAlign: "center", letterSpacing: -0.5 }}>
-        {displayName.split(" ")[0]}
+        {"Olá, "}{displayName.split(" ")[0]}.
       </Text>
     </Animated.View>
   );
@@ -450,6 +601,16 @@ export default function JADEScreen() {
   const [sessionId,    setSessionId]    = useState<string | null>(null);
   const [handoffAlert, setHandoffAlert] = useState(false);
   const [attachments,  setAttachments]  = useState<AttachedFile[]>([]);
+  const [notification, setNotification] = useState<string | null>(null);
+  const notifTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const showNotification = useCallback((text: string) => {
+    setNotification(null);
+    requestAnimationFrame(() => {
+      setNotification(text);
+      if (notifTimer.current) clearTimeout(notifTimer.current);
+      notifTimer.current = setTimeout(() => setNotification(null), 5500);
+    });
+  }, []);
 
   // ── Modules (right drawer toggles) ───────────────────────────────────────
   const [modules, setModules] = useState<Record<string, boolean>>({
@@ -662,13 +823,34 @@ export default function JADEScreen() {
       };
       const raw = data.message?.trim() || data.response?.trim() || "Desculpe, não consegui processar. Tente novamente.";
       useCredit();
+      const jadeId = (Date.now() + 1).toString();
       setMessages((prev) => [{
-        id: (Date.now() + 1).toString(),
+        id: jadeId,
         text: stripMarkdown(raw),
         sender: "jade",
         time: nowTime(),
         leadData: data.leadData,
+        crmSaved: false,
       }, ...prev]);
+
+      // Auto-save lead to CRM in background
+      if (data.leadData) {
+        fetch(`${API_BASE}/api/jade/crm`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            name: data.leadData.name,
+            phone: data.leadData.phone,
+            address: data.leadData.address,
+            segment: data.leadData.segment ?? "",
+            city: data.leadData.cidade,
+          }),
+        }).then(() => {
+          setMessages((prev) => prev.map((m) => m.id === jadeId ? { ...m, crmSaved: true } : m));
+          showNotification(`✅ ${data.leadData!.name} registrado. Status: Primeiro Contato. Pipeline: Novo.`);
+        }).catch(() => {/* best-effort */});
+      }
+
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
       if (data.handoff) {
         if (handoffTimer.current) clearTimeout(handoffTimer.current);
@@ -818,6 +1000,9 @@ export default function JADEScreen() {
           </TouchableOpacity>
         </View>
 
+        {/* ── In-app notification ── */}
+        {notification && <InAppNotification text={notification} topOffset={topPad + 64} />}
+
         {/* ── Chat / Empty state ── */}
         {!hasConversation ? (
           <EmptyState displayName={displayName} colors={colors} />
@@ -827,7 +1012,14 @@ export default function JADEScreen() {
             keyExtractor={(item) => item.id}
             renderItem={({ item }) => {
               if (item.id === "__typing__") return <TypingBubble colors={colors} />;
-              return <MessageBubble msg={item} colors={colors} />;
+              return (
+                <MessageBubble
+                  msg={item}
+                  colors={colors}
+                  onSendMsg={(text) => send(text)}
+                  onNotify={showNotification}
+                />
+              );
             }}
             inverted
             showsVerticalScrollIndicator={false}
