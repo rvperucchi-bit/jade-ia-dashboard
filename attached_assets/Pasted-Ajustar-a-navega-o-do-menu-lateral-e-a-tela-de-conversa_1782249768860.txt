@@ -1,0 +1,113 @@
+Ajustar a navegação do menu lateral e a tela de conversas comerciais da JADE.
+
+CONTEXTO:
+Hoje o menu está confundindo “Histórico” com conversas comerciais/CRM. Precisamos separar claramente:
+1. Conversas do usuário com a JADE.
+2. Histórico do usuário com a JADE.
+3. Área Comercial com WhatsApp, CRM, Pipeline e oportunidades.
+
+AJUSTES NO MENU:
+
+1. Em CONVERSAS, manter apenas:
+- Nova conversa
+- Histórico
+
+2. Corrigir o item Histórico:
+- O botão “Histórico” deve abrir somente o histórico de conversas do usuário com a JADE.
+- Esse histórico deve incluir interações anteriores com a JADE, mensagens, análises, pesquisas, respostas e relatórios gerados pela própria JADE.
+- Não deve abrir CRM, WhatsApp, leads ou conversas comerciais.
+
+3. Remover o nome “Histórico / CRM”.
+- Trocar para apenas “Histórico”.
+
+4. Em COMERCIAL, incluir os itens:
+- Conversas
+- CRM
+- Pipeline
+- Oportunidades
+- Briefings
+- Relatórios
+
+5. A tela atual que está abrindo pelo Histórico deve ser movida para:
+COMERCIAL > Conversas
+
+6. Essa tela deve se chamar:
+Central Comercial
+
+OBJETIVO DA CENTRAL COMERCIAL:
+Ser a área onde o usuário acompanha as conversas comerciais feitas pela JADE no WhatsApp, visualiza leads, respostas, oportunidades, follow-ups e o que a IA está conversando com clientes quando estiver ativa.
+
+AJUSTES NA TELA CENTRAL COMERCIAL:
+
+1. Trocar o título atual para:
+Central Comercial
+
+2. Remover o botão grande “JADE OFF”.
+
+3. Substituir por um indicador discreto de status da JADE no topo:
+- Bolinha verde pequena: JADE ativa/online
+- Bolinha cinza/transparente: JADE pausada/offline
+- Bolinha vermelha pequena: erro de conexão ou problema na integração
+
+Importante:
+- Usar apenas a bolinha.
+- Sem texto.
+- Visual minimalista e premium.
+
+4. Remover o campo grande “Buscar conversa...” abaixo do título.
+
+5. Adicionar apenas um ícone de lupa no topo direito para busca.
+
+6. Manter também um ícone de filtros no topo direito.
+
+7. A ordem ideal no topo direito:
+- Bolinha de status da JADE
+- Lupa
+- Filtros
+
+8. Adicionar filtros horizontais abaixo do título, no estilo WhatsApp, mas adaptados para CRM comercial:
+- Todas
+- Em andamento
+- Sem resposta
+- Qualificados
+- Arquivadas
+
+9. Não usar “Favoritos” ou “Grupos”, pois isso é linguagem de WhatsApp pessoal. Aqui o foco é comercial e CRM.
+
+10. Cada conversa deve exibir dados úteis para vendas:
+- Nome do lead/cliente
+- Última mensagem
+- Horário ou data
+- Contador de não lidas
+- Status visual da conversa
+
+11. Adicionar pequenos indicadores de status nas conversas:
+- Verde: lead respondeu recentemente
+- Amarelo: aguardando resposta/follow-up
+- Vermelho: sem resposta há vários dias ou oportunidade travada
+
+12. Quando possível, exibir uma tag pequena por conversa:
+- Qualificado
+- Follow-up
+- Proposta enviada
+- Sem resposta
+- Novo lead
+
+13. A tela precisa parecer uma caixa de entrada comercial inteligente, não apenas uma cópia do WhatsApp.
+
+14. Manter o visual dark premium atual da JADE:
+- Fundo escuro
+- Rosa apenas para destaque
+- Textos claros
+- Elementos discretos
+- Espaçamento limpo
+- Sem poluição visual
+
+RESULTADO ESPERADO:
+O usuário deve entender claramente:
+- “Nova conversa” é para falar com a JADE.
+- “Histórico” é para ver conversas antigas com a JADE.
+- “Comercial > Conversas” é para ver o WhatsApp comercial gerenciado pela JADE.
+- “Comercial > CRM” é para gestão dos contatos/clientes.
+- “Comercial > Pipeline” é para acompanhar etapas de venda.
+- “Comercial > Oportunidades” é para leads e negócios abertos.
