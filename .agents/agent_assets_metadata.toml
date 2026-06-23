@@ -35,3 +35,9 @@ id = "pqa_EzC8lVg9-962309s5"
 uri = "file://exports/auditoria-jade-2026-06-23.pdf"
 type = "pdf"
 title = "Auditoria JADE IA — Sessão 23/06/2026"
+
+[[outputs]]
+id = "xHQUhi0xFfRGgRAIR6XyP"
+uri = "file://exports/auditoria-jade-2026-06-23b.pdf"
+type = "pdf"
+title = "Auditoria — Correção de Navegação"

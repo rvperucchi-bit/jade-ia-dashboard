@@ -322,44 +322,50 @@ export default function ConversasScreen() {
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
   };
 
-  const canGoBack = router.canGoBack();
-
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       {/* ── Header ── */}
       <View style={[styles.header, { paddingTop: topPad + 8 }]}>
-        {/* Back row */}
-        {canGoBack && (
+
+        {/* Back + title row */}
+        <View style={styles.headerRow}>
           <TouchableOpacity
             style={styles.backBtn}
-            onPress={() => router.back()}
+            onPress={() => router.push("/(tabs)/jade" as any)}
             activeOpacity={0.7}
-            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
           >
-            <Feather name="arrow-left" size={20} color="rgba(255,255,255,0.65)" />
+            <Feather name="arrow-left" size={22} color="rgba(255,255,255,0.7)" />
           </TouchableOpacity>
-        )}
-
-        <View style={[styles.headerRow, { marginTop: canGoBack ? 4 : 8 }]}>
-          <View>
+          <View style={{ flex: 1 }}>
             <Text style={[styles.headerTitle, { color: colors.text }]}>Conversas</Text>
             <Text style={[styles.headerSub, { color: colors.mutedForeground }]}>
               {conversations.filter((c) => c.unread > 0).length} não lidas
-              {jadeAtiva && <Text style={{ color: "#FF0080" }}> · JADE ON</Text>}
+              {jadeAtiva && <Text style={{ color: "#FF0080" }}> · JADE ativa</Text>}
             </Text>
           </View>
+          {/* JADE toggle — compact inline */}
+          <TouchableOpacity
+            style={[styles.jadeToggle, { backgroundColor: jadeAtiva ? "#FF008020" : colors.surface, borderColor: jadeAtiva ? "#FF008050" : colors.border }]}
+            onPress={handleToggle}
+            activeOpacity={0.8}
+            disabled={toggling}
+          >
+            {toggling
+              ? <ActivityIndicator size="small" color="#FF0080" />
+              : <Text style={[styles.jadeToggleText, { color: jadeAtiva ? "#FF0080" : colors.mutedForeground }]}>
+                  {jadeAtiva ? "JADE ON" : "JADE OFF"}
+                </Text>
+            }
+          </TouchableOpacity>
           <TouchableOpacity
             style={[styles.iconBtn, { backgroundColor: colors.surface }]}
             onPress={openSettings}
             activeOpacity={0.8}
           >
-            <Feather name="sliders" size={18} color={colors.primary} />
+            <Feather name="sliders" size={17} color={colors.mutedForeground} />
           </TouchableOpacity>
         </View>
-
-        {/* JADE banner — compact when AutonomoPanel is also visible */}
-        <JadeBanner ativa={jadeAtiva} onToggle={handleToggle} loading={toggling} />
-        {jadeAtiva && <AutonomoPanel ativa={jadeAtiva} logs={activityLogs} router={router} />}
 
         <View style={[styles.search, { backgroundColor: colors.surface, borderColor: colors.border }]}>
           <Feather name="search" size={16} color={colors.mutedForeground} />
@@ -484,13 +490,15 @@ export default function ConversasScreen() {
 // ─── Styles ───────────────────────────────────────────────────────────────────
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  header: { paddingHorizontal: 20, paddingBottom: 8 },
-  backBtn: { flexDirection: "row", alignItems: "center", paddingVertical: 4, marginBottom: 2, alignSelf: "flex-start" },
-  headerRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 14 },
-  headerTitle: { fontSize: 26, fontFamily: "SpaceGrotesk_700Bold" },
-  headerSub: { fontSize: 13, fontFamily: "SpaceGrotesk_400Regular", marginTop: 2 },
-  iconBtn: { width: 40, height: 40, borderRadius: 20, alignItems: "center", justifyContent: "center" },
-  search: { flexDirection: "row", alignItems: "center", gap: 10, borderRadius: 14, borderWidth: 1, paddingHorizontal: 14, paddingVertical: 10, marginBottom: 8, marginTop: 12 },
+  header: { paddingHorizontal: 16, paddingBottom: 8 },
+  backBtn: { width: 36, height: 36, alignItems: "center", justifyContent: "center", marginRight: 4 },
+  headerRow: { flexDirection: "row", alignItems: "center", gap: 6, marginBottom: 12 },
+  headerTitle: { fontSize: 22, fontFamily: "SpaceGrotesk_700Bold" },
+  headerSub: { fontSize: 12, fontFamily: "SpaceGrotesk_400Regular", marginTop: 1 },
+  jadeToggle: { paddingHorizontal: 10, paddingVertical: 6, borderRadius: 10, borderWidth: 1 },
+  jadeToggleText: { fontSize: 11, fontFamily: "SpaceGrotesk_700Bold" },
+  iconBtn: { width: 36, height: 36, borderRadius: 18, alignItems: "center", justifyContent: "center" },
+  search: { flexDirection: "row", alignItems: "center", gap: 10, borderRadius: 14, borderWidth: 1, paddingHorizontal: 14, paddingVertical: 10, marginBottom: 8 },
   searchInput: { flex: 1, fontSize: 15 },
   item: { flexDirection: "row", alignItems: "center", paddingHorizontal: 20, paddingVertical: 14, borderBottomWidth: StyleSheet.hairlineWidth },
   avatarWrap: { position: "relative", marginRight: 14 },
