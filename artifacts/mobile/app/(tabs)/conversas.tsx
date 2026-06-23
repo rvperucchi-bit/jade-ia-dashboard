@@ -322,11 +322,25 @@ export default function ConversasScreen() {
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
   };
 
+  const canGoBack = router.canGoBack();
+
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       {/* ── Header ── */}
-      <View style={[styles.header, { paddingTop: topPad + 16 }]}>
-        <View style={styles.headerRow}>
+      <View style={[styles.header, { paddingTop: topPad + 8 }]}>
+        {/* Back row */}
+        {canGoBack && (
+          <TouchableOpacity
+            style={styles.backBtn}
+            onPress={() => router.back()}
+            activeOpacity={0.7}
+            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+          >
+            <Feather name="arrow-left" size={20} color="rgba(255,255,255,0.65)" />
+          </TouchableOpacity>
+        )}
+
+        <View style={[styles.headerRow, { marginTop: canGoBack ? 4 : 8 }]}>
           <View>
             <Text style={[styles.headerTitle, { color: colors.text }]}>Conversas</Text>
             <Text style={[styles.headerSub, { color: colors.mutedForeground }]}>
@@ -343,8 +357,9 @@ export default function ConversasScreen() {
           </TouchableOpacity>
         </View>
 
+        {/* JADE banner — compact when AutonomoPanel is also visible */}
         <JadeBanner ativa={jadeAtiva} onToggle={handleToggle} loading={toggling} />
-        <AutonomoPanel ativa={jadeAtiva} logs={activityLogs} router={router} />
+        {jadeAtiva && <AutonomoPanel ativa={jadeAtiva} logs={activityLogs} router={router} />}
 
         <View style={[styles.search, { backgroundColor: colors.surface, borderColor: colors.border }]}>
           <Feather name="search" size={16} color={colors.mutedForeground} />
@@ -470,6 +485,7 @@ export default function ConversasScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1 },
   header: { paddingHorizontal: 20, paddingBottom: 8 },
+  backBtn: { flexDirection: "row", alignItems: "center", paddingVertical: 4, marginBottom: 2, alignSelf: "flex-start" },
   headerRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 14 },
   headerTitle: { fontSize: 26, fontFamily: "SpaceGrotesk_700Bold" },
   headerSub: { fontSize: 13, fontFamily: "SpaceGrotesk_400Regular", marginTop: 2 },

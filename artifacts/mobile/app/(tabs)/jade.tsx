@@ -48,7 +48,7 @@ const ACCORDION_SECTIONS: AccordionSection[] = [
     icon: "message-circle",
     items: [
       { label: "Nova conversa", action: "nova-conversa" },
-      { label: "Recentes",      route: "/(tabs)/conversas" },
+      { label: "Histórico / CRM", route: "/(tabs)/conversas" },
     ],
   },
   {
@@ -56,11 +56,10 @@ const ACCORDION_SECTIONS: AccordionSection[] = [
     title: "Comercial",
     icon: "trending-up",
     items: [
-      { label: "CRM",          route: "/(tabs)/conversas" },
-      { label: "Oportunidades",route: "/(tabs)/leads" },
-      { label: "Metas",        route: "/metas",     requiresPlan: "enterprise" },
-      { label: "Carteira",     route: "/carteira",  requiresPlan: "enterprise" },
-      { label: "Meu Time",     route: "/meutime",   requiresPlan: "enterprise" },
+      { label: "Oportunidades", route: "/(tabs)/leads" },
+      { label: "Metas",         route: "/metas",    requiresPlan: "enterprise" },
+      { label: "Carteira",      route: "/carteira", requiresPlan: "enterprise" },
+      { label: "Meu Time",      route: "/meutime",  requiresPlan: "enterprise" },
     ],
   },
   {
@@ -82,7 +81,7 @@ const ACCORDION_SECTIONS: AccordionSection[] = [
       { label: "Dashboard Exec.", route: "/painelexecutivo", requiresPlan: "enterprise" },
       { label: "Relatórios",      route: "/relatorios" },
       { label: "Análises",        route: "/analise",         requiresPlan: "pro" },
-      { label: "Feedback Exec.",  route: "/feedbackexecutivo", requiresPlan: "enterprise" },
+      { label: "Performance",     route: "/relatoriogestor", requiresPlan: "enterprise" },
     ],
   },
   {
@@ -90,10 +89,9 @@ const ACCORDION_SECTIONS: AccordionSection[] = [
     title: "Operação",
     icon: "map",
     items: [
-      { label: "Scanner",      route: "/scanner" },
-      { label: "Rotas",        route: "/criarrota",    requiresPlan: "pro" },
-      { label: "Agenda",       route: "/planejamento", requiresPlan: "pro" },
-      { label: "Laudo",        route: "/laudo" },
+      { label: "Scanner", route: "/scanner" },
+      { label: "Rotas",   route: "/criarrota", requiresPlan: "pro" },
+      { label: "Laudo",   route: "/laudo" },
     ],
   },
   {
@@ -101,10 +99,10 @@ const ACCORDION_SECTIONS: AccordionSection[] = [
     title: "Configurações",
     icon: "settings",
     items: [
-      { label: "Perfil",       route: "/perfil" },
-      { label: "Plano",        route: "/plano" },
-      { label: "Uso",          route: "/uso" },
-      { label: "Integrações",  route: "/whatsapp-config" },
+      { label: "Perfil",      route: "/perfil" },
+      { label: "Plano",       route: "/plano" },
+      { label: "Uso",         route: "/uso" },
+      { label: "Integrações", route: "/whatsapp-config" },
     ],
   },
 ];
