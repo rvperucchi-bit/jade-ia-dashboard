@@ -1230,6 +1230,101 @@
   ],
   "activity_events": [
     {
+      "id": "54aec7058c5b4e60",
+      "type": "message",
+      "text": "JADE respondeu: \"Pode ser\"",
+      "icon": "robot",
+      "color": "#FF0080",
+      "created_at": "2026-06-23T22:03:22.344Z"
+    },
+    {
+      "id": "2fb63168a199b798",
+      "type": "message",
+      "text": "JADE respondeu a uma mensagem",
+      "icon": "robot",
+      "color": "#FF0080",
+      "metadata": {
+        "session_id": "ef4f5ceabaf91e1c"
+      },
+      "created_at": "2026-06-23T22:03:22.071Z"
+    },
+    {
+      "id": "95c8edf0a89b2d1b",
+      "type": "message",
+      "text": "JADE respondeu: \"Preciso que você busque novos\"",
+      "icon": "robot",
+      "color": "#FF0080",
+      "created_at": "2026-06-23T22:03:09.281Z"
+    },
+    {
+      "id": "9a11ca067c254329",
+      "type": "message",
+      "text": "JADE respondeu a uma mensagem",
+      "icon": "robot",
+      "color": "#FF0080",
+      "metadata": {
+        "session_id": "ef4f5ceabaf91e1c"
+      },
+      "created_at": "2026-06-23T22:03:09.017Z"
+    },
+    {
+      "id": "810a8622f7a1ceb2",
+      "type": "message",
+      "text": "JADE respondeu: \"Preciso de leads em Criciúma\"",
+      "icon": "robot",
+      "color": "#FF0080",
+      "created_at": "2026-06-23T22:02:54.683Z"
+    },
+    {
+      "id": "8761daf7a8befd24",
+      "type": "message",
+      "text": "JADE respondeu a uma mensagem",
+      "icon": "robot",
+      "color": "#FF0080",
+      "metadata": {
+        "session_id": "ef4f5ceabaf91e1c"
+      },
+      "created_at": "2026-06-23T22:02:54.395Z"
+    },
+    {
+      "id": "4c23a07e6f5a09e0",
+      "type": "message",
+      "text": "JADE respondeu: \"O que pode fazer por mim?\"",
+      "icon": "robot",
+      "color": "#FF0080",
+      "created_at": "2026-06-23T22:02:40.758Z"
+    },
+    {
+      "id": "4a6d23c7403bd019",
+      "type": "message",
+      "text": "JADE respondeu a uma mensagem",
+      "icon": "robot",
+      "color": "#FF0080",
+      "metadata": {
+        "session_id": "ef4f5ceabaf91e1c"
+      },
+      "created_at": "2026-06-23T22:02:40.492Z"
+    },
+    {
+      "id": "24fce946ce9afe83",
+      "type": "message",
+      "text": "JADE respondeu: \"Oi jade\"",
+      "icon": "robot",
+      "color": "#FF0080",
+      "created_at": "2026-06-23T22:02:31.712Z"
+    },
+    {
+      "id": "1856498bf5fb9d22",
+      "type": "message",
+      "text": "JADE respondeu a uma mensagem",
+      "icon": "robot",
+      "color": "#FF0080",
+      "metadata": {
+        "session_id": "ef4f5ceabaf91e1c"
+      },
+      "created_at": "2026-06-23T22:02:31.418Z"
+    },
+    {
       "id": "17e66d37d46b8a5e",
       "type": "message",
       "text": "JADE ativada no modo autônomo",
@@ -3124,122 +3219,6 @@
       "icon": "user-plus",
       "color": "#6C63FF",
       "created_at": "2026-06-21T03:36:24.655Z"
-    },
-    {
-      "id": "195d781b6a28170e",
-      "type": "lead",
-      "text": "Novo lead adicionado: Ana Paula Costa (Boutique Chique)",
-      "icon": "user-plus",
-      "color": "#6C63FF",
-      "created_at": "2026-06-21T03:36:24.652Z"
-    },
-    {
-      "id": "9614a8daed775728",
-      "type": "scan",
-      "text": "JADE encontrou 3 novos leads via radar em São Paulo",
-      "icon": "crosshair",
-      "color": "#6C63FF",
-      "metadata": {
-        "count": 3,
-        "cidade": "São Paulo"
-      },
-      "created_at": "2026-06-21T03:36:24.355Z"
-    },
-    {
-      "id": "de3074590f62af7e",
-      "type": "module",
-      "text": "Marketing IA desativado",
-      "icon": "zap",
-      "color": "#FFB300",
-      "metadata": {
-        "module": "marketing",
-        "active": false
-      },
-      "created_at": "2026-06-21T03:36:20.672Z"
-    },
-    {
-      "id": "0a51bbeb184e28d7",
-      "type": "module",
-      "text": "Marketing IA ativado",
-      "icon": "zap",
-      "color": "#FFB300",
-      "metadata": {
-        "module": "marketing",
-        "active": true
-      },
-      "created_at": "2026-06-21T03:36:20.075Z"
-    },
-    {
-      "id": "2a4795b1d4e9173f",
-      "type": "module",
-      "text": "WhatsApp desativado",
-      "icon": "message-circle",
-      "color": "#25D366",
-      "metadata": {
-        "module": "whatsapp",
-        "active": false
-      },
-      "created_at": "2026-06-21T03:36:19.011Z"
-    },
-    {
-      "id": "9e88fe24a8014a94",
-      "type": "module",
-      "text": "WhatsApp ativado",
-      "icon": "message-circle",
-      "color": "#25D366",
-      "metadata": {
-        "module": "whatsapp",
-        "active": true
-      },
-      "created_at": "2026-06-21T03:36:18.229Z"
-    },
-    {
-      "id": "f776af374115f6d3",
-      "type": "module",
-      "text": "CRM/Leads desativado",
-      "icon": "users",
-      "color": "#00D68F",
-      "metadata": {
-        "module": "leads",
-        "active": false
-      },
-      "created_at": "2026-06-21T03:36:17.675Z"
-    },
-    {
-      "id": "7a16bf69d5a6ac90",
-      "type": "module",
-      "text": "CRM/Leads ativado",
-      "icon": "users",
-      "color": "#00D68F",
-      "metadata": {
-        "module": "leads",
-        "active": true
-      },
-      "created_at": "2026-06-21T03:36:17.050Z"
-    },
-    {
-      "id": "f403430ce29761b6",
-      "type": "module",
-      "text": "Scanner Radar desativado",
-      "icon": "crosshair",
-      "color": "#6C63FF",
-      "metadata": {
-        "module": "scanner",
-        "active": false
-      },
-      "created_at": "2026-06-21T03:36:16.465Z"
-    },
-    {
-      "id": "16bd425239e29b41",
-      "type": "module",
-      "text": "Scanner Radar ativado",
-      "icon": "crosshair",
-      "color": "#6C63FF",
-      "metadata": {
-        "module": "scanner",
-        "active": true
-      },
-      "created_at": "2026-06-21T03:36:16.083Z"
     }
   ],
   "marketing_campaigns": [
@@ -3265,6 +3244,64 @@
     }
   ],
   "jade_sessions": [
+    {
+      "id": "ef4f5ceabaf91e1c",
+      "title": "Oi jade",
+      "messages": [
+        {
+          "role": "user",
+          "content": "Oi jade",
+          "time": "2026-06-23T22:02:31.410Z"
+        },
+        {
+          "role": "model",
+          "content": "Me conta.",
+          "time": "2026-06-23T22:02:31.414Z"
+        },
+        {
+          "role": "user",
+          "content": "O que pode fazer por mim?",
+          "time": "2026-06-23T22:02:40.486Z"
+        },
+        {
+          "role": "model",
+          "content": "Ajudo times de vendas a prospectar mais rápido, abordar melhor e fechar mais. Com o Plano, o foco é otimizar as vendas no segmento de Alimentação.\n\nQuer começar por qual parte?",
+          "time": "2026-06-23T22:02:40.489Z"
+        },
+        {
+          "role": "user",
+          "content": "Preciso de leads em Criciúma",
+          "time": "2026-06-23T22:02:54.389Z"
+        },
+        {
+          "role": "model",
+          "content": "Aqui estão leads para abordar em Criciúma:\n\n1.  **Restaurante com delivery próprio** — dor: concorrência acirrada e custo de plataformas de terceiros → \"Como o delivery próprio está te ajudando a cortar taxas e aumentar a margem em Criciúma?\"\n2.  **Lanchonete/Hamburgueria** — dor: dificuldade em gerenciar picos de pedido e manter a qualidade → \"Seu sistema atual aguenta o movimento do fim de semana sem gargalos? Posso te mostrar como otimizar isso.\"\n3.  **Pizzaria tradicional** — dor: perder clientes para apps de delivery mais ágeis e promoções → \"Como você tem mantido a base de clientes fiel e atraído novos sem depender só de desconto?\"\n4.  **Cafeteria com opções de comida** — dor: falta de visibilidade sobre o desempenho do delivery em comparação com o salão → \"Você sabe exatamente quanto cada canal de venda contribui pro seu faturamento total? Posso te dar essa clareza.\"\n5.  **Açaíteria/Sorveteria** — dor: sazonalidade e dificuldade em manter vendas no inverno ou dias de chuva → \"Como você mantém o faturamento estável em dias de baixo movimento? Tenho uma estratégia para isso.\"\n6.  **Marmitaria/Refeições fitness** — dor: otimização de rotas de entrega e gestão de pedidos recorrentes → \"Suas entregas estão otimizadas para economizar tempo e combustível? Posso te ajudar a refinar essa logística.\"",
+          "time": "2026-06-23T22:02:54.392Z"
+        },
+        {
+          "role": "user",
+          "content": "Preciso que você busque novos",
+          "time": "2026-06-23T22:03:09.007Z"
+        },
+        {
+          "role": "model",
+          "content": "Buscando agora. Para qual segmento e cidade? Se não disser nada, vou focar em Alimentação em Criciúma.",
+          "time": "2026-06-23T22:03:09.012Z"
+        },
+        {
+          "role": "user",
+          "content": "Pode ser",
+          "time": "2026-06-23T22:03:22.065Z"
+        },
+        {
+          "role": "model",
+          "content": "Aqui estão mais leads para abordar em Criciúma:\n\n1.  Padaria com serviço de entrega — dor: gestão manual de pedidos e entregadores, causando atrasos → \"Como você tem garantido que todos os pedidos cheguem quentinhos e no prazo, sem perder o controle?\"\n2.  Restaurante de comida japonesa — dor: alto custo de embalagens especiais e manutenção da qualidade no transporte → \"Seu sistema de delivery te ajuda a otimizar o custo de embalagem e garantir a experiência premium do cliente?\"\n3.  Food truck com ponto fixo — dor: expandir o alcance sem perder a agilidade do atendimento presencial → \"Como você tem feito para levar seu sabor a mais clientes sem aumentar a sua carga operacional?\"\n4.  Doceria artesanal — dor: dificuldade em escalar as vendas online e gerenciar um catálogo variado → \"Sua vitrine digital consegue mostrar todo o encanto dos seus doces e facilitar a compra em poucos cliques?\"\n5.  Bar/Pub com petiscos e delivery — dor: queda de faturamento fora do horário de pico e nos dias de semana → \"Como você tem transformado os horários de menor movimento em oportunidades de venda com o delivery?\"\n6.  Mercado/Hortifruti com entrega — dor: concorrência de grandes redes e dificuldade em personalizar a experiência → \"Você consegue oferecer uma experiência de compra online tão personalizada quanto a da sua loja física?\"",
+          "time": "2026-06-23T22:03:22.069Z"
+        }
+      ],
+      "created_at": "2026-06-23T22:02:29.809Z",
+      "updated_at": "2026-06-23T22:03:22.069Z"
+    },
     {
       "id": "5822d32e9cd3c58f",
       "title": "Tudo bem?",

@@ -1,0 +1,153 @@
+AJUSTES FINAIS - TELA CONVERSAS COMERCIAIS
+
+Objetivo:
+Refinar visualmente a tela de Conversas Comerciais. A estrutura está boa e as funcionalidades principais já estão funcionando. Agora o foco é eliminar poluição visual, corrigir pequenos problemas de interface e deixar a experiência alinhada ao padrão premium da JADE.
+
+1. CORRIGIR ABA “TODAS”
+
+Atualmente, ao selecionar “Todas”, aparece um grande bloco rosa vertical.
+
+Isso parece um erro visual.
+
+Corrigir para:
+
+* Apenas destacar a aba selecionada.
+* Utilizar o mesmo comportamento das demais abas.
+* Pode ser texto rosa com underline discreto.
+* Ou uma pill pequena e elegante.
+* Não exibir nenhum bloco grande ou painel rosa.
+
+2. REFINAR FILTROS
+
+Filtros atuais:
+
+* Todas
+* Em andamento
+* Sem resposta
+* Qualificados
+* Arquivadas
+
+Ajustes:
+
+* Reduzir tamanho visual.
+* Melhorar espaçamento.
+* Garantir que todos os textos apareçam completos.
+* Evitar cortes de texto.
+* Seguir referência visual semelhante ao WhatsApp, porém com identidade JADE.
+
+3. REDUZIR EXCESSO DE CORES
+
+Atualmente existem muitas cores simultâneas:
+
+* Azul
+* Vermelho
+* Laranja
+* Verde
+* Rosa
+
+Simplificar.
+
+Padrão desejado:
+
+* Rosa JADE = destaque principal
+* Branco = informação principal
+* Cinza = informação secundária
+* Vermelho = apenas alertas críticos
+
+Evitar múltiplas cores competindo entre si.
+
+4. SIMPLIFICAR BADGES
+
+Badges atuais:
+
+* Follow-up
+* Em andamento
+* Novo lead
+* Sem resposta
+
+Ajustar:
+
+* Fundo mais discreto.
+* Menos saturação.
+* Visual mais elegante.
+* Reduzir peso visual.
+
+Prioridade:
+O usuário deve enxergar primeiro o nome do contato e a última mensagem.
+
+5. REMOVER INDICADORES DUPLICADOS
+
+Atualmente existem:
+
+* Badge de status
+* Indicador lateral colorido
+* Bolinhas de status
+
+Existe redundância.
+
+Manter apenas os elementos realmente necessários.
+
+Se o badge já informa o status da conversa, remover indicadores laterais coloridos.
+
+Objetivo:
+Reduzir ruído visual.
+
+6. AJUSTAR INDICADOR DA JADE
+
+A bolinha de status da JADE ficou muito isolada.
+
+Reposicionar para ficar agrupada junto aos ícones superiores.
+
+Sugestão:
+
+🟢 🔍 ⚙️
+
+ou
+
+🔍 ⚙️ 🟢
+
+Manter discreta.
+
+Sem texto.
+
+7. MELHORAR SUBTÍTULO
+
+Hoje:
+
+“2 sem resposta”
+
+Avaliar substituição por:
+
+* 2 aguardando retorno
+* 2 oportunidades sem resposta
+* 2 leads aguardando ação
+
+Utilizar a opção que gerar melhor contexto comercial.
+
+8. MELHORAR HIERARQUIA VISUAL
+
+Prioridade de leitura:
+
+1. Nome do contato
+2. Última mensagem
+3. Status
+4. Horário
+5. Contadores
+
+Nenhum elemento secundário deve competir com o nome do contato.
+
+9. REVISÃO FINAL
+
+Após concluir:
+
+* Testar todos os filtros.
+* Testar busca.
+* Testar arquivadas.
+* Testar navegação.
+* Testar abertura das conversas.
+
+Garantir que tudo permaneça funcionando após os ajustes visuais.
+
+Objetivo final:
+
+Transformar a tela de Conversas Comerciais em uma interface premium, limpa, moderna e elegante, eliminando o aspecto de “árvore de Natal” e aproximando a experiência da identidade visual oficial da JADE.

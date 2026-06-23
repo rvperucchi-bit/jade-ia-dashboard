@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -13,7 +13,7 @@ import {
   ScrollView,
   Pressable,
 } from "react-native";
-import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
+import { Feather } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -42,18 +42,14 @@ const FILTERS: { key: FilterType; label: string }[] = [
   { key: "arquivadas",   label: "Arquivadas" },
 ];
 
-function deriveStatus(c: Conversation): "ativo" | "aguardando" | "frio" {
-  if (c.isOnline) return "ativo";
-  if (c.unread > 0) return "aguardando";
-  return "frio";
-}
+type TagInfo = { label: string; color: string; bg: string };
 
-function deriveTag(c: Conversation): { label: string; color: string } {
-  if (c.unread > 5)               return { label: "Qualificado",      color: "#22CC88" };
-  if (c.unread > 2)               return { label: "Follow-up",        color: "#FF8800" };
-  if (c.isOnline)                 return { label: "Em andamento",      color: PINK };
-  if (!c.isOnline && c.unread === 0) return { label: "Sem resposta",  color: "#AA4444" };
-  return                                  { label: "Novo lead",        color: "#5577FF" };
+function deriveTag(c: Conversation): TagInfo {
+  if (c.isOnline)                    return { label: "Em andamento", color: PINK,                      bg: PINK + "18" };
+  if (c.unread > 5)                  return { label: "Qualificado",  color: "rgba(180,180,210,0.85)",  bg: "rgba(180,180,210,0.08)" };
+  if (c.unread > 2)                  return { label: "Follow-up",    color: "rgba(180,180,210,0.65)",  bg: "rgba(180,180,210,0.07)" };
+  if (!c.isOnline && c.unread === 0) return { label: "Aguardando",   color: "rgba(180,180,210,0.5)",   bg: "rgba(180,180,210,0.05)" };
+  return                                    { label: "Novo lead",    color: "rgba(180,180,210,0.6)",   bg: "rgba(180,180,210,0.06)" };
 }
 
 function applyFilter(conversations: Conversation[], filter: FilterType): Conversation[] {
@@ -66,17 +62,12 @@ function applyFilter(conversations: Conversation[], filter: FilterType): Convers
   }
 }
 
-// ─── ConversationItem (redesigned) ────────────────────────────────────────────
+// ─── ConversationItem ─────────────────────────────────────────────────────────
 function ConversationItem({
   item, onPress, limitReached,
 }: { item: Conversation; onPress: () => void; limitReached?: boolean }) {
   const colors = useColors();
-  const status = deriveStatus(item);
   const tag    = deriveTag(item);
-
-  const statusColor =
-    status === "ativo"     ? "#22CC88" :
-    status === "aguardando"? "#FF8800" : "#AA4444";
 
   return (
     <TouchableOpacity
@@ -84,30 +75,32 @@ function ConversationItem({
       onPress={onPress}
       activeOpacity={0.7}
     >
-      {/* Status bar (left border) */}
-      <View style={[S.statusBar, { backgroundColor: statusColor }]} />
-
+      {/* Avatar */}
       <View style={S.avatarWrap}>
         <View style={[S.avatar, { backgroundColor: item.avatarColor }]}>
           <Text style={S.avatarText}>{item.initials}</Text>
         </View>
-        {/* Status dot */}
-        <View style={[S.statusDot, { backgroundColor: statusColor, borderColor: colors.background }]} />
+        {item.isOnline && (
+          <View style={[S.onlineDot, { borderColor: colors.background }]} />
+        )}
       </View>
 
+      {/* Content */}
       <View style={S.itemBody}>
+        {/* Row 1: Name + Time */}
         <View style={S.itemRow}>
           <Text style={[S.itemName, { color: colors.text }]} numberOfLines={1}>
             {item.contactName}
           </Text>
-          <Text style={[S.itemTime, { color: item.unread > 0 ? PINK : colors.mutedForeground }]}>
+          <Text style={[S.itemTime, { color: colors.mutedForeground }]}>
             {item.time}
           </Text>
         </View>
 
+        {/* Row 2: Last message */}
         <Text
           style={[S.itemMsg, {
-            color: item.unread > 0 ? colors.text : colors.mutedForeground,
+            color: item.unread > 0 ? "rgba(255,255,255,0.75)" : colors.mutedForeground,
             fontFamily: item.unread > 0 ? "SpaceGrotesk_500Medium" : "SpaceGrotesk_400Regular",
           }]}
           numberOfLines={1}
@@ -115,21 +108,20 @@ function ConversationItem({
           {item.lastMessage}
         </Text>
 
+        {/* Row 3: Tag + Badge */}
         <View style={S.bottomRow}>
-          {/* Commercial tag */}
-          <View style={[S.tagChip, { backgroundColor: tag.color + "20" }]}>
-            <View style={[S.tagDot, { backgroundColor: tag.color }]} />
+          <View style={[S.tagChip, { backgroundColor: tag.bg }]}>
             <Text style={[S.tagText, { color: tag.color }]}>{tag.label}</Text>
           </View>
 
           <View style={{ flexDirection: "row", gap: 6, alignItems: "center" }}>
             {limitReached && (
               <View style={S.limitBadge}>
-                <Text style={S.limitBadgeText}>Limite</Text>
+                <Text style={S.limitBadgeText}>Pausado</Text>
               </View>
             )}
             {item.unread > 0 && !limitReached && (
-              <View style={[S.badge, { backgroundColor: PINK }]}>
+              <View style={S.badge}>
                 <Text style={S.badgeText}>{item.unread}</Text>
               </View>
             )}
@@ -166,11 +158,11 @@ export default function ConversasScreen() {
   const router = useRouter();
   const { conversations } = useApp();
 
-  const [query,        setQuery]       = useState("");
-  const [showSearch,   setShowSearch]  = useState(false);
-  const [activeFilter, setActiveFilter]= useState<FilterType>("todas");
-  const [jadeAtiva,    setJadeAtiva]   = useState(false);
-  const [toggling,     setToggling]    = useState(false);
+  const [query,         setQuery]        = useState("");
+  const [showSearch,    setShowSearch]   = useState(false);
+  const [activeFilter,  setActiveFilter] = useState<FilterType>("todas");
+  const [jadeAtiva,     setJadeAtiva]    = useState(false);
+  const [toggling,      setToggling]     = useState(false);
   const [settingsModal, setSettingsModal] = useState(false);
   const [msgLimit,      setMsgLimit]     = useState(DEFAULT_LIMIT);
   const [warnOnLimit,   setWarnOnLimit]  = useState(true);
@@ -262,7 +254,7 @@ export default function ConversasScreen() {
   const filtered = applyFilter(conversations, activeFilter)
     .filter(c => !query || c.contactName.toLowerCase().includes(query.toLowerCase()));
 
-  const unreadCount = conversations.filter(c => c.unread > 0).length;
+  const waitingCount = conversations.filter(c => !c.isOnline && c.unread === 0).length;
 
   return (
     <View style={[S.root, { backgroundColor: colors.background }]}>
@@ -276,30 +268,43 @@ export default function ConversasScreen() {
         <View style={{ flex: 1 }}>
           <Text style={[S.title, { color: colors.text }]}>Conversas</Text>
           <Text style={[S.subtitle, { color: colors.mutedForeground }]}>
-            {unreadCount > 0 ? `${unreadCount} sem resposta` : "Central comercial"}
+            {waitingCount > 0 ? `${waitingCount} aguardando retorno` : "Central comercial"}
           </Text>
         </View>
 
-        {/* Status dot + label */}
-        <TouchableOpacity style={S.statusPill} onPress={handleToggle} activeOpacity={0.8} disabled={toggling}>
-          {toggling
-            ? <ActivityIndicator size="small" color={PINK} style={{ width: 8, height: 8 }} />
-            : <View style={[S.statusDotHeader, { backgroundColor: jadeAtiva ? "#22CC88" : "#666677" }]} />
-          }
-        </TouchableOpacity>
-
-        {/* Lupa */}
-        <TouchableOpacity style={[S.iconBtn, { backgroundColor: colors.surface }]} onPress={() => setShowSearch(v => !v)} activeOpacity={0.8}>
+        {/* Search */}
+        <TouchableOpacity
+          style={[S.iconBtn, { backgroundColor: colors.surface }]}
+          onPress={() => setShowSearch(v => !v)}
+          activeOpacity={0.8}
+        >
           <Feather name="search" size={17} color={showSearch ? PINK : colors.mutedForeground} />
         </TouchableOpacity>
 
-        {/* Filtros */}
-        <TouchableOpacity style={[S.iconBtn, { backgroundColor: colors.surface }]} onPress={openSettings} activeOpacity={0.8}>
+        {/* Settings */}
+        <TouchableOpacity
+          style={[S.iconBtn, { backgroundColor: colors.surface }]}
+          onPress={openSettings}
+          activeOpacity={0.8}
+        >
           <Feather name="sliders" size={17} color={colors.mutedForeground} />
+        </TouchableOpacity>
+
+        {/* JADE status dot — grouped with icons */}
+        <TouchableOpacity
+          style={S.statusPill}
+          onPress={handleToggle}
+          activeOpacity={0.8}
+          disabled={toggling}
+        >
+          {toggling
+            ? <ActivityIndicator size="small" color={PINK} style={{ width: 8, height: 8 }} />
+            : <View style={[S.jadeDot, { backgroundColor: jadeAtiva ? "#22CC88" : "#444455" }]} />
+          }
         </TouchableOpacity>
       </View>
 
-      {/* ── Search bar (conditional) ── */}
+      {/* ── Search bar ── */}
       {showSearch && (
         <View style={[S.searchBar, { backgroundColor: colors.surface, borderColor: colors.border }]}>
           <Feather name="search" size={15} color={colors.mutedForeground} />
@@ -320,17 +325,24 @@ export default function ConversasScreen() {
       )}
 
       {/* ── Filter tabs ── */}
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={S.filterScroll}>
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={S.filterScroll}
+      >
         {FILTERS.map(f => {
           const active = activeFilter === f.key;
           return (
             <TouchableOpacity
               key={f.key}
-              style={[S.filterTab, { borderColor: active ? PINK + "66" : "transparent", backgroundColor: active ? PINK + "18" : "transparent" }]}
+              style={S.filterTab}
               onPress={() => { setActiveFilter(f.key); Haptics.selectionAsync(); }}
               activeOpacity={0.75}
             >
-              <Text style={[S.filterText, { color: active ? PINK : colors.mutedForeground }]}>{f.label}</Text>
+              <Text style={[S.filterText, { color: active ? PINK : colors.mutedForeground }]}>
+                {f.label}
+              </Text>
+              {active && <View style={S.filterUnderline} />}
             </TouchableOpacity>
           );
         })}
@@ -350,9 +362,9 @@ export default function ConversasScreen() {
                 limitReached={reached}
               />
               {reached && (
-                <View style={[S.authBanner, { backgroundColor: "rgba(255,255,255,0.04)", borderColor: "rgba(255,255,255,0.06)" }]}>
-                  <Feather name="alert-triangle" size={13} color="rgba(255,255,255,0.45)" />
-                  <Text style={S.authBannerText}>JADE pausada — limite de {msgLimit} msgs</Text>
+                <View style={[S.authBanner, { borderColor: "rgba(255,255,255,0.05)" }]}>
+                  <Feather name="pause-circle" size={13} color="rgba(255,255,255,0.35)" />
+                  <Text style={S.authBannerText}>JADE pausada — {msgLimit} msgs atingidas</Text>
                   <TouchableOpacity style={S.authBtn} onPress={() => authorizeMore(item.id)} activeOpacity={0.8}>
                     <Text style={S.authBtnText}>+10 msgs</Text>
                   </TouchableOpacity>
@@ -365,10 +377,12 @@ export default function ConversasScreen() {
         showsVerticalScrollIndicator={false}
         ListEmptyComponent={
           <View style={S.empty}>
-            <Feather name="message-circle" size={40} color={colors.mutedForeground} />
+            <Feather name="message-circle" size={36} color={colors.mutedForeground} />
             <Text style={[S.emptyTitle, { color: colors.text }]}>Nenhuma conversa</Text>
             <Text style={[S.emptyText, { color: colors.mutedForeground }]}>
-              {activeFilter !== "todas" ? "Sem resultados para esse filtro." : "As conversas comerciais da JADE aparecerão aqui."}
+              {activeFilter !== "todas"
+                ? "Nenhum resultado para esse filtro."
+                : "As conversas comerciais da JADE aparecerão aqui."}
             </Text>
           </View>
         }
@@ -416,45 +430,58 @@ export default function ConversasScreen() {
 // ─── Styles ───────────────────────────────────────────────────────────────────
 const S = StyleSheet.create({
   root:           { flex: 1 },
+
+  // Header
   header:         { flexDirection: "row", alignItems: "center", paddingHorizontal: 16, paddingBottom: 10, gap: 8 },
   backBtn:        { padding: 4 },
   title:          { fontSize: 20, fontFamily: "SpaceGrotesk_700Bold" },
   subtitle:       { fontSize: 11, fontFamily: "SpaceGrotesk_400Regular", marginTop: 1 },
-  statusPill:     { width: 28, height: 28, alignItems: "center", justifyContent: "center" },
-  statusDotHeader:{ width: 9, height: 9, borderRadius: 5 },
   iconBtn:        { width: 34, height: 34, borderRadius: 17, alignItems: "center", justifyContent: "center" },
+  statusPill:     { width: 28, height: 28, alignItems: "center", justifyContent: "center" },
+  jadeDot:        { width: 8, height: 8, borderRadius: 4 },
+
+  // Search
   searchBar:      { flexDirection: "row", alignItems: "center", gap: 10, marginHorizontal: 16, marginBottom: 6, borderRadius: 12, borderWidth: 1, paddingHorizontal: 12, paddingVertical: 9 },
   searchInput:    { flex: 1, fontSize: 14, fontFamily: "SpaceGrotesk_400Regular" },
-  filterScroll:   { paddingHorizontal: 16, paddingBottom: 8, gap: 6 },
-  filterTab:      { paddingHorizontal: 14, paddingVertical: 6, borderRadius: 20, borderWidth: 1 },
+
+  // Filter tabs — underline style
+  filterScroll:   { paddingHorizontal: 16, paddingBottom: 4, gap: 0 },
+  filterTab:      { paddingHorizontal: 12, paddingVertical: 9, alignItems: "center" },
   filterText:     { fontSize: 13, fontFamily: "SpaceGrotesk_500Medium" },
-  // Conversation item
-  item:           { flexDirection: "row", alignItems: "center", paddingRight: 16, paddingVertical: 12, borderBottomWidth: StyleSheet.hairlineWidth },
-  statusBar:      { width: 3, height: "100%", marginRight: 12 },
-  avatarWrap:     { position: "relative", marginRight: 12 },
+  filterUnderline:{ height: 2, backgroundColor: PINK, borderRadius: 1, width: "80%", marginTop: 5 },
+
+  // Conversation item — no left status bar
+  item:           { flexDirection: "row", alignItems: "center", paddingLeft: 16, paddingRight: 16, paddingVertical: 13, borderBottomWidth: StyleSheet.hairlineWidth },
+  avatarWrap:     { position: "relative", marginRight: 13 },
   avatar:         { width: 46, height: 46, borderRadius: 23, alignItems: "center", justifyContent: "center" },
-  avatarText:     { color: "#fff", fontSize: 16, fontFamily: "SpaceGrotesk_700Bold" },
-  statusDot:      { position: "absolute", bottom: 1, right: 1, width: 11, height: 11, borderRadius: 6, borderWidth: 2 },
+  avatarText:     { color: "#fff", fontSize: 15, fontFamily: "SpaceGrotesk_700Bold" },
+  onlineDot:      { position: "absolute", bottom: 1, right: 1, width: 10, height: 10, borderRadius: 5, backgroundColor: "#22CC88", borderWidth: 2 },
+
   itemBody:       { flex: 1, gap: 3 },
   itemRow:        { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
   itemName:       { fontSize: 14, fontFamily: "SpaceGrotesk_600SemiBold", flex: 1, marginRight: 8 },
   itemTime:       { fontSize: 11, fontFamily: "SpaceGrotesk_400Regular" },
-  itemMsg:        { fontSize: 12, marginRight: 8 },
+  itemMsg:        { fontSize: 12, marginRight: 8, lineHeight: 17 },
+
   bottomRow:      { flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginTop: 2 },
-  tagChip:        { flexDirection: "row", alignItems: "center", gap: 4, paddingHorizontal: 7, paddingVertical: 3, borderRadius: 8 },
-  tagDot:         { width: 5, height: 5, borderRadius: 3 },
-  tagText:        { fontSize: 10, fontFamily: "SpaceGrotesk_600SemiBold" },
-  badge:          { width: 18, height: 18, borderRadius: 9, alignItems: "center", justifyContent: "center" },
+  tagChip:        { paddingHorizontal: 7, paddingVertical: 3, borderRadius: 6 },
+  tagText:        { fontSize: 10, fontFamily: "SpaceGrotesk_500Medium" },
+
+  badge:          { minWidth: 18, height: 18, borderRadius: 9, backgroundColor: PINK, alignItems: "center", justifyContent: "center", paddingHorizontal: 4 },
   badgeText:      { color: "#fff", fontSize: 10, fontFamily: "SpaceGrotesk_700Bold" },
-  limitBadge:     { backgroundColor: "rgba(255,255,255,0.06)", borderRadius: 8, paddingHorizontal: 6, paddingVertical: 2 },
-  limitBadgeText: { color: "rgba(255,255,255,0.45)", fontSize: 10, fontFamily: "SpaceGrotesk_600SemiBold" },
-  authBanner:     { flexDirection: "row", alignItems: "center", gap: 8, paddingHorizontal: 16, paddingVertical: 8, borderTopWidth: StyleSheet.hairlineWidth, borderBottomWidth: StyleSheet.hairlineWidth },
-  authBannerText: { flex: 1, color: "rgba(255,255,255,0.45)", fontSize: 12, fontFamily: "SpaceGrotesk_500Medium" },
-  authBtn:        { backgroundColor: "#FF008020", borderColor: "#FF008050", borderWidth: 1, borderRadius: 8, paddingHorizontal: 10, paddingVertical: 5 },
-  authBtnText:    { color: "#FF0080", fontSize: 12, fontFamily: "SpaceGrotesk_700Bold" },
+  limitBadge:     { backgroundColor: "rgba(255,255,255,0.05)", borderRadius: 6, paddingHorizontal: 6, paddingVertical: 2 },
+  limitBadgeText: { color: "rgba(255,255,255,0.35)", fontSize: 10, fontFamily: "SpaceGrotesk_500Medium" },
+
+  // Auth banner
+  authBanner:     { flexDirection: "row", alignItems: "center", gap: 8, paddingHorizontal: 16, paddingVertical: 9, borderBottomWidth: StyleSheet.hairlineWidth },
+  authBannerText: { flex: 1, color: "rgba(255,255,255,0.38)", fontSize: 12, fontFamily: "SpaceGrotesk_400Regular" },
+  authBtn:        { backgroundColor: "#FF008018", borderColor: "#FF008040", borderWidth: 1, borderRadius: 8, paddingHorizontal: 10, paddingVertical: 5 },
+  authBtnText:    { color: PINK, fontSize: 12, fontFamily: "SpaceGrotesk_600SemiBold" },
+
+  // Empty state
   empty:          { alignItems: "center", justifyContent: "center", paddingTop: 80, gap: 10 },
-  emptyTitle:     { fontSize: 16, fontFamily: "SpaceGrotesk_600SemiBold" },
-  emptyText:      { fontSize: 13, fontFamily: "SpaceGrotesk_400Regular", textAlign: "center", paddingHorizontal: 32 },
+  emptyTitle:     { fontSize: 15, fontFamily: "SpaceGrotesk_600SemiBold" },
+  emptyText:      { fontSize: 13, fontFamily: "SpaceGrotesk_400Regular", textAlign: "center", paddingHorizontal: 32, lineHeight: 19 },
 });
 
 const modal = StyleSheet.create({
@@ -470,7 +497,7 @@ const modal = StyleSheet.create({
   toggle:       { flexDirection: "row", alignItems: "center", gap: 12, borderTopWidth: StyleSheet.hairlineWidth, paddingTop: 14 },
   toggleTitle:  { fontSize: 14, fontFamily: "SpaceGrotesk_600SemiBold" },
   toggleSub:    { fontSize: 12, fontFamily: "SpaceGrotesk_400Regular", marginTop: 2, lineHeight: 16 },
-  saveBtn:      { backgroundColor: "#FF0080", borderRadius: 14, paddingVertical: 15, alignItems: "center", marginTop: 4 },
+  saveBtn:      { backgroundColor: PINK, borderRadius: 14, paddingVertical: 15, alignItems: "center", marginTop: 4 },
   saveBtnText:  { color: "#fff", fontSize: 16, fontFamily: "SpaceGrotesk_700Bold" },
 });
 
