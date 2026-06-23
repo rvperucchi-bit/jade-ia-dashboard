@@ -2,12 +2,12 @@
   "modules": {
     "scanner": {
       "module_name": "scanner",
-      "is_active": false,
-      "status": "paused",
-      "last_started_at": "2026-06-21T13:56:32.061Z",
+      "is_active": true,
+      "status": "running",
+      "last_started_at": "2026-06-23T01:22:57.266Z",
       "last_stopped_at": "2026-06-21T14:10:12.316Z",
       "last_run_at": null,
-      "updated_at": "2026-06-21T14:10:12.316Z"
+      "updated_at": "2026-06-23T01:22:57.266Z"
     },
     "jade": {
       "module_name": "jade",
@@ -47,6 +47,16 @@
     }
   },
   "module_logs": [
+    {
+      "id": "84c1ac6fa04efec0",
+      "module_name": "scanner",
+      "action": "activated",
+      "message": "Scanner Radar ativado",
+      "metadata": {
+        "active": true
+      },
+      "created_at": "2026-06-23T01:22:57.268Z"
+    },
     {
       "id": "f90593e1c15aa223",
       "module_name": "marketing",
@@ -1189,6 +1199,27 @@
     }
   ],
   "activity_events": [
+    {
+      "id": "8ad9bb59331355db",
+      "type": "module",
+      "text": "Scanner Radar ativado",
+      "icon": "crosshair",
+      "color": "#6C63FF",
+      "metadata": {
+        "module": "scanner",
+        "active": true
+      },
+      "created_at": "2026-06-23T01:22:57.270Z"
+    },
+    {
+      "id": "2f3c4178c08e06e0",
+      "type": "message",
+      "text": "JADE respondeu a uma mensagem",
+      "icon": "robot",
+      "color": "#FF0080",
+      "metadata": {},
+      "created_at": "2026-06-22T23:38:31.161Z"
+    },
     {
       "id": "03f0663bdb50c95d",
       "type": "message",
@@ -3188,30 +3219,6 @@
       "icon": "user-plus",
       "color": "#6C63FF",
       "created_at": "2026-06-21T03:21:26.468Z"
-    },
-    {
-      "id": "ed04e25e5363b63e",
-      "type": "scan",
-      "text": "JADE encontrou 3 novos leads via radar em São Paulo",
-      "icon": "crosshair",
-      "color": "#6C63FF",
-      "metadata": {
-        "count": 3,
-        "cidade": "São Paulo"
-      },
-      "created_at": "2026-06-21T03:21:26.112Z"
-    },
-    {
-      "id": "66493c39be87eb60",
-      "type": "module",
-      "text": "Scanner Radar desativado",
-      "icon": "crosshair",
-      "color": "#6C63FF",
-      "metadata": {
-        "module": "scanner",
-        "active": false
-      },
-      "created_at": "2026-06-21T03:21:18.580Z"
     }
   ],
   "marketing_campaigns": [

@@ -38,48 +38,75 @@ const DRAWER_W  = SCREEN_W;
 const RDRAWER_W = 76;
 
 // ─── Menu data ────────────────────────────────────────────────────────────────
-type MenuItem = { label: string; route: string; requiresPlan?: "pro" | "enterprise" };
-type MenuSection = { title: string; items: MenuItem[] };
+type MenuItem = { label: string; route?: string; requiresPlan?: "pro" | "enterprise"; action?: "nova-conversa" };
+type AccordionSection = { key: string; title: string; icon: string; items: MenuItem[] };
 
-const MENU_SECTIONS: MenuSection[] = [
+const ACCORDION_SECTIONS: AccordionSection[] = [
   {
-    title: "Ferramentas",
+    key: "conversas",
+    title: "Conversas",
+    icon: "message-circle",
     items: [
-      { label: "Chat IA",      route: "/(tabs)/jade" },
-      { label: "CRM",          route: "/(tabs)/conversas" },
-      { label: "Briefings",    route: "/briefing" },
-      { label: "Oportunidades",route: "/(tabs)/leads" },
-      { label: "Metas",        route: "/metas" },
+      { label: "Nova conversa", action: "nova-conversa" },
+      { label: "Recentes",      route: "/(tabs)/conversas" },
     ],
   },
   {
-    title: "Recursos Pro",
+    key: "comercial",
+    title: "Comercial",
+    icon: "trending-up",
     items: [
-      { label: "Radar",        route: "/analise",      requiresPlan: "pro" },
-      { label: "Marketing IA", route: "/marketing",    requiresPlan: "pro" },
+      { label: "CRM",          route: "/(tabs)/conversas" },
+      { label: "Oportunidades",route: "/(tabs)/leads" },
+      { label: "Metas",        route: "/metas",     requiresPlan: "enterprise" },
+      { label: "Carteira",     route: "/carteira",  requiresPlan: "enterprise" },
+      { label: "Meu Time",     route: "/meutime",   requiresPlan: "enterprise" },
+    ],
+  },
+  {
+    key: "marketing",
+    title: "Marketing",
+    icon: "volume-2",
+    items: [
+      { label: "Briefings",    route: "/briefing" },
+      { label: "Campanhas",    route: "/marketing",    requiresPlan: "pro" },
       { label: "Planejamento", route: "/planejamento", requiresPlan: "pro" },
       { label: "Simulação",    route: "/roleplay",     requiresPlan: "pro" },
-      { label: "Relatórios",   route: "/relatorios",   requiresPlan: "pro" },
     ],
   },
   {
-    title: "Recursos Enterprise",
+    key: "gestao",
+    title: "Gestão",
+    icon: "bar-chart-2",
     items: [
-      { label: "Gestão Inteligente", route: "/gestao",          requiresPlan: "enterprise" },
-      { label: "Metas e KPIs",       route: "/metas",           requiresPlan: "enterprise" },
-      { label: "Painel Executivo",   route: "/painelexecutivo", requiresPlan: "enterprise" },
-      { label: "Performance",        route: "/relatoriogestor", requiresPlan: "enterprise" },
-      { label: "Check-ins",          route: "/feedbackjade",    requiresPlan: "enterprise" },
+      { label: "Dashboard Exec.", route: "/painelexecutivo", requiresPlan: "enterprise" },
+      { label: "Relatórios",      route: "/relatorios" },
+      { label: "Análises",        route: "/analise",         requiresPlan: "pro" },
+      { label: "Feedback Exec.",  route: "/feedbackexecutivo", requiresPlan: "enterprise" },
     ],
   },
-];
-
-const RECENT_CONVOS = [
-  "Análise Comercial",
-  "Plano de Marketing",
-  "Relatório Semanal",
-  "Estratégia JADE",
-  "Campanhas Ativas",
+  {
+    key: "operacao",
+    title: "Operação",
+    icon: "map",
+    items: [
+      { label: "Scanner",      route: "/scanner" },
+      { label: "Rotas",        route: "/criarrota",    requiresPlan: "pro" },
+      { label: "Agenda",       route: "/planejamento", requiresPlan: "pro" },
+      { label: "Laudo",        route: "/laudo" },
+    ],
+  },
+  {
+    key: "configuracoes",
+    title: "Configurações",
+    icon: "settings",
+    items: [
+      { label: "Perfil",       route: "/perfil" },
+      { label: "Plano",        route: "/plano" },
+      { label: "Uso",          route: "/uso" },
+      { label: "Integrações",  route: "/whatsapp-config" },
+    ],
+  },
 ];
 
 const CONTEXT_ITEMS = [
@@ -89,6 +116,67 @@ const CONTEXT_ITEMS = [
   { icon: "share-2"  as const, label: "Compartilhar" },
   { icon: "sliders"  as const, label: "Configurações do chat" },
 ] as const;
+
+// ─── Accordion component (left drawer) ───────────────────────────────────────
+const ITEM_H = 46;
+
+function AccordionItem({
+  section,
+  isOpen,
+  onToggle,
+  onItemPress,
+}: {
+  section: AccordionSection;
+  isOpen: boolean;
+  onToggle: () => void;
+  onItemPress: (item: MenuItem) => void;
+}) {
+  const rotAnim   = useRef(new Animated.Value(0)).current;
+  const hAnim     = useRef(new Animated.Value(0)).current;
+  const CONTENT_H = section.items.length * ITEM_H;
+
+  useEffect(() => {
+    Animated.parallel([
+      Animated.timing(rotAnim, { toValue: isOpen ? 1 : 0, duration: 200, easing: Easing.out(Easing.cubic), useNativeDriver: true }),
+      Animated.timing(hAnim,   { toValue: isOpen ? CONTENT_H : 0, duration: 220, easing: Easing.out(Easing.cubic), useNativeDriver: false }),
+    ]).start();
+  }, [isOpen]);
+
+  const rotate = rotAnim.interpolate({ inputRange: [0, 1], outputRange: ["0deg", "90deg"] });
+
+  return (
+    <View style={C.accordionWrap}>
+      <TouchableOpacity style={C.accordionHeader} onPress={onToggle} activeOpacity={0.7}>
+        <Feather name={section.icon as any} size={14} color={isOpen ? PINK : "rgba(255,255,255,0.28)"} />
+        <Text style={[C.accordionTitle, isOpen && C.accordionTitleOpen]}>{section.title}</Text>
+        <Animated.View style={{ transform: [{ rotate }] }}>
+          <Feather name="chevron-right" size={13} color="rgba(255,255,255,0.22)" />
+        </Animated.View>
+      </TouchableOpacity>
+      <Animated.View style={{ height: hAnim, overflow: "hidden" }}>
+        {section.items.map((item) => (
+          <TouchableOpacity
+            key={item.label}
+            style={C.accordionItemRow}
+            onPress={() => onItemPress(item)}
+            activeOpacity={0.6}
+          >
+            {item.requiresPlan && (
+              <Feather name="lock" size={10} color="rgba(255,255,255,0.18)" style={{ marginRight: 4 }} />
+            )}
+            <Text style={[
+              C.accordionItemText,
+              item.action === "nova-conversa" && C.accordionItemNew,
+            ]} numberOfLines={1}>
+              {item.label}
+            </Text>
+          </TouchableOpacity>
+        ))}
+      </Animated.View>
+      <View style={C.accordionSep} />
+    </View>
+  );
+}
 
 // ─── AI Modules (right drawer) ────────────────────────────────────────────────
 const MODULES = [
@@ -270,9 +358,10 @@ export default function JADEScreen() {
   };
 
   // ── Left drawer + menu state ──────────────────────────────────────────────
-  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [drawerOpen,     setDrawerOpen]     = useState(false);
   const drawerOpenRef = useRef(false);
-  const [menuOpen,   setMenuOpen]   = useState(false);
+  const [menuOpen,       setMenuOpen]       = useState(false);
+  const [openAccordion,  setOpenAccordion]  = useState<string | null>(null);
   const drawerAnim  = useRef(new Animated.Value(-DRAWER_W)).current;
   const drawerBg    = useRef(new Animated.Value(0)).current;
 
@@ -568,17 +657,23 @@ export default function JADEScreen() {
 
   // Navigate from drawer item
   const handleMenuNav = (item: MenuItem) => {
+    if (item.action === "nova-conversa") {
+      closeDrawer();
+      resetConversation();
+      return;
+    }
+    if (!item.route) return;
     closeDrawer();
     if (item.requiresPlan && !canAccess(item.requiresPlan)) {
       router.push("/plano" as any);
       return;
     }
-    if (item.route === "/(tabs)/jade") {
-      // Already here — just close
-      return;
-    }
+    if (item.route === "/(tabs)/jade") return;
     router.push(item.route as any);
   };
+
+  const toggleAccordion = (key: string) =>
+    setOpenAccordion((prev) => (prev === key ? null : key));
 
   return (
     <View style={[C.container, { backgroundColor: colors.background }]} {...swipePan.panHandlers}>
@@ -734,65 +829,19 @@ export default function JADEScreen() {
               </TouchableOpacity>
             </View>
 
-            <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 16 }}>
-              {/* ── Nova conversa ── */}
-              <TouchableOpacity
-                style={C.newConvoBtn}
-                onPress={() => { closeDrawer(); resetConversation(); }}
-                activeOpacity={0.75}
-              >
-                <Feather name="plus" size={14} color="rgba(255,255,255,0.5)" />
-                <Text style={C.newConvoText}>Nova conversa</Text>
-              </TouchableOpacity>
-
-              {/* ── Recentes ── */}
-              <View style={C.section}>
-                <Text style={C.sectionLabel}>Recentes</Text>
-                {RECENT_CONVOS.map((title) => (
-                  <TouchableOpacity key={title} style={C.recentItem} onPress={() => { closeDrawer(); resetConversation(); }} activeOpacity={0.6}>
-                    <Text style={C.recentText} numberOfLines={1}>{title}</Text>
-                  </TouchableOpacity>
+            <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 24 }}>
+              {/* ── Accordion sections ── */}
+              <View style={{ marginTop: 8 }}>
+                {ACCORDION_SECTIONS.map((section) => (
+                  <AccordionItem
+                    key={section.key}
+                    section={section}
+                    isOpen={openAccordion === section.key}
+                    onToggle={() => toggleAccordion(section.key)}
+                    onItemPress={handleMenuNav}
+                  />
                 ))}
               </View>
-
-              <View style={C.sep} />
-
-              {/* ── Menu sections ── */}
-              {MENU_SECTIONS.map((section) => {
-                const sectionLocked = section.items[0].requiresPlan && !canAccess(section.items[0].requiresPlan);
-                return (
-                  <View key={section.title} style={C.section}>
-                    <Text style={C.sectionLabel}>{section.title}</Text>
-                    {section.items.map((item) => {
-                      const locked = item.requiresPlan ? !canAccess(item.requiresPlan) : false;
-                      const isCurrent = item.route === "/(tabs)/jade";
-                      return (
-                        <TouchableOpacity
-                          key={item.label}
-                          style={C.menuItem}
-                          onPress={() => handleMenuNav(item)}
-                          activeOpacity={locked ? 0.5 : 0.65}
-                        >
-                          <Text style={[
-                            C.menuText,
-                            locked && C.menuTextLocked,
-                            isCurrent && { color: "#fff" },
-                          ]} numberOfLines={1}>
-                            {item.label}
-                          </Text>
-                          {isCurrent && (
-                            <Text style={C.activeDot}>●</Text>
-                          )}
-                          {locked && (
-                            <Feather name="lock" size={11} color="#333" />
-                          )}
-                        </TouchableOpacity>
-                      );
-                    })}
-                    <View style={C.sep} />
-                  </View>
-                );
-              })}
             </ScrollView>
 
             {/* ── Footer ── */}
@@ -986,16 +1035,26 @@ const C = StyleSheet.create({
   },
   sep: { height: StyleSheet.hairlineWidth, backgroundColor: "#161616", marginTop: 20, marginHorizontal: 24 },
 
-  recentItem: { paddingVertical: 11, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: "#121212" },
-  recentText: { fontSize: 15, fontFamily: "SpaceGrotesk_400Regular", color: "#666" },
-
-  menuItem: {
-    flexDirection: "row", alignItems: "center", gap: 8,
-    paddingVertical: 13, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: "#121212",
+  // ── Accordion ──
+  accordionWrap:      { },
+  accordionHeader:    {
+    flexDirection: "row", alignItems: "center", gap: 10,
+    paddingHorizontal: 24, paddingVertical: 14,
   },
-  menuText:       { flex: 1, fontSize: 16, fontFamily: "SpaceGrotesk_400Regular", color: "#777" },
-  menuTextLocked: { color: "#2E2E2E" },
-  activeDot:      { fontSize: 8, color: PINK, marginRight: 2 },
+  accordionTitle:     {
+    flex: 1, fontSize: 13, fontFamily: "SpaceGrotesk_600SemiBold",
+    color: "rgba(255,255,255,0.28)", letterSpacing: 0.4, textTransform: "uppercase",
+  },
+  accordionTitleOpen: { color: "rgba(255,255,255,0.75)" },
+  accordionSep:       { height: StyleSheet.hairlineWidth, backgroundColor: "#0F0F1A", marginHorizontal: 24 },
+  accordionItemRow:   {
+    height: ITEM_H, flexDirection: "row", alignItems: "center",
+    paddingHorizontal: 40,
+  },
+  accordionItemText:  { flex: 1, fontSize: 15, fontFamily: "SpaceGrotesk_400Regular", color: "rgba(255,255,255,0.42)" },
+  accordionItemNew:   { color: PINK, fontFamily: "SpaceGrotesk_500Medium" },
+
+  activeDot: { fontSize: 8, color: PINK, marginRight: 2 },
 
   // ── Footer ──
   drawerFooter: { paddingHorizontal: 20 },

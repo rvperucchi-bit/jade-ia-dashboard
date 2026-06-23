@@ -1,0 +1,61 @@
+Faça uma correção objetiva no app JADE, sem criar telas novas e sem alterar a estrutura principal do layout.
+
+Contexto:
+O app agora deve começar pelo chat da JADE. O menu lateral esquerdo e o menu lateral direito já fazem parte do novo design. As telas antigas continuam existindo, mas precisam estar corretamente linkadas e visualmente alinhadas ao estilo dark premium atual.
+
+Tarefas obrigatórias:
+
+1. Corrigir navegação no arquivo mais.tsx:
+- Botão "Metas" deve ir direto para /metas
+- Botão "Carteira" deve ir direto para /carteira
+- Botão "Meu Time" deve ir direto para /meutime
+Não enviar esses três botões para /gestao.
+
+2. Adicionar acesso visível para /scanner:
+- Criar card no menu/grid de módulos
+- Nome sugerido: "Radar de Leads"
+- Rota: /scanner
+
+3. Verificar a rota /treinamento:
+- Se a tela ainda fizer sentido no produto, adicionar acesso visível no menu de módulos.
+- Se estiver obsoleta ou duplicada, não apagar sem avisar. Apenas relatar.
+
+4. Padronizar todos os botões de voltar:
+- Remover fundo opaco dos BackButtons.
+- Usar backgroundColor: transparent.
+- Manter apenas o ícone de seta.
+- Garantir área mínima de toque de 44px.
+- Aplicar em todas as telas de detalhe.
+
+5. Padronizar cores no tema oficial:
+Usar apenas:
+- Background principal: #0B0814
+- Card: #111118
+- Surface/input: #16161F
+- Border: #1E1E2E
+- Rosa principal: #FF0080
+- Roxo secundário: #8400FF
+- Texto principal: #FFFFFF
+- Texto secundário: #8A8A9A
+
+Substituir:
+- #FF6B6B por #FF0080
+- #FF3333 por #FF0080
+- #FF8080 por #FF0080
+- #00B4D8 por #8400FF
+
+6. Não mexer no fluxo principal do chat.
+O chat da JADE continua sendo a tela principal do app.
+
+7. Não remover nenhuma tela existente sem autorização.
+Apenas corrigir navegação, acesso, estilo visual e consistência.
+
+8. Depois das alterações, gerar um resumo com:
+- Arquivos alterados
+- Rotas corrigidas
+- Cores substituídas
+- Telas que continuam sem acesso
+- Possíveis telas duplicadas ou obsoletas
+
+Objetivo final:
+Deixar o app JADE navegável, consistente, premium e pronto para uma revisão visual final.
