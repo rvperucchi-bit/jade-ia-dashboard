@@ -71,6 +71,8 @@ export interface CompanyConfig {
   segmento: string;
   tom: string;
   planos: string;
+  cidade?: string;
+  modoOperacao?: string;
   updated_at: string;
 }
 

@@ -277,9 +277,16 @@ const sessionPendingLeads = new Map<string, {
 function detectProspectingIntent(text: string): boolean {
   const lower = text.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
   if (/prospeccao|prospectar|lead/.test(lower)) return true;
+  // "preciso de clientes/leads", "quero novos clientes", "me traz leads", etc.
+  if (/\b(preciso\s+de|quero|me\s+da|me\s+traz|me\s+manda|novos?)\b.{0,30}\b(cliente|lead|prospect|empresa)/.test(lower)) return true;
   const hasVerb   = /\b(busca|encontra|acha|traz|procura|lista|mostra|manda)\b/.test(lower);
   const hasTarget = /\b(cliente|empresa|estabelecimento|negocio|clinica|restaurante|loja|dentista|contato|prospect|barbearia|salao|oficina|escola|academia|comercio|farmacia|hotel)\b/.test(lower);
   return hasVerb && hasTarget;
+}
+
+function isGreeting(text: string): boolean {
+  const lower = text.toLowerCase().trim().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  return /^(oi|ola|oie|opa|ei|eai|e ai|bom dia|boa tarde|boa noite|hey|hi|hello|oi jade|ola jade|oi ia|jade|bom dia jade|boa tarde jade|boa noite jade|boas|tudo bem|tudo bom|bom dia ia)[\s!.?]*$/.test(lower);
 }
 
 function detectNextLeadRequest(text: string): boolean {
@@ -299,7 +306,7 @@ function extractSearchParams(
   const rawCity = cityMatch ? cityMatch[1] : null;
   const cidade = rawCity
     ? rawCity.replace(/\b\w/g, (c) => c.toUpperCase())
-    : (companyConfig?.cidade ?? 'São Paulo');
+    : (companyConfig?.cidade?.trim() || '');
 
   // Segment from keywords in message
   const SEGMENT_MAP: [RegExp, string][] = [
@@ -427,71 +434,50 @@ function segmentEmoji(tipo: string): string {
   return '🏢';
 }
 
-function buildLeadPrompt(
+function buildAnalysisOnlyPrompt(lead: PendingLeadResult, tipo: string): string {
+  return `Analise este estabelecimento real e responda SOMENTE com estas 3 linhas (sem mais nada):
+DOR: [1 frase de dor provável específica para ESTE negócio, NÃO genérica]
+ANGULO: [1 frase do melhor ângulo de abordagem comercial para este prospect]
+PERGUNTA: [1 pergunta de abertura que inicia conversa com o dono]
+
+Estabelecimento: ${lead.name}
+Endereço: ${lead.address}
+Segmento: ${tipo || 'comércio geral'}
+Avaliação: ${lead.rating ? `${lead.rating} estrelas, ${lead.totalRatings} avaliações` : 'sem dados'}`;
+}
+
+function buildLeadCardText(
   lead: PendingLeadResult,
   idx: number,
   total: number,
   city: string,
-  hasMore: boolean,
-  tipo = '',
-  isBatchEnd = false,
+  tipo: string,
+  isBatchEnd: boolean,
+  dor: string,
 ): string {
   const emoji = segmentEmoji(tipo || lead.name);
-  const infoLine = (() => {
-    const parts: string[] = [];
-    if (lead.phone)  parts.push(`📞 ${lead.phone}`);
-    if (lead.rating) parts.push(`⭐ ${lead.rating}`);
-    return parts.join(' · ');
-  })();
-
+  const parts: string[] = [];
+  if (lead.phone)  parts.push(`📞 ${lead.phone}`);
+  if (lead.rating) parts.push(`⭐ ${lead.rating}`);
+  const infoLine = parts.join(' · ');
   const closing = isBatchEnd
     ? `Quer mais ${BATCH_SIZE} opções em ${city}?`
     : 'Abordo esse ou você mesmo fala com ele?';
-
-  const introLine = idx === 1
+  const intro = (idx === 1 && city)
     ? `Encontrei ${total} opções em ${city}. Aqui vai o primeiro:\n\n`
     : '';
 
-  return `Você tem dados reais do Google Maps. Responda em DOIS blocos separados:
-
-BLOCO 1 (o que o usuário vê — siga o formato EXATO, sem variações):
-${introLine}${emoji} ${lead.name}
-📍 ${lead.address}
-${infoLine ? infoLine + '\n' : ''}
-[1 frase de dor provável — específica para esse negócio, NÃO genérica]
-
-${closing}
-
-BLOCO 2 (análise de vendas — separado por ---ANALISE---):
----ANALISE---
-DOR: [1 frase de dor provável]
-ANGULO: [1 frase sobre o melhor ângulo de abordagem]
-PERGUNTA: [1 frase de pergunta de abertura ideal]
----FIM---
-
-DADOS REAIS (use SOMENTE estes — não invente):
-Nome: ${lead.name}
-Endereço: ${lead.address}
-Telefone: ${lead.phone || 'não disponível'}
-Avaliação: ${lead.rating ? `${lead.rating} estrelas` : 'não disponível'}
-
-REGRAS DO BLOCO 1:
-- Substitua o colchete da dor provável por uma frase real e específica.
-- Se não houver telefone nem avaliação, omita a linha de contato.
-- NÃO adicione texto extra fora do formato.`;
+  const lines: string[] = [`${intro}${emoji} ${lead.name}`, `📍 ${lead.address}`];
+  if (infoLine) lines.push(infoLine);
+  lines.push('', dor, '', closing);
+  return lines.join('\n');
 }
 
-function parseLeadResponse(raw: string): { cardText: string; analysis: { dor: string; angulo: string; pergunta: string } } {
-  const parts = raw.split('---ANALISE---');
-  const cardText = parts[0].trim();
-  const section  = parts[1] ?? '';
+function parseAnalysis(text: string): { dor: string; angulo: string; pergunta: string } {
   return {
-    cardText,
-    analysis: {
-      dor:      section.match(/DOR:\s*(.+)/)?.[1]?.trim()      ?? '',
-      angulo:   section.match(/ANGULO:\s*(.+)/)?.[1]?.trim()   ?? '',
-      pergunta: section.match(/PERGUNTA:\s*(.+)/)?.[1]?.trim()?.replace(/^["']|["']$/g, '') ?? '',
-    },
+    dor:      text.match(/DOR:\s*(.+)/)?.[1]?.trim()      ?? '',
+    angulo:   text.match(/ANGULO:\s*(.+)/)?.[1]?.trim()   ?? '',
+    pergunta: text.match(/PERGUNTA:\s*(.+)/)?.[1]?.trim()?.replace(/^["']|["']$/g, '') ?? '',
   };
 }
 
@@ -504,6 +490,7 @@ router.post('/chat', async (req: Request, res: Response) => {
       message?: string;
       session_id?: string;
       radar_on?: boolean;
+      user_name?: string;
     };
     const radarOn = body.radar_on === true;
 
@@ -600,6 +587,20 @@ router.post('/chat', async (req: Request, res: Response) => {
     const lastUserText = lastMessage!.content;
     const mapsApiKey = process.env.GOOGLE_MAPS_API_KEY ?? process.env.GOOGLE_MAPS_PLATFORM_KEY;
 
+    // ─── Greeting interception: respond with user name, skip Gemini ─────────
+    if (isGreeting(lastUserText)) {
+      const rawName = (body.user_name ?? '').trim();
+      const firstName = rawName.split(/\s+/)[0] ?? '';
+      const greeting = firstName
+        ? `Olá, ${firstName}! O que você precisa hoje?`
+        : 'Olá! O que você precisa hoje?';
+      if (body.session_id) {
+        appendJadeMessage(body.session_id, 'user', lastUserText);
+        appendJadeMessage(body.session_id, 'model', greeting);
+      }
+      return res.json({ message: greeting, session_id: body.session_id, handoff: false });
+    }
+
     // ─── Path A: "próximo" with pending leads already in session ─────────────
     if (body.session_id && detectNextLeadRequest(lastUserText)) {
       const pending = sessionPendingLeads.get(body.session_id);
@@ -608,11 +609,11 @@ router.post('/chat', async (req: Request, res: Response) => {
         pending.shown++;
         const hasMore = pending.leads.length > 0;
         const isBatchEnd = hasMore && pending.shown % BATCH_SIZE === 0;
-        const prompt = buildLeadPrompt(lead, pending.shown, pending.total, pending.city, hasMore, pending.tipo, isBatchEnd);
-
-        const nr = await chat.sendMessage(prompt);
-        const rawText = nr.response.text();
-        const { cardText, analysis } = parseLeadResponse(rawText);
+        const analysisModel = genAI.getGenerativeModel({ model: 'gemini-2.5-flash', generationConfig: { maxOutputTokens: 500, temperature: 0.5 } });
+        const analysisPromptA = buildAnalysisOnlyPrompt(lead, pending.tipo);
+        const nrA = await analysisModel.generateContent(analysisPromptA);
+        const analysis = parseAnalysis(nrA.response.text());
+        const cardText = buildLeadCardText(lead, pending.shown, pending.total, pending.city, pending.tipo, isBatchEnd, analysis.dor);
 
         appendJadeMessage(body.session_id, 'user', lastUserText);
         appendJadeMessage(body.session_id, 'model', cardText);
@@ -627,8 +628,10 @@ router.post('/chat', async (req: Request, res: Response) => {
       }
     }
 
-    // ─── Path B: New prospecting request → call Google Places (Radar ON) ────
-    if (radarOn && mapsApiKey && detectProspectingIntent(lastUserText)) {
+    // ─── Path B: New prospecting request → call Google Places ────────────────
+    // Explicit prospecting commands always trigger search, regardless of radar toggle.
+    // Radar toggle only controls automatic background search (not yet implemented here).
+    if (mapsApiKey && detectProspectingIntent(lastUserText)) {
       const { tipo, cidade } = extractSearchParams(lastUserText, companyConfig, true);
       req.log.info({ tipo, cidade }, 'prospecting intent → calling Google Places');
 
@@ -644,10 +647,14 @@ router.post('/chat', async (req: Request, res: Response) => {
           });
         }
 
-        const prompt = buildLeadPrompt(firstLead, 1, places.length, cidade, remaining.length > 0, tipo);
-        const pr = await chat.sendMessage(prompt);
-        const rawText = pr.response.text();
-        const { cardText, analysis } = parseLeadResponse(rawText);
+        req.log.info({ tipo, cidade: cidade || '(not set in profile)' }, `[JADE] cidade do perfil: "${companyConfig?.cidade ?? ''}" → busca: "${cidade}"`);
+        console.log(`[JADE] cidade do perfil: "${companyConfig?.cidade ?? 'não definida'}" | cidade usada na busca: "${cidade || 'vazia — configure em Minha Empresa'}"`);
+
+        const analysisModel = genAI.getGenerativeModel({ model: 'gemini-2.5-flash', generationConfig: { maxOutputTokens: 500, temperature: 0.5 } });
+        const analysisPromptB = buildAnalysisOnlyPrompt(firstLead, tipo);
+        const pr = await analysisModel.generateContent(analysisPromptB);
+        const analysis = parseAnalysis(pr.response.text());
+        const cardText = buildLeadCardText(firstLead, 1, places.length, cidade, tipo, false, analysis.dor);
 
         if (body.session_id) {
           appendJadeMessage(body.session_id, 'user', lastUserText);

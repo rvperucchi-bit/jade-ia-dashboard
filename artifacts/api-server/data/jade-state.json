@@ -2,12 +2,12 @@
   "modules": {
     "scanner": {
       "module_name": "scanner",
-      "is_active": true,
-      "status": "running",
+      "is_active": false,
+      "status": "paused",
       "last_started_at": "2026-06-23T22:15:58.360Z",
-      "last_stopped_at": "2026-06-23T21:20:06.813Z",
+      "last_stopped_at": "2026-06-23T22:54:02.971Z",
       "last_run_at": null,
-      "updated_at": "2026-06-23T22:15:58.360Z"
+      "updated_at": "2026-06-23T22:54:02.971Z"
     },
     "jade": {
       "module_name": "jade",
@@ -47,6 +47,16 @@
     }
   },
   "module_logs": [
+    {
+      "id": "03edcaacce8fad33",
+      "module_name": "scanner",
+      "action": "deactivated",
+      "message": "Scanner Radar desativado",
+      "metadata": {
+        "active": false
+      },
+      "created_at": "2026-06-23T22:54:02.980Z"
+    },
     {
       "id": "81ce54605023a78b",
       "module_name": "scanner",
@@ -1239,6 +1249,175 @@
     }
   ],
   "activity_events": [
+    {
+      "id": "30e1ec85654979b1",
+      "type": "lead",
+      "text": "JADE encontrou 10 leads reais em Curitiba",
+      "icon": "map-pin",
+      "color": "#FF0080",
+      "metadata": {
+        "cidade": "Curitiba",
+        "tipo": "empresa comércio",
+        "count": 10
+      },
+      "created_at": "2026-06-23T23:07:37.398Z"
+    },
+    {
+      "id": "a8013661f17fce92",
+      "type": "lead",
+      "text": "JADE encontrou 10 leads reais em Sao Paulo",
+      "icon": "map-pin",
+      "color": "#FF0080",
+      "metadata": {
+        "cidade": "Sao Paulo",
+        "tipo": "empresa comércio",
+        "count": 10
+      },
+      "created_at": "2026-06-23T23:06:59.631Z"
+    },
+    {
+      "id": "4b83aa82a7788b2a",
+      "type": "lead",
+      "text": "JADE encontrou 10 leads reais em ",
+      "icon": "map-pin",
+      "color": "#FF0080",
+      "metadata": {
+        "cidade": "",
+        "tipo": "empresa comércio",
+        "count": 10
+      },
+      "created_at": "2026-06-23T23:06:42.157Z"
+    },
+    {
+      "id": "dd55ead2b1b3ad33",
+      "type": "lead",
+      "text": "JADE encontrou 10 leads reais em ",
+      "icon": "map-pin",
+      "color": "#FF0080",
+      "metadata": {
+        "cidade": "",
+        "tipo": "empresa comércio",
+        "count": 10
+      },
+      "created_at": "2026-06-23T23:06:40.183Z"
+    },
+    {
+      "id": "72864fe480cdfa59",
+      "type": "message",
+      "text": "JADE respondeu: \"E em Criciúma\"",
+      "icon": "robot",
+      "color": "#FF0080",
+      "created_at": "2026-06-23T22:55:37.251Z"
+    },
+    {
+      "id": "827e8b5f9626f73c",
+      "type": "message",
+      "text": "JADE respondeu a uma mensagem",
+      "icon": "robot",
+      "color": "#FF0080",
+      "metadata": {
+        "session_id": "7fe56bd5519f5ad4"
+      },
+      "created_at": "2026-06-23T22:55:36.971Z"
+    },
+    {
+      "id": "3b95592c3cdd2723",
+      "type": "message",
+      "text": "JADE respondeu: \"Buscar leads\"",
+      "icon": "robot",
+      "color": "#FF0080",
+      "created_at": "2026-06-23T22:55:03.208Z"
+    },
+    {
+      "id": "79b9a44f77edbc35",
+      "type": "lead",
+      "text": "CRM: Center Comercios Intermediações Comerciais → Primeiro Contato",
+      "icon": "user-plus",
+      "color": "#FF0080",
+      "created_at": "2026-06-23T22:55:02.507Z"
+    },
+    {
+      "id": "9b14b7503d369832",
+      "type": "lead",
+      "text": "JADE encontrou 10 leads reais em São Paulo",
+      "icon": "map-pin",
+      "color": "#FF0080",
+      "metadata": {
+        "cidade": "São Paulo",
+        "tipo": "empresa comércio",
+        "count": 10
+      },
+      "created_at": "2026-06-23T22:55:02.252Z"
+    },
+    {
+      "id": "66a6861cff9b488a",
+      "type": "message",
+      "text": "JADE respondeu: \"Buscar leads\"",
+      "icon": "robot",
+      "color": "#FF0080",
+      "created_at": "2026-06-23T22:54:37.960Z"
+    },
+    {
+      "id": "e75bdb795c48f8bb",
+      "type": "message",
+      "text": "JADE respondeu a uma mensagem",
+      "icon": "robot",
+      "color": "#FF0080",
+      "metadata": {
+        "session_id": "7fe56bd5519f5ad4"
+      },
+      "created_at": "2026-06-23T22:54:37.694Z"
+    },
+    {
+      "id": "3235d3858950a12b",
+      "type": "message",
+      "text": "JADE respondeu: \"Preciso de leads\"",
+      "icon": "robot",
+      "color": "#FF0080",
+      "created_at": "2026-06-23T22:54:25.790Z"
+    },
+    {
+      "id": "d2e2e81f8082f640",
+      "type": "message",
+      "text": "JADE respondeu a uma mensagem",
+      "icon": "robot",
+      "color": "#FF0080",
+      "metadata": {
+        "session_id": "7fe56bd5519f5ad4"
+      },
+      "created_at": "2026-06-23T22:54:25.486Z"
+    },
+    {
+      "id": "5c7692ff8b444763",
+      "type": "message",
+      "text": "JADE respondeu: \"Oi jade\"",
+      "icon": "robot",
+      "color": "#FF0080",
+      "created_at": "2026-06-23T22:54:14.863Z"
+    },
+    {
+      "id": "4c889c4aedb31a1d",
+      "type": "message",
+      "text": "JADE respondeu a uma mensagem",
+      "icon": "robot",
+      "color": "#FF0080",
+      "metadata": {
+        "session_id": "7fe56bd5519f5ad4"
+      },
+      "created_at": "2026-06-23T22:54:14.575Z"
+    },
+    {
+      "id": "cdc245750d2f04ce",
+      "type": "module",
+      "text": "Scanner Radar desativado",
+      "icon": "crosshair",
+      "color": "#6C63FF",
+      "metadata": {
+        "module": "scanner",
+        "active": false
+      },
+      "created_at": "2026-06-23T22:54:02.985Z"
+    },
     {
       "id": "8c3ed006f5fd0cdd",
       "type": "module",
@@ -3061,182 +3240,6 @@
         "cidade": "São Paulo"
       },
       "created_at": "2026-06-21T04:01:17.149Z"
-    },
-    {
-      "id": "974787673f922a05",
-      "type": "module",
-      "text": "Scanner Radar desativado",
-      "icon": "crosshair",
-      "color": "#6C63FF",
-      "metadata": {
-        "module": "scanner",
-        "active": false
-      },
-      "created_at": "2026-06-21T04:01:15.061Z"
-    },
-    {
-      "id": "017135f67cdfd4d2",
-      "type": "module",
-      "text": "CRM/Leads desativado",
-      "icon": "users",
-      "color": "#00D68F",
-      "metadata": {
-        "module": "leads",
-        "active": false
-      },
-      "created_at": "2026-06-21T04:01:14.283Z"
-    },
-    {
-      "id": "19679c49b4ce515f",
-      "type": "module",
-      "text": "CRM/Leads ativado",
-      "icon": "users",
-      "color": "#00D68F",
-      "metadata": {
-        "module": "leads",
-        "active": true
-      },
-      "created_at": "2026-06-21T04:01:13.852Z"
-    },
-    {
-      "id": "37ef918a15403f5b",
-      "type": "module",
-      "text": "Scanner Radar ativado",
-      "icon": "crosshair",
-      "color": "#6C63FF",
-      "metadata": {
-        "module": "scanner",
-        "active": true
-      },
-      "created_at": "2026-06-21T04:01:13.637Z"
-    },
-    {
-      "id": "1cb39c9558d5f4a1",
-      "type": "module",
-      "text": "Scanner Radar desativado",
-      "icon": "crosshair",
-      "color": "#6C63FF",
-      "metadata": {
-        "module": "scanner",
-        "active": false
-      },
-      "created_at": "2026-06-21T04:01:12.579Z"
-    },
-    {
-      "id": "789727c5295569ec",
-      "type": "module",
-      "text": "Scanner Radar ativado",
-      "icon": "crosshair",
-      "color": "#6C63FF",
-      "metadata": {
-        "module": "scanner",
-        "active": true
-      },
-      "created_at": "2026-06-21T04:01:11.942Z"
-    },
-    {
-      "id": "87f053bcd8b9c103",
-      "type": "module",
-      "text": "Scanner Radar desativado",
-      "icon": "crosshair",
-      "color": "#6C63FF",
-      "metadata": {
-        "module": "scanner",
-        "active": false
-      },
-      "created_at": "2026-06-21T04:01:10.944Z"
-    },
-    {
-      "id": "24737dc3e5a34da2",
-      "type": "module",
-      "text": "Scanner Radar ativado",
-      "icon": "crosshair",
-      "color": "#6C63FF",
-      "metadata": {
-        "module": "scanner",
-        "active": true
-      },
-      "created_at": "2026-06-21T04:01:10.145Z"
-    },
-    {
-      "id": "94d33c10579334fd",
-      "type": "lead",
-      "text": "Novo lead adicionado: Ricardo Silva (Pão & Doce Bakery)",
-      "icon": "user-plus",
-      "color": "#6C63FF",
-      "created_at": "2026-06-21T03:50:20.976Z"
-    },
-    {
-      "id": "1931deadd0d1832b",
-      "type": "lead",
-      "text": "Novo lead adicionado: Ana Paula Santos (Essência Boutique)",
-      "icon": "user-plus",
-      "color": "#6C63FF",
-      "created_at": "2026-06-21T03:50:20.341Z"
-    },
-    {
-      "id": "029703e67ba8fa38",
-      "type": "lead",
-      "text": "Novo lead adicionado: Fernanda Costa (Natureza Viva Produtos Naturais)",
-      "icon": "user-plus",
-      "color": "#6C63FF",
-      "created_at": "2026-06-21T03:50:20.338Z"
-    },
-    {
-      "id": "bb7c384794dc7c26",
-      "type": "scan",
-      "text": "JADE encontrou 3 novos leads via radar em São Paulo",
-      "icon": "crosshair",
-      "color": "#6C63FF",
-      "metadata": {
-        "count": 3,
-        "cidade": "São Paulo"
-      },
-      "created_at": "2026-06-21T03:50:19.928Z"
-    },
-    {
-      "id": "86d36fe8d00ea062",
-      "type": "module",
-      "text": "Scanner Radar desativado",
-      "icon": "crosshair",
-      "color": "#6C63FF",
-      "metadata": {
-        "module": "scanner",
-        "active": false
-      },
-      "created_at": "2026-06-21T03:50:14.796Z"
-    },
-    {
-      "id": "ff770355c4608680",
-      "type": "module",
-      "text": "Scanner Radar ativado",
-      "icon": "crosshair",
-      "color": "#6C63FF",
-      "metadata": {
-        "module": "scanner",
-        "active": true
-      },
-      "created_at": "2026-06-21T03:50:13.862Z"
-    },
-    {
-      "id": "d076bafa6dc233e5",
-      "type": "message",
-      "text": "JADE respondeu a uma mensagem",
-      "icon": "robot",
-      "color": "#FF0080",
-      "metadata": {
-        "session_id": "0919802f74345e30"
-      },
-      "created_at": "2026-06-21T03:50:06.135Z"
-    },
-    {
-      "id": "7f2e5d1f09f41c06",
-      "type": "message",
-      "text": "JADE respondeu a uma mensagem",
-      "icon": "robot",
-      "color": "#FF0080",
-      "metadata": {},
-      "created_at": "2026-06-21T03:45:17.212Z"
     }
   ],
   "marketing_campaigns": [
@@ -3262,6 +3265,64 @@
     }
   ],
   "jade_sessions": [
+    {
+      "id": "7fe56bd5519f5ad4",
+      "title": "Oi jade",
+      "messages": [
+        {
+          "role": "user",
+          "content": "Oi jade",
+          "time": "2026-06-23T22:54:14.566Z"
+        },
+        {
+          "role": "model",
+          "content": "Me conta.",
+          "time": "2026-06-23T22:54:14.571Z"
+        },
+        {
+          "role": "user",
+          "content": "Preciso de leads",
+          "time": "2026-06-23T22:54:25.472Z"
+        },
+        {
+          "role": "model",
+          "content": "Aqui estão leads para abordar no segmento de Alimentação:\n\n1.  **Restaurante com alto volume de delivery** — dor: Altas taxas e dependência de apps externos → \"Chega de perder margem para os apps. Tenha seu próprio canal e lucre mais.\"\n2.  **Pizzaria tradicional** — dor: Dificuldade em digitalizar pedidos e expandir delivery → \"Digitalize seus pedidos e venda mais online, sem complicação.\"\n3.  **Hamburgueria artesanal** — dor: Perda de identidade e dados dos clientes em plataformas genéricas → \"Construa sua marca no delivery e fidelize seus clientes com dados.\"\n4.  **Doceria/Confeitaria** — dor: Gestão manual de pedidos e dificuldade em escalar → \"Organize seus pedidos, agilize entregas e escale suas vendas.\"\n5.  **Food Truck** — dor: Limitação geográfica e necessidade de um canal de vendas online → \"Leve seu food truck para a casa do cliente com um sistema de delivery próprio.\"\n6.  **Dark Kitchen** — dor: Custos fixos altos e busca por maior margem → \"Reduza seus custos com apps e otimize sua operação para mais lucro.\"",
+          "time": "2026-06-23T22:54:25.480Z"
+        },
+        {
+          "role": "user",
+          "content": "Buscar leads",
+          "time": "2026-06-23T22:54:37.687Z"
+        },
+        {
+          "role": "model",
+          "content": "Aqui estão mais leads para abordar no segmento de Alimentação:\n\n1.  Cafeteria com opções de lanches — dor: Dificuldade em gerenciar pedidos para retirada e entrega → \"Agilize o atendimento e amplie suas vendas com um sistema que integra retirada e delivery.\"\n2.  Lanchonete de bairro — dor: Concorrência de grandes redes e dificuldade de visibilidade online → \"Destaque sua lanchonete na vizinhança e atraia mais clientes com seu próprio delivery.\"\n3.  Açaiteria/Sorveteria — dor: Logística complicada para delivery de produtos refrigerados e gestão de adicionais → \"Otimize a entrega de produtos gelados e personalize pedidos sem erros.\"\n4.  Comida saudável/Marmitaria — dor: Gestão de cardápios semanais e agendamento de entregas → \"Simplifique a gestão de cardápios e entregas agendadas, fidelizando seus clientes.\"\n5.  Bar/Pub com cozinha — dor: Necessidade de um canal de delivery para dias de menor movimento no salão → \"Transforme seu bar em um ponto de delivery lucrativo, mesmo fora do happy hour.\"\n6.  Padaria com delivery de pães e bolos — dor: Perda de pedidos por telefone e falta de controle de estoque para entregas → \"Organize seus pedidos de delivery e evite perdas com um controle eficiente.\"",
+          "time": "2026-06-23T22:54:37.691Z"
+        },
+        {
+          "role": "user",
+          "content": "Buscar leads",
+          "time": "2026-06-23T22:55:02.121Z"
+        },
+        {
+          "role": "model",
+          "content": "Encontrei 10 opções em São Paulo. Aqui vai o primeiro:\n\n🛍️ Center Comercios Intermediações Comerciais\n📍 R. Tijuco Preto, 1645 - Tatuapé, São Paulo - SP, 03066-065, Brasil\n📞 (11) 99999-2116 · ⭐ 5\n\nSeus clientes do setor de alimentação podem estar perdendo vendas por não terem um sistema de delivery próprio e eficiente.\n\nAbordo esse ou você mesmo fala com ele?",
+          "time": "2026-06-23T22:55:02.127Z"
+        },
+        {
+          "role": "user",
+          "content": "E em Criciúma",
+          "time": "2026-06-23T22:55:36.963Z"
+        },
+        {
+          "role": "model",
+          "content": "Buscando em Criciúma. Aqui estão leads para abordar no segmento de Alimentação:\n\n1.  Restaurante de comida caseira — dor: Dependência de apps e taxas altas, perdendo a margem tradicional → \"Garanta sua margem e a relação com o cliente. Tenha seu delivery próprio.\"\n2.  Lanchonete popular — dor: Dificuldade em digitalizar pedidos e competir com grandes redes → \"Digitalize seu cardápio e atraia mais clientes sem depender de terceiros.\"\n3.  Pizzaria delivery (sem salão) — dor: Gestão de entregas e otimização de rotas para agilizar o serviço → \"Otimize suas entregas e aumente a satisfação dos clientes com um sistema eficiente.\"\n4.  Padaria e confeitaria — dor: Perda de vendas por falta de um canal online para encomendas e delivery → \"Receba encomendas online e amplie suas vendas com delivery próprio.\"\n5.  Food Park ou praça de alimentação — dor: Múltiplos restaurantes com gestão de pedidos e entregas ineficiente → \"Centralize pedidos e otimize entregas para todos os seus restaurantes.\"\n6.  Hamburgueria artesanal — dor: Perda de dados de clientes e dificuldade em construir uma base fiel → \"Construa sua base de clientes e personalize promoções com seu próprio delivery.\"",
+          "time": "2026-06-23T22:55:36.968Z"
+        }
+      ],
+      "created_at": "2026-06-23T22:54:12.541Z",
+      "updated_at": "2026-06-23T22:55:36.968Z"
+    },
     {
       "id": "7e225485ab8af9b7",
       "title": "Oi jade",

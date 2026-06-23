@@ -65,6 +65,7 @@ interface Produto {
 
 interface EmpresaConfig {
   nome: string;
+  cidade: string;
   segmento: string;
   tom: string;
   modoOperacao: string;
@@ -91,6 +92,7 @@ function novoProduto(): Produto {
 
 const DEFAULT: EmpresaConfig = {
   nome: "",
+  cidade: "",
   segmento: "Alimentação",
   tom: "consultivo",
   modoOperacao: "fechamento",
@@ -223,6 +225,21 @@ export default function EmpresaScreen() {
               placeholderTextColor={C.muted}
               value={config.nome}
               onChangeText={updateField("nome")}
+              returnKeyType="next"
+            />
+          </View>
+        </View>
+
+        <View style={S.fieldGroup}>
+          <Text style={S.label}>Cidade principal</Text>
+          <View style={[S.inputWrap, { borderColor: config.cidade ? C.primary + "60" : C.border }]}>
+            <Feather name="map-pin" size={16} color={C.muted} style={S.inputIcon} />
+            <TextInput
+              style={S.input}
+              placeholder="Ex: Florianópolis"
+              placeholderTextColor={C.muted}
+              value={config.cidade}
+              onChangeText={updateField("cidade")}
               returnKeyType="next"
             />
           </View>

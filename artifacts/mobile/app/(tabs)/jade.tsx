@@ -813,6 +813,7 @@ export default function JADEScreen() {
           messages: buildHistory(updatedMsgs),
           session_id: sid,
           radar_on: modules.radar,
+          user_name: displayName ?? "",
         }),
         signal: controller.signal,
       });
