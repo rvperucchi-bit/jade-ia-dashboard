@@ -26,6 +26,7 @@ import { useApp } from "@/context/AppContext";
 import type { Lead } from "@/context/AppContext";
 import { useRadarSearches } from "@/hooks/useRadarSearches";
 import { BRAZIL_STATES } from "@/constants/brazil-locations";
+import { useLocation } from "@/context/LocationContext";
 
 const TIPOS = ["Restaurante", "Lanchonete", "Açaí", "Pizzaria", "Padaria", "Mercado", "Farmácia", "Academia", "Salão", "Outros"];
 
@@ -133,8 +134,8 @@ export default function ScannerScreen() {
 
   // ── Radar (Buscar Leads) state ─────────────────────────────────────────────
   const [radarSegmento,    setRadarSegmento]    = useState("Outros");
-  const [radarEstado,      setRadarEstado]      = useState("SC");
-  const [radarCidade,      setRadarCidade]      = useState("Criciúma");
+  const [radarEstado,      setRadarEstado]      = useState("");
+  const [radarCidade,      setRadarCidade]      = useState("");
   const [radarRaioIdx,     setRadarRaioIdx]     = useState(1); // 5 km default
   const [radarLoading,     setRadarLoading]     = useState(false);
   const [radarResults,     setRadarResults]     = useState<RadarLead[]>([]);
@@ -153,6 +154,21 @@ export default function ScannerScreen() {
 
   const radarEstadoData = BRAZIL_STATES.find((s) => s.sigla === radarEstado);
   const cidadesDoRadarEstado = radarEstadoData?.cidades ?? [];
+
+  const { coords: ctxCoords, city: ctxCity, state: ctxState } = useLocation();
+  useEffect(() => {
+    if (ctxState && !radarEstado) {
+      setRadarEstado(ctxState);
+      const sd = BRAZIL_STATES.find(s => s.sigla === ctxState);
+      if (sd?.cidades?.[0]) setRadarCidade(sd.cidades[0]);
+    }
+  }, [ctxState]);
+  useEffect(() => {
+    if (ctxCoords && !radarUserCoords) {
+      setRadarUserCoords({ lat: ctxCoords.lat, lng: ctxCoords.lng });
+      setRadarLocationLabel(ctxCity ? `📍 ${ctxCity}` : "📍 Localização detectada");
+    }
+  }, [ctxCoords]);
 
   // Pre-fill from empresa config
   useEffect(() => {

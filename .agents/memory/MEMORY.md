@@ -1,6 +1,8 @@
-- [Audit PDF Convention](audit-pdf.md) — ao terminar qualquer sessão de trabalho, gerar PDF de auditoria e apresentar para download
 - [Tab bar bottom padding](tab-bar-padding.md) — tabs usam `position:absolute` h=60 (native) / h=84 (web); conteúdo precisa de paddingBottom = TAB_BAR_H + insets.bottom
 - [Auth routing](auth-routing.md) — sem grupo (auth); login.tsx e cadastro.tsx ficam no root da app/, não em (auth)/
 - [JADE IA Server Store](jade-ia-server-store.md) — API usa JSON file store em data/jade-state.json (sem SQLite nativo); better-sqlite3 bloqueado por pnpm approve-builds interativo
 - [Gemini History Fix](gemini-history-fix.md) — Gemini validateChatHistory lança erro se primeiro item do history for 'model'; sempre filtrar com firstUserIdx antes de startChat
 - [Rate Limiter Proxy](rate-limit-proxy.md) — Adicionar app.set("trust proxy", 1) antes do express-rate-limit; Replit passa X-Forwarded-For via proxy
+- [LeadCard Action Card](lead-card-action.md) — LeadCard usa actionDone (não crmDone) para controle dos botões; onAddJadeMessage callback injeta mensagem no chat após abordagem
+- [Geolocation Context](geolocation-context.md) — LocationContext.tsx em context/; expo-location reverseGeocodeAsync não precisa da Google API; scanner.tsx auto-preenche estado/cidade via ctxState/ctxCoords
+- [JADE Greeting Pattern](jade-greeting.md) — saudação inicial injetada via useEffect+ref no JADEScreen (não via API); server isGreeting interception removida; quickReplies ≤3 opções = cards verticais, 4+ = pills horizontais

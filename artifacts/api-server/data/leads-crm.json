@@ -1,5 +1,20 @@
 [
   {
+    "id": "218da7af7aaf192b",
+    "name": "Audace Trade - Soluções em Comércio Exterior",
+    "phone": "(48) 3412-3438",
+    "address": "Av. Getúlio Vargas, 400 - Sala 601 - Centro, Criciúma - SC, 88801-500, Brasil",
+    "segment": "empresa comércio",
+    "city": "Criciúma",
+    "status": "Primeiro Contato",
+    "pipeline": "Novo",
+    "followUpDate": null,
+    "attempts": 1,
+    "notes": "",
+    "created_at": "2026-06-23T23:21:29.538Z",
+    "updated_at": "2026-06-23T23:21:29.538Z"
+  },
+  {
     "id": "e793c905ab517b6f",
     "name": "Criciúma Trade Ltda.",
     "phone": "(48) 3519-0580",

@@ -242,7 +242,19 @@ QUANDO USAR SPIN vs BANT:
 - SPIN → quando o lead já está na conversa e precisa criar urgência pra fechar
 - Os dois andam juntos. BANT filtra. SPIN convence.
 
-JADE IA v10.3 — Parceira de trabalho do vendedor.
+## ABERTURA DE WHATSAPP — AGENTE ATIVA
+
+Você é uma agente de vendas ATIVA, não apenas consultiva. Você age.
+
+Quando o usuário clicar em "JADE faz a abordagem" ou pedir para abordar um lead:
+- NUNCA diga "não consigo abrir o WhatsApp diretamente" ou "você precisa fazer isso manualmente"
+- Confirme que o WhatsApp foi aberto com a mensagem personalizada pronta
+- Informe que o lead foi registrado no CRM automaticamente
+- Pergunte se deve abordar o próximo lead
+
+Quando solicitada a abordar, responda: "WhatsApp aberto. Mensagem pronta. Lead no CRM. Próximo?"
+
+JADE IA v10.4 — Agente comercial ativa.
 `;
 
 const BUYING_SIGNALS = [
@@ -284,10 +296,6 @@ function detectProspectingIntent(text: string): boolean {
   return hasVerb && hasTarget;
 }
 
-function isGreeting(text: string): boolean {
-  const lower = text.toLowerCase().trim().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-  return /^(oi|ola|oie|opa|ei|eai|e ai|bom dia|boa tarde|boa noite|hey|hi|hello|oi jade|ola jade|oi ia|jade|bom dia jade|boa tarde jade|boa noite jade|boas|tudo bem|tudo bom|bom dia ia)[\s!.?]*$/.test(lower);
-}
 
 function detectNextLeadRequest(text: string): boolean {
   return /pr[oó]xim[oa]|seguinte|ver?\s+o?\s*pr[oó]x|mais\s+um\s+lead|outro\s+lead|continua|pr[oó]ximo\s+por\s+favor/i.test(text);
@@ -586,20 +594,6 @@ router.post('/chat', async (req: Request, res: Response) => {
     const chat = model.startChat({ history });
     const lastUserText = lastMessage!.content;
     const mapsApiKey = process.env.GOOGLE_MAPS_API_KEY ?? process.env.GOOGLE_MAPS_PLATFORM_KEY;
-
-    // ─── Greeting interception: respond with user name, skip Gemini ─────────
-    if (isGreeting(lastUserText)) {
-      const rawName = (body.user_name ?? '').trim();
-      const firstName = rawName.split(/\s+/)[0] ?? '';
-      const greeting = firstName
-        ? `Olá, ${firstName}! O que você precisa hoje?`
-        : 'Olá! O que você precisa hoje?';
-      if (body.session_id) {
-        appendJadeMessage(body.session_id, 'user', lastUserText);
-        appendJadeMessage(body.session_id, 'model', greeting);
-      }
-      return res.json({ message: greeting, session_id: body.session_id, handoff: false });
-    }
 
     // ─── Path A: "próximo" with pending leads already in session ─────────────
     if (body.session_id && detectNextLeadRequest(lastUserText)) {
