@@ -1,3 +1,4 @@
+- [Audit PDF Convention](audit-pdf.md) — ao terminar qualquer sessão de trabalho, gerar PDF de auditoria e apresentar para download
 - [Tab bar bottom padding](tab-bar-padding.md) — tabs usam `position:absolute` h=60 (native) / h=84 (web); conteúdo precisa de paddingBottom = TAB_BAR_H + insets.bottom
 - [Auth routing](auth-routing.md) — sem grupo (auth); login.tsx e cadastro.tsx ficam no root da app/, não em (auth)/
 - [JADE IA Server Store](jade-ia-server-store.md) — API usa JSON file store em data/jade-state.json (sem SQLite nativo); better-sqlite3 bloqueado por pnpm approve-builds interativo

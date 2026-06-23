@@ -29,3 +29,9 @@ id = "yVvCJFyJKuQ70_Pv-UFNQ"
 uri = "file://relatorio-atualizacoes.pdf"
 type = "pdf"
 title = "Release Notes — Sprint JADE IA"
+
+[[outputs]]
+id = "pqa_EzC8lVg9-962309s5"
+uri = "file://exports/auditoria-jade-2026-06-23.pdf"
+type = "pdf"
+title = "Auditoria JADE IA — Sessão 23/06/2026"
