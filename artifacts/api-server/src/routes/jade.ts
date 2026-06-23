@@ -255,6 +255,168 @@ function detectBuyingSignal(text: string): boolean {
   return BUYING_SIGNALS.some((s) => lower.includes(s));
 }
 
+// ─── Pending leads per session (in-memory) ────────────────────────────────────
+interface PendingLeadResult {
+  name: string;
+  address: string;
+  phone: string;
+  rating: number | null;
+  totalRatings: number;
+}
+const sessionPendingLeads = new Map<string, {
+  leads: PendingLeadResult[];
+  city: string;
+  tipo: string;
+  total: number;
+  shown: number;
+}>();
+
+function detectProspectingIntent(text: string): boolean {
+  return /busca\s*leads?|prospecta|encontra\s*leads?|me\s*traz\s*leads?|acha\s*leads?|quero\s*leads?|me\s*d[aá]\s*leads?|lista\s*de\s*leads?|prospec[çc][aã]o/i.test(text);
+}
+
+function detectNextLeadRequest(text: string): boolean {
+  return /pr[oó]xim[oa]|seguinte|ver?\s+o?\s*pr[oó]x|mais\s+um\s+lead|outro\s+lead|continua|pr[oó]ximo\s+por\s+favor/i.test(text);
+}
+
+function extractSearchParams(text: string, companyConfig: null | { segmento?: string; cidade?: string }): { tipo: string; cidade: string } {
+  // Normalise (strip diacritics for matching)
+  const lower = text.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+
+  // City: word(s) after "em "
+  const cityMatch = lower.match(/\bem\s+([a-z]{3,}(?:\s+[a-z]{3,})?)/);
+  const rawCity = cityMatch ? cityMatch[1] : null;
+  const cidade = rawCity
+    ? rawCity.replace(/\b\w/g, (c) => c.toUpperCase())
+    : (companyConfig?.cidade ?? 'São Paulo');
+
+  // Segment from keywords in message
+  const SEGMENT_MAP: [RegExp, string][] = [
+    [/clinic|dentist|medic|saude|odont/,               'clínica médica dentista'],
+    [/imovel|imobil|aparto|corretor/,                  'imobiliária corretor de imóveis'],
+    [/advogad|advocac|juridic/,                        'escritório de advocacia'],
+    [/restaur|comida|food|pizza|padari|lanchon/,       'restaurante alimentação'],
+    [/salao|barb[ea]ari|estetica|beleza|cosmet/,       'salão de beleza barbearia estética'],
+    [/construt|reform|empreit|engenh/,                 'construtora reforma'],
+    [/loja|varej|comercio|moda|roupa/,                 'loja comércio varejo'],
+    [/escola|educa|faculdad|curso/,                    'escola curso faculdade'],
+    [/oficina|mecanica|automobil/,                     'oficina mecânica automotiva'],
+    [/marketing|publicidad|agencia/,                   'agência de marketing publicidade'],
+    [/consult|tecnolog|software|b2b/,                  'consultoria empresa de tecnologia'],
+    [/seguro|financ|credito|consorcio/,                'financeira seguro corretora'],
+    [/academia|ginastic|fitness|personal/,             'academia fitness personal trainer'],
+    [/hotel|pousad|turism|hospedagem/,                 'hotel pousada turismo'],
+    [/farma|drogari/,                                  'farmácia drogaria'],
+    [/supermer|mercad/,                                'supermercado mercado'],
+    [/petshop|veterina/,                               'petshop veterinária'],
+  ];
+
+  for (const [pattern, keyword] of SEGMENT_MAP) {
+    if (pattern.test(lower)) return { tipo: keyword, cidade };
+  }
+
+  // Fall back to company segment mapping
+  const SEGMENT_FALLBACK: Record<string, string> = {
+    'Clínicas & Saúde':           'clínica médica dentista',
+    'Imobiliário':                'imobiliária corretor de imóveis',
+    'Advocacia':                  'escritório de advocacia advogado',
+    'Alimentação & Food Service': 'restaurante alimentação',
+    'Serviços de Beleza':         'salão de beleza barbearia',
+    'Serviços & Construção':      'construtora reforma',
+    'Varejo & E-commerce':        'loja comércio varejo',
+    'Educação':                   'escola curso faculdade',
+    'Oficinas & Manutenção':      'oficina mecânica',
+    'Marketing & Publicidade':    'agência de marketing',
+    'Consultoria & B2B':          'consultoria empresa tecnologia',
+    'Seguros & Financeiro':       'seguro financeira corretora',
+  };
+
+  if (companyConfig?.segmento) {
+    const kw = SEGMENT_FALLBACK[companyConfig.segmento];
+    if (kw) return { tipo: kw, cidade };
+  }
+
+  return { tipo: 'empresa comércio', cidade };
+}
+
+async function searchPlacesForJade(tipo: string, cidade: string, apiKey: string): Promise<PendingLeadResult[]> {
+  try {
+    const query = `${tipo} em ${cidade}`;
+    const url = `https://maps.googleapis.com/maps/api/place/textsearch/json?query=${encodeURIComponent(query)}&language=pt-BR&key=${apiKey}`;
+
+    const ctrl = new AbortController();
+    const tid = setTimeout(() => ctrl.abort(), 12000);
+    const resp = await fetch(url, { signal: ctrl.signal });
+    clearTimeout(tid);
+
+    const data = (await resp.json()) as { status: string; results: any[] };
+    if (data.status !== 'OK' || !data.results?.length) return [];
+
+    const places = data.results.slice(0, 8);
+
+    // Enrich with phone numbers in parallel (best-effort, 5s each)
+    const enriched = await Promise.all(
+      places.map(async (p: any): Promise<PendingLeadResult> => {
+        let phone = '';
+        try {
+          const c2 = new AbortController();
+          const t2 = setTimeout(() => c2.abort(), 5000);
+          const dr = await fetch(
+            `https://maps.googleapis.com/maps/api/place/details/json?place_id=${p.place_id}&fields=formatted_phone_number&language=pt-BR&key=${apiKey}`,
+            { signal: c2.signal }
+          );
+          clearTimeout(t2);
+          const dd = (await dr.json()) as { result?: { formatted_phone_number?: string } };
+          phone = dd.result?.formatted_phone_number ?? '';
+        } catch { /* best-effort */ }
+
+        return {
+          name:         String(p.name ?? ''),
+          address:      String(p.formatted_address ?? p.vicinity ?? ''),
+          phone,
+          rating:       (p.rating as number | undefined) ?? null,
+          totalRatings: (p.user_ratings_total as number | undefined) ?? 0,
+        };
+      })
+    );
+
+    return enriched;
+  } catch {
+    return [];
+  }
+}
+
+function buildLeadPrompt(
+  lead: PendingLeadResult,
+  idx: number,
+  total: number,
+  city: string,
+  hasMore: boolean,
+): string {
+  const phoneStr  = lead.phone  ? `📞 ${lead.phone}`                                        : '';
+  const ratingStr = lead.rating ? `⭐ ${lead.rating} (${lead.totalRatings} avaliações)` : '';
+  const closing   = hasMore
+    ? 'Quer a abordagem pra esse, ou vejo o próximo?'
+    : 'Esse é o último da lista. Quer a abordagem personalizada pra algum deles?';
+
+  const card = [
+    `📍 ${lead.name}`,
+    lead.address,
+    phoneStr,
+    ratingStr,
+    '',
+    'Dor provável: [escreva EXATAMENTE 1 frase curta e específica sobre a dor real desse tipo de negócio, baseado no nome e perfil do estabelecimento — não use frases genéricas]',
+    '',
+    closing,
+  ].filter((l) => l !== undefined && (l !== '' || true)).join('\n');
+
+  const intro = idx === 1
+    ? `Você encontrou ${total} negócios reais via Google Maps em ${city}. Apresente o primeiro no formato abaixo — sem introdução adicional, sem lista, sem outros leads:\n\nEncontrei ${total} opções em ${city}. Começando pelo mais relevante:\n\n${card}`
+    : `Apresente o próximo lead (${idx}/${total}) no formato abaixo — direto, sem intro:\n\n${card}`;
+
+  return `${intro}\n\nDados reais (use SOMENTE estes — não invente nada):\nNome: ${lead.name}\nEndereço: ${lead.address}\nTelefone: ${lead.phone || 'não disponível'}\nAvaliação: ${lead.rating ? `${lead.rating} estrelas (${lead.totalRatings} avaliações)` : 'não disponível'}`;
+}
+
 // POST /jade/chat
 router.post('/chat', async (req: Request, res: Response) => {
   try {
@@ -355,18 +517,79 @@ router.post('/chat', async (req: Request, res: Response) => {
 
     const lastMessage = messagesArray[messagesArray.length - 1];
     const chat = model.startChat({ history });
-    const result = await chat.sendMessage(lastMessage!.content);
+    const lastUserText = lastMessage!.content;
+    const mapsApiKey = process.env.GOOGLE_MAPS_API_KEY ?? process.env.GOOGLE_MAPS_PLATFORM_KEY;
+
+    // ─── Path A: "próximo" with pending leads already in session ─────────────
+    if (body.session_id && detectNextLeadRequest(lastUserText)) {
+      const pending = sessionPendingLeads.get(body.session_id);
+      if (pending && pending.leads.length > 0) {
+        const lead = pending.leads.shift()!;
+        pending.shown++;
+        const hasMore = pending.leads.length > 0;
+        const prompt = buildLeadPrompt(lead, pending.shown, pending.total, pending.city, hasMore);
+
+        const nr = await chat.sendMessage(prompt);
+        const ntext = nr.response.text();
+
+        appendJadeMessage(body.session_id, 'user', lastUserText);
+        appendJadeMessage(body.session_id, 'model', ntext);
+        addActivityEvent({ type: 'lead', text: `JADE apresentou lead ${pending.shown}/${pending.total} em ${pending.city}`, icon: 'map-pin', color: '#FF0080' });
+
+        req.log.info({ shown: pending.shown, total: pending.total, city: pending.city }, 'pending lead delivered');
+        return res.json({ message: ntext, session_id: body.session_id, handoff: false, statusType: 'lead' });
+      }
+    }
+
+    // ─── Path B: New prospecting request → call Google Places ────────────────
+    if (mapsApiKey && detectProspectingIntent(lastUserText)) {
+      const { tipo, cidade } = extractSearchParams(lastUserText, companyConfig);
+      req.log.info({ tipo, cidade }, 'prospecting intent → calling Google Places');
+
+      const places = await searchPlacesForJade(tipo, cidade, mapsApiKey);
+
+      if (places.length > 0) {
+        const firstLead = places[0]!;
+        const remaining = places.slice(1);
+
+        if (body.session_id) {
+          sessionPendingLeads.set(body.session_id, {
+            leads: remaining, city: cidade, tipo, total: places.length, shown: 1,
+          });
+        }
+
+        const prompt = buildLeadPrompt(firstLead, 1, places.length, cidade, remaining.length > 0);
+        const pr = await chat.sendMessage(prompt);
+        const ptext = pr.response.text();
+
+        if (body.session_id) {
+          appendJadeMessage(body.session_id, 'user', lastUserText);
+          appendJadeMessage(body.session_id, 'model', ptext);
+        }
+        addActivityEvent({
+          type: 'lead',
+          text: `JADE encontrou ${places.length} leads reais em ${cidade}`,
+          icon: 'map-pin', color: '#FF0080',
+          metadata: { cidade, tipo, count: places.length },
+        });
+
+        req.log.info({ count: places.length, cidade, tipo }, 'Google Places leads delivered');
+        return res.json({ message: ptext, session_id: body.session_id, handoff: false, statusType: 'radar', leadsFound: places.length });
+      }
+      // Zero results → fall through so Gemini can explain
+    }
+
+    // ─── Path C: Normal Gemini flow ──────────────────────────────────────────
+    const result = await chat.sendMessage(lastUserText);
     const response = await result.response;
     const text = response.text();
 
     req.log.info({ chars: text.length, session_id: body.session_id }, 'JADE responded');
 
-    // Detect buying signals in the last user message
-    const handoff = detectBuyingSignal(lastMessage!.content);
+    const handoff = detectBuyingSignal(lastUserText);
 
-    // Persist to session if session_id provided
     if (body.session_id) {
-      appendJadeMessage(body.session_id, 'user', lastMessage!.content);
+      appendJadeMessage(body.session_id, 'user', lastUserText);
       appendJadeMessage(body.session_id, 'model', text);
     }
 

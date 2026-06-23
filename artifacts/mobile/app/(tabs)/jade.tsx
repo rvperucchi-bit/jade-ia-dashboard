@@ -279,10 +279,18 @@ function MessageBubble({ msg, colors }: { msg: AIMessage; colors: ReturnType<typ
   );
 }
 
-// ─── Pensando… indicator ──────────────────────────────────────────────────────
-function TypingBubble({ colors }: { colors: ReturnType<typeof useColors> }) {
+// ─── Prospecting keyword detector ─────────────────────────────────────────────
+function isProspectingMsg(text: string): boolean {
+  return /busca\s*leads?|prospecta|encontra\s*leads?|me\s*traz\s*leads?|acha\s*leads?|quero\s*leads?|me\s*d[aá]\s*leads?|lista\s*de\s*leads?|prospec[çc][aã]o/i.test(text);
+}
+
+// ─── Pensando… / Status indicator ─────────────────────────────────────────────
+function TypingBubble({ colors, status }: { colors: ReturnType<typeof useColors>; status?: string }) {
   const fade = useRef(new Animated.Value(0.3)).current;
+  const isStatusMsg = !!status && status !== "Pensando…";
+
   useEffect(() => {
+    if (isStatusMsg) { fade.setValue(1); return; }
     const loop = Animated.loop(
       Animated.sequence([
         Animated.timing(fade, { toValue: 0.85, duration: 900, easing: Easing.inOut(Easing.ease), useNativeDriver: true }),
@@ -291,7 +299,28 @@ function TypingBubble({ colors }: { colors: ReturnType<typeof useColors> }) {
     );
     loop.start();
     return () => loop.stop();
-  }, []);
+  }, [isStatusMsg]);
+
+  if (isStatusMsg) {
+    return (
+      <View style={{ paddingHorizontal: 20, paddingVertical: 8 }}>
+        <View style={{
+          alignSelf: "flex-start",
+          backgroundColor: "rgba(255,0,128,0.10)",
+          borderColor: "rgba(255,0,128,0.25)",
+          borderWidth: 1,
+          borderRadius: 20,
+          paddingHorizontal: 14,
+          paddingVertical: 7,
+        }}>
+          <Text style={{ color: "#FF0080", fontSize: 13, fontFamily: "SpaceGrotesk_500Medium" }}>
+            {status}
+          </Text>
+        </View>
+      </View>
+    );
+  }
+
   return (
     <Animated.View style={{ paddingHorizontal: 20, paddingVertical: 10, opacity: fade }}>
       <Text style={{ color: colors.mutedForeground, fontSize: 14, fontFamily: "SpaceGrotesk_400Regular", fontStyle: "italic" }}>
@@ -350,10 +379,13 @@ export default function JADEScreen() {
   const topPad    = Platform.OS === "web" ? 24 : insets.top;
   const bottomPad = Platform.OS === "web" ? 20 : insets.bottom;
 
-  const [messages,     setMessages]     = useState<AIMessage[]>([]);
-  const [input,        setInput]        = useState("");
-  const [loading,      setLoading]      = useState(false);
-  const [sessionId,    setSessionId]    = useState<string | null>(null);
+  const [messages,      setMessages]      = useState<AIMessage[]>([]);
+  const [input,         setInput]         = useState("");
+  const [loading,       setLoading]       = useState(false);
+  const [typingStatus,  setTypingStatus]  = useState("Pensando…");
+  const statusTimerA    = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const statusTimerB    = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [sessionId,     setSessionId]     = useState<string | null>(null);
   const [handoffAlert, setHandoffAlert] = useState(false);
   const [attachments,  setAttachments]  = useState<AttachedFile[]>([]);
 
@@ -533,6 +565,22 @@ export default function JADEScreen() {
       content: m.isAudio ? `[Mensagem de voz de ${m.audioDuration}s]` : m.text,
     }));
 
+  // ── Status timer helpers ───────────────────────────────────────────────────
+  const clearStatusTimers = () => {
+    if (statusTimerA.current) { clearTimeout(statusTimerA.current); statusTimerA.current = null; }
+    if (statusTimerB.current) { clearTimeout(statusTimerB.current); statusTimerB.current = null; }
+  };
+
+  const startStatusCycle = () => {
+    setTypingStatus("🔍 Buscando no Radar...");
+    statusTimerA.current = setTimeout(() => {
+      setTypingStatus("📍 Analisando resultados...");
+      statusTimerB.current = setTimeout(() => {
+        setTypingStatus("✅ Quase pronto...");
+      }, 2800);
+    }, 2200);
+  };
+
   // ── Send ──────────────────────────────────────────────────────────────────
   const send = async (text: string, files?: AttachedFile[]) => {
     const trimmed = text.trim();
@@ -547,7 +595,15 @@ export default function JADEScreen() {
     const updatedMsgs = [userMsg, ...messages];
     setMessages(updatedMsgs);
     setInput(""); setAttachments([]);
+
+    const prospecting = isProspectingMsg(trimmed);
+    if (prospecting) {
+      startStatusCycle();
+    } else {
+      setTypingStatus("Pensando…");
+    }
     setLoading(true);
+
     try {
       const controller = new AbortController();
       const tid = setTimeout(() => controller.abort(), 90000);
@@ -577,7 +633,11 @@ export default function JADEScreen() {
         text: isAbort ? "Ops! A JADE demorou demais. Tente novamente." : "Ops! Problema de conexão. Verifique sua internet.",
         sender: "jade", time: nowTime(),
       }, ...prev]);
-    } finally { setLoading(false); }
+    } finally {
+      clearStatusTimers();
+      setTypingStatus("Pensando…");
+      setLoading(false);
+    }
   };
 
   // ── Send audio ─────────────────────────────────────────────────────────────
@@ -717,7 +777,7 @@ export default function JADEScreen() {
             data={renderData}
             keyExtractor={(item) => item.id}
             renderItem={({ item }) => {
-              if (item.id === "__typing__") return <TypingBubble colors={colors} />;
+              if (item.id === "__typing__") return <TypingBubble colors={colors} status={typingStatus} />;
               return <MessageBubble msg={item} colors={colors} />;
             }}
             inverted
