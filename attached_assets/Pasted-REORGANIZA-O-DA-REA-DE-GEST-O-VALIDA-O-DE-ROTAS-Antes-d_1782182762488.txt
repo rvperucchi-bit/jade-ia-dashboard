@@ -1,0 +1,119 @@
+REORGANIZAÇÃO DA ÁREA DE GESTÃO + VALIDAÇÃO DE ROTAS
+
+Antes de realizar qualquer alteração visual, faça uma auditoria e confirme que cada botão está apontando para a tela correta.
+
+OBJETIVO
+
+Estamos reorganizando a área de Gestão da JADE para que a estrutura fique mais clara para gestores e executivos comerciais.
+
+IMPORTANTE:
+
+Não assumir que os links estão corretos.
+Verificar e confirmar cada rota antes de alterar a interface.
+
+ETAPA 1 – AUDITORIA DE NAVEGAÇÃO
+
+Validar e informar:
+
+1. Qual botão abre cada uma das telas abaixo.
+2. Qual rota está sendo utilizada.
+3. Se existe alguma rota duplicada.
+4. Se existe algum botão apontando para a tela errada.
+5. Se existe alguma tela sem acesso visível.
+
+Telas:
+
+* Meu Time
+* Gestão Inteligente
+* Metas & KPIs
+* Painel Executivo
+* Ranking de Performance
+* Carteira Geral de Clientes
+* Feedback da JADE
+* Relatório do Gestor
+* Análise Estratégica
+* Notificações
+
+Gerar uma tabela com:
+
+Tela | Rota | Botão Atual | Status
+
+Exemplo:
+
+Central Comercial | /centralcomercial | Menu Gestão | OK
+
+ou
+
+Metas & KPIs | /metas | Botão Gestão | ERRO - apontando para rota incorreta
+
+ETAPA 2 – REORGANIZAÇÃO DA GESTÃO
+
+Reorganizar visualmente a área Gestão da seguinte forma:
+
+GESTÃO
+
+📊 Central Comercial
+
+👥 Equipe
+
+* Meu Time
+* Metas & KPIs
+* Ranking de Performance
+
+💼 Carteira Geral de Clientes
+
+🧠 Gestão Inteligente
+
+* Feedback da JADE
+* Análise Estratégica
+
+📑 Relatório do Gestor
+
+🔔 Notificações
+
+ALTERAÇÃO IMPORTANTE
+
+O nome “Painel Executivo” deve ser substituído.
+
+Novo nome:
+
+CENTRAL COMERCIAL
+
+Motivo:
+
+Esta tela não é um dashboard executivo tradicional.
+
+Ela é uma visão consolidada da operação comercial da equipe.
+
+Dentro dela existirão duas abas:
+
+ABA 1 – Pipeline
+
+* Pipeline consolidado
+* Oportunidades
+* Negócios
+* Andamento dos executivos
+* CRM consolidado
+
+ABA 2 – KPIs
+
+* Conversão
+* Ticket Médio
+* Atividades
+* Leads
+* Indicadores comerciais
+
+VALIDAÇÃO OBRIGATÓRIA
+
+Após concluir:
+
+1. Confirmar que o botão da antiga tela “Painel Executivo” está abrindo a nova “Central Comercial”.
+2. Confirmar que a rota está correta.
+3. Confirmar que não existem botões levando para páginas erradas.
+4. Listar qualquer inconsistência encontrada.
+
+Não criar novas funcionalidades.
+
+Não remover telas.
+
+Primeiro validar a estrutura atual, depois reorganizar a navegação e nomenclatura.

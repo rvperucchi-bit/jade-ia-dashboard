@@ -57,9 +57,9 @@ const ACCORDION_SECTIONS: AccordionSection[] = [
     icon: "trending-up",
     items: [
       { label: "Oportunidades", route: "/(tabs)/leads" },
-      { label: "Metas",         route: "/metas",    requiresPlan: "enterprise" },
-      { label: "Carteira",      route: "/carteira", requiresPlan: "enterprise" },
-      { label: "Meu Time",      route: "/meutime",  requiresPlan: "enterprise" },
+      { label: "Briefings",     route: "/briefing" },
+      { label: "Planejamento",  route: "/planejamento", requiresPlan: "pro" },
+      { label: "Relatórios",    route: "/relatorios" },
     ],
   },
   {
@@ -78,10 +78,16 @@ const ACCORDION_SECTIONS: AccordionSection[] = [
     title: "Gestão",
     icon: "bar-chart-2",
     items: [
-      { label: "Dashboard Exec.", route: "/painelexecutivo", requiresPlan: "enterprise" },
-      { label: "Relatórios",      route: "/relatorios" },
-      { label: "Análises",        route: "/analise",         requiresPlan: "pro" },
-      { label: "Performance",     route: "/relatoriogestor", requiresPlan: "enterprise" },
+      { label: "Central Comercial",   route: "/painelexecutivo",  requiresPlan: "enterprise" },
+      { label: "Meu Time",            route: "/meutime",          requiresPlan: "enterprise" },
+      { label: "Metas & KPIs",        route: "/metas",            requiresPlan: "enterprise" },
+      { label: "Ranking",             route: "/relatoriogestor",  requiresPlan: "enterprise" },
+      { label: "Carteira",            route: "/carteira",         requiresPlan: "enterprise" },
+      { label: "Gestão Inteligente",  route: "/gestao",           requiresPlan: "enterprise" },
+      { label: "Feedback JADE",       route: "/feedbackjade",     requiresPlan: "enterprise" },
+      { label: "Análise Estratégica", route: "/analise",          requiresPlan: "enterprise" },
+      { label: "Relatório do Gestor", route: "/relatoriogestor",  requiresPlan: "enterprise" },
+      { label: "Notificações",        route: "/notificacoes" },
     ],
   },
   {

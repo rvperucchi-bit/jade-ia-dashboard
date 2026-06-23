@@ -47,3 +47,9 @@ id = "CXKM_iM8W8Ap716B0nqWQ"
 uri = "file://exports/auditoria-jade-2026-06-23c.pdf"
 type = "pdf"
 title = "Auditoria — System Prompt v10.0 + Tom"
+
+[[outputs]]
+id = "_Bs9HcopNNeejxia7YdKz"
+uri = "file://exports/auditoria-jade-gestao-2026-06-23.pdf"
+type = "pdf"
+title = "Auditoria — Área de Gestão + Rotas"

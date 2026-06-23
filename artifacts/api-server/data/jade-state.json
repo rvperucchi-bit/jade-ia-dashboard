@@ -2,12 +2,12 @@
   "modules": {
     "scanner": {
       "module_name": "scanner",
-      "is_active": true,
-      "status": "running",
+      "is_active": false,
+      "status": "paused",
       "last_started_at": "2026-06-23T01:22:57.266Z",
-      "last_stopped_at": "2026-06-21T14:10:12.316Z",
+      "last_stopped_at": "2026-06-23T02:48:08.795Z",
       "last_run_at": null,
-      "updated_at": "2026-06-23T01:22:57.266Z"
+      "updated_at": "2026-06-23T02:48:08.795Z"
     },
     "jade": {
       "module_name": "jade",
@@ -47,6 +47,16 @@
     }
   },
   "module_logs": [
+    {
+      "id": "8bba17622c2b00a2",
+      "module_name": "scanner",
+      "action": "deactivated",
+      "message": "Scanner Radar desativado",
+      "metadata": {
+        "active": false
+      },
+      "created_at": "2026-06-23T02:48:08.798Z"
+    },
     {
       "id": "84c1ac6fa04efec0",
       "module_name": "scanner",
@@ -1199,6 +1209,18 @@
     }
   ],
   "activity_events": [
+    {
+      "id": "d8e8fbe548184acd",
+      "type": "module",
+      "text": "Scanner Radar desativado",
+      "icon": "crosshair",
+      "color": "#6C63FF",
+      "metadata": {
+        "module": "scanner",
+        "active": false
+      },
+      "created_at": "2026-06-23T02:48:08.800Z"
+    },
     {
       "id": "0f12712ee2a400bd",
       "type": "message",
@@ -3213,18 +3235,6 @@
       "icon": "user-plus",
       "color": "#6C63FF",
       "created_at": "2026-06-21T03:21:27.728Z"
-    },
-    {
-      "id": "7a46e4dcb4bd5989",
-      "type": "scan",
-      "text": "JADE encontrou 3 novos leads via radar em São Paulo",
-      "icon": "crosshair",
-      "color": "#6C63FF",
-      "metadata": {
-        "count": 3,
-        "cidade": "São Paulo"
-      },
-      "created_at": "2026-06-21T03:21:27.348Z"
     }
   ],
   "marketing_campaigns": [

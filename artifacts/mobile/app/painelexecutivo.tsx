@@ -203,7 +203,7 @@ export default function PainelExecutivoScreen() {
         <TouchableOpacity onPress={() => router.back()} style={S.backBtn} activeOpacity={0.7}>
           <Feather name="arrow-left" size={20} color={colors.text} />
         </TouchableOpacity>
-        <Text style={[S.title, { color: colors.text }]}>Painel Executivo</Text>
+        <Text style={[S.title, { color: colors.text }]}>Central Comercial</Text>
         <View style={[S.goldBadge, { backgroundColor: PINK + "22" }]}>
           <Text style={[S.goldBadgeText, { color: PINK }]}>Enterprise</Text>
         </View>
