@@ -2,12 +2,12 @@
   "modules": {
     "scanner": {
       "module_name": "scanner",
-      "is_active": false,
-      "status": "paused",
-      "last_started_at": "2026-06-23T01:22:57.266Z",
+      "is_active": true,
+      "status": "running",
+      "last_started_at": "2026-06-23T20:30:21.671Z",
       "last_stopped_at": "2026-06-23T02:48:08.795Z",
       "last_run_at": null,
-      "updated_at": "2026-06-23T02:48:08.795Z"
+      "updated_at": "2026-06-23T20:30:21.671Z"
     },
     "jade": {
       "module_name": "jade",
@@ -47,6 +47,16 @@
     }
   },
   "module_logs": [
+    {
+      "id": "9589e730f9678700",
+      "module_name": "scanner",
+      "action": "activated",
+      "message": "Scanner Radar ativado",
+      "metadata": {
+        "active": true
+      },
+      "created_at": "2026-06-23T20:30:21.678Z"
+    },
     {
       "id": "8bba17622c2b00a2",
       "module_name": "scanner",
@@ -1209,6 +1219,100 @@
     }
   ],
   "activity_events": [
+    {
+      "id": "e5a0a6fc2bbcdfd0",
+      "type": "message",
+      "text": "JADE respondeu a uma mensagem",
+      "icon": "robot",
+      "color": "#FF0080",
+      "metadata": {
+        "session_id": "d8b1e461ce25c19b"
+      },
+      "created_at": "2026-06-23T20:32:03.775Z"
+    },
+    {
+      "id": "4af87913fe21fe59",
+      "type": "message",
+      "text": "JADE respondeu a uma mensagem",
+      "icon": "robot",
+      "color": "#FF0080",
+      "metadata": {
+        "session_id": "1ae38e23897c8bdf"
+      },
+      "created_at": "2026-06-23T20:31:54.910Z"
+    },
+    {
+      "id": "1d4c1e47e4b8e4b0",
+      "type": "message",
+      "text": "JADE respondeu a uma mensagem",
+      "icon": "robot",
+      "color": "#FF0080",
+      "metadata": {
+        "session_id": "b26483b3925d7c53"
+      },
+      "created_at": "2026-06-23T20:31:43.467Z"
+    },
+    {
+      "id": "42a073a90169b5d9",
+      "type": "message",
+      "text": "JADE respondeu a uma mensagem",
+      "icon": "robot",
+      "color": "#FF0080",
+      "metadata": {
+        "session_id": "97fb8bd3082a9421"
+      },
+      "created_at": "2026-06-23T20:31:31.197Z"
+    },
+    {
+      "id": "8915fcc1b8d3981c",
+      "type": "message",
+      "text": "JADE respondeu: \"O que vc pode fazer por mim?\"",
+      "icon": "robot",
+      "color": "#FF0080",
+      "created_at": "2026-06-23T20:31:03.939Z"
+    },
+    {
+      "id": "9a959156964cd67e",
+      "type": "message",
+      "text": "JADE respondeu a uma mensagem",
+      "icon": "robot",
+      "color": "#FF0080",
+      "metadata": {
+        "session_id": "a56a68abe0357b26"
+      },
+      "created_at": "2026-06-23T20:31:03.599Z"
+    },
+    {
+      "id": "1ec4f7554a790b10",
+      "type": "message",
+      "text": "JADE respondeu: \"Oi\"",
+      "icon": "robot",
+      "color": "#FF0080",
+      "created_at": "2026-06-23T20:30:49.946Z"
+    },
+    {
+      "id": "0ea5aaca812ad2f7",
+      "type": "message",
+      "text": "JADE respondeu a uma mensagem",
+      "icon": "robot",
+      "color": "#FF0080",
+      "metadata": {
+        "session_id": "a56a68abe0357b26"
+      },
+      "created_at": "2026-06-23T20:30:49.564Z"
+    },
+    {
+      "id": "16a9888bc4dfa864",
+      "type": "module",
+      "text": "Scanner Radar ativado",
+      "icon": "crosshair",
+      "color": "#6C63FF",
+      "metadata": {
+        "module": "scanner",
+        "active": true
+      },
+      "created_at": "2026-06-23T20:30:21.690Z"
+    },
     {
       "id": "d8e8fbe548184acd",
       "type": "module",
@@ -3142,99 +3246,6 @@
         "session_id": "c845cd3ec37dd62a"
       },
       "created_at": "2026-06-21T03:32:40.487Z"
-    },
-    {
-      "id": "1b2f0b5aa5396068",
-      "type": "message",
-      "text": "JADE respondeu a uma mensagem",
-      "icon": "robot",
-      "color": "#FF0080",
-      "metadata": {},
-      "created_at": "2026-06-21T03:24:41.311Z"
-    },
-    {
-      "id": "687602de488fd4e8",
-      "type": "module",
-      "text": "Scanner Radar desativado",
-      "icon": "crosshair",
-      "color": "#6C63FF",
-      "metadata": {
-        "module": "scanner",
-        "active": false
-      },
-      "created_at": "2026-06-21T03:21:32.432Z"
-    },
-    {
-      "id": "9885c15031548968",
-      "type": "module",
-      "text": "CRM/Leads desativado",
-      "icon": "users",
-      "color": "#00D68F",
-      "metadata": {
-        "module": "leads",
-        "active": false
-      },
-      "created_at": "2026-06-21T03:21:31.822Z"
-    },
-    {
-      "id": "16d8517e069debc3",
-      "type": "module",
-      "text": "CRM/Leads ativado",
-      "icon": "users",
-      "color": "#00D68F",
-      "metadata": {
-        "module": "leads",
-        "active": true
-      },
-      "created_at": "2026-06-21T03:21:31.169Z"
-    },
-    {
-      "id": "9cd3e19a03efdb14",
-      "type": "module",
-      "text": "WhatsApp desativado",
-      "icon": "message-circle",
-      "color": "#25D366",
-      "metadata": {
-        "module": "whatsapp",
-        "active": false
-      },
-      "created_at": "2026-06-21T03:21:30.532Z"
-    },
-    {
-      "id": "38dc292611fa3e7c",
-      "type": "module",
-      "text": "WhatsApp ativado",
-      "icon": "message-circle",
-      "color": "#25D366",
-      "metadata": {
-        "module": "whatsapp",
-        "active": true
-      },
-      "created_at": "2026-06-21T03:21:29.231Z"
-    },
-    {
-      "id": "2194d638db99eefb",
-      "type": "lead",
-      "text": "Novo lead adicionado: Marcos Vinícius Goulart (Livraria & Café Conhecimento)",
-      "icon": "user-plus",
-      "color": "#6C63FF",
-      "created_at": "2026-06-21T03:21:27.734Z"
-    },
-    {
-      "id": "ee808be462df520d",
-      "type": "lead",
-      "text": "Novo lead adicionado: Patrícia Mendes (Boutique Essência Urbana)",
-      "icon": "user-plus",
-      "color": "#6C63FF",
-      "created_at": "2026-06-21T03:21:27.731Z"
-    },
-    {
-      "id": "25bac6d1668a32d8",
-      "type": "lead",
-      "text": "Novo lead adicionado: Ana Lúcia Santos (Empório Sabor da Vila)",
-      "icon": "user-plus",
-      "color": "#6C63FF",
-      "created_at": "2026-06-21T03:21:27.728Z"
     }
   ],
   "marketing_campaigns": [
@@ -3260,6 +3271,106 @@
     }
   ],
   "jade_sessions": [
+    {
+      "id": "d8b1e461ce25c19b",
+      "title": "[voz 2s] O usuário enviou um áudio. Cons…",
+      "messages": [
+        {
+          "role": "user",
+          "content": "[voz 2s] O usuário enviou um áudio. Considere que ele falou algo sobre vendas ou negócio e responda diretamente ao conteúdo, sem mencionar que era um áudio.",
+          "time": "2026-06-23T20:32:03.766Z"
+        },
+        {
+          "role": "model",
+          "content": "Bora. Qual a situação ou quem é o lead que a gente analisa?",
+          "time": "2026-06-23T20:32:03.773Z"
+        }
+      ],
+      "created_at": "2026-06-23T20:32:01.059Z",
+      "updated_at": "2026-06-23T20:32:03.773Z"
+    },
+    {
+      "id": "1ae38e23897c8bdf",
+      "title": "[voz 4s] O usuário enviou um áudio. Cons…",
+      "messages": [
+        {
+          "role": "user",
+          "content": "[voz 4s] O usuário enviou um áudio. Considere que ele falou algo sobre vendas ou negócio e responda diretamente ao conteúdo, sem mencionar que era um áudio.",
+          "time": "2026-06-23T20:31:54.896Z"
+        },
+        {
+          "role": "model",
+          "content": "Me conta. O que você precisa?",
+          "time": "2026-06-23T20:31:54.899Z"
+        }
+      ],
+      "created_at": "2026-06-23T20:31:51.968Z",
+      "updated_at": "2026-06-23T20:31:54.899Z"
+    },
+    {
+      "id": "b26483b3925d7c53",
+      "title": "[voz 4s] O usuário enviou um áudio. Cons…",
+      "messages": [
+        {
+          "role": "user",
+          "content": "[voz 4s] O usuário enviou um áudio. Considere que ele falou algo sobre vendas ou negócio e responda diretamente ao conteúdo, sem mencionar que era um áudio.",
+          "time": "2026-06-23T20:31:43.452Z"
+        },
+        {
+          "role": "model",
+          "content": "Me conta o que você precisa.",
+          "time": "2026-06-23T20:31:43.462Z"
+        }
+      ],
+      "created_at": "2026-06-23T20:31:41.210Z",
+      "updated_at": "2026-06-23T20:31:43.462Z"
+    },
+    {
+      "id": "97fb8bd3082a9421",
+      "title": "[voz 6s] O usuário enviou um áudio. Cons…",
+      "messages": [
+        {
+          "role": "user",
+          "content": "[voz 6s] O usuário enviou um áudio. Considere que ele falou algo sobre vendas ou negócio e responda diretamente ao conteúdo, sem mencionar que era um áudio.",
+          "time": "2026-06-23T20:31:31.130Z"
+        },
+        {
+          "role": "model",
+          "content": "O que você precisa? Manda o nome do lead ou a situação que eu te ajudo.",
+          "time": "2026-06-23T20:31:31.165Z"
+        }
+      ],
+      "created_at": "2026-06-23T20:31:27.485Z",
+      "updated_at": "2026-06-23T20:31:31.165Z"
+    },
+    {
+      "id": "a56a68abe0357b26",
+      "title": "O que vc pode fazer por mim?",
+      "messages": [
+        {
+          "role": "user",
+          "content": "Oi",
+          "time": "2026-06-23T20:30:49.529Z"
+        },
+        {
+          "role": "model",
+          "content": "O que você precisa?",
+          "time": "2026-06-23T20:30:49.535Z"
+        },
+        {
+          "role": "user",
+          "content": "O que vc pode fazer por mim?",
+          "time": "2026-06-23T20:31:03.593Z"
+        },
+        {
+          "role": "model",
+          "content": "Tô aqui pra te ajudar a vender mais e melhor. Posso analisar seus leads, criar abordagens de WhatsApp, gerar roteiros de venda, organizar seu CRM e preparar laudos completos pra cada prospect.\n\nO que bora começar?",
+          "time": "2026-06-23T20:31:03.596Z"
+        }
+      ],
+      "created_at": "2026-06-23T20:30:42.535Z",
+      "updated_at": "2026-06-23T20:31:03.596Z"
+    },
     {
       "id": "aaa79d10ba007764",
       "title": "O usuário enviou uma mensagem de voz de …",

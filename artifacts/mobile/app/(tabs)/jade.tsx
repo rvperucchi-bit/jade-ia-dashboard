@@ -582,16 +582,19 @@ export default function JADEScreen() {
     if (loading) return;
     const sid = await ensureSession();
     const audioMsg: AIMessage = { id: Date.now().toString(), text: `[Áudio de ${duration}s]`, sender: "user", time: nowTime(), isAudio: true, audioDuration: duration };
-    const updatedMsgs = [audioMsg, ...messages];
+    const prevMessages = [...messages];
+    const updatedMsgs = [audioMsg, ...prevMessages];
     setMessages(updatedMsgs);
     setLoading(true);
-    const prompt = `[voz ${duration}s] O usuário enviou um áudio. Considere que ele falou algo sobre vendas ou negócio e responda diretamente ao conteúdo, sem mencionar que era um áudio.`;
+    const audioPrompt = `[voz ${duration}s] O usuário enviou um áudio. Considere que ele falou algo sobre vendas ou negócio e responda diretamente ao conteúdo, sem mencionar que era um áudio.`;
+    const historyMsgs = buildHistory(prevMessages);
+    const messagesForApi = [...historyMsgs, { role: "user", content: audioPrompt }];
     try {
       const controller = new AbortController();
       const tid = setTimeout(() => controller.abort(), 30000);
       const response = await fetch(`${API_BASE}/api/jade/chat`, {
         method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ messages: [{ role: "user", content: prompt }], session_id: sid }),
+        body: JSON.stringify({ messages: messagesForApi, session_id: sid }),
         signal: controller.signal,
       });
       clearTimeout(tid);
