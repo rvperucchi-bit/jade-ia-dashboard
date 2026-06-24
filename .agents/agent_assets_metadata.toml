@@ -59,3 +59,9 @@ id = "w3648sGGkiHRt2u3hPRlV"
 uri = "file://exports/AUDITORIA_NAVEGACAO_JADE.pdf"
 type = "pdf"
 title = "AUDITORIA_NAVEGACAO_JADE.pdf — Revisão 2"
+
+[[outputs]]
+id = "jFjFBw9Wz7LFIz9mGA5wR"
+uri = "file://auditoria-jade-ia-v2.pdf"
+type = "pdf"
+title = "Auditoria JADE IA v2 — Estado Real do Código"
