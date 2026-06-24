@@ -1,4 +1,6 @@
-export type GeminiOperationName =
+// LLM-backed operations (chat + generate). The provider for each is decided
+// by OPERATION_CONFIG, not by this type — an op here may run on Gemini or OpenAI.
+export type LLMOperationName =
   | 'chat'
   | 'chat:lead-analysis'
   | 'chat:prospectar'
@@ -7,7 +9,7 @@ export type GeminiOperationName =
 
 export type WhisperOperationName = 'transcribe';
 
-export type OperationName = GeminiOperationName | WhisperOperationName;
+export type OperationName = LLMOperationName | WhisperOperationName;
 
 export interface NormalizedMessage {
   role: 'user' | 'assistant';
@@ -18,12 +20,12 @@ export interface ChatOptions {
   systemPrompt: string;
   history: NormalizedMessage[];
   userMessage: string;
-  operation: GeminiOperationName;
+  operation: LLMOperationName;
 }
 
 export interface GenerateOptions {
   prompt: string;
-  operation: GeminiOperationName;
+  operation: LLMOperationName;
 }
 
 export interface TranscribeOptions {

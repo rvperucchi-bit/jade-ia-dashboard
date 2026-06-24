@@ -131,3 +131,9 @@ id = "EbH9E3otVTgzzY5uwa9Ee"
 uri = "file://exports/relatorio-jade-ai-engine-2026-06-24.pdf"
 type = "pdf"
 title = "Relatório — JADE AI Engine"
+
+[[outputs]]
+id = "oLQIRD9RJb5AbfW1dvNqV"
+uri = "file://exports/relatorio-openai-chat-2026-06-24.pdf"
+type = "pdf"
+title = "Relatório — Provider OpenAI no chat principal"

@@ -5,16 +5,30 @@ export interface GeminiOperationConfig {
   maxOutputTokens: number;
 }
 
+export interface OpenAIOperationConfig {
+  provider: 'openai';
+  model: string;
+  temperature: number;
+  maxTokens: number;
+}
+
 export interface WhisperOperationConfig {
   provider: 'whisper';
   model: string;
   language: string;
 }
 
-export type OperationConfig = GeminiOperationConfig | WhisperOperationConfig;
+export type OperationConfig =
+  | GeminiOperationConfig
+  | OpenAIOperationConfig
+  | WhisperOperationConfig;
 
 export function isGeminiConfig(c: OperationConfig): c is GeminiOperationConfig {
   return c.provider === 'gemini';
+}
+
+export function isOpenAIConfig(c: OperationConfig): c is OpenAIOperationConfig {
+  return c.provider === 'openai';
 }
 
 export function isWhisperConfig(c: OperationConfig): c is WhisperOperationConfig {
@@ -22,11 +36,14 @@ export function isWhisperConfig(c: OperationConfig): c is WhisperOperationConfig
 }
 
 export const OPERATION_CONFIG: Record<string, OperationConfig> = {
+  // Main chat (JADE conversational assistant) runs on OpenAI.
+  // ROLLBACK to Gemini without touching screens: replace this block with
+  //   chat: { provider: 'gemini', model: 'gemini-2.5-flash', temperature: 0.7, maxOutputTokens: 4000 }
   chat: {
-    provider: 'gemini',
-    model: 'gemini-2.5-flash',
+    provider: 'openai',
+    model: 'gpt-4o-mini',
     temperature: 0.7,
-    maxOutputTokens: 4000,
+    maxTokens: 4000,
   },
   'chat:lead-analysis': {
     provider: 'gemini',

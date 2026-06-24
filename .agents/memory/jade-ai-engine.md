@@ -12,8 +12,17 @@ Localização: `artifacts/api-server/src/lib/ai/` (types, config, providers/gemi
 - `JadeAIConfigError` em `types.ts`: erros de misconfig que não são retried e surfaceiam 500 nas rotas
 
 **Operações mapeadas:**
-- `chat`, `chat:lead-analysis`, `chat:prospectar`, `marketing:generate`, `approach` → Gemini
+- `chat` (chat principal da JADE) → OpenAI (`gpt-4o-mini`, raw fetch /v1/chat/completions)
+- `chat:lead-analysis`, `chat:prospectar`, `marketing:generate`, `approach` → Gemini
 - `transcribe` → Whisper (OpenAI API raw fetch)
+
+**Provider OpenAI** (`providers/openai.ts`):
+- Usa `OPENAI_API_KEY` (mesma do Whisper); raw fetch com AbortController timeout 60s (erro contém 'timeout' → withRetry trata como transient)
+- Normalização própria: system prompt primeiro, depois history user/assistant; role legado `model` → `assistant` (qualquer role != 'user' vira assistant)
+- Config `OpenAIOperationConfig` usa `maxTokens` (≠ Gemini que usa `maxOutputTokens`)
+- engine.chat()/generate() fazem dispatch por `config.provider` (isOpenAIConfig/isGeminiConfig)
+- ROLLBACK para Gemini: trocar bloco `chat` em OPERATION_CONFIG de volta p/ gemini — sem tocar telas (há comentário no config.ts)
+- Tipo `LLMOperationName` (antes `GeminiOperationName`) cobre ops chat+generate de qualquer provider
 
 **Why:**
 - Abstração para troca futura Gemini→OpenAI: criar `providers/openai.ts` + ajustar `engine.ts` + `config.ts`; rotas e telas não precisam ser tocadas

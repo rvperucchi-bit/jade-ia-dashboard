@@ -1,0 +1,52 @@
+{
+  "title": "Provider OpenAI no chat principal",
+  "subtitle": "JADE AI Engine — migração controlada do chat para OpenAI",
+  "date": "24/06/2026",
+  "output": "relatorio-openai-chat-2026-06-24.pdf",
+  "sections": [
+    {
+      "heading": "Objetivo",
+      "body": [
+        "Adicionar um provider da OpenAI ao JADE AI Engine e migrar SOMENTE a operação de chat principal para a OpenAI, de forma controlada e reversível, sem alterar design, telas ou o app mobile.",
+        "O Gemini foi preservado em todas as demais operações e o Whisper continua responsável pela transcrição de áudio."
+      ]
+    },
+    {
+      "heading": "O que foi feito",
+      "bullets": [
+        "Novo provider em lib/ai/providers/openai.ts, com a mesma interface dos demais (métodos chat e generate) e validação da chave.",
+        "Autenticação usando a chave já existente no ambiente (OPENAI_API_KEY), a mesma usada pelo Whisper.",
+        "Configuração por operação: somente 'chat' passou a usar OpenAI; as outras operações continuam em Gemini.",
+        "Modelo mini econômico e configurável no arquivo central de config (gpt-4o-mini), fácil de trocar.",
+        "Normalização de histórico para OpenAI: prompt de sistema no início, mensagens user/assistant na sequência e conversão de mensagens antigas salvas como 'model' para 'assistant'.",
+        "Engine mantém retry, timeout, logs e tratamento de erro; o roteamento agora é decidido pelo provider configurado em cada operação."
+      ]
+    },
+    {
+      "heading": "Operações por provider",
+      "bullets": [
+        "OpenAI: chat (chat principal da JADE).",
+        "Gemini: análise de lead, prospecção, geração de marketing e abordagem (WhatsApp).",
+        "Whisper: transcrição de áudio."
+      ]
+    },
+    {
+      "heading": "Rollback para Gemini",
+      "body": [
+        "A volta para o Gemini é feita apenas trocando a configuração da operação 'chat' no arquivo central de config — sem tocar em nenhuma tela ou no app mobile.",
+        "Há um comentário no próprio arquivo indicando exatamente o bloco a usar para reverter."
+      ]
+    },
+    {
+      "heading": "Validação",
+      "bullets": [
+        "Typecheck do api-server: sem erros.",
+        "API reiniciada com sucesso.",
+        "Teste 1 (mensagem simples): chat respondeu no tom da JADE (conciso e direto).",
+        "Teste 2 (histórico com role legado 'model'): normalização funcionou, resposta coerente com o contexto anterior.",
+        "Logs confirmam provider 'openai' na operação de chat.",
+        "Revisão técnica (architect): PASS."
+      ]
+    }
+  ]
+}
