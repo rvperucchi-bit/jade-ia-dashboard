@@ -30,3 +30,8 @@ externalPort = 80
 [[ports]]
 localPort = 18116
 externalPort = 3000
+
+[userenv]
+
+[userenv.shared]
+WHATSAPP_VERIFY_TOKEN = "jade_whatsapp_2026"
