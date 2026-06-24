@@ -10,3 +10,4 @@
 - [expo-av SDK54 Deprecation](expo-av-sdk54.md) — expo-av deprecated no SDK 54 (warning mas ainda funcional); Audio.Recording.createAsync com RecordingOptionsPresets.HIGH_QUALITY para gravação nativa; transcription via /api/jade/transcribe com Gemini inlineData base64
 - [Notifications Architecture](notifications-arch.md) — NotificationsContext em context/; expo-notifications NÃO funciona no Expo Go (SDK 53+); funciona em development builds e produção; armazenamento local via AsyncStorage @jade_ia:notifications funciona em todos os ambientes
 - [PDF Generation](pdf-generation.md) — preferência: sempre gerar PDF em exports/ ao concluir tarefa; usar scripts/src/gerar-pdf.ts (pdfkit, JSON→PDF); output relativo ao dir do JSON, rodar com caminho absoluto
+- [JADE AI Engine](jade-ai-engine.md) — lib/ai/ abstrai Gemini+Whisper; roteamento por config.provider; JadeAIConfigError; singleton engine; pronto para trocar Gemini→OpenAI só em config+providers

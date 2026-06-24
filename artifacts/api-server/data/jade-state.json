@@ -1270,6 +1270,24 @@
   ],
   "activity_events": [
     {
+      "id": "2eec2e5b3c053a84",
+      "type": "message",
+      "text": "JADE respondeu a uma mensagem",
+      "icon": "robot",
+      "color": "#FF0080",
+      "metadata": {},
+      "created_at": "2026-06-24T23:23:15.214Z"
+    },
+    {
+      "id": "000655467d814911",
+      "type": "message",
+      "text": "JADE respondeu a uma mensagem",
+      "icon": "robot",
+      "color": "#FF0080",
+      "metadata": {},
+      "created_at": "2026-06-24T23:20:06.791Z"
+    },
+    {
       "id": "75afa4e2f013aa55",
       "type": "message",
       "text": "JADE respondeu a uma mensagem",
@@ -3207,25 +3225,6 @@
       "icon": "robot",
       "color": "#00D68F",
       "created_at": "2026-06-22T20:04:01.578Z"
-    },
-    {
-      "id": "d3ff9717aeda80f2",
-      "type": "message",
-      "text": "JADE respondeu: \"Olá\"",
-      "icon": "robot",
-      "color": "#FF0080",
-      "created_at": "2026-06-22T19:20:07.102Z"
-    },
-    {
-      "id": "aa73f8033038d390",
-      "type": "message",
-      "text": "JADE respondeu a uma mensagem",
-      "icon": "robot",
-      "color": "#FF0080",
-      "metadata": {
-        "session_id": "7f1b4886d04c9914"
-      },
-      "created_at": "2026-06-22T19:20:06.795Z"
     }
   ],
   "marketing_campaigns": [

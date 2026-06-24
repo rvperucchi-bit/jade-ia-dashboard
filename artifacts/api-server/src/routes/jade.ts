@@ -1,5 +1,5 @@
 import { Router, Request, Response } from 'express';
-import { GoogleGenerativeAI } from '@google/generative-ai';
+import { engine, JadeAIConfigError } from '../lib/ai/index.js';
 import {
   createJadeSession, getJadeSessions, getJadeSession,
   appendJadeMessage, deleteJadeSession, addActivityEvent,
@@ -289,15 +289,6 @@ router.post('/chat', async (req: Request, res: Response) => {
       return res.status(400).json({ error: 'messages cannot be empty' });
     }
 
-    const apiKey = process.env.GEMINI_API_KEY;
-    if (!apiKey) {
-      req.log.error('GEMINI_API_KEY not configured');
-      return res.status(500).json({ error: 'GEMINI_API_KEY not configured' });
-    }
-
-    const genAI = new GoogleGenerativeAI(apiKey);
-
-
     // Build dynamic system prompt — prefer client-sent config, fall back to server-stored
     const storedConfig = getCompanyConfig();
     const cc = body.company_config;
@@ -332,23 +323,7 @@ router.post('/chat', async (req: Request, res: Response) => {
       }
     }
 
-    const model = genAI.getGenerativeModel({
-      model: 'gemini-2.5-flash',
-      systemInstruction: systemPrompt,
-      generationConfig: { maxOutputTokens: 4000, temperature: 0.7 },
-    });
-
-    // Build history, then drop any leading 'model' turns —
-    // Gemini requires the first history entry to have role 'user'
-    const rawHistory = messagesArray.slice(0, -1).map((msg) => ({
-      role: (msg.role === 'user' ? 'user' : 'model') as 'user' | 'model',
-      parts: [{ text: msg.content }],
-    }));
-    const firstUserIdx = rawHistory.findIndex((h) => h.role === 'user');
-    const history = firstUserIdx >= 0 ? rawHistory.slice(firstUserIdx) : [];
-
     const lastMessage = messagesArray[messagesArray.length - 1];
-    const chat = model.startChat({ history });
     const lastUserText = lastMessage!.content;
     const mapsApiKey = process.env.GOOGLE_MAPS_API_KEY ?? process.env.GOOGLE_MAPS_PLATFORM_KEY;
 
@@ -364,13 +339,12 @@ router.post('/chat', async (req: Request, res: Response) => {
         pending.shown += allRemaining.length;
 
         // Generate analysis for every lead in parallel (best-effort)
-        const analysisModel = genAI.getGenerativeModel({ model: 'gemini-2.5-flash', generationConfig: { maxOutputTokens: 500, temperature: 0.5 } });
         const produtoA = (companyConfig as any)?.produto as string | undefined;
         const analyses = await Promise.all(
           allRemaining.map(async (lead) => {
             try {
-              const pr = await analysisModel.generateContent(buildAnalysisOnlyPrompt(lead, pending.tipo, produtoA));
-              return parseAnalysis(pr.response.text());
+              const analysisText = await engine.generate({ prompt: buildAnalysisOnlyPrompt(lead, pending.tipo, produtoA), operation: 'chat:lead-analysis' });
+              return parseAnalysis(analysisText);
             } catch {
               return { dor: '', angulo: '', pergunta: '' };
             }
@@ -429,11 +403,9 @@ router.post('/chat', async (req: Request, res: Response) => {
         req.log.info({ tipo, cidade: cidade || '(not set in profile)' }, `[JADE] cidade do perfil: "${companyConfig?.cidade ?? ''}" → busca: "${cidade}"`);
         console.log(`[JADE] cidade do perfil: "${companyConfig?.cidade ?? 'não definida'}" | cidade usada na busca: "${cidade || 'vazia — configure em Minha Empresa'}"`);
 
-        const analysisModel = genAI.getGenerativeModel({ model: 'gemini-2.5-flash', generationConfig: { maxOutputTokens: 500, temperature: 0.5 } });
         const produtoB = (companyConfig as any)?.produto as string | undefined;
         const analysisPromptB = buildAnalysisOnlyPrompt(firstLead, tipo, produtoB);
-        const pr = await analysisModel.generateContent(analysisPromptB);
-        const analysis = parseAnalysis(pr.response.text());
+        const analysis = parseAnalysis(await engine.generate({ prompt: analysisPromptB, operation: 'chat:lead-analysis' }));
         const cardText = buildLeadCardText(firstLead, 1, places.length, cidade, tipo, false, analysis.dor);
 
         if (body.session_id) {
@@ -457,10 +429,13 @@ router.post('/chat', async (req: Request, res: Response) => {
       // Zero results → fall through so Gemini can explain
     }
 
-    // ─── Path C: Normal Gemini flow ──────────────────────────────────────────
-    const result = await chat.sendMessage(lastUserText);
-    const response = await result.response;
-    const text = response.text();
+    // ─── Path C: JADE AI Engine ───────────────────────────────────────────────
+    const text = await engine.chat({
+      systemPrompt,
+      history: messagesArray.slice(0, -1).map((m) => ({ role: m.role as 'user' | 'assistant', content: m.content })),
+      userMessage: lastUserText,
+      operation: 'chat',
+    });
 
     req.log.info({ chars: text.length, session_id: body.session_id }, 'JADE responded');
 
@@ -501,21 +476,12 @@ router.post('/prospectar', async (req: Request, res: Response) => {
       existingIds?: string[];
     };
 
-    const apiKey = process.env.GEMINI_API_KEY;
-    if (!apiKey) {
-      return res.status(500).json({ error: 'GEMINI_API_KEY not configured', leads: [] });
-    }
-
-    const genAI = new GoogleGenerativeAI(apiKey);
-    const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
-
     const prompt = `Você é especialista em prospecção B2B. Gere exatamente 3 leads fictícios mas realistas de estabelecimentos comerciais em ${cidade} do segmento "${tipo}".
 
 Retorne SOMENTE este JSON válido, sem markdown, sem explicações:
 {"leads":[{"id":"p_${Date.now()}_1","name":"[nome do contato]","company":"[nome do negócio]","value":[número entre 8000 e 45000],"phone":"+55 11 9${Math.floor(Math.random()*9000+1000)}-${Math.floor(Math.random()*9000+1000)}","column":"novo","tag":"${tipo}","tagColor":"#6C63FF","time":"agora","initials":"[2 letras]","avatarColor":"#6C63FF","score":[entre 65 e 95],"mensagemAbordagem":"[mensagem WhatsApp personalizada, max 3 linhas, sem ser genérica, menciona o negócio deles]","dorPrincipal":"[principal dor do segmento]"},{"id":"p_${Date.now()}_2","name":"[outro nome]","company":"[outro negócio]","value":[número],"phone":"+55 11 9${Math.floor(Math.random()*9000+1000)}-${Math.floor(Math.random()*9000+1000)}","column":"novo","tag":"${tipo}","tagColor":"#FF0080","time":"agora","initials":"[2 letras]","avatarColor":"#FF0080","score":[entre 65 e 90],"mensagemAbordagem":"[mensagem personalizada]","dorPrincipal":"[dor]"},{"id":"p_${Date.now()}_3","name":"[outro nome]","company":"[outro negócio]","value":[número],"phone":"+55 11 9${Math.floor(Math.random()*9000+1000)}-${Math.floor(Math.random()*9000+1000)}","column":"novo","tag":"${tipo}","tagColor":"#00D68F","time":"agora","initials":"[2 letras]","avatarColor":"#00D68F","score":[entre 60 e 85],"mensagemAbordagem":"[mensagem personalizada]","dorPrincipal":"[dor]"}]}`;
 
-    const result = await model.generateContent(prompt);
-    const responseText = result.response.text().trim();
+    const responseText = (await engine.generate({ prompt, operation: 'chat:prospectar' })).trim();
 
     const jsonMatch = responseText.match(/\{[\s\S]*\}/);
     if (!jsonMatch) {
@@ -540,6 +506,9 @@ Retorne SOMENTE este JSON válido, sem markdown, sem explicações:
 
   } catch (error) {
     req.log.error({ error }, 'Error in /jade/prospectar');
+    if (error instanceof JadeAIConfigError) {
+      return res.status(500).json({ error: error.message, leads: [] });
+    }
     return res.json({ leads: [], count: 0 });
   }
 });
@@ -671,15 +640,7 @@ router.post('/approach', async (req: Request, res: Response) => {
     };
     if (!body.name) return res.status(400).json({ error: 'name is required' });
 
-    const apiKey = process.env.GEMINI_API_KEY;
-    if (!apiKey) return res.status(500).json({ error: 'GEMINI_API_KEY not configured' });
-
     const companyConfig = getCompanyConfig();
-    const genAI = new GoogleGenerativeAI(apiKey);
-    const model = genAI.getGenerativeModel({
-      model: 'gemini-2.5-flash',
-      generationConfig: { maxOutputTokens: 200, temperature: 0.85 },
-    });
 
     const companyLine = companyConfig
       ? `Empresa prospectando: ${companyConfig.nome}, vende: ${companyConfig.produto}.`
@@ -695,8 +656,7 @@ ${companyLine}
 
 Responda APENAS com o texto da mensagem, sem aspas, sem markdown, sem emojis no início.`;
 
-    const result = await model.generateContent(prompt);
-    const messageText = result.response.text().trim();
+    const messageText = (await engine.generate({ prompt, operation: 'approach' })).trim();
 
     // Format phone for WhatsApp: strip non-digits, prepend 55 if needed
     const digits = (body.phone ?? '').replace(/\D/g, '');
@@ -721,37 +681,10 @@ router.post('/transcribe', async (req: Request, res: Response) => {
   const { audioBase64, mimeType } = req.body as { audioBase64?: string; mimeType?: string };
   if (!audioBase64) return res.status(400).json({ error: 'audioBase64 required' });
 
-  const apiKey = process.env.OPENAI_API_KEY;
-  if (!apiKey) return res.status(500).json({ error: 'OpenAI API key not configured' });
-
   try {
-    const audioBuffer = Buffer.from(audioBase64, 'base64');
-    const resolvedMime = (mimeType as string) || 'audio/m4a';
-    const fileName = resolvedMime === 'audio/wav' ? 'audio.wav'
-                   : resolvedMime === 'audio/webm' ? 'audio.webm'
-                   : 'audio.m4a';
-
-    const blob = new Blob([audioBuffer], { type: resolvedMime });
-    const formData = new FormData();
-    formData.append('file', blob, fileName);
-    formData.append('model', 'whisper-1');
-    formData.append('language', 'pt');
-
-    const whisperRes = await fetch('https://api.openai.com/v1/audio/transcriptions', {
-      method: 'POST',
-      headers: { Authorization: `Bearer ${apiKey}` },
-      body: formData,
-    });
-
-    if (!whisperRes.ok) {
-      const errBody = await whisperRes.text();
-      req.log.error({ status: whisperRes.status, body: errBody }, 'whisper API error');
-      return res.status(500).json({ error: 'Transcription failed' });
-    }
-
-    const data = (await whisperRes.json()) as { text: string };
-    req.log.info({ chars: data.text.length }, 'audio transcribed via whisper');
-    return res.json({ text: data.text.trim() });
+    const text = await engine.transcribe({ audioBase64, mimeType: mimeType ?? 'audio/m4a' });
+    req.log.info({ chars: text.length }, 'audio transcribed via whisper');
+    return res.json({ text });
   } catch (err) {
     req.log.error(err, 'transcribe failed');
     return res.status(500).json({ error: 'Transcription failed' });

@@ -125,3 +125,9 @@ id = "VZ2oMjDr10wkL7pwVgLzQ"
 uri = "file://exports/relatorio-refatoracao-prompts-2026-06-24.pdf"
 type = "pdf"
 title = "Relatório — Refatoração da Arquitetura de Prompts"
+
+[[outputs]]
+id = "EbH9E3otVTgzzY5uwa9Ee"
+uri = "file://exports/relatorio-jade-ai-engine-2026-06-24.pdf"
+type = "pdf"
+title = "Relatório — JADE AI Engine"

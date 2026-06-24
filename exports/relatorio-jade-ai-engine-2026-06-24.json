@@ -1,0 +1,62 @@
+{
+  "title": "JADE AI Engine — Camada Central de IA",
+  "subtitle": "Abstração de provedor, retry, logs e configuração por operação",
+  "date": "24 de junho de 2026",
+  "output": "relatorio-jade-ai-engine-2026-06-24.pdf",
+  "sections": [
+    {
+      "heading": "Objetivo",
+      "body": [
+        "Criar uma camada intermediária de IA que abstraia o provedor atual (Gemini) e prepare a migração futura para OpenAI, sem alterar nenhum comportamento visível: rotas públicas, respostas da API, design do app mobile e funcionalidade do Whisper permanecem idênticos."
+      ]
+    },
+    {
+      "heading": "Estrutura criada — lib/ai/",
+      "bullets": [
+        "types.ts — interfaces compartilhadas: ChatOptions, GenerateOptions, TranscribeOptions, OperationName, NormalizedMessage.",
+        "config.ts — registro central de modelo, temperatura e maxOutputTokens por operação (chat, chat:lead-analysis, chat:prospectar, marketing:generate, approach, transcribe).",
+        "providers/gemini.ts — GeminiProvider: encapsula GoogleGenerativeAI; métodos chat() e generate() sem lógica de negócio.",
+        "providers/whisper.ts — WhisperProvider: encapsula a chamada raw fetch para OpenAI Whisper; parâmetros vindos do config.",
+        "engine.ts — JadeAIEngine singleton: orquestra providers, normaliza roles (user/assistant → user/model para Gemini), aplica retry em erros transientes (5xx, 429, timeout), loga duração de cada operação.",
+        "index.ts — re-exporta engine, tipos e config para acesso centralizado."
+      ]
+    },
+    {
+      "heading": "Rotas migradas",
+      "bullets": [
+        "/jade/chat (Path C normal) → engine.chat() com operation='chat'.",
+        "/jade/chat (análise de leads Path A e B) → engine.generate() com operation='chat:lead-analysis'.",
+        "/jade/prospectar → engine.generate() com operation='chat:prospectar'.",
+        "/jade/approach → engine.generate() com operation='approach'.",
+        "/jade/transcribe → engine.transcribe() (Whisper via WhisperProvider).",
+        "/marketing/generate → engine.generate() com operation='marketing:generate'."
+      ]
+    },
+    {
+      "heading": "Funcionalidades centralizadas no Engine",
+      "bullets": [
+        "Seleção de modelo por operação (único ponto de configuração em config.ts).",
+        "Temperatura e maxOutputTokens configurados por operação, não por handler.",
+        "Normalização de roles: 'assistant' → 'model' para Gemini; firstUserIdx filter preservado.",
+        "Retry automático em erros 5xx, 429 e timeout (1 retry após 1.5s).",
+        "Log de duração (ms) e tamanho da resposta (chars) para cada operação via logger pino.",
+        "Providers instanciados uma única vez (singleton) — não mais por request."
+      ]
+    },
+    {
+      "heading": "Preparação para migração futura",
+      "body": [
+        "Para trocar Gemini por OpenAI no chat basta: (1) criar providers/openai.ts implementando os mesmos métodos chat() e generate(); (2) ajustar engine.ts para usar o novo provider; (3) alterar config.ts para apontar para os modelos OpenAI. Nenhuma rota ou tela precisa ser tocada."
+      ]
+    },
+    {
+      "heading": "Validação",
+      "bullets": [
+        "Typecheck do api-server: zero erros.",
+        "API reiniciada com sucesso.",
+        "Teste POST /api/jade/chat com {'messages':[{'role':'user','content':'oi, tudo bem?'}]} retornou {'message':'Me conta.','handoff':false}.",
+        "Comportamento idêntico ao anterior — mesma experiência para o usuário."
+      ]
+    }
+  ]
+}

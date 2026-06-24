@@ -1,5 +1,5 @@
 import { Router, Request, Response } from "express";
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import { engine } from "../lib/ai/index.js";
 import { addCampaign, getAllCampaigns, getCampaign, addActivityEvent } from "../db/store.js";
 
 const router = Router();
@@ -18,19 +18,9 @@ router.post("/generate", async (req: Request, res: Response) => {
     return res.status(400).json({ error: "context_input e system_context são obrigatórios" });
   }
 
-  const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey) {
-    return res.status(500).json({ error: "GEMINI_API_KEY não configurada" });
-  }
-
   try {
-    const genAI = new GoogleGenerativeAI(apiKey);
-    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
-
     const prompt = `${system_context}\n\nContexto fornecido pelo usuário: ${context_input.trim()}`;
-    const result = await model.generateContent(prompt);
-    const response = await result.response;
-    const content = response.text().trim();
+    const content = await engine.generate({ prompt, operation: 'marketing:generate' });
 
     const campaign = addCampaign({
       type_id: type_id ?? "custom",
