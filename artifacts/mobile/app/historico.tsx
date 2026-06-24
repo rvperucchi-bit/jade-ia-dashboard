@@ -73,7 +73,7 @@ export default function HistoricoScreen() {
     <View style={[S.root, { backgroundColor: colors.background }]}>
       {/* Header */}
       <View style={[S.header, { paddingTop: topPad + 4 }]}>
-        <TouchableOpacity onPress={() => router.push("/(tabs)/jade" as any)} style={S.backBtn} activeOpacity={0.7}>
+        <TouchableOpacity onPress={() => router.back()} style={S.backBtn} activeOpacity={0.7}>
           <Feather name="arrow-left" size={22} color={colors.text} />
         </TouchableOpacity>
         <View style={{ flex: 1 }}>

@@ -261,7 +261,7 @@ export default function ConversasScreen() {
 
       {/* ── Header ── */}
       <View style={[S.header, { paddingTop: topPad + 6 }]}>
-        <TouchableOpacity style={S.backBtn} onPress={() => router.push("/(tabs)/jade" as any)} activeOpacity={0.7}>
+        <TouchableOpacity style={S.backBtn} onPress={() => router.back()} activeOpacity={0.7}>
           <Feather name="arrow-left" size={22} color={colors.text} />
         </TouchableOpacity>
 
