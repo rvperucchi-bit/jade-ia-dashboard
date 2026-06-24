@@ -160,7 +160,7 @@ function AccordionItem({
   return (
     <View style={C.accordionWrap}>
       <TouchableOpacity style={C.accordionHeader} onPress={onToggle} activeOpacity={0.7}>
-        <Feather name={section.icon as any} size={14} color={isOpen ? PINK : "rgba(255,255,255,0.28)"} />
+        <Feather name={section.icon as any} size={14} color={isOpen ? PINK : "#FFFFFF"} />
         <Text style={[C.accordionTitle, isOpen && C.accordionTitleOpen]}>{section.title}</Text>
         <Animated.View style={{ transform: [{ rotate }] }}>
           <Feather name="chevron-right" size={13} color="rgba(255,255,255,0.22)" />
@@ -1919,10 +1919,10 @@ const C = StyleSheet.create({
     paddingHorizontal: 24, paddingVertical: 14,
   },
   accordionTitle:     {
-    flex: 1, fontSize: 13, fontFamily: "SpaceGrotesk_600SemiBold",
-    color: "rgba(255,255,255,0.28)", letterSpacing: 0.4, textTransform: "uppercase",
+    flex: 1, fontSize: 13, fontFamily: "SpaceGrotesk_700Bold",
+    color: "#FFFFFF", letterSpacing: 0.4, textTransform: "uppercase",
   },
-  accordionTitleOpen: { color: "rgba(255,255,255,0.75)" },
+  accordionTitleOpen: { color: PINK },
   accordionSep:       { height: StyleSheet.hairlineWidth, backgroundColor: "#0F0F1A", marginHorizontal: 24 },
   accordionItemRow:   {
     height: ITEM_H, flexDirection: "row", alignItems: "center",
