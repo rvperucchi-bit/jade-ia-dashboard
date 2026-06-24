@@ -83,3 +83,9 @@ id = "K2n2AeGROl_Lm0R-tYii5"
 uri = "file://attached_assets/generated_audio/speech_jade_audio_test.mp3"
 type = "audio"
 title = "jade_audio_test"
+
+[[outputs]]
+id = "xnpgx-_9N-ZfQ8PW9GUgQ"
+uri = "file://JADE_IA_Auditoria.pdf"
+type = "pdf"
+title = "Relatório de Auditoria — JADE IA (PDF)"
