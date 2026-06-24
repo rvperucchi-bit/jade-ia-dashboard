@@ -29,7 +29,6 @@ import { useColors } from "@/hooks/useColors";
 import { useApp } from "@/context/AppContext";
 import { useCredits } from "@/context/CreditsContext";
 import { useProfile } from "@/context/ProfileContext";
-import { usePlan } from "@/context/PlanContext";
 import { takePendingVoice } from "@/utils/voiceContext";
 import { stripMarkdown } from "@/utils/stripMarkdown";
 import { saveSession } from "@/utils/sessionHistory";
@@ -44,7 +43,7 @@ const DRAWER_W  = SCREEN_W;
 const RDRAWER_W = 76;
 
 // ─── Menu data ────────────────────────────────────────────────────────────────
-type MenuItem = { label: string; route?: string; requiresPlan?: "pro" | "enterprise"; action?: "nova-conversa" };
+type MenuItem = { label: string; route?: string; action?: "nova-conversa" };
 type AccordionSection = { key: string; title: string; icon: string; items: MenuItem[] };
 
 const ACCORDION_SECTIONS: AccordionSection[] = [
@@ -77,9 +76,9 @@ const ACCORDION_SECTIONS: AccordionSection[] = [
     icon: "volume-2",
     items: [
       { label: "Briefings",    route: "/briefing" },
-      { label: "Campanhas",    route: "/marketing",    requiresPlan: "pro" },
-      { label: "Planejamento", route: "/planejamento", requiresPlan: "pro" },
-      { label: "Simulação",    route: "/roleplay",     requiresPlan: "pro" },
+      { label: "Campanhas",    route: "/marketing" },
+      { label: "Planejamento", route: "/planejamento" },
+      { label: "Simulação",    route: "/roleplay" },
     ],
   },
   {
@@ -87,15 +86,15 @@ const ACCORDION_SECTIONS: AccordionSection[] = [
     title: "Gestão",
     icon: "bar-chart-2",
     items: [
-      { label: "Central Comercial",   route: "/painelexecutivo",  requiresPlan: "enterprise" },
-      { label: "Meu Time",            route: "/meutime",          requiresPlan: "enterprise" },
-      { label: "Metas & KPIs",        route: "/metas",            requiresPlan: "enterprise" },
-      { label: "Ranking",             route: "/relatoriogestor",  requiresPlan: "enterprise" },
-      { label: "Carteira",            route: "/carteira",         requiresPlan: "enterprise" },
-      { label: "Gestão Inteligente",  route: "/gestao",           requiresPlan: "enterprise" },
-      { label: "Feedback JADE",       route: "/feedbackjade",     requiresPlan: "enterprise" },
-      { label: "Análise Estratégica", route: "/analise",          requiresPlan: "enterprise" },
-      { label: "Relatório do Gestor", route: "/relatoriogestor",  requiresPlan: "enterprise" },
+      { label: "Central Comercial",   route: "/painelexecutivo" },
+      { label: "Meu Time",            route: "/meutime" },
+      { label: "Metas & KPIs",        route: "/metas" },
+      { label: "Ranking",             route: "/relatoriogestor" },
+      { label: "Carteira",            route: "/carteira" },
+      { label: "Gestão Inteligente",  route: "/gestao" },
+      { label: "Feedback JADE",       route: "/feedbackjade" },
+      { label: "Análise Estratégica", route: "/analise" },
+      { label: "Relatório do Gestor", route: "/relatoriogestor" },
       { label: "Notificações",        route: "/notificacoes" },
     ],
   },
@@ -105,7 +104,7 @@ const ACCORDION_SECTIONS: AccordionSection[] = [
     icon: "map",
     items: [
       { label: "Scanner", route: "/scanner" },
-      { label: "Rotas",   route: "/criarrota", requiresPlan: "pro" },
+      { label: "Rotas",   route: "/criarrota" },
       { label: "Laudo",   route: "/laudo" },
     ],
   },
@@ -175,9 +174,6 @@ function AccordionItem({
             onPress={() => onItemPress(item)}
             activeOpacity={0.6}
           >
-            {item.requiresPlan && (
-              <Feather name="lock" size={10} color="rgba(255,255,255,0.18)" style={{ marginRight: 4 }} />
-            )}
             <Text style={[
               C.accordionItemText,
               item.action === "nova-conversa" && C.accordionItemNew,
@@ -893,7 +889,6 @@ export default function JADEScreen() {
   const { addActivityEvent } = useApp();
   const { remaining, warnLevel, useCredit } = useCredits();
   const { displayName, photoUri } = useProfile();
-  const { canAccess } = usePlan();
   const { scheduleNotification } = useNotifications();
 
   const topPad    = Platform.OS === "web" ? 24 : insets.top;
@@ -1497,10 +1492,6 @@ export default function JADEScreen() {
     }
     if (!item.route) return;
     closeDrawer();
-    if (item.requiresPlan && !canAccess(item.requiresPlan)) {
-      router.push("/plano" as any);
-      return;
-    }
     if (item.route === "/(tabs)/jade") return;
     router.push(item.route as any);
   };
