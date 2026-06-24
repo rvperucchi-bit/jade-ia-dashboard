@@ -45,14 +45,15 @@ router.get("/status", (_req: Request, res: Response) => {
 
 // GET /api/modules/:name/status
 router.get("/:name/status", (req: Request, res: Response) => {
-  const mod = getModule(req.params.name ?? "");
+  const name = String(req.params.name ?? "");
+  const mod = getModule(name);
   if (!mod) return res.status(404).json({ error: "Módulo não encontrado" });
   return res.json(mod);
 });
 
 // PUT /api/modules/:name/toggle
 router.put("/:name/toggle", (req: Request, res: Response) => {
-  const name = req.params.name ?? "";
+  const name = String(req.params.name ?? "");
   const existing = getModule(name);
   if (!existing) return res.status(404).json({ error: "Módulo não encontrado" });
 
@@ -83,7 +84,7 @@ router.put("/:name/toggle", (req: Request, res: Response) => {
 
 // POST /api/modules/:name/toggle (alias para PUT — compatível com React Native fetch)
 router.post("/:name/toggle", (req: Request, res: Response) => {
-  const name = req.params.name ?? "";
+  const name = String(req.params.name ?? "");
   const existing = getModule(name);
   if (!existing) return res.status(404).json({ error: "Módulo não encontrado" });
 
@@ -115,7 +116,7 @@ router.post("/:name/toggle", (req: Request, res: Response) => {
 
 // POST /api/modules/:name/run — manual execution
 router.post("/:name/run", async (req: Request, res: Response) => {
-  const name = req.params.name ?? "";
+  const name = String(req.params.name ?? "");
   const mod = getModule(name);
   if (!mod) return res.status(404).json({ error: "Módulo não encontrado" });
 
@@ -182,7 +183,7 @@ router.post("/:name/run", async (req: Request, res: Response) => {
 
 // GET /api/modules/:name/logs
 router.get("/:name/logs", (req: Request, res: Response) => {
-  const name = req.params.name ?? "";
+  const name = String(req.params.name ?? "");
   const limit = parseInt((req.query["limit"] as string) ?? "50", 10);
   const logs = getModuleLogs(name, limit);
   return res.json({ logs, module: name });

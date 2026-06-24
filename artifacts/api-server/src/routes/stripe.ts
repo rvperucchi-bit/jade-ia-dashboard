@@ -244,7 +244,7 @@ router.get('/callback-searches', (_req: Request, res: Response) => {
 
 // ─── GET /stripe/subscription/:email ─────────────────────────────────────────
 router.get('/subscription/:email', (req: Request, res: Response) => {
-  const email = decodeURIComponent(req.params.email ?? '');
+  const email = decodeURIComponent(String(req.params.email ?? ''));
   const subs  = readSubs();
   const sub   = subs[email];
 

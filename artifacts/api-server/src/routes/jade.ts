@@ -1003,14 +1003,14 @@ router.post('/sessions', (req: Request, res: Response) => {
 
 // GET /jade/sessions/:id
 router.get('/sessions/:id', (req: Request, res: Response) => {
-  const session = getJadeSession(req.params.id ?? '');
+  const session = getJadeSession(String(req.params.id ?? ''));
   if (!session) return res.status(404).json({ error: 'Sessão não encontrada' });
   return res.json({ session });
 });
 
 // DELETE /jade/sessions/:id
 router.delete('/sessions/:id', (req: Request, res: Response) => {
-  const deleted = deleteJadeSession(req.params.id ?? '');
+  const deleted = deleteJadeSession(String(req.params.id ?? ''));
   if (!deleted) return res.status(404).json({ error: 'Sessão não encontrada' });
   return res.json({ ok: true });
 });
@@ -1121,31 +1121,42 @@ Responda APENAS com o texto da mensagem, sem aspas, sem markdown, sem emojis no 
 });
 
 // ── POST /api/jade/transcribe ─────────────────────────────────────────────────
-// Transcribes a base64-encoded audio clip using Gemini multimodal
+// Transcribes a base64-encoded audio clip using OpenAI Whisper
 router.post('/transcribe', async (req: Request, res: Response) => {
   const { audioBase64, mimeType } = req.body as { audioBase64?: string; mimeType?: string };
   if (!audioBase64) return res.status(400).json({ error: 'audioBase64 required' });
 
-  const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey) return res.status(500).json({ error: 'Gemini API key not configured' });
+  const apiKey = process.env.OPENAI_API_KEY;
+  if (!apiKey) return res.status(500).json({ error: 'OpenAI API key not configured' });
 
   try {
-    const genAI = new GoogleGenerativeAI(apiKey);
-    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+    const audioBuffer = Buffer.from(audioBase64, 'base64');
+    const resolvedMime = (mimeType as string) || 'audio/m4a';
+    const fileName = resolvedMime === 'audio/wav' ? 'audio.wav'
+                   : resolvedMime === 'audio/webm' ? 'audio.webm'
+                   : 'audio.m4a';
 
-    const result = await model.generateContent([
-      {
-        inlineData: {
-          data: audioBase64,
-          mimeType: (mimeType as string) || 'audio/m4a',
-        },
-      },
-      'Transcreva este áudio em português brasileiro. Retorne apenas o texto transcrito, sem introdução, sem formatação, sem aspas.',
-    ]);
+    const blob = new Blob([audioBuffer], { type: resolvedMime });
+    const formData = new FormData();
+    formData.append('file', blob, fileName);
+    formData.append('model', 'whisper-1');
+    formData.append('language', 'pt');
 
-    const text = result.response.text().trim();
-    req.log.info({ chars: text.length }, 'audio transcribed');
-    return res.json({ text });
+    const whisperRes = await fetch('https://api.openai.com/v1/audio/transcriptions', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${apiKey}` },
+      body: formData,
+    });
+
+    if (!whisperRes.ok) {
+      const errBody = await whisperRes.text();
+      req.log.error({ status: whisperRes.status, body: errBody }, 'whisper API error');
+      return res.status(500).json({ error: 'Transcription failed' });
+    }
+
+    const data = (await whisperRes.json()) as { text: string };
+    req.log.info({ chars: data.text.length }, 'audio transcribed via whisper');
+    return res.json({ text: data.text.trim() });
   } catch (err) {
     req.log.error(err, 'transcribe failed');
     return res.status(500).json({ error: 'Transcription failed' });

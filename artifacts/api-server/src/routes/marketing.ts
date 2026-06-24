@@ -63,7 +63,7 @@ router.get("/campaigns", (_req: Request, res: Response) => {
 
 // GET /api/marketing/campaigns/:id
 router.get("/campaigns/:id", (req: Request, res: Response) => {
-  const campaign = getCampaign(req.params.id ?? "");
+  const campaign = getCampaign(String(req.params.id ?? ""));
   if (!campaign) return res.status(404).json({ error: "Campanha não encontrada" });
   return res.json({ campaign });
 });

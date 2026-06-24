@@ -223,6 +223,7 @@ interface AIMessage {
   leadData?: LeadCardData;
   leadsList?: LeadCardData[];
   crmSaved?: boolean;
+  isVoice?: boolean;
 }
 
 interface CrmLeadLocal {
@@ -412,7 +413,14 @@ function MessageBubble({
             ))}
           </View>
         )}
-        {!!msg.text && <Text style={[C.bubbleText, { color: "#fff" }]}>{msg.text}</Text>}
+        {!!msg.text && (
+          <View style={msg.isVoice ? { flexDirection: "row", alignItems: "flex-start", gap: 5 } : undefined}>
+            {msg.isVoice && (
+              <Text style={{ fontSize: 13, lineHeight: 20 }}>🎤</Text>
+            )}
+            <Text style={[C.bubbleText, { color: "#fff", flex: msg.isVoice ? 1 : undefined }]}>{msg.text}</Text>
+          </View>
+        )}
         <Text style={[C.bubbleTime, { color: "rgba(255,255,255,0.6)" }]}>{msg.time}</Text>
       </View>
     </View>
@@ -920,6 +928,7 @@ export default function JADEScreen() {
       time: m.time,
       isAudio: m.isAudio,
       audioDuration: m.audioDuration,
+      isVoice: m.isVoice,
     }));
     await saveSession(sid, saveable, sessionCreatedAt.current);
   }, []);
@@ -982,7 +991,7 @@ export default function JADEScreen() {
         try {
           const savedMsgs = JSON.parse(raw) as Array<{
             id: string; text: string; sender: "jade" | "user"; time: string;
-            isAudio?: boolean; audioDuration?: number;
+            isAudio?: boolean; audioDuration?: number; isVoice?: boolean;
           }>;
           if (savedMsgs.length === 0) return;
           greetingInjected.current = true;
@@ -992,6 +1001,7 @@ export default function JADEScreen() {
             sender: m.sender,
             time: m.time,
             isAudio: m.isAudio,
+            isVoice: m.isVoice,
             audioDuration: m.audioDuration,
           }));
           setMessages(restored);
@@ -1178,7 +1188,7 @@ export default function JADEScreen() {
     secsRef.current = 0; transcriptRef.current = '';
     setRecording(false); setRecordSecs(0); setVoiceTranscript('');
 
-    // Native: stop expo-av recording and transcribe
+    // Native: stop expo-av recording and transcribe via Whisper
     if (Platform.OS !== 'web' && avRecordingRef.current) {
       const rec = avRecordingRef.current;
       avRecordingRef.current = null;
@@ -1198,30 +1208,46 @@ export default function JADEScreen() {
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ audioBase64: base64, mimeType: 'audio/m4a' }),
             });
+            setLoading(false);
+            setVoiceTranscript('');
             if (resp.ok) {
               const { text: transcribed } = (await resp.json()) as { text: string };
               if (transcribed && transcribed.trim().length > 0) {
-                setLoading(false);
-                setVoiceTranscript('');
                 Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-                send(transcribed.trim());
+                send(transcribed.trim(), undefined, true);
                 return;
               }
+              // Whisper returned empty text
+              setMessages((prev) => [
+                { id: Date.now().toString(), text: 'Não consegui entender o áudio. Tenta novamente.', sender: 'jade', time: nowTime() },
+                ...prev,
+              ]);
+            } else {
+              // Server error
+              setMessages((prev) => [
+                { id: Date.now().toString(), text: 'Não consegui entender o áudio. Tenta novamente.', sender: 'jade', time: nowTime() },
+                ...prev,
+              ]);
             }
-          } catch {}
-          setLoading(false);
-          setVoiceTranscript('');
-          // Fallback: send as audio placeholder
-          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-          sendAudio(duration);
-          return;
+            return;
+          } catch {
+            setLoading(false);
+            setVoiceTranscript('');
+            setMessages((prev) => [
+              { id: Date.now().toString(), text: 'Sem conexão para transcrever.', sender: 'jade', time: nowTime() },
+              ...prev,
+            ]);
+            return;
+          }
         }
       } catch {
         avRecordingRef.current = null;
+        setLoading(false);
+        setVoiceTranscript('');
       }
     }
 
-    if (t) { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success); send(t); }
+    if (t) { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success); send(t, undefined, true); }
     else if (duration >= 1) { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success); sendAudio(duration); }
   };
 
@@ -1269,7 +1295,7 @@ export default function JADEScreen() {
     }));
 
   // ── Send ──────────────────────────────────────────────────────────────────
-  const send = async (text: string, files?: AttachedFile[]) => {
+  const send = async (text: string, files?: AttachedFile[], isVoice = false) => {
     const trimmed = text.trim();
     if ((!trimmed && !files?.length) || loading) return;
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -1278,6 +1304,7 @@ export default function JADEScreen() {
       id: Date.now().toString(),
       text: trimmed || (files?.length ? `[${files.length} arquivo(s) anexado(s)]` : ""),
       sender: "user", time: nowTime(), files,
+      ...(isVoice ? { isVoice: true } : {}),
     };
     const updatedMsgs = [userMsg, ...messages];
     setMessages(updatedMsgs);
