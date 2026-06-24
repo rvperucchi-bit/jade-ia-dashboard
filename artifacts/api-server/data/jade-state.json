@@ -1270,6 +1270,15 @@
   ],
   "activity_events": [
     {
+      "id": "75afa4e2f013aa55",
+      "type": "message",
+      "text": "JADE respondeu a uma mensagem",
+      "icon": "robot",
+      "color": "#FF0080",
+      "metadata": {},
+      "created_at": "2026-06-24T22:58:42.522Z"
+    },
+    {
       "id": "c6eb4d6f2d65af88",
       "type": "message",
       "text": "JADE respondeu: \"Preciso de leads\"",
@@ -3217,14 +3226,6 @@
         "session_id": "7f1b4886d04c9914"
       },
       "created_at": "2026-06-22T19:20:06.795Z"
-    },
-    {
-      "id": "4756f6efd286a16f",
-      "type": "message",
-      "text": "JADE respondeu: \"Oi\"",
-      "icon": "robot",
-      "color": "#FF0080",
-      "created_at": "2026-06-22T19:03:56.134Z"
     }
   ],
   "marketing_campaigns": [
