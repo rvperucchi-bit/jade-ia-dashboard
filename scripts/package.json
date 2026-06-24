@@ -5,11 +5,16 @@
   "type": "module",
   "scripts": {
     "hello": "tsx ./src/hello.ts",
+    "gerar-pdf": "tsx ./src/gerar-pdf.ts",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "devDependencies": {
     "@types/node": "catalog:",
     "playwright-core": "^1.61.1",
     "tsx": "catalog:"
+  },
+  "dependencies": {
+    "@types/pdfkit": "^0.17.6",
+    "pdfkit": "^0.19.1"
   }
 }

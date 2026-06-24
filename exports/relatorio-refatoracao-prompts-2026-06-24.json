@@ -1,0 +1,53 @@
+{
+  "title": "Refatoração da Arquitetura de Prompts",
+  "subtitle": "Organização do JADE_SYSTEM_PROMPT em módulos dedicados",
+  "date": "24 de junho de 2026",
+  "output": "relatorio-refatoracao-prompts-2026-06-24.pdf",
+  "sections": [
+    {
+      "heading": "Objetivo",
+      "body": [
+        "O prompt da JADE estava todo embutido em routes/jade.ts — um único bloco monolítico de mais de 360 linhas misturado com a lógica de rotas. Isso dificultava manutenção, leitura e ajustes pontuais.",
+        "A tarefa foi extrair esse prompt e suas constantes para arquivos organizados, sem alterar o comportamento da IA."
+      ]
+    },
+    {
+      "heading": "O que foi feito",
+      "bullets": [
+        "Criados 7 arquivos em artifacts/api-server/src/lib/prompts/ separando cada parte do prompt por responsabilidade.",
+        "jade-system.ts: preâmbulo, regras de linguagem, exemplos e identidade da JADE.",
+        "objections.ts: as 15 objeções de venda agrupadas em 4 categorias.",
+        "bant.ts: framework de qualificação BANT e sinais de lead quente.",
+        "spin.ts: metodologia SPIN (Situação, Problema, Implicação, Necessidade).",
+        "whatsapp.ts: blocos de abertura e cadência para WhatsApp.",
+        "segments.ts: 14 segmentos especialistas + aliases, TOM_MAP, MODO_MAP e o helper getSegmentBlock().",
+        "index.ts: monta o JADE_SYSTEM_PROMPT na ordem original e reexporta os helpers."
+      ]
+    },
+    {
+      "heading": "Mudanças em routes/jade.ts",
+      "bullets": [
+        "Removidas ~362 linhas do prompt embutido.",
+        "Removidos SEGMENT_SPECIALIST, aliasMap e a mutação que rodava a cada requisição — agora resolvidos uma única vez no carregamento do módulo.",
+        "Removidos TOM_MAP e MODO_MAP que eram recriados dentro do handler.",
+        "Adicionado um único import a partir de lib/prompts/index.js.",
+        "Substituído o acesso direto SEGMENT_SPECIALIST[segmento] pela função getSegmentBlock(segmento)."
+      ]
+    },
+    {
+      "heading": "Validação",
+      "bullets": [
+        "Typecheck do api-server executado com zero erros.",
+        "Servidor da API reiniciado com sucesso.",
+        "Teste no endpoint /api/jade/chat retornou resposta válida — comportamento idêntico ao anterior.",
+        "Nenhuma mudança de comportamento da IA: a montagem do prompt mantém exatamente a mesma ordem."
+      ]
+    },
+    {
+      "heading": "Benefícios",
+      "body": [
+        "O prompt agora pode ser editado por área (objeções, SPIN, segmentos) sem tocar na lógica de rotas. As constantes de segmento são resolvidas uma vez só, eliminando trabalho repetido a cada requisição."
+      ]
+    }
+  ]
+}

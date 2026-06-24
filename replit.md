@@ -34,7 +34,8 @@ _Describe the high-level user-facing capabilities of this app once they exist._
 
 ## User preferences
 
-_Populate as you build — explicit user instructions worth remembering across sessions._
+- Idioma: responder sempre em português (BR).
+- **Sempre gerar um PDF para download ao concluir qualquer tarefa**, resumindo o que foi feito. Salvar em `exports/` e apresentar via present_asset.
 
 ## Gotchas
 
