@@ -65,3 +65,9 @@ id = "jFjFBw9Wz7LFIz9mGA5wR"
 uri = "file://auditoria-jade-ia-v2.pdf"
 type = "pdf"
 title = "Auditoria JADE IA v2 — Estado Real do Código"
+
+[[outputs]]
+id = "lNhPN834wdSL7vPM-Bk2Z"
+uri = "file://JADE_IA_Documentacao.pdf"
+type = "pdf"
+title = "JADE IA — Documentação Completa"
