@@ -1,7 +1,6 @@
 import React, { useMemo, useRef, useState } from "react";
 import {
   Animated,
-  Image,
   Keyboard,
   KeyboardAvoidingView,
   Modal,
@@ -229,15 +228,6 @@ export default function OnboardingScreen() {
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
-        {/* Logo */}
-        <View style={{ alignItems: "center", marginBottom: 32 }}>
-          <Image
-            source={require("../assets/images/jade-logo.png")}
-            style={{ width: 110, height: 110 * (683 / 1024) }}
-            resizeMode="contain"
-          />
-        </View>
-
         {/* Headline */}
         <Text style={S.title}>Configure sua JADE</Text>
         <Text style={S.sub}>Preencha as informações do seu negócio para personalizar a experiência.</Text>

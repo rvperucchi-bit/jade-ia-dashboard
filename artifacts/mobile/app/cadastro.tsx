@@ -5,8 +5,6 @@ import { BackButton } from "@/components/BackButton";
 import {
   ActivityIndicator,
   Alert,
-  Dimensions,
-  Image,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -17,12 +15,6 @@ import {
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-
-const jadeLogo = require("../assets/images/jade-logo.png");
-
-const { width: SW } = Dimensions.get("window");
-const LOGO_W = Math.min(SW * 0.70, 294);
-const LOGO_H = LOGO_W * (683 / 1024);
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 function maskPhone(raw: string): string {
@@ -112,16 +104,6 @@ export default function CadastroScreen() {
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
-        {/* ── Logo ── */}
-        <View style={S.logoSection}>
-          <Image
-            source={jadeLogo}
-            style={{ width: LOGO_W, height: LOGO_H }}
-            resizeMode="contain"
-          />
-          <Text style={S.tagline}>SUA PARCEIRA DE NEGÓCIOS.</Text>
-        </View>
-
         {/* ── Formulário ── */}
         <View style={S.form}>
           <Text style={S.formTitle}>Criar conta</Text>
@@ -225,21 +207,6 @@ export default function CadastroScreen() {
 const S = StyleSheet.create({
   root: { flex: 1, backgroundColor: "#000000" },
   scroll: { flexGrow: 1, paddingHorizontal: 28, paddingBottom: 32 },
-
-  logoSection: {
-    alignItems: "center",
-    justifyContent: "center",
-    paddingTop: 24,
-    paddingBottom: 20,
-  },
-  tagline: {
-    marginTop: 8,
-    fontSize: 11,
-    color: "#555",
-    letterSpacing: 3,
-    textAlign: "center",
-    fontFamily: "SpaceGrotesk_400Regular",
-  },
 
   form: { gap: 12 },
   formTitle: { fontSize: 26, fontFamily: "SpaceGrotesk_700Bold", color: "#fff" },
