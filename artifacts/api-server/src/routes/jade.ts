@@ -442,16 +442,17 @@ function segmentEmoji(tipo: string): string {
   return '🏢';
 }
 
-function buildAnalysisOnlyPrompt(lead: PendingLeadResult, tipo: string): string {
-  return `Analise este estabelecimento real e responda SOMENTE com estas 3 linhas (sem mais nada):
-DOR: [1 frase de dor provável específica para ESTE negócio, NÃO genérica]
-ANGULO: [1 frase do melhor ângulo de abordagem comercial para este prospect]
-PERGUNTA: [1 pergunta de abertura que inicia conversa com o dono]
+function buildAnalysisOnlyPrompt(lead: PendingLeadResult, tipo: string, produto?: string): string {
+  const produtoLine = produto ? `\nProduto/serviço sendo prospectado: ${produto}` : '';
+  return `Analise este estabelecimento real e responda SOMENTE com estas 3 linhas exatas (sem introdução, sem numeração, sem nada além das 3 linhas):
+DOR: [dor específica deste negócio relacionada ao produto abaixo — 1 frase concreta, NÃO genérica]
+ANGULO: [melhor ângulo para vender o produto ao dono — 1 frase direta]
+PERGUNTA: [pergunta consultiva de abertura para iniciar conversa com o dono — 1 frase]
 
 Estabelecimento: ${lead.name}
 Endereço: ${lead.address}
-Segmento: ${tipo || 'comércio geral'}
-Avaliação: ${lead.rating ? `${lead.rating} estrelas, ${lead.totalRatings} avaliações` : 'sem dados'}`;
+Segmento do prospect: ${tipo || 'comércio geral'}
+Avaliação: ${lead.rating ? `${lead.rating} estrelas, ${lead.totalRatings} avaliações` : 'sem dados'}${produtoLine}`;
 }
 
 function buildLeadCardText(
@@ -483,9 +484,9 @@ function buildLeadCardText(
 
 function parseAnalysis(text: string): { dor: string; angulo: string; pergunta: string } {
   return {
-    dor:      text.match(/DOR:\s*(.+)/)?.[1]?.trim()      ?? '',
-    angulo:   text.match(/ANGULO:\s*(.+)/)?.[1]?.trim()   ?? '',
-    pergunta: text.match(/PERGUNTA:\s*(.+)/)?.[1]?.trim()?.replace(/^["']|["']$/g, '') ?? '',
+    dor:      text.match(/DOR:\s*(.+)/i)?.[1]?.trim()                             ?? '',
+    angulo:   text.match(/[AÂ]NGULO:\s*(.+)/i)?.[1]?.trim()                       ?? '',
+    pergunta: text.match(/PERGUNTA:\s*(.+)/i)?.[1]?.trim()?.replace(/^["']|["']$/g, '') ?? '',
   };
 }
 
@@ -631,10 +632,11 @@ router.post('/chat', async (req: Request, res: Response) => {
 
         // Generate analysis for every lead in parallel (best-effort)
         const analysisModel = genAI.getGenerativeModel({ model: 'gemini-2.5-flash', generationConfig: { maxOutputTokens: 500, temperature: 0.5 } });
+        const produtoA = (companyConfig as any)?.produto as string | undefined;
         const analyses = await Promise.all(
           allRemaining.map(async (lead) => {
             try {
-              const pr = await analysisModel.generateContent(buildAnalysisOnlyPrompt(lead, pending.tipo));
+              const pr = await analysisModel.generateContent(buildAnalysisOnlyPrompt(lead, pending.tipo, produtoA));
               return parseAnalysis(pr.response.text());
             } catch {
               return { dor: '', angulo: '', pergunta: '' };
@@ -695,7 +697,8 @@ router.post('/chat', async (req: Request, res: Response) => {
         console.log(`[JADE] cidade do perfil: "${companyConfig?.cidade ?? 'não definida'}" | cidade usada na busca: "${cidade || 'vazia — configure em Minha Empresa'}"`);
 
         const analysisModel = genAI.getGenerativeModel({ model: 'gemini-2.5-flash', generationConfig: { maxOutputTokens: 500, temperature: 0.5 } });
-        const analysisPromptB = buildAnalysisOnlyPrompt(firstLead, tipo);
+        const produtoB = (companyConfig as any)?.produto as string | undefined;
+        const analysisPromptB = buildAnalysisOnlyPrompt(firstLead, tipo, produtoB);
         const pr = await analysisModel.generateContent(analysisPromptB);
         const analysis = parseAnalysis(pr.response.text());
         const cardText = buildLeadCardText(firstLead, 1, places.length, cidade, tipo, false, analysis.dor);

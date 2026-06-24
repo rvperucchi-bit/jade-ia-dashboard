@@ -1250,6 +1250,64 @@
   ],
   "activity_events": [
     {
+      "id": "ef478cd96e8239bd",
+      "type": "message",
+      "text": "JADE respondeu: \"Leads de restaurantes\"",
+      "icon": "robot",
+      "color": "#FF0080",
+      "created_at": "2026-06-24T01:58:27.495Z"
+    },
+    {
+      "id": "9a9471e807845354",
+      "type": "lead",
+      "text": "CRM: Trattoria San Paolo → Primeiro Contato",
+      "icon": "user-plus",
+      "color": "#FF0080",
+      "created_at": "2026-06-24T01:58:27.484Z"
+    },
+    {
+      "id": "e242c4fb79c20002",
+      "type": "lead",
+      "text": "JADE encontrou 10 leads reais em Criciúma",
+      "icon": "map-pin",
+      "color": "#FF0080",
+      "metadata": {
+        "cidade": "Criciúma",
+        "tipo": "restaurante alimentação",
+        "count": 10
+      },
+      "created_at": "2026-06-24T01:58:27.218Z"
+    },
+    {
+      "id": "d65cfb0e834761df",
+      "type": "message",
+      "text": "JADE respondeu: \"Preciso de leads\"",
+      "icon": "robot",
+      "color": "#FF0080",
+      "created_at": "2026-06-24T01:58:14.607Z"
+    },
+    {
+      "id": "fbabb6bea651d254",
+      "type": "lead",
+      "text": "CRM: Criciúma Trade Ltda. → Primeiro Contato",
+      "icon": "user-plus",
+      "color": "#FF0080",
+      "created_at": "2026-06-24T01:58:13.950Z"
+    },
+    {
+      "id": "b510c053fc572355",
+      "type": "lead",
+      "text": "JADE encontrou 10 leads reais em Criciúma",
+      "icon": "map-pin",
+      "color": "#FF0080",
+      "metadata": {
+        "cidade": "Criciúma",
+        "tipo": "empresa comércio",
+        "count": 10
+      },
+      "created_at": "2026-06-24T01:58:13.671Z"
+    },
+    {
       "id": "acb221d6bdb66b42",
       "type": "message",
       "text": "JADE respondeu: \"Faz uma busca atualizada nova?…\"",
@@ -3161,58 +3219,6 @@
       "icon": "user-plus",
       "color": "#6C63FF",
       "created_at": "2026-06-21T11:35:33.292Z"
-    },
-    {
-      "id": "670206c4f12b9ca4",
-      "type": "lead",
-      "text": "Novo lead adicionado: Ricardo Mendes (Pão Dourado Padaria e Confeitaria)",
-      "icon": "user-plus",
-      "color": "#6C63FF",
-      "created_at": "2026-06-21T11:35:33.281Z"
-    },
-    {
-      "id": "2c1706336da9dff1",
-      "type": "lead",
-      "text": "Novo lead adicionado: Patrícia Souza (Boutique Elegância Feminina)",
-      "icon": "user-plus",
-      "color": "#6C63FF",
-      "created_at": "2026-06-21T11:35:32.651Z"
-    },
-    {
-      "id": "5a9d937522cb2fcd",
-      "type": "scan",
-      "text": "JADE encontrou 3 novos leads via radar em São Paulo",
-      "icon": "crosshair",
-      "color": "#6C63FF",
-      "metadata": {
-        "count": 3,
-        "cidade": "São Paulo"
-      },
-      "created_at": "2026-06-21T11:35:32.244Z"
-    },
-    {
-      "id": "0dfdf2196df887d9",
-      "type": "lead",
-      "text": "Novo lead adicionado: Carlos Eduardo Ribeiro (Livraria Saberes)",
-      "icon": "user-plus",
-      "color": "#6C63FF",
-      "created_at": "2026-06-21T11:33:39.648Z"
-    },
-    {
-      "id": "599b68455ba63300",
-      "type": "lead",
-      "text": "Novo lead adicionado: Fernanda Oliveira Souza (Mundo Animal Pet Shop)",
-      "icon": "user-plus",
-      "color": "#6C63FF",
-      "created_at": "2026-06-21T11:33:39.613Z"
-    },
-    {
-      "id": "6414c9df9a3a4a6f",
-      "type": "lead",
-      "text": "Novo lead adicionado: Ana Paula Lima (Estilo Único Boutique)",
-      "icon": "user-plus",
-      "color": "#6C63FF",
-      "created_at": "2026-06-21T11:33:38.988Z"
     }
   ],
   "marketing_campaigns": [
@@ -3238,6 +3244,34 @@
     }
   ],
   "jade_sessions": [
+    {
+      "id": "0c291a4f2abd8f2d",
+      "title": "Preciso de leads",
+      "messages": [
+        {
+          "role": "user",
+          "content": "Preciso de leads",
+          "time": "2026-06-24T01:58:13.659Z"
+        },
+        {
+          "role": "model",
+          "content": "Encontrei 10 opções em Criciúma. Aqui vai o primeiro:\n\n🛍️ Criciúma Trade Ltda.\n📍 R. Francisco Milioli, 369 - sala 02 - São Luiz, Criciúma - SC, 88803-420, Brasil\n📞 (48) 3519-0580 · ⭐ 5\n\nManter a excelência de 5 estrelas enquanto busca expandir operações\n\nAbordo esse ou você mesmo fala com ele?",
+          "time": "2026-06-24T01:58:13.665Z"
+        },
+        {
+          "role": "user",
+          "content": "Leads de restaurantes",
+          "time": "2026-06-24T01:58:27.211Z"
+        },
+        {
+          "role": "model",
+          "content": "Encontrei 10 opções em Criciúma. Aqui vai o primeiro:\n\n🍽️ Trattoria San Paolo\n📍 Marcelino - R. São Marcelino Champagnat, 55 - Pio Corrêa, Criciúma - SC, 88811-610, Brasil\n📞 (48) 3413-8890 · ⭐ 4.8\n\nMesmo com 860 avaliações e 4.8 estrel\n\nAbordo esse ou você mesmo fala com ele?",
+          "time": "2026-06-24T01:58:27.214Z"
+        }
+      ],
+      "created_at": "2026-06-24T01:58:09.860Z",
+      "updated_at": "2026-06-24T01:58:27.214Z"
+    },
     {
       "id": "fe8eebedfaa90e37",
       "title": "Preciso de leads em Criciúma",

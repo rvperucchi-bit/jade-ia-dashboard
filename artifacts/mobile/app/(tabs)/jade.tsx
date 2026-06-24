@@ -8,6 +8,7 @@ import {
   Image,
   KeyboardAvoidingView,
   Linking,
+  Modal,
   PanResponder,
   Platform,
   ScrollView,
@@ -677,6 +678,112 @@ function LeadListCard({
   );
 }
 
+// ─── Leads bottom sheet ───────────────────────────────────────────────────────
+function LeadsBottomSheet({
+  leadsSheet, onClose, colors, onNotify, onAddJadeMessage,
+}: {
+  leadsSheet: { leads: LeadCardData[]; cidade: string } | null;
+  onClose: () => void;
+  colors: ReturnType<typeof useColors>;
+  onNotify: (text: string) => void;
+  onAddJadeMessage: (text: string) => void;
+}) {
+  const [selectedIdx, setSelectedIdx] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (leadsSheet) setSelectedIdx(null);
+  }, [leadsSheet]);
+
+  if (!leadsSheet) return null;
+  const { leads, cidade } = leadsSheet;
+
+  const selected = selectedIdx !== null ? leads[selectedIdx] : null;
+  const syntheticMsg: AIMessage | null = selected
+    ? { id: `sheet_${selectedIdx}`, text: "", sender: "jade", time: nowTime(), leadData: selected, crmSaved: false }
+    : null;
+  const hasNext = selectedIdx !== null && selectedIdx < leads.length - 1;
+
+  return (
+    <Modal visible transparent animationType="slide" onRequestClose={onClose}>
+      <View style={{ flex: 1, justifyContent: "flex-end", backgroundColor: "rgba(0,0,0,0.72)" }}>
+        <TouchableOpacity style={StyleSheet.absoluteFill} onPress={onClose} activeOpacity={1} />
+
+        <View style={{ backgroundColor: "#111118", borderTopLeftRadius: 22, borderTopRightRadius: 22, maxHeight: "88%", overflow: "hidden" }}>
+          {/* ── Sheet header ── */}
+          <View style={{ flexDirection: "row", alignItems: "center", paddingHorizontal: 18, paddingVertical: 14, borderBottomWidth: 1, borderBottomColor: "rgba(255,255,255,0.06)" }}>
+            {selectedIdx !== null ? (
+              <TouchableOpacity onPress={() => setSelectedIdx(null)} activeOpacity={0.7} style={{ flexDirection: "row", alignItems: "center", gap: 5, marginRight: 10 }}>
+                <Feather name="arrow-left" size={14} color={PINK} />
+                <Text style={{ color: PINK, fontSize: 12, fontFamily: "SpaceGrotesk_500Medium" }}>lista</Text>
+              </TouchableOpacity>
+            ) : null}
+            <View style={{ flex: 1 }}>
+              <Text style={{ color: "#fff", fontSize: 14, fontFamily: "SpaceGrotesk_700Bold" }} numberOfLines={1}>
+                {selectedIdx !== null && selected ? selected.name : `Leads em ${cidade}`}
+              </Text>
+              {selectedIdx === null && (
+                <Text style={{ color: "rgba(255,255,255,0.35)", fontSize: 11, fontFamily: "SpaceGrotesk_400Regular", marginTop: 2 }}>
+                  {leads.length} resultado{leads.length !== 1 ? "s" : ""} · toque para detalhes
+                </Text>
+              )}
+              {selectedIdx !== null && (
+                <Text style={{ color: "rgba(255,255,255,0.35)", fontSize: 11, fontFamily: "SpaceGrotesk_400Regular", marginTop: 2 }}>
+                  {selectedIdx + 1} de {leads.length}
+                </Text>
+              )}
+            </View>
+            <TouchableOpacity onPress={onClose} activeOpacity={0.7} style={{ padding: 6 }}>
+              <Feather name="x" size={18} color="rgba(255,255,255,0.45)" />
+            </TouchableOpacity>
+          </View>
+
+          {/* ── Content ── */}
+          <ScrollView showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
+            {selectedIdx === null ? (
+              <View style={{ paddingVertical: 12, paddingHorizontal: 16, gap: 8 }}>
+                {leads.map((lead, i) => (
+                  <TouchableOpacity
+                    key={i}
+                    onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); setSelectedIdx(i); }}
+                    activeOpacity={0.75}
+                    style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", backgroundColor: "rgba(255,0,128,0.06)", borderRadius: 12, paddingVertical: 13, paddingHorizontal: 14, borderWidth: 1, borderColor: "rgba(255,0,128,0.14)" }}
+                  >
+                    <View style={{ flexDirection: "row", alignItems: "center", gap: 10, flex: 1 }}>
+                      <Text style={{ color: "rgba(255,255,255,0.25)", fontSize: 11, fontFamily: "SpaceGrotesk_600SemiBold", width: 22 }}>{i + 1}.</Text>
+                      <View style={{ flex: 1 }}>
+                        <Text style={{ color: "#fff", fontSize: 13, fontFamily: "SpaceGrotesk_600SemiBold" }} numberOfLines={1}>{lead.name}</Text>
+                        {lead.segment ? (
+                          <Text style={{ color: "rgba(255,255,255,0.35)", fontSize: 11, fontFamily: "SpaceGrotesk_400Regular", marginTop: 2 }} numberOfLines={1}>{lead.segment}</Text>
+                        ) : null}
+                      </View>
+                    </View>
+                    <Feather name="chevron-right" size={14} color={PINK} />
+                  </TouchableOpacity>
+                ))}
+                <View style={{ height: 8 }} />
+              </View>
+            ) : syntheticMsg ? (
+              <View>
+                <LeadCard msg={syntheticMsg} colors={colors} onNotify={onNotify} onAddJadeMessage={onAddJadeMessage} />
+                {hasNext && (
+                  <TouchableOpacity
+                    onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); setSelectedIdx((selectedIdx ?? 0) + 1); }}
+                    activeOpacity={0.8}
+                    style={{ marginHorizontal: 16, marginTop: 4, marginBottom: 16, backgroundColor: "rgba(132,0,255,0.08)", borderRadius: 10, paddingVertical: 13, alignItems: "center", borderWidth: 1, borderColor: "rgba(132,0,255,0.22)" }}
+                  >
+                    <Text style={{ color: "#B44FFF", fontSize: 13, fontFamily: "SpaceGrotesk_600SemiBold" }}>➡️  Próximo lead</Text>
+                  </TouchableOpacity>
+                )}
+                <View style={{ height: 16 }} />
+              </View>
+            ) : null}
+          </ScrollView>
+        </View>
+      </View>
+    </Modal>
+  );
+}
+
 // ─── Recording bar ────────────────────────────────────────────────────────────
 function RecordingBar({ secs, cancelling, pulseAnim }: { secs: number; cancelling: boolean; pulseAnim: Animated.Value }) {
   const scale   = pulseAnim.interpolate({ inputRange: [0, 1], outputRange: [1, 1.35] });
@@ -759,6 +866,7 @@ export default function JADEScreen() {
   const [notification,  setNotification] = useState<string | null>(null);
   const [companyConfig, setCompanyConfig] = useState<Record<string, unknown> | null>(null);
   const [historyChecked, setHistoryChecked] = useState(false);
+  const [leadsSheet, setLeadsSheet] = useState<{ leads: LeadCardData[]; cidade: string } | null>(null);
   const notifTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const showNotification = useCallback((text: string) => {
     setNotification(null);
@@ -1039,6 +1147,11 @@ export default function JADEScreen() {
         crmSaved: false,
       }, ...prev]);
 
+      // Open bottom sheet for lead list
+      if (data.leadsList && data.leadsList.length > 0) {
+        setLeadsSheet({ leads: data.leadsList, cidade: data.leadsList[0]?.cidade ?? "" });
+      }
+
       // Auto-save lead to CRM in background
       if (data.leadData) {
         const autoLead = data.leadData;
@@ -1306,6 +1419,7 @@ export default function JADEScreen() {
               placeholderTextColor={colors.mutedForeground + "66"}
               value={input} onChangeText={setInput}
               multiline maxLength={500}
+              autoFocus
               onSubmitEditing={handleSend} returnKeyType="send"
               editable={!loading && !recording}
             />
@@ -1331,6 +1445,15 @@ export default function JADEScreen() {
           </View>
         </View>
       </KeyboardAvoidingView>
+
+      {/* ── Leads bottom sheet ── */}
+      <LeadsBottomSheet
+        leadsSheet={leadsSheet}
+        onClose={() => setLeadsSheet(null)}
+        colors={colors}
+        onNotify={showNotification}
+        onAddJadeMessage={(text) => setMessages((prev) => [{ id: Date.now().toString(), text, sender: "jade", time: nowTime() }, ...prev])}
+      />
 
       {/* ── Drawer overlay ── */}
       {drawerOpen && (
