@@ -24,6 +24,13 @@ Localização: `artifacts/api-server/src/lib/ai/` (types, config, providers/gemi
 - ROLLBACK para Gemini: trocar bloco `chat` em OPERATION_CONFIG de volta p/ gemini — sem tocar telas (há comentário no config.ts)
 - Tipo `LLMOperationName` (antes `GeminiOperationName`) cobre ops chat+generate de qualquer provider
 
+**JADE Memory** (`lib/memory/company.ts`):
+- `buildCompanyMemoryBlock(config: CompanyConfig): string` — ponto único de montagem do bloco de memória no system prompt
+- `CompanyConfig` (store.ts) tem 7 campos opcionais extras: publicoAlvo, diferenciais, objecoesComuns, concorrentes, metas, equipe, regrasComerciais
+- Chat primary source: `getCompanyConfig()` servidor; backward compat: client-sent `company_config` no body como fallback
+- Seção JADE MEMORY adicionada na tela empresa.tsx do mobile (campos multiline)
+- `/api/empresa` POST aceita + salva todos os campos; nenhuma outra rota foi alterada
+
 **Why:**
 - Abstração para troca futura Gemini→OpenAI: criar `providers/openai.ts` + ajustar `engine.ts` + `config.ts`; rotas e telas não precisam ser tocadas
 - retry: 1x após 1.5s em erros 5xx, 429, timeout; `JadeAIConfigError` não é retried

@@ -66,14 +66,23 @@ export interface ScannerHistory {
 }
 
 export interface CompanyConfig {
+  // Core fields (always present)
   nome: string;
-  produto: string;
+  produto: string;      // primary product name (= produtos[0].nome for mobile compat)
   segmento: string;
   tom: string;
-  planos: string;
+  planos: string;       // formatted products list
   cidade?: string;
   estado?: string;
   modoOperacao?: string;
+  // Extended memory fields (v2 — JADE Memory)
+  publicoAlvo?: string;       // target audience
+  diferenciais?: string;      // competitive differentiators
+  objecoesComuns?: string;    // common objections the sales team faces
+  concorrentes?: string;      // main competitors
+  metas?: string;             // sales goals / targets
+  equipe?: string;            // team info
+  regrasComerciais?: string;  // commercial rules (discounts, processes, limits)
   updated_at: string;
 }
 

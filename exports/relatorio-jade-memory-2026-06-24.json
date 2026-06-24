@@ -1,0 +1,57 @@
+{
+  "title": "JADE Memory — Memória Persistente da Empresa",
+  "subtitle": "Contexto empresarial integrado ao chat principal sem repetição de dados",
+  "date": "24/06/2026",
+  "output": "relatorio-jade-memory-2026-06-24.pdf",
+  "sections": [
+    {
+      "heading": "Objetivo",
+      "body": [
+        "Criar a JADE Memory: memória persistente da empresa integrada ao chat principal, para que a JADE consiga considerar automaticamente os dados da empresa em todas as conversas — sem o usuário repetir contexto.",
+        "Aproveitou a tela e rota de empresa já existentes, expandindo-as sem duplicar código."
+      ]
+    },
+    {
+      "heading": "O que foi feito",
+      "bullets": [
+        "CompanyConfig expandido com 7 novos campos opcionais: publicoAlvo, diferenciais, objecoesComuns, concorrentes, metas, equipe e regrasComerciais.",
+        "Novo módulo lib/memory/company.ts com buildCompanyMemoryBlock() — função centralizada que monta o bloco de memória no system prompt de forma organizada.",
+        "Rota /api/empresa atualizada para aceitar, sanitizar e persistir os novos campos.",
+        "Chat principal (jade.ts) refatorado: fonte primária passa a ser o config do servidor (getCompanyConfig); fallback backward-compatible para dados enviados pelo app antigo.",
+        "Seção JADE MEMORY adicionada na tela de empresa do app (empresa.tsx) com 7 campos de texto multiline no mesmo design da tela.",
+        "Nenhuma outra operação foi alterada: marketing, prospecção, abordagem WhatsApp, Whisper e OpenAI/Gemini providers permanecem intocados."
+      ]
+    },
+    {
+      "heading": "Campos de memória disponíveis",
+      "bullets": [
+        "Público-alvo: quem a empresa vende.",
+        "Diferenciais competitivos: o que diferencia no mercado.",
+        "Objeções comuns: o que os clientes falam quando resistem.",
+        "Concorrentes principais: quem disputa o mesmo espaço.",
+        "Metas e objetivos: metas de vendas e crescimento.",
+        "Equipe de vendas: perfil do time e ciclo de vendas.",
+        "Regras comerciais: descontos, prazos, processos internos."
+      ]
+    },
+    {
+      "heading": "Validação",
+      "bullets": [
+        "Typecheck api-server: sem erros.",
+        "Typecheck mobile (expo): sem erros.",
+        "POST /api/empresa: salvou todos os 7 novos campos corretamente.",
+        "GET /api/empresa: retornou campos persistidos.",
+        "Chat teste 1 (objeção 'tá caro'): JADE respondeu com argumento de valor consultivo.",
+        "Chat teste 2 (estratégia de metas): JADE mencionou automaticamente 25 contratos/mês, 5 SDRs, desconto máx 15% e suporte 24/7 — dados da memória, sem o usuário informar nada no chat.",
+        "Revisão técnica (architect): PASS."
+      ]
+    },
+    {
+      "heading": "Rollback e controle",
+      "body": [
+        "Os novos campos são todos opcionais — empresas sem dados preenchidos continuam funcionando normalmente.",
+        "O fallback backward-compatible garante que apps que ainda enviam company_config no corpo do chat continuem funcionando."
+      ]
+    }
+  ]
+}

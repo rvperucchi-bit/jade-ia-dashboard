@@ -4,9 +4,10 @@ import {
   createJadeSession, getJadeSessions, getJadeSession,
   appendJadeMessage, deleteJadeSession, addActivityEvent,
   getCompanyConfig, saveCrmLead, getCrmLeads, updateCrmLead,
-  type CrmStatus, type CrmPipeline,
+  type CompanyConfig, type CrmStatus, type CrmPipeline,
 } from '../db/store.js';
-import { JADE_SYSTEM_PROMPT, getSegmentBlock, TOM_MAP, MODO_MAP } from '../lib/prompts/index.js';
+import { JADE_SYSTEM_PROMPT } from '../lib/prompts/index.js';
+import { buildCompanyMemoryBlock } from '../lib/memory/company.js';
 
 const BATCH_SIZE = 5;
 
@@ -289,38 +290,31 @@ router.post('/chat', async (req: Request, res: Response) => {
       return res.status(400).json({ error: 'messages cannot be empty' });
     }
 
-    // Build dynamic system prompt — prefer client-sent config, fall back to server-stored
+    // Build system prompt with persistent JADE Memory.
+    // Primary source: server-stored company config (getCompanyConfig).
+    // Backward compat: if nothing stored yet, fall back to client-sent
+    // company_config in body (older app behaviour where mobile passed it inline).
     const storedConfig = getCompanyConfig();
     const cc = body.company_config;
-    const companyConfig = cc?.segmento ? {
-      nome:          cc.nome          ?? storedConfig?.nome          ?? '',
-      produto:       cc.produtos?.[0]?.nome ?? storedConfig?.produto ?? '',
-      segmento:      cc.segmento,
-      tom:           cc.tom           ?? storedConfig?.tom           ?? 'consultivo',
-      planos:        cc.produtos?.filter((p: { nome?: string }) => p.nome)
-                       .map((p: { nome?: string; valor?: string }) => `${p.nome}${p.valor ? ' — R$ ' + p.valor : ''}`)
-                       .join('\n') ?? storedConfig?.planos ?? '',
-      cidade:        cc.cidade        ?? storedConfig?.cidade,
-      estado:        cc.estado        ?? storedConfig?.estado,
-      modoOperacao:  cc.modoOperacao  ?? storedConfig?.modoOperacao,
-      updated_at:    '',
-    } as any : storedConfig;
-    let systemPrompt = JADE_SYSTEM_PROMPT;
-    if (companyConfig) {
-      systemPrompt += `\n\n## CONFIGURAÇÃO PERSONALIZADA DA EMPRESA\n\nO usuário trabalha com ${companyConfig.segmento} em ${(companyConfig as any).cidade ?? 'sua cidade'}. Empresa: ${companyConfig.nome}. Use esses dados automaticamente em buscas e respostas.\n\nEmpresa: ${companyConfig.nome}\nProduto/Serviço principal: ${companyConfig.produto}\nSegmento: ${companyConfig.segmento}\nCidade: ${(companyConfig as any).cidade ?? 'não informada'}\nTom preferido: ${TOM_MAP[companyConfig.tom] ?? companyConfig.tom}`;
-      if ((companyConfig as any).modoOperacao) {
-        systemPrompt += `\nModo de operação: ${MODO_MAP[(companyConfig as any).modoOperacao] ?? (companyConfig as any).modoOperacao}`;
-      }
-      if (companyConfig.planos) {
-        systemPrompt += `\n\nPlanos e produtos:\n${companyConfig.planos}`;
-      }
-      systemPrompt += `\n\nUse essas informações para personalizar todas as suas respostas, argumentos de venda e materiais criados.`;
+    const companyConfig: CompanyConfig | null = storedConfig ?? (
+      cc?.segmento ? {
+        nome:         cc.nome?.trim()               ?? '',
+        produto:      cc.produtos?.[0]?.nome?.trim() ?? '',
+        segmento:     cc.segmento,
+        tom:          cc.tom                        ?? 'consultivo',
+        planos:       cc.produtos?.filter((p: { nome?: string }) => p.nome)
+                        .map((p: { nome?: string; valor?: string }) => `${p.nome}${p.valor ? ' — R$ ' + p.valor : ''}`)
+                        .join('\n') ?? '',
+        cidade:       cc.cidade,
+        estado:       cc.estado,
+        modoOperacao: cc.modoOperacao,
+        updated_at:   '',
+      } : null
+    );
 
-      // Inject segment specialist block if available
-      const specialistBlock = companyConfig.segmento ? getSegmentBlock(companyConfig.segmento) : undefined;
-      if (specialistBlock) {
-        systemPrompt += `\n\n${specialistBlock}`;
-      }
+    let systemPrompt = JADE_SYSTEM_PROMPT;
+    if (companyConfig?.nome) {
+      systemPrompt += '\n\n' + buildCompanyMemoryBlock(companyConfig);
     }
 
     const lastMessage = messagesArray[messagesArray.length - 1];

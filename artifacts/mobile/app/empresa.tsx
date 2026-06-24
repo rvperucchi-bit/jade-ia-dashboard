@@ -73,6 +73,14 @@ interface EmpresaConfig {
   tom: string;
   modoOperacao: string;
   produtos: Produto[];
+  // JADE Memory — extended fields
+  publicoAlvo: string;
+  diferenciais: string;
+  objecoesComuns: string;
+  concorrentes: string;
+  metas: string;
+  equipe: string;
+  regrasComerciais: string;
 }
 
 interface ModoCard {
@@ -101,6 +109,13 @@ const DEFAULT: EmpresaConfig = {
   tom: "consultivo",
   modoOperacao: "fechamento",
   produtos: [novoProduto()],
+  publicoAlvo: "",
+  diferenciais: "",
+  objecoesComuns: "",
+  concorrentes: "",
+  metas: "",
+  equipe: "",
+  regrasComerciais: "",
 };
 
 export default function EmpresaScreen() {
@@ -172,6 +187,14 @@ export default function EmpresaScreen() {
       planos: config.produtos.map((p) =>
         `• ${p.nome}${p.valor ? ` — R$${p.valor}` : ""}${p.temCampanha && p.descricaoCampanha ? ` (Campanha: ${p.descricaoCampanha})` : ""}`
       ).join("\n"),
+      // JADE Memory extended fields
+      publicoAlvo:     config.publicoAlvo?.trim()     || undefined,
+      diferenciais:    config.diferenciais?.trim()    || undefined,
+      objecoesComuns:  config.objecoesComuns?.trim()  || undefined,
+      concorrentes:    config.concorrentes?.trim()    || undefined,
+      metas:           config.metas?.trim()           || undefined,
+      equipe:          config.equipe?.trim()          || undefined,
+      regrasComerciais: config.regrasComerciais?.trim() || undefined,
     };
 
     try {
@@ -506,6 +529,49 @@ export default function EmpresaScreen() {
           <Feather name="plus-circle" size={18} color={C.primary} />
           <Text style={[S.addProdutoBtnText, { color: C.primary }]}>+ Adicionar Produto</Text>
         </TouchableOpacity>
+
+        {/* ── Seção 5: JADE Memory ── */}
+        <Text style={[S.sectionLabel, { marginTop: 8 }]}>JADE MEMORY</Text>
+        <Text style={S.sectionSub}>Contexto persistente — a JADE usa isso automaticamente em todas as conversas</Text>
+
+        <View style={S.infoBanner}>
+          <View style={S.infoBannerIcon}>
+            <Feather name="database" size={18} color={C.primary} />
+          </View>
+          <Text style={S.infoBannerText}>
+            Quanto mais completo, mais precisa a JADE fica. Nunca precisará repetir esses dados no chat.
+          </Text>
+        </View>
+
+        {([
+          { key: "publicoAlvo",     label: "Público-alvo",             placeholder: "Ex: Donos de restaurantes na região, 35-55 anos, buscam reduzir custos" },
+          { key: "diferenciais",    label: "Diferenciais competitivos", placeholder: "Ex: Entrega em 24h, suporte 24/7, garantia de 12 meses" },
+          { key: "objecoesComuns",  label: "Objeções comuns",          placeholder: "Ex: 'Tá caro', 'Já tenho fornecedor', 'Preciso pensar'" },
+          { key: "concorrentes",    label: "Concorrentes principais",  placeholder: "Ex: Empresa X (preço), Empresa Y (marca)" },
+          { key: "metas",           label: "Metas e objetivos",        placeholder: "Ex: Fechar 10 contratos por mês, ticket médio R$3.000" },
+          { key: "equipe",          label: "Equipe de vendas",         placeholder: "Ex: 3 SDRs, 2 closers, ciclo médio 15 dias" },
+          { key: "regrasComerciais",label: "Regras comerciais",        placeholder: "Ex: Desconto máx 10%, parcelamento em até 12x, proposta em 48h" },
+        ] as const).map(({ key, label, placeholder }) => (
+          <View key={key} style={S.fieldGroup}>
+            <Text style={S.label}>{label}</Text>
+            <View style={[S.inputWrap, {
+              borderColor: config[key] ? C.primary + "60" : C.border,
+              height: "auto" as any,
+              minHeight: 60,
+              paddingVertical: 12,
+              alignItems: "flex-start",
+            }]}>
+              <TextInput
+                style={[S.input, { height: "auto" as any, minHeight: 40, textAlignVertical: "top" }]}
+                placeholder={placeholder}
+                placeholderTextColor={C.muted}
+                value={config[key]}
+                onChangeText={(v) => setConfig((prev) => ({ ...prev, [key]: v }))}
+                multiline
+              />
+            </View>
+          </View>
+        ))}
 
         {/* ── Save button ── */}
         <TouchableOpacity
