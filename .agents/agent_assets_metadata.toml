@@ -89,3 +89,9 @@ id = "xnpgx-_9N-ZfQ8PW9GUgQ"
 uri = "file://JADE_IA_Auditoria.pdf"
 type = "pdf"
 title = "Relatório de Auditoria — JADE IA (PDF)"
+
+[[outputs]]
+id = "gU5AkyXKM_R5Jl7OtIboh"
+uri = "file://JADE_IA_Auditoria_Telas.pdf"
+type = "pdf"
+title = "JADE IA — Auditoria Completa de Telas (49 telas)"
