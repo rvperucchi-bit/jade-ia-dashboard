@@ -77,3 +77,9 @@ id = "u4Wo5O0dDle6lav8mNN7r"
 uri = "file://JADE_IA_Telas.zip"
 type = "unspecified"
 title = "JADE IA — 41 Telas (Screenshots)"
+
+[[outputs]]
+id = "K2n2AeGROl_Lm0R-tYii5"
+uri = "file://attached_assets/generated_audio/speech_jade_audio_test.mp3"
+type = "audio"
+title = "jade_audio_test"
