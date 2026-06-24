@@ -499,6 +499,15 @@ router.post('/chat', async (req: Request, res: Response) => {
       session_id?: string;
       radar_on?: boolean;
       user_name?: string;
+      company_config?: {
+        nome?: string;
+        segmento?: string;
+        cidade?: string;
+        estado?: string;
+        tom?: string;
+        modoOperacao?: string;
+        produtos?: Array<{ nome?: string; valor?: string }>;
+      };
     };
     const radarOn = body.radar_on === true;
 
@@ -543,8 +552,22 @@ router.post('/chat', async (req: Request, res: Response) => {
       "Outros": `## SEGMENTO ESPECIALISTA: EXECUTIVA SÊNIOR ADAPTATIVA\n\nMODO CORINGA — Nas primeiras interações, identifica: o que vende, quem é o cliente, ciclo de venda, gargalo principal, ticket médio.\nCOMPORTAMENTO: Age como Diretora Comercial com 20 anos de experiência. Sempre pergunta antes de responder com estratégia.\nTOM: Executivo, sofisticado, adaptável.`,
     };
 
-    // Build dynamic system prompt — append company config if configured
-    const companyConfig = getCompanyConfig();
+    // Build dynamic system prompt — prefer client-sent config, fall back to server-stored
+    const storedConfig = getCompanyConfig();
+    const cc = body.company_config;
+    const companyConfig = cc?.segmento ? {
+      nome:          cc.nome          ?? storedConfig?.nome          ?? '',
+      produto:       cc.produtos?.[0]?.nome ?? storedConfig?.produto ?? '',
+      segmento:      cc.segmento,
+      tom:           cc.tom           ?? storedConfig?.tom           ?? 'consultivo',
+      planos:        cc.produtos?.filter((p: { nome?: string }) => p.nome)
+                       .map((p: { nome?: string; valor?: string }) => `${p.nome}${p.valor ? ' — R$ ' + p.valor : ''}`)
+                       .join('\n') ?? storedConfig?.planos ?? '',
+      cidade:        cc.cidade        ?? storedConfig?.cidade,
+      estado:        cc.estado        ?? storedConfig?.estado,
+      modoOperacao:  cc.modoOperacao  ?? storedConfig?.modoOperacao,
+      updated_at:    '',
+    } as any : storedConfig;
     let systemPrompt = JADE_SYSTEM_PROMPT;
     if (companyConfig) {
       const TOM_MAP: Record<string, string> = {

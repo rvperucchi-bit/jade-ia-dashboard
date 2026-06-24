@@ -219,6 +219,32 @@ interface AIMessage {
   crmSaved?: boolean;
 }
 
+interface CrmLeadLocal {
+  id: string; nome: string; empresa: string; telefone: string;
+  endereco: string; segmento: string; status: string;
+  pipeline: string; dataAbordagem: string; cidade: string;
+}
+
+async function saveCrmLeadToStorage(ld: LeadCardData): Promise<void> {
+  try {
+    const raw = await AsyncStorage.getItem("crm_leads");
+    const existing: CrmLeadLocal[] = raw ? (JSON.parse(raw) as CrmLeadLocal[]) : [];
+    const lead: CrmLeadLocal = {
+      id: Date.now().toString(),
+      nome:          ld.name,
+      empresa:       ld.name,
+      telefone:      ld.phone ?? "",
+      endereco:      ld.address ?? "",
+      segmento:      ld.segment ?? "",
+      status:        "Primeiro Contato",
+      pipeline:      "Novo",
+      dataAbordagem: new Date().toISOString(),
+      cidade:        ld.cidade ?? "",
+    };
+    await AsyncStorage.setItem("crm_leads", JSON.stringify([lead, ...existing].slice(0, 500)));
+  } catch {}
+}
+
 // ─── Audio wave ───────────────────────────────────────────────────────────────
 function AudioWave({ color }: { color: string }) {
   return (
@@ -438,6 +464,7 @@ function LeadCard({
           segment: ld.segment ?? "", city: ld.cidade,
         }),
       });
+      await saveCrmLeadToStorage(ld);
       setCrmDone(true);
       onNotify?.(`✅ ${ld.name} registrado. Status: Primeiro Contato. Pipeline: Novo.`);
     } catch {
@@ -651,8 +678,10 @@ export default function JADEScreen() {
   const [loading,      setLoading]      = useState(false);
   const [sessionId,    setSessionId]    = useState<string | null>(null);
   const [handoffAlert, setHandoffAlert] = useState(false);
-  const [attachments,  setAttachments]  = useState<AttachedFile[]>([]);
-  const [notification, setNotification] = useState<string | null>(null);
+  const [attachments,   setAttachments]  = useState<AttachedFile[]>([]);
+  const [notification,  setNotification] = useState<string | null>(null);
+  const [companyConfig, setCompanyConfig] = useState<Record<string, unknown> | null>(null);
+  const [historyChecked, setHistoryChecked] = useState(false);
   const notifTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const showNotification = useCallback((text: string) => {
     setNotification(null);
@@ -701,8 +730,39 @@ export default function JADEScreen() {
 
   // ── Initial greeting (once when displayName first loads) ──────────────────
   const greetingInjected = useRef(false);
+
+  // Load empresa config → sent with every chat request
   useEffect(() => {
-    if (greetingInjected.current || !displayName) return;
+    AsyncStorage.getItem("minha_empresa").then((raw) => {
+      if (raw) { try { setCompanyConfig(JSON.parse(raw)); } catch {} }
+    });
+  }, []);
+
+  // Load chat history — must complete before greeting so greeting is skipped if history exists
+  useEffect(() => {
+    AsyncStorage.getItem("chat_historico").then((raw) => {
+      if (raw) {
+        try {
+          const parsed = JSON.parse(raw) as AIMessage[];
+          if (parsed.length > 0) {
+            greetingInjected.current = true;
+            setMessages(parsed);
+          }
+        } catch {}
+      }
+      setHistoryChecked(true);
+    });
+  }, []);
+
+  // Persist chat history whenever messages change (keep last 100)
+  useEffect(() => {
+    if (messages.length === 0) return;
+    AsyncStorage.setItem("chat_historico", JSON.stringify(messages.slice(0, 100))).catch(() => {});
+  }, [messages]);
+
+  // Inject greeting only after history check completes and no history was found
+  useEffect(() => {
+    if (!historyChecked || greetingInjected.current || !displayName) return;
     greetingInjected.current = true;
     const firstName = displayName.split(" ")[0] ?? "";
     setMessages([{
@@ -711,7 +771,7 @@ export default function JADEScreen() {
       sender: "jade",
       time: nowTime(),
     }]);
-  }, [displayName]);
+  }, [historyChecked, displayName]);
 
   // ── Left drawer open / close ──────────────────────────────────────────────
   const openDrawer = () => {
@@ -879,6 +939,7 @@ export default function JADEScreen() {
           session_id: sid,
           radar_on: modules.radar,
           user_name: displayName ?? "",
+          company_config: companyConfig ?? undefined,
         }),
         signal: controller.signal,
       });
@@ -901,20 +962,24 @@ export default function JADEScreen() {
 
       // Auto-save lead to CRM in background
       if (data.leadData) {
+        const autoLead = data.leadData;
         fetch(`${API_BASE}/api/jade/crm`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            name: data.leadData.name,
-            phone: data.leadData.phone,
-            address: data.leadData.address,
-            segment: data.leadData.segment ?? "",
-            city: data.leadData.cidade,
+            name: autoLead.name,
+            phone: autoLead.phone,
+            address: autoLead.address,
+            segment: autoLead.segment ?? "",
+            city: autoLead.cidade,
           }),
-        }).then(() => {
-          setMessages((prev) => prev.map((m) => m.id === jadeId ? { ...m, crmSaved: true } : m));
-          showNotification(`✅ ${data.leadData!.name} registrado. Status: Primeiro Contato. Pipeline: Novo.`);
-        }).catch(() => {/* best-effort */});
+        })
+          .then(() => saveCrmLeadToStorage(autoLead))
+          .then(() => {
+            setMessages((prev) => prev.map((m) => m.id === jadeId ? { ...m, crmSaved: true } : m));
+            showNotification(`✅ ${autoLead.name} registrado. Status: Primeiro Contato. Pipeline: Novo.`);
+          })
+          .catch(() => {/* best-effort */});
       }
 
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -954,7 +1019,7 @@ export default function JADEScreen() {
       const tid = setTimeout(() => controller.abort(), 30000);
       const response = await fetch(`${API_BASE}/api/jade/chat`, {
         method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ messages: messagesForApi, session_id: sid }),
+        body: JSON.stringify({ messages: messagesForApi, session_id: sid, company_config: companyConfig ?? undefined }),
         signal: controller.signal,
       });
       clearTimeout(tid);

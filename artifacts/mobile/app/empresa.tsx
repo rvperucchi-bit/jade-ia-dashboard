@@ -20,7 +20,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { JADE_SEGMENTS } from "@/constants/jade-segments";
 
-const CACHE_KEY = "@jade_ia:empresa_v2";
+const CACHE_KEY = "minha_empresa";
 
 const API_BASE =
   Platform.OS === "web"

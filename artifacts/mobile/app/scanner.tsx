@@ -172,7 +172,7 @@ export default function ScannerScreen() {
 
   // Pre-fill from empresa config
   useEffect(() => {
-    AsyncStorage.getItem("@jade_ia:empresa_v2").then((raw) => {
+    AsyncStorage.getItem("minha_empresa").then((raw) => {
       if (!raw) return;
       try {
         const parsed = JSON.parse(raw);

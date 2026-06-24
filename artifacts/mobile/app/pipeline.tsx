@@ -1,6 +1,7 @@
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Feather } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Platform,
   ScrollView,
@@ -11,6 +12,7 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useColors } from "@/hooks/useColors";
+import type { CrmLeadLocal } from "./crm";
 
 const PINK   = "#FF0080";
 const PURPLE = "#8400FF";
@@ -38,21 +40,49 @@ const STAGE_CONFIG: Record<Stage, { label: string; color: string; icon: string }
 
 const STAGES: Stage[] = ["prospeccao", "contato", "qualificacao", "proposta", "negociacao", "fechado"];
 
-const MOCK_DEALS: Deal[] = [
-  { id: "1",  name: "Carlos Mendes",   company: "Pizzaria Milano",     value: 1200,  stage: "proposta",    daysInStage: 2,  probability: 70 },
-  { id: "2",  name: "Fernanda Souza",  company: "Clínica OralVita",   value: 2400,  stage: "negociacao",  daysInStage: 5,  probability: 85 },
-  { id: "3",  name: "Roberto Lima",    company: "Academia FitMax",    value: 980,   stage: "qualificacao",daysInStage: 3,  probability: 55 },
-  { id: "4",  name: "Ana Paula Costa", company: "Salão BelaVida",     value: 600,   stage: "contato",     daysInStage: 1,  probability: 35 },
-  { id: "5",  name: "Marcos Oliveira", company: "Auto Peças Central", value: 3600,  stage: "fechado",     daysInStage: 0,  probability: 100 },
-  { id: "6",  name: "Juliana Martins", company: "StartUp Hub SC",     value: 1800,  stage: "proposta",    daysInStage: 7,  probability: 65 },
-  { id: "7",  name: "Larissa Nunes",   company: "Adv. Nunes & Silva", value: 4800,  stage: "negociacao",  daysInStage: 4,  probability: 90 },
-  { id: "8",  name: "Pedro Alves",     company: "Farmácia Saúde+",    value: 720,   stage: "prospeccao",  daysInStage: 1,  probability: 20 },
-  { id: "9",  name: "Beatriz Lima",    company: "Estúdio Glow",       value: 850,   stage: "qualificacao",daysInStage: 2,  probability: 50 },
-  { id: "10", name: "Rafael Santos",   company: "Construtora Nova",   value: 9600,  stage: "proposta",    daysInStage: 10, probability: 60 },
-];
+function mapStatusToStage(status: string): Stage {
+  switch (status) {
+    case "Primeiro Contato": return "prospeccao";
+    case "Em andamento":     return "contato";
+    case "Morno":            return "qualificacao";
+    case "Quente":           return "proposta";
+    case "Frio":             return "contato";
+    case "Fechado":
+    case "Cliente":          return "fechado";
+    case "Descartado":
+    case "Inválido":
+    case "Arquivado":        return "negociacao";
+    default:                 return "prospeccao";
+  }
+}
+
+function probFromStage(stage: Stage): number {
+  switch (stage) {
+    case "prospeccao":  return 15;
+    case "contato":     return 30;
+    case "qualificacao":return 50;
+    case "proposta":    return 65;
+    case "negociacao":  return 80;
+    case "fechado":     return 100;
+  }
+}
+
+function leadToDeal(l: CrmLeadLocal): Deal {
+  const stage = mapStatusToStage(l.status);
+  const ms = l.dataAbordagem ? (Date.now() - new Date(l.dataAbordagem).getTime()) / 86400000 : 0;
+  return {
+    id: l.id,
+    name: l.nome,
+    company: l.empresa || l.nome,
+    value: 0,
+    stage,
+    daysInStage: Math.floor(ms),
+    probability: probFromStage(stage),
+  };
+}
 
 function formatValue(v: number) {
-  return `R$ ${v.toLocaleString("pt-BR")}`;
+  return v > 0 ? `R$ ${v.toLocaleString("pt-BR")}` : "—";
 }
 
 function DealCard({ deal }: { deal: Deal }) {
@@ -61,9 +91,7 @@ function DealCard({ deal }: { deal: Deal }) {
   const urgent = deal.daysInStage >= 7 && deal.stage !== "fechado";
   return (
     <TouchableOpacity style={[DC.card, { backgroundColor: colors.surface, borderColor: urgent ? "#FF880055" : colors.border }]} activeOpacity={0.75}>
-      {urgent && (
-        <View style={DC.urgentBar} />
-      )}
+      {urgent && <View style={DC.urgentBar} />}
       <Text style={[DC.name, { color: colors.text }]} numberOfLines={1}>{deal.name}</Text>
       <Text style={[DC.company, { color: colors.mutedForeground }]} numberOfLines={1}>{deal.company}</Text>
       <View style={DC.footer}>
@@ -99,22 +127,30 @@ export default function PipelineScreen() {
   const insets  = useSafeAreaInsets();
   const router  = useRouter();
   const [activeStage, setActiveStage] = useState<Stage | "todos">("todos");
+  const [deals, setDeals] = useState<Deal[]>([]);
 
   const topPad    = Platform.OS === "web" ? 67 : insets.top;
   const bottomPad = Platform.OS === "web" ? 84 : insets.bottom + 60;
 
-  const totalValue = MOCK_DEALS.filter(d => d.stage !== "fechado").reduce((s, d) => s + d.value, 0);
-  const closedValue = MOCK_DEALS.filter(d => d.stage === "fechado").reduce((s, d) => s + d.value, 0);
-  const weightedValue = MOCK_DEALS.filter(d => d.stage !== "fechado").reduce((s, d) => s + (d.value * d.probability / 100), 0);
+  useEffect(() => {
+    AsyncStorage.getItem("crm_leads").then((raw) => {
+      if (!raw) return;
+      try {
+        const leads = JSON.parse(raw) as CrmLeadLocal[];
+        setDeals(leads.map(leadToDeal));
+      } catch {}
+    });
+  }, []);
 
-  const stageDeals = (stage: Stage) => MOCK_DEALS.filter(d => d.stage === stage);
-  const visibleDeals = activeStage === "todos"
-    ? MOCK_DEALS
-    : MOCK_DEALS.filter(d => d.stage === activeStage);
+  const totalValue    = deals.filter(d => d.stage !== "fechado").reduce((s, d) => s + d.value, 0);
+  const closedValue   = deals.filter(d => d.stage === "fechado").reduce((s, d) => s + d.value, 0);
+  const weightedValue = deals.filter(d => d.stage !== "fechado").reduce((s, d) => s + (d.value * d.probability / 100), 0);
+
+  const stageDeals   = (stage: Stage) => deals.filter(d => d.stage === stage);
+  const visibleDeals = activeStage === "todos" ? deals : deals.filter(d => d.stage === activeStage);
 
   return (
     <View style={[S.root, { backgroundColor: colors.background }]}>
-      {/* Header */}
       <View style={[S.header, { paddingTop: topPad + 4 }]}>
         <TouchableOpacity onPress={() => router.back()} style={S.backBtn} activeOpacity={0.7}>
           <Feather name="arrow-left" size={22} color={colors.text} />
@@ -125,13 +161,12 @@ export default function PipelineScreen() {
         </TouchableOpacity>
       </View>
 
-      {/* KPI strip */}
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={S.kpiScroll}>
         {[
-          { label: "Em aberto",  value: formatValue(totalValue),    color: PINK },
-          { label: "Ponderado",  value: formatValue(weightedValue), color: PURPLE },
-          { label: "Fechado",    value: formatValue(closedValue),   color: "#22CC88" },
-          { label: "Negócios",   value: String(MOCK_DEALS.length),  color: colors.text },
+          { label: "Em aberto",  value: formatValue(totalValue),       color: PINK },
+          { label: "Ponderado",  value: formatValue(weightedValue),    color: PURPLE },
+          { label: "Fechado",    value: formatValue(closedValue),      color: "#22CC88" },
+          { label: "Negócios",   value: String(deals.length),          color: colors.text },
         ].map((k) => (
           <View key={k.label} style={[S.kpiCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
             <Text style={[S.kpiValue, { color: k.color }]}>{k.value}</Text>
@@ -140,11 +175,9 @@ export default function PipelineScreen() {
         ))}
       </ScrollView>
 
-      {/* Stage progress bar */}
       <View style={[S.progressWrap, { backgroundColor: colors.surface, borderColor: colors.border }]}>
         {STAGES.map((stage) => {
           const count = stageDeals(stage).length;
-          const pct = MOCK_DEALS.length > 0 ? (count / MOCK_DEALS.length) * 100 : 0;
           const cfg = STAGE_CONFIG[stage];
           return (
             <TouchableOpacity
@@ -161,20 +194,26 @@ export default function PipelineScreen() {
         })}
       </View>
 
-      {/* Deal list */}
       <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: bottomPad }}>
-        {activeStage === "todos" ? (
+        {deals.length === 0 ? (
+          <View style={S.empty}>
+            <Feather name="bar-chart-2" size={40} color={colors.mutedForeground} />
+            <Text style={[S.emptyText, { color: colors.mutedForeground }]}>
+              Nenhum negócio no pipeline. Registre leads no CRM para visualizá-los aqui.
+            </Text>
+          </View>
+        ) : activeStage === "todos" ? (
           STAGES.filter(s => stageDeals(s).length > 0).map((stage) => {
             const cfg = STAGE_CONFIG[stage];
-            const deals = stageDeals(stage);
+            const sd  = stageDeals(stage);
             return (
               <View key={stage} style={{ marginBottom: 16 }}>
                 <View style={S.stageHeaderRow}>
                   <Feather name={cfg.icon as any} size={14} color={cfg.color} />
                   <Text style={[S.stageHeaderLabel, { color: cfg.color }]}>{cfg.label}</Text>
-                  <Text style={[S.stageHeaderCount, { color: colors.mutedForeground }]}>{deals.length}</Text>
+                  <Text style={[S.stageHeaderCount, { color: colors.mutedForeground }]}>{sd.length}</Text>
                 </View>
-                {deals.map(d => <DealCard key={d.id} deal={d} />)}
+                {sd.map(d => <DealCard key={d.id} deal={d} />)}
               </View>
             );
           })
@@ -204,4 +243,6 @@ const S = StyleSheet.create({
   stageHeaderRow:  { flexDirection: "row", alignItems: "center", gap: 6, marginBottom: 10 },
   stageHeaderLabel:{ fontSize: 13, fontFamily: "SpaceGrotesk_700Bold", flex: 1 },
   stageHeaderCount:{ fontSize: 12, fontFamily: "SpaceGrotesk_400Regular" },
+  empty:           { alignItems: "center", gap: 12, paddingTop: 60 },
+  emptyText:       { fontSize: 14, fontFamily: "SpaceGrotesk_400Regular", textAlign: "center", paddingHorizontal: 16 },
 });

@@ -1,6 +1,7 @@
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Feather } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   FlatList,
   Platform,
@@ -16,6 +17,19 @@ import { useColors } from "@/hooks/useColors";
 
 const PINK = "#FF0080";
 const PURPLE = "#8400FF";
+
+export interface CrmLeadLocal {
+  id: string;
+  nome: string;
+  empresa: string;
+  telefone: string;
+  endereco: string;
+  segmento: string;
+  status: string;
+  pipeline: string;
+  dataAbordagem: string;
+  cidade: string;
+}
 
 type ContactStatus = "novo" | "em_contato" | "quente" | "negociacao" | "fechado" | "perdido";
 
@@ -39,17 +53,6 @@ const STATUS_CONFIG: Record<ContactStatus, { label: string; color: string }> = {
   perdido:     { label: "Perdido",     color: "#AA4444" },
 };
 
-const MOCK_CONTACTS: Contact[] = [
-  { id: "1", name: "Carlos Mendes",    company: "Pizzaria Milano",     segment: "Alimentação",  status: "quente",      lastContact: "Hoje, 09:14",   score: 82, phone: "(11) 99999-0001" },
-  { id: "2", name: "Fernanda Souza",   company: "Clínica OralVita",   segment: "Saúde",        status: "negociacao",  lastContact: "Hoje, 10:32",   score: 91, phone: "(11) 99999-0002" },
-  { id: "3", name: "Roberto Lima",     company: "Academia FitMax",    segment: "Fitness",      status: "em_contato",  lastContact: "Ontem, 15:47",  score: 67, phone: "(11) 99999-0003" },
-  { id: "4", name: "Ana Paula Costa",  company: "Salão BelaVida",     segment: "Beleza",       status: "novo",        lastContact: "2 dias atrás",  score: 54, phone: "(11) 99999-0004" },
-  { id: "5", name: "Marcos Oliveira",  company: "Auto Peças Central", segment: "Automotivo",   status: "fechado",     lastContact: "3 dias atrás",  score: 95, phone: "(11) 99999-0005" },
-  { id: "6", name: "Juliana Martins",  company: "StartUp Hub SC",     segment: "Tecnologia",   status: "em_contato",  lastContact: "4 dias atrás",  score: 73, phone: "(11) 99999-0006" },
-  { id: "7", name: "Paulo Ferreira",   company: "Bar do Zé",          segment: "Alimentação",  status: "perdido",     lastContact: "1 semana",      score: 38, phone: "(11) 99999-0007" },
-  { id: "8", name: "Larissa Nunes",    company: "Adv. Nunes & Silva", segment: "Jurídico",     status: "quente",      lastContact: "Hoje, 14:20",   score: 87, phone: "(11) 99999-0008" },
-];
-
 const FILTER_OPTIONS: { key: ContactStatus | "todos"; label: string }[] = [
   { key: "todos",       label: "Todos" },
   { key: "novo",        label: "Novos" },
@@ -58,6 +61,60 @@ const FILTER_OPTIONS: { key: ContactStatus | "todos"; label: string }[] = [
   { key: "negociacao",  label: "Negociação" },
   { key: "fechado",     label: "Fechados" },
 ];
+
+function mapStatus(s: string): ContactStatus {
+  switch (s) {
+    case "Primeiro Contato": return "novo";
+    case "Em andamento":     return "em_contato";
+    case "Morno":            return "em_contato";
+    case "Quente":           return "quente";
+    case "Frio":             return "perdido";
+    case "Fechado":
+    case "Cliente":          return "fechado";
+    case "Descartado":
+    case "Inválido":
+    case "Arquivado":        return "perdido";
+    default:                 return "novo";
+  }
+}
+
+function scoreFromStatus(s: string): number {
+  switch (s) {
+    case "Fechado":          return 95;
+    case "Cliente":          return 92;
+    case "Quente":           return 80;
+    case "Em andamento":     return 62;
+    case "Morno":            return 50;
+    default:                 return 40;
+  }
+}
+
+function formatDate(iso: string): string {
+  try {
+    const d = new Date(iso);
+    const now = new Date();
+    const diff = Math.floor((now.getTime() - d.getTime()) / 1000);
+    if (diff < 60)         return "agora";
+    if (diff < 3600)       return `${Math.floor(diff / 60)} min atrás`;
+    if (diff < 86400)      return `Hoje, ${d.getHours().toString().padStart(2,"0")}:${d.getMinutes().toString().padStart(2,"0")}`;
+    if (diff < 172800)     return "Ontem";
+    if (diff < 604800)     return `${Math.floor(diff / 86400)} dias atrás`;
+    return d.toLocaleDateString("pt-BR");
+  } catch { return "—"; }
+}
+
+function leadToContact(l: CrmLeadLocal): Contact {
+  return {
+    id: l.id,
+    name: l.nome,
+    company: l.empresa || l.nome,
+    segment: l.segmento || "—",
+    status: mapStatus(l.status),
+    lastContact: formatDate(l.dataAbordagem),
+    score: scoreFromStatus(l.status),
+    phone: l.telefone,
+  };
+}
 
 function ScoreBadge({ score }: { score: number }) {
   const color = score >= 80 ? "#22CC88" : score >= 60 ? "#FF8800" : "#AA4444";
@@ -79,7 +136,7 @@ function ContactCard({ contact, onPress }: { contact: Contact; onPress: () => vo
     <TouchableOpacity style={[CC.card, { backgroundColor: colors.surface, borderColor: colors.border }]} onPress={onPress} activeOpacity={0.75}>
       <View style={CC.row}>
         <View style={[CC.avatar, { backgroundColor: PINK + "22" }]}>
-          <Text style={CC.avatarText}>{contact.name[0]}</Text>
+          <Text style={CC.avatarText}>{contact.name[0]?.toUpperCase() ?? "?"}</Text>
         </View>
         <View style={{ flex: 1, gap: 2 }}>
           <Text style={[CC.name, { color: colors.text }]} numberOfLines={1}>{contact.name}</Text>
@@ -124,11 +181,22 @@ export default function CRMScreen() {
   const [search, setSearch]   = useState("");
   const [filter, setFilter]   = useState<ContactStatus | "todos">("todos");
   const [showSearch, setShowSearch] = useState(false);
+  const [contacts, setContacts] = useState<Contact[]>([]);
 
   const topPad    = Platform.OS === "web" ? 67 : insets.top;
   const bottomPad = Platform.OS === "web" ? 84 : insets.bottom + 60;
 
-  const filtered = MOCK_CONTACTS.filter((c) => {
+  useEffect(() => {
+    AsyncStorage.getItem("crm_leads").then((raw) => {
+      if (!raw) return;
+      try {
+        const leads = JSON.parse(raw) as CrmLeadLocal[];
+        setContacts(leads.map(leadToContact));
+      } catch {}
+    });
+  }, []);
+
+  const filtered = contacts.filter((c) => {
     const matchFilter = filter === "todos" || c.status === filter;
     const matchSearch = !search || c.name.toLowerCase().includes(search.toLowerCase()) || c.company.toLowerCase().includes(search.toLowerCase());
     return matchFilter && matchSearch;
@@ -136,7 +204,6 @@ export default function CRMScreen() {
 
   return (
     <View style={[S.root, { backgroundColor: colors.background }]}>
-      {/* Header */}
       <View style={[S.header, { paddingTop: topPad + 4 }]}>
         <TouchableOpacity onPress={() => router.back()} style={S.backBtn} activeOpacity={0.7}>
           <Feather name="arrow-left" size={22} color={colors.text} />
@@ -152,7 +219,6 @@ export default function CRMScreen() {
         </View>
       </View>
 
-      {/* Search bar */}
       {showSearch && (
         <View style={[S.searchWrap, { backgroundColor: colors.surface, borderColor: colors.border }]}>
           <Feather name="search" size={16} color={colors.mutedForeground} />
@@ -172,12 +238,11 @@ export default function CRMScreen() {
         </View>
       )}
 
-      {/* Stats row */}
       <View style={S.statsRow}>
         {[
-          { label: "Total", value: MOCK_CONTACTS.length, color: colors.text },
-          { label: "Quentes", value: MOCK_CONTACTS.filter(c => c.status === "quente").length, color: "#FF8800" },
-          { label: "Fechados", value: MOCK_CONTACTS.filter(c => c.status === "fechado").length, color: "#22CC88" },
+          { label: "Total",    value: contacts.length,                                        color: colors.text },
+          { label: "Quentes",  value: contacts.filter(c => c.status === "quente").length,     color: "#FF8800" },
+          { label: "Fechados", value: contacts.filter(c => c.status === "fechado").length,    color: "#22CC88" },
         ].map((s) => (
           <View key={s.label} style={[S.statCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
             <Text style={[S.statValue, { color: s.color }]}>{s.value}</Text>
@@ -186,7 +251,6 @@ export default function CRMScreen() {
         ))}
       </View>
 
-      {/* Filter tabs */}
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={S.filterScroll}>
         {FILTER_OPTIONS.map((f) => {
           const active = filter === f.key;
@@ -203,7 +267,6 @@ export default function CRMScreen() {
         })}
       </ScrollView>
 
-      {/* Contact list */}
       <FlatList
         data={filtered}
         keyExtractor={(item) => item.id}
@@ -214,7 +277,9 @@ export default function CRMScreen() {
         ListEmptyComponent={
           <View style={S.empty}>
             <Feather name="users" size={40} color={colors.mutedForeground} />
-            <Text style={[S.emptyText, { color: colors.mutedForeground }]}>Nenhum contato encontrado</Text>
+            <Text style={[S.emptyText, { color: colors.mutedForeground }]}>
+              {contacts.length === 0 ? "Nenhum lead no CRM ainda. Peça para a JADE buscar leads." : "Nenhum contato encontrado"}
+            </Text>
           </View>
         }
       />
@@ -240,5 +305,5 @@ const S = StyleSheet.create({
   filterTab:   { paddingHorizontal: 14, paddingVertical: 6, borderRadius: 20, borderWidth: 1, borderColor: "transparent" },
   filterText:  { fontSize: 13, fontFamily: "SpaceGrotesk_500Medium" },
   empty:       { alignItems: "center", gap: 12, paddingTop: 60 },
-  emptyText:   { fontSize: 14, fontFamily: "SpaceGrotesk_400Regular" },
+  emptyText:   { fontSize: 14, fontFamily: "SpaceGrotesk_400Regular", textAlign: "center", paddingHorizontal: 32 },
 });
