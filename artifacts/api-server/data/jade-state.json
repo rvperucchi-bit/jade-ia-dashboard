@@ -1270,6 +1270,35 @@
   ],
   "activity_events": [
     {
+      "id": "c6eb4d6f2d65af88",
+      "type": "message",
+      "text": "JADE respondeu: \"Preciso de leads\"",
+      "icon": "robot",
+      "color": "#FF0080",
+      "created_at": "2026-06-24T11:42:06.078Z"
+    },
+    {
+      "id": "4bafbe756b201aba",
+      "type": "lead",
+      "text": "CRM: Plennus Construção e Reformas → Primeiro Contato",
+      "icon": "user-plus",
+      "color": "#FF0080",
+      "created_at": "2026-06-24T11:42:05.376Z"
+    },
+    {
+      "id": "a993ea15187057ea",
+      "type": "lead",
+      "text": "JADE encontrou 10 leads reais em Criciúma",
+      "icon": "map-pin",
+      "color": "#FF0080",
+      "metadata": {
+        "cidade": "Criciúma",
+        "tipo": "construtoras empresas de construção reformas",
+        "count": 10
+      },
+      "created_at": "2026-06-24T11:42:05.039Z"
+    },
+    {
       "id": "b1ff8ae74d46a22c",
       "type": "message",
       "text": "JADE respondeu: \"Preciso de leads\"",
@@ -3196,36 +3225,6 @@
       "icon": "robot",
       "color": "#FF0080",
       "created_at": "2026-06-22T19:03:56.134Z"
-    },
-    {
-      "id": "9f51f361c51fb22c",
-      "type": "message",
-      "text": "JADE respondeu a uma mensagem",
-      "icon": "robot",
-      "color": "#FF0080",
-      "metadata": {
-        "session_id": "1db5b9b53f63934f"
-      },
-      "created_at": "2026-06-22T19:03:55.820Z"
-    },
-    {
-      "id": "cbb1c0a90cf94bd7",
-      "type": "message",
-      "text": "JADE respondeu: \"Oi jade\"",
-      "icon": "robot",
-      "color": "#FF0080",
-      "created_at": "2026-06-22T18:47:53.115Z"
-    },
-    {
-      "id": "4c3798e775eced3e",
-      "type": "message",
-      "text": "JADE respondeu a uma mensagem",
-      "icon": "robot",
-      "color": "#FF0080",
-      "metadata": {
-        "session_id": "57cfb859f947280a"
-      },
-      "created_at": "2026-06-22T18:47:52.818Z"
     }
   ],
   "marketing_campaigns": [
@@ -3251,6 +3250,24 @@
     }
   ],
   "jade_sessions": [
+    {
+      "id": "8752ed39f1d794eb",
+      "title": "Preciso de leads",
+      "messages": [
+        {
+          "role": "user",
+          "content": "Preciso de leads",
+          "time": "2026-06-24T11:42:04.924Z"
+        },
+        {
+          "role": "model",
+          "content": "Encontrei 10 opções em Criciúma. Aqui vai o primeiro:\n\n🏗️ Plennus Construção e Reformas\n📍 R. Antônio de Bona, 159 - São Defende, Criciúma - SC, 88808-350, Brasil\n📞 (48) 99916-8122 · ⭐ 5\n\nA gestão manual de propostas e acompanhamento de clientes pode estar atrasando\n\nAbordo esse ou você mesmo fala com ele?",
+          "time": "2026-06-24T11:42:04.932Z"
+        }
+      ],
+      "created_at": "2026-06-24T11:42:00.488Z",
+      "updated_at": "2026-06-24T11:42:04.932Z"
+    },
     {
       "id": "6241d70096fc97f8",
       "title": "Preciso de leads",

@@ -1,5 +1,20 @@
 [
   {
+    "id": "98c85f445882ebfc",
+    "name": "Plennus Construção e Reformas",
+    "phone": "(48) 99916-8122",
+    "address": "R. Antônio de Bona, 159 - São Defende, Criciúma - SC, 88808-350, Brasil",
+    "segment": "construtoras empresas de construção reformas",
+    "city": "Criciúma",
+    "status": "Primeiro Contato",
+    "pipeline": "Novo",
+    "followUpDate": null,
+    "attempts": 1,
+    "notes": "",
+    "created_at": "2026-06-24T11:42:05.371Z",
+    "updated_at": "2026-06-24T11:42:05.371Z"
+  },
+  {
     "id": "e2a17ba13b1735b5",
     "name": "Plennus Construção e Reformas",
     "phone": "(48) 99916-8122",
