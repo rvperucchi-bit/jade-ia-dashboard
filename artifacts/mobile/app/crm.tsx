@@ -21,6 +21,19 @@ import { useColors } from "@/hooks/useColors";
 const PINK = "#FF0080";
 const PURPLE = "#8400FF";
 
+function cleanSeg(seg: string): string {
+  if (!seg || seg === "—") return seg;
+  const t = seg.trim();
+  if (t.length <= 22) return t;
+  const words = t.split(/\s+/);
+  let r = "";
+  for (const w of words) {
+    const next = r ? r + " " + w : w;
+    if (next.length <= 20) r = next; else break;
+  }
+  return r || t.slice(0, 20);
+}
+
 export interface CrmLeadLocal {
   id: string;
   nome: string;
@@ -268,11 +281,15 @@ function ContactCard({ contact, onPress }: { contact: Contact; onPress: () => vo
         </View>
         <View style={{ flex: 1, gap: 2 }}>
           <Text style={[CC.name, { color: colors.text }]} numberOfLines={1}>{contact.name}</Text>
-          <Text style={[CC.company, { color: colors.mutedForeground }]} numberOfLines={1}>{contact.company}</Text>
+          {contact.company !== contact.name && (
+            <Text style={[CC.company, { color: colors.mutedForeground }]} numberOfLines={1}>{contact.company}</Text>
+          )}
           <View style={CC.tagsRow}>
-            <View style={[CC.segTag, { backgroundColor: PURPLE + "18" }]}>
-              <Text style={[CC.segText, { color: PURPLE }]}>{contact.segment}</Text>
-            </View>
+            {cleanSeg(contact.segment) && cleanSeg(contact.segment) !== "—" && (
+              <View style={[CC.segTag, { backgroundColor: PURPLE + "18" }]}>
+                <Text style={[CC.segText, { color: PURPLE }]}>{cleanSeg(contact.segment)}</Text>
+              </View>
+            )}
             <View style={[CC.statusTag, { backgroundColor: cfg.color + "18" }]}>
               <Text style={[CC.statusText, { color: cfg.color }]}>{cfg.label}</Text>
             </View>
