@@ -618,29 +618,56 @@ router.post('/chat', async (req: Request, res: Response) => {
     const lastUserText = lastMessage!.content;
     const mapsApiKey = process.env.GOOGLE_MAPS_API_KEY ?? process.env.GOOGLE_MAPS_PLATFORM_KEY;
 
-    // ─── Path A: "próximo" with pending leads already in session ─────────────
+    // ─── Path A: "próximo / mais opções" with pending leads in session ────────
+    // Returns ALL remaining leads as a numbered list (names only in text).
+    // Full data + analysis for each lead comes in `leadsList` array so the
+    // client can render an expandable card when the user taps a name.
     if (body.session_id && detectNextLeadRequest(lastUserText)) {
       const pending = sessionPendingLeads.get(body.session_id);
       if (pending && pending.leads.length > 0) {
-        const lead = pending.leads.shift()!;
-        pending.shown++;
-        const hasMore = pending.leads.length > 0;
-        const isBatchEnd = hasMore && pending.shown % BATCH_SIZE === 0;
+        const allRemaining = [...pending.leads];
+        pending.leads = [];
+        pending.shown += allRemaining.length;
+
+        // Generate analysis for every lead in parallel (best-effort)
         const analysisModel = genAI.getGenerativeModel({ model: 'gemini-2.5-flash', generationConfig: { maxOutputTokens: 500, temperature: 0.5 } });
-        const analysisPromptA = buildAnalysisOnlyPrompt(lead, pending.tipo);
-        const nrA = await analysisModel.generateContent(analysisPromptA);
-        const analysis = parseAnalysis(nrA.response.text());
-        const cardText = buildLeadCardText(lead, pending.shown, pending.total, pending.city, pending.tipo, isBatchEnd, analysis.dor);
+        const analyses = await Promise.all(
+          allRemaining.map(async (lead) => {
+            try {
+              const pr = await analysisModel.generateContent(buildAnalysisOnlyPrompt(lead, pending.tipo));
+              return parseAnalysis(pr.response.text());
+            } catch {
+              return { dor: '', angulo: '', pergunta: '' };
+            }
+          })
+        );
+
+        // Text: numbered list of names only
+        const listText = `Aqui estão mais opções em ${pending.city}:\n\n${allRemaining.map((l, i) => `${i + 1}. ${l.name}`).join('\n')}`;
+
+        // Full data for each lead (client renders expandable card on tap)
+        const leadsList = allRemaining.map((lead, i) => ({
+          name:         lead.name,
+          address:      lead.address,
+          phone:        lead.phone,
+          rating:       lead.rating,
+          totalRatings: lead.totalRatings,
+          cidade:       pending.city,
+          segment:      pending.tipo,
+          analysis:     analyses[i]!,
+        }));
 
         appendJadeMessage(body.session_id, 'user', lastUserText);
-        appendJadeMessage(body.session_id, 'model', cardText);
-        addActivityEvent({ type: 'lead', text: `JADE apresentou lead ${pending.shown}/${pending.total} em ${pending.city}`, icon: 'map-pin', color: '#FF0080' });
+        appendJadeMessage(body.session_id, 'model', listText);
+        addActivityEvent({ type: 'lead', text: `JADE listou ${allRemaining.length} leads em ${pending.city}`, icon: 'map-pin', color: '#FF0080' });
 
-        req.log.info({ shown: pending.shown, total: pending.total, city: pending.city }, 'pending lead delivered');
+        req.log.info({ count: allRemaining.length, city: pending.city }, 'lead list delivered');
         return res.json({
-          message: cardText,
-          leadData: { name: lead.name, address: lead.address, phone: lead.phone, rating: lead.rating, totalRatings: lead.totalRatings, cidade: pending.city, segment: pending.tipo, analysis },
-          session_id: body.session_id, handoff: false, statusType: 'lead',
+          message: listText,
+          leadsList,
+          session_id: body.session_id,
+          handoff: false,
+          statusType: 'lead_list',
         });
       }
     }

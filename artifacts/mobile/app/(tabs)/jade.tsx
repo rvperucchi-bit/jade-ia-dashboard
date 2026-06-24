@@ -216,6 +216,7 @@ interface AIMessage {
   id: string; text: string; sender: "user" | "jade"; time: string;
   isAudio?: boolean; audioDuration?: number; files?: AttachedFile[];
   leadData?: LeadCardData;
+  leadsList?: LeadCardData[];
   crmSaved?: boolean;
 }
 
@@ -286,6 +287,10 @@ function MessageBubble({
 
   if (isJade && msg.leadData) {
     return <LeadCard msg={msg} colors={colors} onNotify={onNotify} onAddJadeMessage={onAddJadeMessage} />;
+  }
+
+  if (isJade && msg.leadsList && msg.leadsList.length > 0) {
+    return <LeadListCard msg={msg} colors={colors} onNotify={onNotify} onAddJadeMessage={onAddJadeMessage} />;
   }
 
   if (isJade) {
@@ -597,6 +602,78 @@ function LeadCard({
         </View>
       )}
     </TouchableOpacity>
+  );
+}
+
+// ─── Lead list card (numbered names → tap to expand full card) ────────────────
+function LeadListCard({
+  msg, colors, onNotify, onAddJadeMessage,
+}: {
+  msg: AIMessage;
+  colors: ReturnType<typeof useColors>;
+  onNotify?: (text: string) => void;
+  onAddJadeMessage?: (text: string) => void;
+}) {
+  const [selectedIdx, setSelectedIdx] = useState<number | null>(null);
+  const leads = msg.leadsList!;
+
+  if (selectedIdx !== null) {
+    const selected = leads[selectedIdx]!;
+    const syntheticMsg: AIMessage = {
+      id: `${msg.id}_${selectedIdx}`,
+      text: "",
+      sender: "jade",
+      time: msg.time,
+      leadData: selected,
+      crmSaved: false,
+    };
+    return (
+      <View>
+        <TouchableOpacity
+          onPress={() => setSelectedIdx(null)}
+          activeOpacity={0.7}
+          style={{ flexDirection: "row", alignItems: "center", gap: 4, paddingHorizontal: 16, paddingVertical: 8 }}
+        >
+          <Feather name="arrow-left" size={13} color={PINK} />
+          <Text style={{ color: PINK, fontSize: 12, fontFamily: "SpaceGrotesk_500Medium" }}>voltar à lista</Text>
+        </TouchableOpacity>
+        <LeadCard msg={syntheticMsg} colors={colors} onNotify={onNotify} onAddJadeMessage={onAddJadeMessage} />
+      </View>
+    );
+  }
+
+  return (
+    <View style={C.msgJade}>
+      {!!msg.text && (
+        <Text style={[C.jadeText, { color: colors.text, marginBottom: 10 }]}>{msg.text}</Text>
+      )}
+      <View style={{ gap: 6 }}>
+        {leads.map((lead, i) => (
+          <TouchableOpacity
+            key={i}
+            onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); setSelectedIdx(i); }}
+            activeOpacity={0.75}
+            style={{
+              flexDirection: "row", alignItems: "center", justifyContent: "space-between",
+              backgroundColor: "rgba(255,0,128,0.06)", borderRadius: 10,
+              paddingVertical: 11, paddingHorizontal: 14,
+              borderWidth: 1, borderColor: "rgba(255,0,128,0.14)",
+            }}
+          >
+            <View style={{ flexDirection: "row", alignItems: "center", gap: 10, flex: 1 }}>
+              <Text style={{ color: "rgba(255,255,255,0.28)", fontSize: 11, fontFamily: "SpaceGrotesk_600SemiBold", width: 18 }}>
+                {i + 1}.
+              </Text>
+              <Text style={{ color: colors.text, fontSize: 13, fontFamily: "SpaceGrotesk_500Medium", flex: 1 }} numberOfLines={1}>
+                {lead.name}
+              </Text>
+            </View>
+            <Feather name="chevron-right" size={14} color={PINK} />
+          </TouchableOpacity>
+        ))}
+      </View>
+      <Text style={[C.jadeTime, { color: colors.mutedForeground, marginTop: 8 }]}>{msg.time}</Text>
+    </View>
   );
 }
 
@@ -946,7 +1023,8 @@ export default function JADEScreen() {
       clearTimeout(tid);
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
       const data = (await response.json()) as {
-        message?: string; response?: string; handoff?: boolean; leadData?: LeadCardData;
+        message?: string; response?: string; handoff?: boolean;
+        leadData?: LeadCardData; leadsList?: LeadCardData[];
       };
       const raw = data.message?.trim() || data.response?.trim() || "Desculpe, não consegui processar. Tente novamente.";
       useCredit();
@@ -957,6 +1035,7 @@ export default function JADEScreen() {
         sender: "jade",
         time: nowTime(),
         leadData: data.leadData,
+        leadsList: data.leadsList,
         crmSaved: false,
       }, ...prev]);
 
