@@ -5,6 +5,7 @@ import {
   Dimensions,
   Easing,
   Image,
+  Platform,
   StyleSheet,
   View,
 } from "react-native";
@@ -21,6 +22,15 @@ export default function SplashScreen() {
   const logoRotate  = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
+    const native = Platform.OS !== "web";
+
+    // Na web o callback do Animated pode não disparar — usamos setTimeout direto
+    if (!native) {
+      const t = setTimeout(() => router.replace("/login"), 1800);
+      logoOpacity.setValue(1);
+      return () => clearTimeout(t);
+    }
+
     Animated.parallel([
       Animated.timing(logoOpacity, {
         toValue: 1,
