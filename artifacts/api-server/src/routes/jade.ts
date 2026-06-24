@@ -343,18 +343,25 @@ function extractSearchParams(
 
   // Fall back to company segment mapping
   const SEGMENT_FALLBACK: Record<string, string> = {
-    'Clínicas & Saúde':           'clínica médica dentista',
-    'Imobiliário':                'imobiliária corretor de imóveis',
-    'Advocacia':                  'escritório de advocacia advogado',
-    'Alimentação & Food Service': 'restaurante alimentação',
-    'Serviços de Beleza':         'salão de beleza barbearia',
-    'Serviços & Construção':      'construtora reforma',
-    'Varejo & E-commerce':        'loja comércio varejo',
-    'Educação':                   'escola curso faculdade',
-    'Oficinas & Manutenção':      'oficina mecânica',
-    'Marketing & Publicidade':    'agência de marketing',
-    'Consultoria & B2B':          'consultoria empresa tecnologia',
-    'Seguros & Financeiro':       'seguro financeira corretora',
+    'Clínicas & Saúde':           'clínicas médicas consultórios dentistas',
+    'Imobiliário':                'imobiliárias corretores de imóveis',
+    'Advocacia':                  'escritórios de advocacia advogados',
+    'Alimentação & Food Service': 'restaurantes lanchonetes pizzarias bares',
+    'Beleza':                     'salões de beleza barbearias clínicas estéticas',
+    'Serviços de Beleza':         'salões de beleza barbearias clínicas estéticas',
+    'Serviços & Construção':      'construtoras empresas de construção reformas',
+    'Varejo & E-commerce':        'lojas varejo comércio',
+    'Educação':                   'escolas faculdades cursos instituições de ensino',
+    'Oficinas & Manutenção':      'oficinas mecânicas manutenção elétrica',
+    'Marketing & Publicidade':    'agências de marketing publicidade',
+    'Consultoria & B2B/SaaS':     'consultoria empresas tecnologia',
+    'Consultoria & B2B':          'consultoria empresas tecnologia',
+    'Seguros':                    'corretoras de seguro seguradoras',
+    'Seguros & Financeiro':       'corretoras de seguro seguradoras',
+    'Financeiro & Crédito':       'financeiras bancos cooperativas de crédito',
+    'Crédito & Consórcio':        'financeiras bancos cooperativas de crédito',
+    'Moda':                       'lojas de roupa moda boutiques',
+    'Outros':                     'empresas comércio',
   };
 
   if (companyConfig?.segmento) {
@@ -552,6 +559,19 @@ router.post('/chat', async (req: Request, res: Response) => {
       "Moda": `## SEGMENTO ESPECIALISTA: MODA\n\nDOIS PERFIS: B2C (decisão emocional, Instagram, recupera carrinho) e B2B (representante/lojistas, lookbook, pedido mínimo por grade).\nCOMPORTAMENTO: Identifica o perfil na primeira mensagem e adapta. Tom B2C: estilosa, aspiracional. Tom B2B: comercial, dados.\nRESTRIÇÕES: Nunca promete entrega sem confirmar estoque e grade.`,
       "Outros": `## SEGMENTO ESPECIALISTA: EXECUTIVA SÊNIOR ADAPTATIVA\n\nMODO CORINGA — Nas primeiras interações, identifica: o que vende, quem é o cliente, ciclo de venda, gargalo principal, ticket médio.\nCOMPORTAMENTO: Age como Diretora Comercial com 20 anos de experiência. Sempre pergunta antes de responder com estratégia.\nTOM: Executivo, sofisticado, adaptável.`,
     };
+    // Aliases para novos nomes de labels
+    const aliasMap: Record<string, string> = {
+      "Consultoria & B2B/SaaS": "Consultoria & B2B",
+      "Seguros": "Seguros & Financeiro",
+      "Financeiro & Crédito": "Crédito & Consórcio",
+      "Beleza": "Serviços de Beleza",
+    };
+    const resolvedSpecialists: Record<string, string> = {};
+    for (const [k, v] of Object.entries(SEGMENT_SPECIALIST)) resolvedSpecialists[k] = v;
+    for (const [alias, canonical] of Object.entries(aliasMap)) {
+      if (!resolvedSpecialists[alias] && resolvedSpecialists[canonical]) resolvedSpecialists[alias] = resolvedSpecialists[canonical];
+    }
+    Object.assign(SEGMENT_SPECIALIST, resolvedSpecialists);
 
     // Build dynamic system prompt — prefer client-sent config, fall back to server-stored
     const storedConfig = getCompanyConfig();

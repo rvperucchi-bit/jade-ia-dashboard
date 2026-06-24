@@ -71,7 +71,7 @@ FOCO: Converter na primeira janela de interesse. Facilitar a decisão de compra 
   {
     id: "consultoria",
     emoji: "💼",
-    label: "Consultoria & B2B",
+    label: "Consultoria & B2B/SaaS",
     specialistBlock: `## SEGMENTO ESPECIALISTA: CONSULTORIA & B2B (inclui Tech/SaaS)
 
 VOCABULÁRIO OBRIGATÓRIO: "ROI", "Diagnóstico", "Proposta comercial", "Implantação", "Renovação".
@@ -83,7 +83,7 @@ FOCO: Mapear a dor real antes de apresentar solução. Quantificar ROI potencial
   {
     id: "seguros",
     emoji: "🛡️",
-    label: "Seguros & Financeiro",
+    label: "Seguros",
     specialistBlock: `## SEGMENTO ESPECIALISTA: SEGUROS & PROTEÇÃO
 
 VOCABULÁRIO OBRIGATÓRIO: "Apólice", "Cobertura", "Prêmio", "Vigência", "Cotação".
@@ -108,7 +108,7 @@ FOCO: Conectar o curso ao sonho pessoal do lead. Usar depoimentos e histórias d
   {
     id: "credito",
     emoji: "💰",
-    label: "Crédito & Consórcio",
+    label: "Financeiro & Crédito",
     specialistBlock: `## SEGMENTO ESPECIALISTA: FINANCEIRO & CRÉDITO
 
 VOCABULÁRIO OBRIGATÓRIO: "Simulação", "Taxa", "Score", "Contemplação", "Portabilidade".
@@ -132,7 +132,7 @@ FOCO: Aumentar frequência de reposição. Expandir mix de produtos por cliente.
   {
     id: "beleza",
     emoji: "💄",
-    label: "Serviços de Beleza",
+    label: "Beleza",
     specialistBlock: `## SEGMENTO ESPECIALISTA: SERVIÇOS DE BELEZA
 
 VOCABULÁRIO OBRIGATÓRIO: "Cliente", "Agendamento", "Procedimento", "Retoque", "Pacote".

@@ -2,12 +2,12 @@
   "modules": {
     "scanner": {
       "module_name": "scanner",
-      "is_active": false,
-      "status": "paused",
-      "last_started_at": "2026-06-23T22:15:58.360Z",
+      "is_active": true,
+      "status": "running",
+      "last_started_at": "2026-06-24T02:12:13.777Z",
       "last_stopped_at": "2026-06-23T22:54:02.971Z",
       "last_run_at": null,
-      "updated_at": "2026-06-23T22:54:02.971Z"
+      "updated_at": "2026-06-24T02:12:13.777Z"
     },
     "jade": {
       "module_name": "jade",
@@ -47,6 +47,16 @@
     }
   },
   "module_logs": [
+    {
+      "id": "386c3f4ca1ec9f6e",
+      "module_name": "scanner",
+      "action": "activated",
+      "message": "Scanner Radar ativado",
+      "metadata": {
+        "active": true
+      },
+      "created_at": "2026-06-24T02:12:13.782Z"
+    },
     {
       "id": "03edcaacce8fad33",
       "module_name": "scanner",
@@ -1249,6 +1259,86 @@
     }
   ],
   "activity_events": [
+    {
+      "id": "98b75737b9d7c16c",
+      "type": "message",
+      "text": "JADE respondeu a uma mensagem",
+      "icon": "robot",
+      "color": "#FF0080",
+      "metadata": {
+        "session_id": "3d7284e19a2c2da2"
+      },
+      "created_at": "2026-06-24T02:13:02.123Z"
+    },
+    {
+      "id": "4e2dda97648c76ec",
+      "type": "module",
+      "text": "Scanner Radar ativado",
+      "icon": "crosshair",
+      "color": "#6C63FF",
+      "metadata": {
+        "module": "scanner",
+        "active": true
+      },
+      "created_at": "2026-06-24T02:12:13.786Z"
+    },
+    {
+      "id": "d459fe00ff846388",
+      "type": "message",
+      "text": "JADE respondeu: \"Outro\"",
+      "icon": "robot",
+      "color": "#FF0080",
+      "created_at": "2026-06-24T02:08:50.468Z"
+    },
+    {
+      "id": "3408cc5f35632c72",
+      "type": "message",
+      "text": "JADE respondeu a uma mensagem",
+      "icon": "robot",
+      "color": "#FF0080",
+      "metadata": {
+        "session_id": "96006bae42da9a4a"
+      },
+      "created_at": "2026-06-24T02:08:50.185Z"
+    },
+    {
+      "id": "6e1ecbbb7531beb4",
+      "type": "message",
+      "text": "JADE respondeu: \"Busque outro\"",
+      "icon": "robot",
+      "color": "#FF0080",
+      "created_at": "2026-06-24T02:08:37.649Z"
+    },
+    {
+      "id": "bd49d78995aa0596",
+      "type": "message",
+      "text": "JADE respondeu a uma mensagem",
+      "icon": "robot",
+      "color": "#FF0080",
+      "metadata": {
+        "session_id": "96006bae42da9a4a"
+      },
+      "created_at": "2026-06-24T02:08:37.373Z"
+    },
+    {
+      "id": "5284495683031881",
+      "type": "message",
+      "text": "JADE respondeu: \"Olá\"",
+      "icon": "robot",
+      "color": "#FF0080",
+      "created_at": "2026-06-24T02:08:29.345Z"
+    },
+    {
+      "id": "94536fd0ff6928f8",
+      "type": "message",
+      "text": "JADE respondeu a uma mensagem",
+      "icon": "robot",
+      "color": "#FF0080",
+      "metadata": {
+        "session_id": "96006bae42da9a4a"
+      },
+      "created_at": "2026-06-24T02:08:29.059Z"
+    },
     {
       "id": "ef478cd96e8239bd",
       "type": "message",
@@ -3147,78 +3237,6 @@
       "icon": "user-plus",
       "color": "#6C63FF",
       "created_at": "2026-06-21T13:15:54.209Z"
-    },
-    {
-      "id": "4d7d712e79776675",
-      "type": "lead",
-      "text": "Novo lead adicionado: Beatriz Melo (Boutique Chic da Barra)",
-      "icon": "user-plus",
-      "color": "#6C63FF",
-      "created_at": "2026-06-21T13:15:54.202Z"
-    },
-    {
-      "id": "01873aded6abc0a5",
-      "type": "lead",
-      "text": "Novo lead adicionado: Gustavo Ferreira (Armazém da Vila Orgânicos)",
-      "icon": "user-plus",
-      "color": "#6C63FF",
-      "created_at": "2026-06-21T13:15:53.604Z"
-    },
-    {
-      "id": "9a7e6d1bd5ddb5ef",
-      "type": "scan",
-      "text": "JADE encontrou 3 novos leads via radar em São Paulo",
-      "icon": "crosshair",
-      "color": "#6C63FF",
-      "metadata": {
-        "count": 3,
-        "cidade": "São Paulo"
-      },
-      "created_at": "2026-06-21T13:15:53.167Z"
-    },
-    {
-      "id": "f55e3eee98218441",
-      "type": "lead",
-      "text": "Novo lead adicionado: Mariana Costa (Empório da Gula - Padaria & Confeitaria)",
-      "icon": "user-plus",
-      "color": "#6C63FF",
-      "created_at": "2026-06-21T13:14:54.242Z"
-    },
-    {
-      "id": "4c9b95893882a3e3",
-      "type": "lead",
-      "text": "Novo lead adicionado: Ricardo Almeida (Casa & Cia Utilidades Domésticas)",
-      "icon": "user-plus",
-      "color": "#6C63FF",
-      "created_at": "2026-06-21T13:14:54.218Z"
-    },
-    {
-      "id": "39dab06d6d9aa19a",
-      "type": "lead",
-      "text": "Novo lead adicionado: Fernanda Lima (Livraria Ponto e Vírgula)",
-      "icon": "user-plus",
-      "color": "#6C63FF",
-      "created_at": "2026-06-21T13:14:53.586Z"
-    },
-    {
-      "id": "cbacdbec19fd77d2",
-      "type": "scan",
-      "text": "JADE encontrou 3 novos leads via radar em São Paulo",
-      "icon": "crosshair",
-      "color": "#6C63FF",
-      "metadata": {
-        "count": 3,
-        "cidade": "São Paulo"
-      },
-      "created_at": "2026-06-21T13:14:53.104Z"
-    },
-    {
-      "id": "db4dbf002ef3ede5",
-      "type": "lead",
-      "text": "Novo lead adicionado: Ana Lúcia Gomes (Armarinhos da Vila)",
-      "icon": "user-plus",
-      "color": "#6C63FF",
-      "created_at": "2026-06-21T11:35:33.292Z"
     }
   ],
   "marketing_campaigns": [
@@ -3244,6 +3262,62 @@
     }
   ],
   "jade_sessions": [
+    {
+      "id": "3d7284e19a2c2da2",
+      "title": "[voz 5s] O usuário enviou um áudio. Cons…",
+      "messages": [
+        {
+          "role": "user",
+          "content": "[voz 5s] O usuário enviou um áudio. Considere que ele falou algo sobre vendas ou negócio e responda diretamente ao conteúdo, sem mencionar que era um áudio.",
+          "time": "2026-06-24T02:13:02.117Z"
+        },
+        {
+          "role": "model",
+          "content": "Pode mandar. Qual é o lead ou a situação que você quer focar?",
+          "time": "2026-06-24T02:13:02.120Z"
+        }
+      ],
+      "created_at": "2026-06-24T02:12:57.662Z",
+      "updated_at": "2026-06-24T02:13:02.120Z"
+    },
+    {
+      "id": "96006bae42da9a4a",
+      "title": "Busque outro",
+      "messages": [
+        {
+          "role": "user",
+          "content": "Olá",
+          "time": "2026-06-24T02:08:29.052Z"
+        },
+        {
+          "role": "model",
+          "content": "E aí, quer que eu aborde o Trattoria San Paolo ou prefere que eu busque mais leads?",
+          "time": "2026-06-24T02:08:29.056Z"
+        },
+        {
+          "role": "user",
+          "content": "Busque outro",
+          "time": "2026-06-24T02:08:37.367Z"
+        },
+        {
+          "role": "model",
+          "content": "Aqui está outro:\n\n🍽️ Restaurante Montalccino\n📍 R. João Pessoa, 477 - Centro, Criciúma - SC, 88801-505, Brasil\n📞 (48) 3437-0599 · ⭐ 4.5\n\nCom 4.5 estrelas e 1.6 mil avaliações, o desafio é manter a qualidade e expandir a base de clientes.\n\nAbordo esse ou você mesmo fala com ele?",
+          "time": "2026-06-24T02:08:37.370Z"
+        },
+        {
+          "role": "user",
+          "content": "Outro",
+          "time": "2026-06-24T02:08:50.178Z"
+        },
+        {
+          "role": "model",
+          "content": "Aqui está mais um:\n\n🍽️ Restaurante Tempero Brasileiro\n📍 R. Pedro Beneton, 260 - Centro, Criciúma - SC, 88801-640, Brasil\n📞 (48) 3433-8761 · ⭐ 4.5\n\nCom 4.5 estrelas e 2.5 mil avaliações, o desafio é manter a qualidade e expandir a base de clientes.\n\nAbordo esse ou você mesmo fala com ele?",
+          "time": "2026-06-24T02:08:50.181Z"
+        }
+      ],
+      "created_at": "2026-06-24T02:08:26.821Z",
+      "updated_at": "2026-06-24T02:08:50.181Z"
+    },
     {
       "id": "0c291a4f2abd8f2d",
       "title": "Preciso de leads",

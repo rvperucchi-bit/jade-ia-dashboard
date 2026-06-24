@@ -7,6 +7,7 @@ import { BRAZIL_STATES } from "@/constants/brazil-locations";
 import {
   ActivityIndicator,
   Alert,
+  Modal,
   Platform,
   ScrollView,
   StyleSheet,
@@ -312,36 +313,52 @@ export default function EmpresaScreen() {
         <View style={S.fieldGroup}>
           <Text style={S.label}>Segmento</Text>
           <TouchableOpacity
-            style={[S.inputWrap, { borderColor: C.border }]}
-            onPress={() => setShowSegPicker((v) => !v)}
+            style={[S.inputWrap, { borderColor: config.segmento ? C.primary + "60" : C.border }]}
+            onPress={() => setShowSegPicker(true)}
             activeOpacity={0.8}
           >
             <Feather name="tag" size={16} color={C.muted} style={S.inputIcon} />
             <Text style={[S.input, { color: C.text }]}>
-              {JADE_SEGMENTS.find((s) => s.label === config.segmento)?.emoji
-                ? `${JADE_SEGMENTS.find((s) => s.label === config.segmento)!.emoji} ${config.segmento}`
-                : config.segmento}
+              {(() => {
+                const seg = JADE_SEGMENTS.find((s) => s.label === config.segmento);
+                return seg ? `${seg.emoji}  ${seg.label}` : config.segmento || "Selecione o segmento";
+              })()}
             </Text>
-            <Feather name={showSegPicker ? "chevron-up" : "chevron-down"} size={16} color={C.muted} />
+            <Feather name="chevron-down" size={16} color={C.muted} />
           </TouchableOpacity>
-          {showSegPicker && (
-            <View style={S.picker}>
-              {JADE_SEGMENTS.map((seg) => (
-                <TouchableOpacity
-                  key={seg.id}
-                  style={[S.pickerItem, seg.label === config.segmento && S.pickerItemActive]}
-                  onPress={() => { updateField("segmento")(seg.label); setShowSegPicker(false); }}
-                  activeOpacity={0.8}
-                >
-                  <Text style={[S.pickerText, { color: seg.label === config.segmento ? C.primary : C.text }]}>
-                    {seg.emoji}  {seg.label}
-                  </Text>
-                  {seg.label === config.segmento && <Feather name="check" size={14} color={C.primary} />}
-                </TouchableOpacity>
-              ))}
-            </View>
-          )}
         </View>
+
+        {/* ── Segment Modal ── */}
+        <Modal visible={showSegPicker} transparent animationType="slide" onRequestClose={() => setShowSegPicker(false)}>
+          <View style={{ flex: 1, justifyContent: "flex-end", backgroundColor: "rgba(0,0,0,0.72)" }}>
+            <TouchableOpacity style={StyleSheet.absoluteFill} onPress={() => setShowSegPicker(false)} activeOpacity={1} />
+            <View style={{ backgroundColor: "#111118", borderTopLeftRadius: 22, borderTopRightRadius: 22, maxHeight: "78%", overflow: "hidden" }}>
+              <View style={{ flexDirection: "row", alignItems: "center", paddingHorizontal: 20, paddingVertical: 16, borderBottomWidth: 1, borderBottomColor: "rgba(255,255,255,0.06)" }}>
+                <Text style={{ color: "#fff", fontSize: 15, fontFamily: "SpaceGrotesk_700Bold", flex: 1 }}>Selecionar Segmento</Text>
+                <TouchableOpacity onPress={() => setShowSegPicker(false)} style={{ padding: 6 }}>
+                  <Feather name="x" size={18} color="rgba(255,255,255,0.45)" />
+                </TouchableOpacity>
+              </View>
+              <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingVertical: 8, paddingBottom: 32 }}>
+                {JADE_SEGMENTS.map((seg) => {
+                  const isSelected = seg.label === config.segmento;
+                  return (
+                    <TouchableOpacity
+                      key={seg.id}
+                      style={{ flexDirection: "row", alignItems: "center", paddingHorizontal: 20, paddingVertical: 15, borderBottomWidth: 1, borderBottomColor: "rgba(255,255,255,0.04)", backgroundColor: isSelected ? "rgba(255,0,128,0.06)" : "transparent" }}
+                      onPress={() => { updateField("segmento")(seg.label); setShowSegPicker(false); Haptics.selectionAsync(); }}
+                      activeOpacity={0.8}
+                    >
+                      <Text style={{ fontSize: 22, marginRight: 14 }}>{seg.emoji}</Text>
+                      <Text style={{ color: isSelected ? C.primary : "#fff", fontSize: 14, fontFamily: isSelected ? "SpaceGrotesk_600SemiBold" : "SpaceGrotesk_400Regular", flex: 1 }}>{seg.label}</Text>
+                      {isSelected && <Feather name="check" size={16} color={C.primary} />}
+                    </TouchableOpacity>
+                  );
+                })}
+              </ScrollView>
+            </View>
+          </View>
+        </Modal>
 
         {/* ── Seção 2: Tom da JADE ── */}
         <Text style={[S.sectionLabel, { marginTop: 8 }]}>TOM DA JADE</Text>

@@ -258,6 +258,32 @@ function AudioWave({ color }: { color: string }) {
   );
 }
 
+function WaveformBars({ active }: { active: boolean }) {
+  const anims = useRef([...Array(7)].map(() => new Animated.Value(0.3))).current;
+  useEffect(() => {
+    if (!active) { anims.forEach((a) => a.setValue(0.3)); return; }
+    const loops = anims.map((a, i) =>
+      Animated.loop(
+        Animated.sequence([
+          Animated.delay(i * 55),
+          Animated.timing(a, { toValue: 1,    duration: 220 + i * 35, useNativeDriver: true }),
+          Animated.timing(a, { toValue: 0.12, duration: 220 + i * 35, useNativeDriver: true }),
+        ])
+      )
+    );
+    loops.forEach((l) => l.start());
+    return () => { loops.forEach((l) => l.stop()); anims.forEach((a) => a.setValue(0.3)); };
+  }, [active]);
+  const HEIGHTS = [8, 14, 20, 26, 20, 14, 8];
+  return (
+    <View style={{ flexDirection: "row", alignItems: "center", gap: 3, height: 30 }}>
+      {anims.map((anim, i) => (
+        <Animated.View key={i} style={{ width: 3.5, height: HEIGHTS[i], borderRadius: 2, backgroundColor: PINK, transform: [{ scaleY: anim }] }} />
+      ))}
+    </View>
+  );
+}
+
 // ─── Message bubble ───────────────────────────────────────────────────────────
 function MessageBubble({
   msg, colors, onSendMsg, onNotify, onAddJadeMessage,
@@ -904,11 +930,14 @@ export default function JADEScreen() {
   const [recording,  setRecording]  = useState(false);
   const [recordSecs, setRecordSecs] = useState(0);
   const [cancelling, setCancelling] = useState(false);
-  const pulseAnim   = useRef(new Animated.Value(0)).current;
-  const pulseLoop   = useRef<ReturnType<typeof Animated.loop> | null>(null);
-  const recordTimer = useRef<ReturnType<typeof setInterval> | null>(null);
-  const cancelRef   = useRef(false);
-  const secsRef     = useRef(0);
+  const [voiceTranscript, setVoiceTranscript] = useState('');
+  const pulseAnim    = useRef(new Animated.Value(0)).current;
+  const pulseLoop    = useRef<ReturnType<typeof Animated.loop> | null>(null);
+  const recordTimer  = useRef<ReturnType<typeof setInterval> | null>(null);
+  const cancelRef    = useRef(false);
+  const secsRef      = useRef(0);
+  const transcriptRef = useRef('');
+  const speechRef    = useRef<any>(null);
 
   const handoffTimer    = useRef<ReturnType<typeof setTimeout> | null>(null);
   const sessionCreating = useRef(false);
@@ -1043,35 +1072,47 @@ export default function JADEScreen() {
   };
   const stopPulse = () => { pulseLoop.current?.stop(); pulseAnim.setValue(0); };
 
-  // ── Mic PanResponder ───────────────────────────────────────────────────────
-  const micPan = useRef(
-    PanResponder.create({
-      onStartShouldSetPanResponder: () => true,
-      onPanResponderGrant: () => {
-        cancelRef.current = false; secsRef.current = 0;
-        setRecording(true); setRecordSecs(0); setCancelling(false);
-        startPulse();
-        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-        recordTimer.current = setInterval(() => { secsRef.current += 1; setRecordSecs(secsRef.current); }, 1000);
-      },
-      onPanResponderMove: (_, gs) => { const c = gs.dx < -50; cancelRef.current = c; setCancelling(c); },
-      onPanResponderRelease: () => {
-        if (recordTimer.current) clearInterval(recordTimer.current);
-        stopPulse();
-        const wasCancelled = cancelRef.current;
-        const duration = secsRef.current;
-        setRecording(false); setCancelling(false); setRecordSecs(0);
-        cancelRef.current = false; secsRef.current = 0;
-        if (wasCancelled) { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium); return; }
-        if (duration >= 1) { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success); sendAudio(duration); }
-      },
-      onPanResponderTerminate: () => {
-        if (recordTimer.current) clearInterval(recordTimer.current);
-        stopPulse(); setRecording(false); setCancelling(false); setRecordSecs(0);
-        cancelRef.current = false; secsRef.current = 0;
-      },
-    })
-  ).current;
+  // ── Mic recording (tap-based) ─────────────────────────────────────────────
+  const startRecording = () => {
+    if (loading || recording) return;
+    secsRef.current = 0; transcriptRef.current = '';
+    setRecording(true); setRecordSecs(0); setVoiceTranscript('');
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    recordTimer.current = setInterval(() => { secsRef.current += 1; setRecordSecs(secsRef.current); }, 1000);
+    // Web Speech API
+    if (Platform.OS === 'web') {
+      const SR = (typeof window !== 'undefined') ? ((window as any).SpeechRecognition ?? (window as any).webkitSpeechRecognition) : null;
+      if (SR) {
+        try {
+          const recognition = new SR();
+          recognition.lang = 'pt-BR'; recognition.continuous = true; recognition.interimResults = true;
+          recognition.onresult = (e: any) => {
+            const t = Array.from(e.results as any[]).map((r: any) => r[0].transcript).join('');
+            transcriptRef.current = t; setVoiceTranscript(t);
+          };
+          recognition.start(); speechRef.current = recognition;
+        } catch {}
+      }
+    }
+  };
+
+  const stopAndSend = () => {
+    if (recordTimer.current) clearInterval(recordTimer.current);
+    if (speechRef.current) { try { speechRef.current.stop(); } catch {} speechRef.current = null; }
+    const duration = secsRef.current; const t = transcriptRef.current.trim();
+    secsRef.current = 0; transcriptRef.current = '';
+    setRecording(false); setRecordSecs(0); setVoiceTranscript('');
+    if (t) { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success); send(t); }
+    else if (duration >= 1) { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success); sendAudio(duration); }
+  };
+
+  const cancelRecording = () => {
+    if (recordTimer.current) clearInterval(recordTimer.current);
+    if (speechRef.current) { try { speechRef.current.stop(); } catch {} speechRef.current = null; }
+    secsRef.current = 0; transcriptRef.current = '';
+    setRecording(false); setRecordSecs(0); setVoiceTranscript('');
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+  };
 
   // ── Session ────────────────────────────────────────────────────────────────
   const ensureSession = async (): Promise<string | null> => {
@@ -1406,42 +1447,67 @@ export default function JADEScreen() {
           </View>
         )}
 
-        {/* ── Recording bar ── */}
-        {recording && <RecordingBar secs={recordSecs} cancelling={cancelling} pulseAnim={pulseAnim} />}
-
-        {/* ── Input bar — Claude style ── */}
+        {/* ── Input bar ── */}
         <View style={[C.inputBar, { backgroundColor: colors.background, paddingBottom: bottomPad + 10 }]}>
-          <View style={[C.inputCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-            {/* Text row */}
-            <TextInput
-              style={[C.input, { color: colors.text, fontFamily: "SpaceGrotesk_400Regular" }]}
-              placeholder="Pergunte algo…"
-              placeholderTextColor={colors.mutedForeground + "66"}
-              value={input} onChangeText={setInput}
-              multiline maxLength={500}
-              autoFocus
-              onSubmitEditing={handleSend} returnKeyType="send"
-              editable={!loading && !recording}
-            />
-            {/* Action row */}
-            <View style={C.inputActions}>
-              <TouchableOpacity onPress={pickAttachment} activeOpacity={0.6} style={C.actionBtn}>
-                <Feather name="plus" size={18} color={colors.mutedForeground} />
-              </TouchableOpacity>
-              <View style={{ flex: 1 }} />
-              <View {...micPan.panHandlers}>
-                <Animated.View style={[C.actionBtn, recording && { backgroundColor: cancelling ? "#FF0080" : PINK }]}>
-                  <Feather name="mic" size={17} color={recording ? "#fff" : colors.mutedForeground} />
-                </Animated.View>
+          <View style={[C.inputCard, { backgroundColor: colors.surface, borderColor: recording ? PINK + "55" : colors.border }]}>
+            {recording ? (
+              /* ── Waveform recording row (replaces TextInput + actions) ── */
+              <View style={{ flexDirection: "row", alignItems: "center", paddingHorizontal: 6, paddingVertical: 10, gap: 4 }}>
+                {/* Cancel */}
+                <TouchableOpacity onPress={cancelRecording} activeOpacity={0.7}
+                  style={{ width: 36, height: 36, borderRadius: 18, alignItems: "center", justifyContent: "center", backgroundColor: "rgba(255,255,255,0.06)" }}>
+                  <Feather name="x" size={18} color="rgba(255,255,255,0.5)" />
+                </TouchableOpacity>
+                {/* Waveform + timer + live transcript */}
+                <View style={{ flex: 1, flexDirection: "row", alignItems: "center", gap: 10, paddingHorizontal: 8 }}>
+                  <WaveformBars active={recording} />
+                  <Text style={{ color: PINK, fontSize: 12, fontFamily: "SpaceGrotesk_600SemiBold", minWidth: 36 }}>
+                    {String(Math.floor(recordSecs / 60)).padStart(2, "0")}:{String(recordSecs % 60).padStart(2, "0")}
+                  </Text>
+                  {voiceTranscript ? (
+                    <Text style={{ color: "rgba(255,255,255,0.45)", fontSize: 11, fontFamily: "SpaceGrotesk_400Regular", flex: 1 }} numberOfLines={2}>{voiceTranscript}</Text>
+                  ) : (
+                    <Text style={{ color: "rgba(255,255,255,0.2)", fontSize: 11, fontFamily: "SpaceGrotesk_400Regular" }}>gravando…</Text>
+                  )}
+                </View>
+                {/* Send */}
+                <TouchableOpacity onPress={stopAndSend} activeOpacity={0.7}
+                  style={{ width: 36, height: 36, borderRadius: 18, alignItems: "center", justifyContent: "center", backgroundColor: "#00C853" }}>
+                  <Feather name="check" size={18} color="#fff" />
+                </TouchableOpacity>
               </View>
-              <TouchableOpacity
-                style={[C.actionBtnSend, { backgroundColor: canSend ? PINK : "rgba(255,255,255,0.05)" }]}
-                onPress={handleSend} activeOpacity={0.8}
-                disabled={!canSend || warnLevel === "empty"}
-              >
-                <Feather name="send" size={16} color={canSend ? "#fff" : colors.mutedForeground + "40"} />
-              </TouchableOpacity>
-            </View>
+            ) : (
+              <>
+                {/* Text row */}
+                <TextInput
+                  style={[C.input, { color: colors.text, fontFamily: "SpaceGrotesk_400Regular" }]}
+                  placeholder="Pergunte algo…"
+                  placeholderTextColor={colors.mutedForeground + "66"}
+                  value={input} onChangeText={setInput}
+                  multiline maxLength={500}
+                  autoFocus
+                  onSubmitEditing={handleSend} returnKeyType="send"
+                  editable={!loading}
+                />
+                {/* Action row */}
+                <View style={C.inputActions}>
+                  <TouchableOpacity onPress={pickAttachment} activeOpacity={0.6} style={C.actionBtn}>
+                    <Feather name="plus" size={18} color={colors.mutedForeground} />
+                  </TouchableOpacity>
+                  <View style={{ flex: 1 }} />
+                  <TouchableOpacity onPress={startRecording} activeOpacity={0.7} style={C.actionBtn} disabled={loading}>
+                    <Feather name="mic" size={17} color={colors.mutedForeground} />
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={[C.actionBtnSend, { backgroundColor: canSend ? PINK : "rgba(255,255,255,0.05)" }]}
+                    onPress={handleSend} activeOpacity={0.8}
+                    disabled={!canSend || warnLevel === "empty"}
+                  >
+                    <Feather name="send" size={16} color={canSend ? "#fff" : colors.mutedForeground + "40"} />
+                  </TouchableOpacity>
+                </View>
+              </>
+            )}
           </View>
         </View>
       </KeyboardAvoidingView>
