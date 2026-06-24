@@ -20,7 +20,7 @@ import {
 } from "react-native";
 import { Feather } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { useFocusEffect, useRouter } from "expo-router";
+import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
 import * as Haptics from "expo-haptics";
 import * as ImagePicker from "expo-image-picker";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -32,6 +32,10 @@ import { useProfile } from "@/context/ProfileContext";
 import { usePlan } from "@/context/PlanContext";
 import { takePendingVoice } from "@/utils/voiceContext";
 import { stripMarkdown } from "@/utils/stripMarkdown";
+import { saveSession } from "@/utils/sessionHistory";
+import { useNotifications } from "@/context/NotificationsContext";
+import { Audio } from "expo-av";
+import * as FileSystem from "expo-file-system";
 
 const PINK      = "#FF0080";
 const BG        = "#0B0814";
@@ -480,6 +484,7 @@ function LeadCard({
   const [crmLoading,  setCrmLoading] = useState(false);
   const [actionDone,  setActionDone] = useState(msg.crmSaved ?? false);
   const ld = msg.leadData!;
+  const { scheduleNotification } = useNotifications();
 
   // Reflect external crmSaved changes (auto-save from send())
   useEffect(() => { if (msg.crmSaved && !crmDone) setCrmDone(true); }, [msg.crmSaved]);
@@ -499,6 +504,7 @@ function LeadCard({
       await saveCrmLeadToStorage(ld);
       setCrmDone(true);
       onNotify?.(`✅ ${ld.name} registrado. Status: Primeiro Contato. Pipeline: Novo.`);
+      scheduleNotification(`✅ ${ld.name} adicionado ao CRM`, "Pronto para abordagem. Acompanhe no Pipeline.", "lead").catch(() => {});
     } catch {
       onNotify?.("❌ Erro ao salvar no CRM. Tente novamente.");
     } finally {
@@ -527,6 +533,7 @@ function LeadCard({
         : `✅ Lead registrado no CRM. (Sem telefone — copie a mensagem abaixo)\n\n"${data.messageText ?? ""}"\n\nAbordo o próximo?`;
       onAddJadeMessage?.(confirmText);
       onNotify?.(`📱 Abordagem enviada para ${ld.name}`);
+      scheduleNotification(`🔥 Lead abordado — ${ld.name}`, "Aguardando resposta. Acompanhe pelo CRM.", "lead").catch(() => {});
     } catch {
       onNotify?.("❌ Erro ao gerar abordagem. Verifique a conexão.");
     } finally {
@@ -879,6 +886,7 @@ export default function JADEScreen() {
   const { remaining, warnLevel, useCredit } = useCredits();
   const { displayName, photoUri } = useProfile();
   const { canAccess } = usePlan();
+  const { scheduleNotification } = useNotifications();
 
   const topPad    = Platform.OS === "web" ? 24 : insets.top;
   const bottomPad = Platform.OS === "web" ? 20 : insets.bottom;
@@ -901,6 +909,19 @@ export default function JADEScreen() {
       if (notifTimer.current) clearTimeout(notifTimer.current);
       notifTimer.current = setTimeout(() => setNotification(null), 5500);
     });
+  }, []);
+
+  const persistSession = useCallback(async (msgs: AIMessage[], sid: string | null) => {
+    if (!sid || msgs.length < 2) return;
+    const saveable = msgs.map((m) => ({
+      id: m.id,
+      text: m.isAudio ? `[Áudio de ${m.audioDuration ?? 0}s]` : m.text,
+      sender: m.sender,
+      time: m.time,
+      isAudio: m.isAudio,
+      audioDuration: m.audioDuration,
+    }));
+    await saveSession(sid, saveable, sessionCreatedAt.current);
   }, []);
 
   // ── Modules (right drawer toggles) ───────────────────────────────────────
@@ -941,9 +962,44 @@ export default function JADEScreen() {
 
   const handoffTimer    = useRef<ReturnType<typeof setTimeout> | null>(null);
   const sessionCreating = useRef(false);
+  const avRecordingRef  = useRef<Audio.Recording | null>(null);
+  const sessionCreatedAt = useRef<Date>(new Date());
 
   // ── Initial greeting (once when displayName first loads) ──────────────────
   const greetingInjected = useRef(false);
+  const resumedSessionRef = useRef<string | null>(null);
+
+  // ── Resume session from history ────────────────────────────────────────────
+  const { resumeSession } = useLocalSearchParams<{ resumeSession?: string }>();
+  useFocusEffect(
+    useCallback(() => {
+      if (!resumeSession || resumeSession === resumedSessionRef.current) return;
+      resumedSessionRef.current = resumeSession as string;
+
+      const MSGS_KEY = `@jade_ia:session_msgs:${resumeSession}`;
+      AsyncStorage.getItem(MSGS_KEY).then((raw) => {
+        if (!raw) return;
+        try {
+          const savedMsgs = JSON.parse(raw) as Array<{
+            id: string; text: string; sender: "jade" | "user"; time: string;
+            isAudio?: boolean; audioDuration?: number;
+          }>;
+          if (savedMsgs.length === 0) return;
+          greetingInjected.current = true;
+          const restored: AIMessage[] = savedMsgs.map((m) => ({
+            id: m.id,
+            text: m.text,
+            sender: m.sender,
+            time: m.time,
+            isAudio: m.isAudio,
+            audioDuration: m.audioDuration,
+          }));
+          setMessages(restored);
+          setSessionId(resumeSession as string);
+        } catch {}
+      });
+    }, [resumeSession])
+  );
 
   // Load empresa config → sent with every chat request
   useEffect(() => {
@@ -1073,14 +1129,15 @@ export default function JADEScreen() {
   const stopPulse = () => { pulseLoop.current?.stop(); pulseAnim.setValue(0); };
 
   // ── Mic recording (tap-based) ─────────────────────────────────────────────
-  const startRecording = () => {
+  const startRecording = async () => {
     if (loading || recording) return;
     secsRef.current = 0; transcriptRef.current = '';
     setRecording(true); setRecordSecs(0); setVoiceTranscript('');
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     recordTimer.current = setInterval(() => { secsRef.current += 1; setRecordSecs(secsRef.current); }, 1000);
-    // Web Speech API
+
     if (Platform.OS === 'web') {
+      // Web: use Web Speech API for live transcription
       const SR = (typeof window !== 'undefined') ? ((window as any).SpeechRecognition ?? (window as any).webkitSpeechRecognition) : null;
       if (SR) {
         try {
@@ -1093,22 +1150,94 @@ export default function JADEScreen() {
           recognition.start(); speechRef.current = recognition;
         } catch {}
       }
+    } else {
+      // Native: record with expo-av; transcription happens on stop
+      try {
+        const { status } = await Audio.requestPermissionsAsync();
+        if (status !== 'granted') {
+          if (recordTimer.current) clearInterval(recordTimer.current);
+          setRecording(false); setRecordSecs(0);
+          return;
+        }
+        await Audio.setAudioModeAsync({ allowsRecordingIOS: true, playsInSilentModeIOS: true });
+        const { recording: rec } = await Audio.Recording.createAsync(
+          Audio.RecordingOptionsPresets.HIGH_QUALITY
+        );
+        avRecordingRef.current = rec;
+        setVoiceTranscript('gravando…');
+      } catch {
+        // Fallback to timer-only if recording fails
+      }
     }
   };
 
-  const stopAndSend = () => {
+  const stopAndSend = async () => {
     if (recordTimer.current) clearInterval(recordTimer.current);
     if (speechRef.current) { try { speechRef.current.stop(); } catch {} speechRef.current = null; }
     const duration = secsRef.current; const t = transcriptRef.current.trim();
     secsRef.current = 0; transcriptRef.current = '';
     setRecording(false); setRecordSecs(0); setVoiceTranscript('');
+
+    // Native: stop expo-av recording and transcribe
+    if (Platform.OS !== 'web' && avRecordingRef.current) {
+      const rec = avRecordingRef.current;
+      avRecordingRef.current = null;
+      try {
+        await rec.stopAndUnloadAsync();
+        await Audio.setAudioModeAsync({ allowsRecordingIOS: false });
+        const uri = rec.getURI();
+        if (uri && duration >= 1) {
+          setLoading(true);
+          setVoiceTranscript('transcrevendo…');
+          try {
+            const base64 = await FileSystem.readAsStringAsync(uri, {
+              encoding: FileSystem.EncodingType.Base64,
+            });
+            const resp = await fetch(`${API_BASE}/api/jade/transcribe`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ audioBase64: base64, mimeType: 'audio/m4a' }),
+            });
+            if (resp.ok) {
+              const { text: transcribed } = (await resp.json()) as { text: string };
+              if (transcribed && transcribed.trim().length > 0) {
+                setLoading(false);
+                setVoiceTranscript('');
+                Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+                send(transcribed.trim());
+                return;
+              }
+            }
+          } catch {}
+          setLoading(false);
+          setVoiceTranscript('');
+          // Fallback: send as audio placeholder
+          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+          sendAudio(duration);
+          return;
+        }
+      } catch {
+        avRecordingRef.current = null;
+      }
+    }
+
     if (t) { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success); send(t); }
     else if (duration >= 1) { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success); sendAudio(duration); }
   };
 
-  const cancelRecording = () => {
+  const cancelRecording = async () => {
     if (recordTimer.current) clearInterval(recordTimer.current);
     if (speechRef.current) { try { speechRef.current.stop(); } catch {} speechRef.current = null; }
+
+    if (Platform.OS !== 'web' && avRecordingRef.current) {
+      const rec = avRecordingRef.current;
+      avRecordingRef.current = null;
+      try {
+        await rec.stopAndUnloadAsync();
+        await Audio.setAudioModeAsync({ allowsRecordingIOS: false });
+      } catch {}
+    }
+
     secsRef.current = 0; transcriptRef.current = '';
     setRecording(false); setRecordSecs(0); setVoiceTranscript('');
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
@@ -1178,15 +1307,19 @@ export default function JADEScreen() {
       const raw = data.message?.trim() || data.response?.trim() || "Desculpe, não consegui processar. Tente novamente.";
       useCredit();
       const jadeId = (Date.now() + 1).toString();
-      setMessages((prev) => [{
+      const jadeMsg = {
         id: jadeId,
         text: stripMarkdown(raw),
-        sender: "jade",
+        sender: "jade" as const,
         time: nowTime(),
         leadData: data.leadData,
         leadsList: data.leadsList,
         crmSaved: false,
-      }, ...prev]);
+      };
+      setMessages((prev) => [jadeMsg, ...prev]);
+
+      // Persist session to history (best-effort)
+      persistSession([jadeMsg, ...updatedMsgs], sid).catch(() => {});
 
       // Open bottom sheet for lead list
       if (data.leadsList && data.leadsList.length > 0) {
@@ -1211,6 +1344,7 @@ export default function JADEScreen() {
           .then(() => {
             setMessages((prev) => prev.map((m) => m.id === jadeId ? { ...m, crmSaved: true } : m));
             showNotification(`✅ ${autoLead.name} registrado. Status: Primeiro Contato. Pipeline: Novo.`);
+            scheduleNotification(`✅ ${autoLead.name} adicionado ao CRM`, "Pronto para abordagem. Acompanhe no Pipeline.", "lead").catch(() => {});
           })
           .catch(() => {/* best-effort */});
       }
@@ -1308,6 +1442,7 @@ export default function JADEScreen() {
     setMessages([{ id: `greeting-${Date.now()}`, text: welcomeText, sender: "jade", time: nowTime() }]);
     setSessionId(null); setAttachments([]);
     sessionCreating.current = false;
+    sessionCreatedAt.current = new Date();
   };
 
   const handleSend = () => send(input, attachments.length > 0 ? attachments : undefined);

@@ -23,6 +23,7 @@ import { CreditsProvider } from "@/context/CreditsContext";
 import { OnboardingProvider } from "@/context/OnboardingContext";
 import { ProfileProvider } from "@/context/ProfileContext";
 import { LocationProvider } from "@/context/LocationContext";
+import { NotificationsProvider } from "@/context/NotificationsContext";
 import { initializeDatabase } from "@/db/init";
 
 SplashScreen.preventAutoHideAsync();
@@ -217,9 +218,11 @@ export default function RootLayout() {
                   <CreditsProvider>
                     <ProfileProvider>
                       <LocationProvider>
-                        <GestureHandlerRootView style={{ flex: 1 }}>
-                          <RootLayoutNav />
-                        </GestureHandlerRootView>
+                        <NotificationsProvider>
+                          <GestureHandlerRootView style={{ flex: 1 }}>
+                            <RootLayoutNav />
+                          </GestureHandlerRootView>
+                        </NotificationsProvider>
                       </LocationProvider>
                     </ProfileProvider>
                   </CreditsProvider>

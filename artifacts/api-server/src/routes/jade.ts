@@ -1002,4 +1002,36 @@ Responda APENAS com o texto da mensagem, sem aspas, sem markdown, sem emojis no 
   }
 });
 
+// ── POST /api/jade/transcribe ─────────────────────────────────────────────────
+// Transcribes a base64-encoded audio clip using Gemini multimodal
+router.post('/transcribe', async (req: Request, res: Response) => {
+  const { audioBase64, mimeType } = req.body as { audioBase64?: string; mimeType?: string };
+  if (!audioBase64) return res.status(400).json({ error: 'audioBase64 required' });
+
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (!apiKey) return res.status(500).json({ error: 'Gemini API key not configured' });
+
+  try {
+    const genAI = new GoogleGenerativeAI(apiKey);
+    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+
+    const result = await model.generateContent([
+      {
+        inlineData: {
+          data: audioBase64,
+          mimeType: (mimeType as string) || 'audio/m4a',
+        },
+      },
+      'Transcreva este áudio em português brasileiro. Retorne apenas o texto transcrito, sem introdução, sem formatação, sem aspas.',
+    ]);
+
+    const text = result.response.text().trim();
+    req.log.info({ chars: text.length }, 'audio transcribed');
+    return res.json({ text });
+  } catch (err) {
+    req.log.error(err, 'transcribe failed');
+    return res.status(500).json({ error: 'Transcription failed' });
+  }
+});
+
 export default router;
