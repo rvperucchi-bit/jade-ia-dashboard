@@ -3,6 +3,8 @@ import { Feather } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
+  Alert,
+  Modal,
   Platform,
   ScrollView,
   StyleSheet,
@@ -85,12 +87,89 @@ function formatValue(v: number) {
   return v > 0 ? `R$ ${v.toLocaleString("pt-BR")}` : "—";
 }
 
-function DealCard({ deal }: { deal: Deal }) {
+function DealDetailModal({ deal, visible, onClose }: { deal: Deal | null; visible: boolean; onClose: () => void }) {
+  const colors = useColors();
+  if (!deal) return null;
+  const cfg = STAGE_CONFIG[deal.stage];
+  const urgent = deal.daysInStage >= 7 && deal.stage !== "fechado";
+  const nextActions: Record<Stage, string[]> = {
+    prospeccao:  ["Fazer primeiro contato via WhatsApp", "Qualificar necessidade e budget", "Agendar apresentação"],
+    contato:     ["Enviar material de apoio", "Confirmar interesse e urgência", "Marcar próxima conversa"],
+    qualificacao:["Identificar decisor final", "Entender objeções principais", "Preparar proposta personalizada"],
+    proposta:    ["Confirmar recebimento da proposta", "Negociar condições se necessário", "Definir prazo para decisão"],
+    negociacao:  ["Fechar condições finais", "Solicitar aprovação formal", "Preparar contrato"],
+    fechado:     ["Solicitar indicações", "Iniciar onboarding", "Coletar feedback pós-venda"],
+  };
+  return (
+    <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
+      <TouchableOpacity style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.65)", justifyContent: "flex-end" }} activeOpacity={1} onPress={onClose}>
+        <TouchableOpacity activeOpacity={1} style={{ backgroundColor: colors.background, borderTopLeftRadius: 24, borderTopRightRadius: 24, paddingTop: 12 }}>
+          <View style={{ width: 40, height: 4, borderRadius: 2, backgroundColor: colors.border, alignSelf: "center", marginBottom: 20 }} />
+          <ScrollView showsVerticalScrollIndicator={false} bounces={false}>
+            <View style={{ flexDirection: "row", alignItems: "flex-start", gap: 12, paddingHorizontal: 20, marginBottom: 16 }}>
+              <View style={{ width: 44, height: 44, borderRadius: 12, backgroundColor: cfg.color + "22", alignItems: "center", justifyContent: "center" }}>
+                <Feather name={cfg.icon as any} size={20} color={cfg.color} />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={{ fontSize: 17, fontFamily: "SpaceGrotesk_700Bold", color: colors.text }}>{deal.name}</Text>
+                {deal.company !== deal.name && (
+                  <Text style={{ fontSize: 13, fontFamily: "SpaceGrotesk_400Regular", color: colors.mutedForeground }}>{deal.company}</Text>
+                )}
+              </View>
+              <TouchableOpacity onPress={onClose}>
+                <Feather name="x" size={22} color={colors.mutedForeground} />
+              </TouchableOpacity>
+            </View>
+            <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8, paddingHorizontal: 20, marginBottom: 16 }}>
+              <View style={{ paddingHorizontal: 12, paddingVertical: 5, borderRadius: 20, backgroundColor: cfg.color + "22" }}>
+                <Text style={{ color: cfg.color, fontSize: 12, fontFamily: "SpaceGrotesk_600SemiBold" }}>{cfg.label}</Text>
+              </View>
+              <View style={{ paddingHorizontal: 12, paddingVertical: 5, borderRadius: 20, backgroundColor: "rgba(255,255,255,0.06)" }}>
+                <Text style={{ color: colors.mutedForeground, fontSize: 12, fontFamily: "SpaceGrotesk_500Medium" }}>{deal.probability}% probabilidade</Text>
+              </View>
+              {urgent && (
+                <View style={{ paddingHorizontal: 12, paddingVertical: 5, borderRadius: 20, backgroundColor: "#FF880018" }}>
+                  <Text style={{ color: "#FF8800", fontSize: 12, fontFamily: "SpaceGrotesk_600SemiBold" }}>⚠ {deal.daysInStage}d parado</Text>
+                </View>
+              )}
+            </View>
+            <View style={{ flexDirection: "row", gap: 10, paddingHorizontal: 16, marginBottom: 20 }}>
+              {[
+                { label: "Valor",          value: formatValue(deal.value) },
+                { label: "Dias nessa etapa", value: String(deal.daysInStage) },
+                { label: "Probabilidade",  value: `${deal.probability}%` },
+              ].map((s, i) => (
+                <View key={i} style={{ flex: 1, backgroundColor: colors.surface, borderRadius: 12, borderWidth: 1, borderColor: colors.border, padding: 10, alignItems: "center" }}>
+                  <Text style={{ fontSize: 15, fontFamily: "SpaceGrotesk_700Bold", color: colors.text }}>{s.value}</Text>
+                  <Text style={{ fontSize: 10, fontFamily: "SpaceGrotesk_400Regular", color: colors.mutedForeground, marginTop: 2, textAlign: "center" }}>{s.label}</Text>
+                </View>
+              ))}
+            </View>
+            <Text style={{ fontSize: 10, fontFamily: "SpaceGrotesk_700Bold", color: colors.mutedForeground, letterSpacing: 0.8, marginBottom: 10, paddingHorizontal: 20 }}>PRÓXIMAS AÇÕES</Text>
+            <View style={{ backgroundColor: colors.surface, borderRadius: 14, borderWidth: 1, borderColor: colors.border, overflow: "hidden", marginHorizontal: 16 }}>
+              {nextActions[deal.stage].map((action, i) => (
+                <View key={i} style={{ flexDirection: "row", alignItems: "flex-start", gap: 10, padding: 12, borderTopWidth: i > 0 ? StyleSheet.hairlineWidth : 0, borderTopColor: colors.border }}>
+                  <View style={{ width: 20, height: 20, borderRadius: 10, backgroundColor: i === 0 ? PINK + "22" : "rgba(255,255,255,0.06)", alignItems: "center", justifyContent: "center", marginTop: 1 }}>
+                    <View style={{ width: 7, height: 7, borderRadius: 3.5, backgroundColor: i === 0 ? PINK : "rgba(255,255,255,0.2)" }} />
+                  </View>
+                  <Text style={{ flex: 1, fontSize: 13, fontFamily: "SpaceGrotesk_400Regular", color: i === 0 ? colors.text : colors.mutedForeground }}>{action}</Text>
+                </View>
+              ))}
+            </View>
+            <View style={{ height: 36 }} />
+          </ScrollView>
+        </TouchableOpacity>
+      </TouchableOpacity>
+    </Modal>
+  );
+}
+
+function DealCard({ deal, onPress }: { deal: Deal; onPress: () => void }) {
   const colors = useColors();
   const cfg = STAGE_CONFIG[deal.stage];
   const urgent = deal.daysInStage >= 7 && deal.stage !== "fechado";
   return (
-    <TouchableOpacity style={[DC.card, { backgroundColor: colors.surface, borderColor: urgent ? "#FF880055" : colors.border }]} activeOpacity={0.75}>
+    <TouchableOpacity style={[DC.card, { backgroundColor: colors.surface, borderColor: urgent ? "#FF880055" : colors.border }]} activeOpacity={0.75} onPress={onPress}>
       {urgent && <View style={DC.urgentBar} />}
       <Text style={[DC.name, { color: colors.text }]} numberOfLines={1}>{deal.name}</Text>
       <Text style={[DC.company, { color: colors.mutedForeground }]} numberOfLines={1}>{deal.company}</Text>
@@ -126,8 +205,10 @@ export default function PipelineScreen() {
   const colors  = useColors();
   const insets  = useSafeAreaInsets();
   const router  = useRouter();
-  const [activeStage, setActiveStage] = useState<Stage | "todos">("todos");
-  const [deals, setDeals] = useState<Deal[]>([]);
+  const [activeStage,    setActiveStage]    = useState<Stage | "todos">("todos");
+  const [deals,          setDeals]          = useState<Deal[]>([]);
+  const [selectedDeal,   setSelectedDeal]   = useState<Deal | null>(null);
+  const [dealModalVisible, setDealModalVisible] = useState(false);
 
   const topPad    = Platform.OS === "web" ? 67 : insets.top;
   const bottomPad = Platform.OS === "web" ? 84 : insets.bottom + 60;
@@ -156,7 +237,11 @@ export default function PipelineScreen() {
           <Feather name="arrow-left" size={22} color={colors.text} />
         </TouchableOpacity>
         <Text style={[S.title, { color: colors.text }]}>Pipeline</Text>
-        <TouchableOpacity style={[S.addBtn, { backgroundColor: PINK }]} activeOpacity={0.85}>
+        <TouchableOpacity
+          style={[S.addBtn, { backgroundColor: PINK }]}
+          activeOpacity={0.85}
+          onPress={() => Alert.alert("Novo Negócio", "Adicione leads via CRM para que apareçam automaticamente no Pipeline.", [{ text: "OK" }])}
+        >
           <Feather name="plus" size={18} color="#fff" />
         </TouchableOpacity>
       </View>
@@ -213,14 +298,20 @@ export default function PipelineScreen() {
                   <Text style={[S.stageHeaderLabel, { color: cfg.color }]}>{cfg.label}</Text>
                   <Text style={[S.stageHeaderCount, { color: colors.mutedForeground }]}>{sd.length}</Text>
                 </View>
-                {sd.map(d => <DealCard key={d.id} deal={d} />)}
+                {sd.map(d => <DealCard key={d.id} deal={d} onPress={() => { setSelectedDeal(d); setDealModalVisible(true); }} />)}
               </View>
             );
           })
         ) : (
-          visibleDeals.map(d => <DealCard key={d.id} deal={d} />)
+          visibleDeals.map(d => <DealCard key={d.id} deal={d} onPress={() => { setSelectedDeal(d); setDealModalVisible(true); }} />)
         )}
       </ScrollView>
+
+      <DealDetailModal
+        deal={selectedDeal}
+        visible={dealModalVisible}
+        onClose={() => setDealModalVisible(false)}
+      />
     </View>
   );
 }

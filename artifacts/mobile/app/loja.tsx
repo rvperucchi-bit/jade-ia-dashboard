@@ -22,7 +22,7 @@ import { useRadarSearches } from "@/hooks/useRadarSearches";
 
 const PINK   = "#FF0080";
 const PURPLE = "#8400FF";
-const GOLD   = "#8400FF";
+const GOLD   = "#F59E0B";
 
 const C = {
   bg:      "#0B0814",

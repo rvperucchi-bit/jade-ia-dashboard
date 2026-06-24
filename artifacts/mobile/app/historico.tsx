@@ -89,12 +89,12 @@ export default function HistoricoScreen() {
         const raw = await AsyncStorage.getItem(SESSION_HISTORY_KEY);
         if (raw) {
           const stored = JSON.parse(raw) as HistorySession[];
-          setSessions([...stored, ...MOCK_SESSIONS]);
+          setSessions(stored);
         } else {
-          setSessions(MOCK_SESSIONS);
+          setSessions([]);
         }
       } catch {
-        setSessions(MOCK_SESSIONS);
+        setSessions([]);
       }
     };
     load();

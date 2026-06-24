@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   Alert,
   Modal,
@@ -20,11 +20,12 @@ import { useAuth } from "@/context/AuthContext";
 import { usePlan, type Plan } from "@/context/PlanContext";
 import { useCredits } from "@/context/CreditsContext";
 import { useRadarSearches } from "@/hooks/useRadarSearches";
+import { useProfile } from "@/context/ProfileContext";
 
 const PURPLE = "#8400FF";
-const GOLD   = "#8400FF";
+const GOLD   = "#F59E0B";
 const PINK   = "#FF0080";
-const INDIGO = "#8400FF";
+const INDIGO = "#6366F1";
 const GRID_SIZE = 48;
 
 const DEV_PLAN_KEY = "@jade_dev_plan";
@@ -105,28 +106,36 @@ const GR = StyleSheet.create({
   label:    { fontSize: 10, fontFamily: "SpaceGrotesk_400Regular", color: "rgba(255,255,255,1)", marginTop: 6, textAlign: "center", maxWidth: 64 },
 });
 
-// ─── Category Section ─────────────────────────────────────────────────────────
+// ─── Category Section (expansível) ───────────────────────────────────────────
 function CategorySection({ label, items }: {
   label: string;
   items: { label: string; iconNode: React.ReactNode; locked: boolean; onPress: () => void; }[];
 }) {
+  const [expanded, setExpanded] = useState(true);
   return (
     <View style={CS.wrap}>
-      <View style={CS.labelRow}>
+      <TouchableOpacity
+        style={CS.labelRow}
+        onPress={() => { Haptics.selectionAsync(); setExpanded((v) => !v); }}
+        activeOpacity={0.7}
+      >
         <Text style={CS.label}>{label}</Text>
         <View style={CS.dividerLine} />
-      </View>
-      <View style={CS.grid}>
-        {items.map((item) => (
-          <GridItem
-            key={item.label}
-            label={item.label}
-            iconNode={item.iconNode}
-            locked={item.locked}
-            onPress={item.onPress}
-          />
-        ))}
-      </View>
+        <Feather name={expanded ? "chevron-up" : "chevron-down"} size={14} color="rgba(255,255,255,0.22)" />
+      </TouchableOpacity>
+      {expanded && (
+        <View style={CS.grid}>
+          {items.map((item) => (
+            <GridItem
+              key={item.label}
+              label={item.label}
+              iconNode={item.iconNode}
+              locked={item.locked}
+              onPress={item.onPress}
+            />
+          ))}
+        </View>
+      )}
     </View>
   );
 }
@@ -312,6 +321,15 @@ export default function MaisScreen() {
   const [selectedPkg,   setSelectedPkg]   = useState<100 | 500 | 2000 | null>(null);
   const credits = useCredits();
   const radar   = useRadarSearches();
+  const { displayName } = useProfile();
+  const [profData, setProfData] = useState({ cargo: "", empresa: "" });
+  useEffect(() => {
+    AsyncStorage.getItem("@jade_ia:profile").then((raw) => {
+      if (!raw) return;
+      try { const p = JSON.parse(raw); setProfData({ cargo: p.cargo || "", empresa: p.empresa || "" }); } catch {}
+    });
+  }, []);
+  const avatarInit = displayName.split(" ").slice(0, 2).map((w: string) => w[0]?.toUpperCase() ?? "").join("") || "?";
 
   const tapCount = useRef(0);
   const tapTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -393,170 +411,56 @@ export default function MaisScreen() {
     {
       label: "COMERCIAL",
       items: [
-        {
-          label: "Roteiro",
-          iconNode: <Feather name="list" size={20} color={pinkIc} />,
-          locked: false,
-          onPress: () => { tap(); router.push("/roteiro" as any); },
-        },
-        {
-          label: "Briefing",
-          iconNode: <Feather name="clipboard" size={20} color={pinkIc} />,
-          locked: false,
-          onPress: () => { tap(); router.push("/briefing" as any); },
-        },
-        {
-          label: "Objeções",
-          iconNode: <Feather name="shield" size={20} color={canAccess("pro") ? pinkIc : grayIc} />,
-          locked: !canAccess("pro"),
-          onPress: () => navPro("/objecoes", "Objeções"),
-        },
-        {
-          label: "Roleplay",
-          iconNode: <Feather name="users" size={20} color={canAccess("pro") ? pinkIc : grayIc} />,
-          locked: !canAccess("pro"),
-          onPress: () => navPro("/roleplay", "Roleplay"),
-        },
+        { label: "CRM",        iconNode: <Feather name="users"          size={20} color={pinkIc} />,                                    locked: false,                     onPress: () => { tap(); router.push("/crm" as any); } },
+        { label: "Pipeline",   iconNode: <Feather name="bar-chart-2"    size={20} color={pinkIc} />,                                    locked: false,                     onPress: () => { tap(); router.push("/pipeline" as any); } },
+        { label: "Leads",      iconNode: <Feather name="target"         size={20} color={pinkIc} />,                                    locked: false,                     onPress: () => { tap(); router.push("/(tabs)/leads" as any); } },
+        { label: "Carteira",   iconNode: <Feather name="briefcase"      size={20} color={canAccess("enterprise") ? pinkIc : grayIc} />, locked: !canAccess("enterprise"),  onPress: () => navEnterprise("/carteira",   "Carteira de Clientes") },
+        { label: "WhatsApp",   iconNode: <Feather name="message-circle" size={20} color={pinkIc} />,                                    locked: false,                     onPress: () => { tap(); router.push("/conversas" as any); } },
+        { label: "Metas",      iconNode: <Feather name="trending-up"    size={20} color={canAccess("enterprise") ? pinkIc : grayIc} />, locked: !canAccess("enterprise"),  onPress: () => navEnterprise("/metas",     "Metas Comerciais") },
       ],
     },
     {
       label: "INTELIGÊNCIA IA",
       items: [
-        {
-          label: "Marketing IA",
-          iconNode: <Feather name="radio" size={20} color={canAccess("pro") ? pinkIc : grayIc} />,
-          locked: !canAccess("pro"),
-          onPress: () => navPro("/marketing", "Marketing IA"),
-        },
-        {
-          label: "Análise IA",
-          iconNode: <Feather name="cpu" size={20} color={canAccess("pro") ? pinkIc : grayIc} />,
-          locked: !canAccess("pro"),
-          onPress: () => navPro("/analise", "Análise IA"),
-        },
-        {
-          label: "Relatórios",
-          iconNode: <Feather name="bar-chart-2" size={20} color={pinkIc} />,
-          locked: false,
-          onPress: () => { tap(); router.push("/relatorios" as any); },
-        },
+        { label: "Marketing IA", iconNode: <Feather name="radio"       size={20} color={canAccess("pro") ? pinkIc : grayIc} />, locked: !canAccess("pro"), onPress: () => navPro("/marketing", "Marketing IA") },
+        { label: "Análise IA",   iconNode: <Feather name="cpu"         size={20} color={canAccess("pro") ? pinkIc : grayIc} />, locked: !canAccess("pro"), onPress: () => navPro("/analise",   "Análise IA") },
+        { label: "Relatórios",   iconNode: <Feather name="bar-chart-2" size={20} color={pinkIc} />,                             locked: false,             onPress: () => { tap(); router.push("/relatorios" as any); } },
       ],
     },
     {
       label: "GESTÃO",
       items: [
-        {
-          label: "Central Comercial",
-          iconNode: <Feather name="grid" size={20} color={canAccess("enterprise") ? pinkIc : grayIc} />,
-          locked: !canAccess("enterprise"),
-          onPress: () => navEnterprise("/painelexecutivo", "Central Comercial"),
-        },
-        {
-          label: "Meu Time",
-          iconNode: <Feather name="user-plus" size={20} color={canAccess("enterprise") ? pinkIc : grayIc} />,
-          locked: !canAccess("enterprise"),
-          onPress: () => navEnterprise("/meutime", "Meu Time"),
-        },
-        {
-          label: "Metas & KPIs",
-          iconNode: <Feather name="target" size={20} color={canAccess("enterprise") ? pinkIc : grayIc} />,
-          locked: !canAccess("enterprise"),
-          onPress: () => navEnterprise("/metas", "Metas & KPIs"),
-        },
-        {
-          label: "Ranking",
-          iconNode: <Feather name="award" size={20} color={canAccess("enterprise") ? pinkIc : grayIc} />,
-          locked: !canAccess("enterprise"),
-          onPress: () => navEnterprise("/relatoriogestor", "Ranking de Performance"),
-        },
-        {
-          label: "Carteira",
-          iconNode: <Feather name="briefcase" size={20} color={canAccess("enterprise") ? pinkIc : grayIc} />,
-          locked: !canAccess("enterprise"),
-          onPress: () => navEnterprise("/carteira", "Carteira Geral"),
-        },
-        {
-          label: "Gest. Inteligente",
-          iconNode: <Feather name="activity" size={20} color={canAccess("enterprise") ? pinkIc : grayIc} />,
-          locked: !canAccess("enterprise"),
-          onPress: () => navEnterprise("/gestao", "Gestão Inteligente"),
-        },
-        {
-          label: "Feedback JADE",
-          iconNode: <Feather name="cpu" size={20} color={canAccess("enterprise") ? pinkIc : grayIc} />,
-          locked: !canAccess("enterprise"),
-          onPress: () => navEnterprise("/feedbackjade", "Feedback JADE"),
-        },
-        {
-          label: "Análise Estratégica",
-          iconNode: <Feather name="bar-chart-2" size={20} color={canAccess("enterprise") ? pinkIc : grayIc} />,
-          locked: !canAccess("enterprise"),
-          onPress: () => navEnterprise("/analise", "Análise Estratégica"),
-        },
-        {
-          label: "Relatório Gestor",
-          iconNode: <Feather name="file-text" size={20} color={canAccess("enterprise") ? pinkIc : grayIc} />,
-          locked: !canAccess("enterprise"),
-          onPress: () => navEnterprise("/relatoriogestor", "Relatório do Gestor"),
-        },
-        {
-          label: "Notificações",
-          iconNode: <Feather name="bell" size={20} color={pinkIc} />,
-          locked: false,
-          onPress: () => { tap(); router.push("/notificacoes" as any); },
-        },
+        { label: "Meu Time",          iconNode: <Feather name="user-plus"    size={20} color={canAccess("enterprise") ? pinkIc : grayIc} />, locked: !canAccess("enterprise"), onPress: () => navEnterprise("/meutime",         "Meu Time") },
+        { label: "Gest. Inteligente", iconNode: <Feather name="activity"     size={20} color={canAccess("enterprise") ? pinkIc : grayIc} />, locked: !canAccess("enterprise"), onPress: () => navEnterprise("/gestao",          "Gestão Inteligente") },
+        { label: "Metas & KPIs",      iconNode: <Feather name="target"       size={20} color={canAccess("enterprise") ? pinkIc : grayIc} />, locked: !canAccess("enterprise"), onPress: () => navEnterprise("/metas",           "Metas & KPIs") },
+        { label: "Pipeline Equipe",   iconNode: <Feather name="grid"         size={20} color={canAccess("enterprise") ? pinkIc : grayIc} />, locked: !canAccess("enterprise"), onPress: () => navEnterprise("/painelexecutivo", "Pipeline da Equipe") },
+        { label: "Ranking",           iconNode: <Feather name="award"        size={20} color={canAccess("enterprise") ? pinkIc : grayIc} />, locked: !canAccess("enterprise"), onPress: () => navEnterprise("/relatoriogestor", "Ranking de Performance") },
+        { label: "Carteira Geral",    iconNode: <Feather name="briefcase"    size={20} color={canAccess("enterprise") ? pinkIc : grayIc} />, locked: !canAccess("enterprise"), onPress: () => navEnterprise("/carteira",        "Carteira Geral") },
+        { label: "Feedback JADE",     iconNode: <Feather name="cpu"          size={20} color={canAccess("enterprise") ? pinkIc : grayIc} />, locked: !canAccess("enterprise"), onPress: () => navEnterprise("/feedbackjade",   "Feedback JADE") },
+        { label: "Relat. Gestor",     iconNode: <Feather name="file-text"    size={20} color={canAccess("enterprise") ? pinkIc : grayIc} />, locked: !canAccess("enterprise"), onPress: () => navEnterprise("/relatoriogestor","Relatório do Gestor") },
+        { label: "Análise Estratégica", iconNode: <Feather name="bar-chart-2" size={20} color={canAccess("pro") ? pinkIc : grayIc} />,      locked: !canAccess("pro"),        onPress: () => navPro("/analise",               "Análise Estratégica") },
+        { label: "Notificações",      iconNode: <Feather name="bell"         size={20} color={pinkIc} />,                                    locked: false,                    onPress: () => { tap(); router.push("/notificacoes" as any); } },
       ],
     },
     {
       label: "OPERAÇÃO",
       items: [
-        {
-          label: "Criar Rota",
-          iconNode: <Feather name="map-pin" size={20} color={canAccess("pro") ? pinkIc : grayIc} />,
-          locked: !canAccess("pro"),
-          onPress: () => navPro("/criarrota", "Criar Rota"),
-        },
-        {
-          label: "Planejamento",
-          iconNode: <Feather name="calendar" size={20} color={canAccess("pro") ? pinkIc : grayIc} />,
-          locked: !canAccess("pro"),
-          onPress: () => navPro("/planejamento", "Planejamento"),
-        },
-        {
-          label: "Laudo",
-          iconNode: <Feather name="award" size={20} color={pinkIc} />,
-          locked: false,
-          onPress: () => { tap(); router.push("/laudo" as any); },
-        },
-        {
-          label: "Radar",
-          iconNode: <Feather name="radio" size={20} color={pinkIc} />,
-          locked: false,
-          onPress: () => { tap(); router.push("/scanner" as any); },
-        },
+        { label: "Roteiro",      iconNode: <Feather name="list"      size={20} color={pinkIc} />,                                    locked: false,             onPress: () => { tap(); router.push("/roteiro" as any); } },
+        { label: "Briefing",     iconNode: <Feather name="clipboard" size={20} color={pinkIc} />,                                    locked: false,             onPress: () => { tap(); router.push("/briefing" as any); } },
+        { label: "Objeções",     iconNode: <Feather name="shield"    size={20} color={canAccess("pro") ? pinkIc : grayIc} />,        locked: !canAccess("pro"), onPress: () => navPro("/objecoes",    "Objeções") },
+        { label: "Roleplay",     iconNode: <Feather name="users"     size={20} color={canAccess("pro") ? pinkIc : grayIc} />,        locked: !canAccess("pro"), onPress: () => navPro("/roleplay",    "Roleplay") },
+        { label: "Criar Rota",   iconNode: <Feather name="map-pin"   size={20} color={canAccess("pro") ? pinkIc : grayIc} />,        locked: !canAccess("pro"), onPress: () => navPro("/criarrota",   "Criar Rota") },
+        { label: "Planejamento", iconNode: <Feather name="calendar"  size={20} color={canAccess("pro") ? pinkIc : grayIc} />,        locked: !canAccess("pro"), onPress: () => navPro("/planejamento","Planejamento") },
+        { label: "Laudo",        iconNode: <Feather name="award"     size={20} color={pinkIc} />,                                    locked: false,             onPress: () => { tap(); router.push("/laudo" as any); } },
+        { label: "Radar",        iconNode: <Feather name="radio"     size={20} color={pinkIc} />,                                    locked: false,             onPress: () => { tap(); router.push("/scanner" as any); } },
       ],
     },
     {
       label: "SISTEMA",
       items: [
-        {
-          label: "Treinamento",
-          iconNode: <Feather name="zap" size={20} color={pinkIc} />,
-          locked: false,
-          onPress: () => { tap(); router.push("/treinamento" as any); },
-        },
-        {
-          label: "Biblioteca",
-          iconNode: <Feather name="book-open" size={20} color={pinkIc} />,
-          locked: false,
-          onPress: () => { tap(); router.push("/biblioteca" as any); },
-        },
-        {
-          label: "Loja JADE",
-          iconNode: <Feather name="shopping-cart" size={20} color={pinkIc} />,
-          locked: false,
-          onPress: () => { tap(); router.push("/loja" as any); },
-        },
+        { label: "Treinamento", iconNode: <Feather name="zap"           size={20} color={pinkIc} />, locked: false, onPress: () => { tap(); router.push("/treinamento" as any); } },
+        { label: "Biblioteca",  iconNode: <Feather name="book-open"     size={20} color={pinkIc} />, locked: false, onPress: () => { tap(); router.push("/biblioteca" as any); } },
+        { label: "Loja JADE",   iconNode: <Feather name="shopping-cart" size={20} color={pinkIc} />, locked: false, onPress: () => { tap(); router.push("/loja" as any); } },
       ],
     },
   ];
@@ -598,11 +502,13 @@ export default function MaisScreen() {
             {/* ── Linha 1: Avatar + Nome + Gerenciar ── */}
             <View style={PC.topRow}>
               <View style={[PC.avatar, { backgroundColor: planColor }]}>
-                <Text style={PC.avatarLetter}>R</Text>
+                <Text style={PC.avatarLetter}>{avatarInit}</Text>
               </View>
               <View style={{ flex: 1, gap: 2 }}>
-                <Text style={PC.name}>Rodrigo</Text>
-                <Text style={[PC.role, { color: colors.mutedForeground }]}>Fundador · JÁ Delivery</Text>
+                <Text style={PC.name}>{displayName || "Usuário"}</Text>
+                <Text style={[PC.role, { color: colors.mutedForeground }]}>
+                  {[profData.cargo, profData.empresa].filter(Boolean).join(" · ") || "Configure seu perfil"}
+                </Text>
                 <View style={[PC.planBadge, { backgroundColor: planColor + "22" }]}>
                   <Text style={{ fontSize: 9, color: planColor, marginRight: 2 }}>✦</Text>
                   <Text style={[PC.planBadgeText, { color: planColor }]}>Plano {planLabel}</Text>

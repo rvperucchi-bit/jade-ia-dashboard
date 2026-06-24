@@ -130,10 +130,6 @@ export default function AnaliseScreen() {
         </TouchableOpacity>
         <View style={{ flex: 1 }}>
           <Text style={[S.headerTitle, { color: colors.text }]}>Análise & KPIs</Text>
-          <Text style={[S.headerSub, { color: colors.mutedForeground }]}>Performance e gaps do pipeline</Text>
-        </View>
-        <View style={[S.enterpriseBadge, { backgroundColor: "#8400FF20", borderColor: "#8400FF44" }]}>
-          <Text style={S.enterpriseBadgeText}>ENTERPRISE</Text>
         </View>
       </View>
 

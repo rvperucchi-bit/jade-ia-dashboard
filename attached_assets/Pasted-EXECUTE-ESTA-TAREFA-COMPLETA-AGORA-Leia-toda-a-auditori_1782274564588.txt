@@ -1,0 +1,320 @@
+EXECUTE ESTA TAREFA COMPLETA AGORA.
+
+Leia toda a auditoria mais recente e corrija TODOS os problemas encontrados. Não gere novo relatório. Não faça apenas análise. Implemente as correções diretamente no código.
+
+OBJETIVO:
+Deixar a JADE pronta para uso real, eliminando bugs, telas quebradas, botões sem ação, dados falsos e problemas de UX.
+
+========================================
+FASE 1 — CORREÇÕES CRÍTICAS
+========================================
+
+Corrigir imediatamente:
+
+1. Todos os botões sem ação encontrados na auditoria:
+- CRM
+- Pipeline
+- Leads
+- WhatsApp
+- Ligar
+- Criar contato
+- Criar lead
+- Abrir negócio
+
+Todo botão visível deve executar sua função corretamente.
+
+2. Corrigir abertura de leads no CRM.
+
+Ao tocar em um lead:
+
+Abrir página completa do lead contendo:
+
+- Nome
+- Empresa
+- Segmento
+- Telefone
+- WhatsApp
+- E-mail
+- Histórico de atividades
+- Histórico da JADE
+- Conversas
+- Observações
+- Próxima ação
+- Status atual
+- Data de criação
+- Timeline de movimentações
+
+3. Corrigir Pipeline.
+
+Ao tocar em qualquer negócio:
+
+Abrir detalhes completos do negócio.
+
+4. Corrigir botão WhatsApp.
+
+Abrir conversa.
+
+5. Corrigir botão Ligar.
+
+Abrir discador.
+
+6. Corrigir cores dos planos.
+
+START
+Cor exclusiva.
+
+PRO
+Cor exclusiva.
+
+ENTERPRISE
+Cor exclusiva.
+
+Nenhum plano pode utilizar a mesma cor.
+
+========================================
+FASE 2 — PERFIL
+========================================
+
+Remover totalmente qualquer informação hardcoded.
+
+Remover:
+
+Rodrigo
+JÁ Delivery
+Fundador
+
+Carregar sempre dados reais do usuário logado.
+
+Avatar
+Nome
+Empresa
+Plano
+
+Tudo deve vir do perfil.
+
+========================================
+FASE 3 — CRM
+========================================
+
+Corrigir visual dos filtros.
+
+Atualmente existe bug de espaçamento em:
+
+- Todos
+- Novos
+- Em contato
+- Quentes
+- Fechados
+
+Corrigir alinhamento e responsividade.
+
+Também corrigir:
+
+- Nome da empresa aparecendo duplicado
+- Informações repetidas
+- Layout quebrado
+
+Substituir textos longos por:
+
+Segmento
+Cidade
+Status
+
+Exemplo:
+
+Construção Civil
+Criciúma
+Novo
+
+Não repetir o nome da empresa duas vezes.
+
+========================================
+FASE 4 — COMERCIAL
+========================================
+
+Organizar menu Comercial para:
+
+CRM
+Pipeline
+Oportunidades
+Carteira de Clientes
+WhatsApp
+Metas Comerciais
+
+Validar que TODOS os botões levam para suas respectivas páginas.
+
+Executar teste de navegação.
+
+========================================
+FASE 5 — GESTÃO
+========================================
+
+Reorganizar para:
+
+Meu Time
+Gestão Inteligente
+Metas & KPIs do Time
+Pipeline da Equipe
+Ranking de Performance
+Carteira Geral de Clientes
+Feedback da JADE
+Relatório do Gestor
+Análise Estratégica
+Notificações
+
+IMPORTANTE:
+
+Renomear:
+
+Painel Executivo
+
+para
+
+Pipeline da Equipe
+
+Motivo:
+
+A tela mostra o CRM e o Pipeline dos executivos.
+
+Ao abrir:
+
+ABA 1
+Pipeline da Equipe
+
+ABA 2
+CRM da Equipe
+
+Validar se o botão do menu realmente está levando para esta tela.
+
+========================================
+FASE 6 — ANÁLISE E KPIs
+========================================
+
+Remover completamente:
+
+- Subtítulo abaixo do título
+- Badge Enterprise no topo
+
+Esses elementos ocupam espaço e não agregam valor.
+
+Compactar a tela.
+
+Melhorias:
+
+- Reduzir altura dos cards
+- Reduzir espaçamentos excessivos
+- Mostrar mais conteúdo sem scroll
+
+Manter foco nos indicadores.
+
+========================================
+FASE 7 — ONBOARDING
+========================================
+
+Simplificar.
+
+Remover a tela exclusiva de seleção de segmento.
+
+Novo fluxo:
+
+Tela 1
+Bem-vindo
+
+Tela 2
+Dados da Empresa
+
+Campos:
+
+- Nome da empresa
+- Nome do usuário
+- Cidade (SELECT)
+- Segmento (SELECT)
+- Instagram ou Site
+
+Cidade e Segmento NÃO devem ser digitados manualmente.
+
+Devem ser seletores.
+
+Eliminar etapas desnecessárias.
+
+========================================
+FASE 8 — MENU LATERAL
+========================================
+
+Implementar sistema expansível.
+
+Ao clicar em um grupo:
+
+Expandir itens internos.
+
+Exemplo:
+
+COMERCIAL
+▼
+
+CRM
+Pipeline
+Oportunidades
+Carteira
+WhatsApp
+Metas
+
+GESTÃO
+▼
+
+Meu Time
+Metas
+Ranking
+Relatórios
+
+Isso reduz poluição visual e melhora navegação.
+
+========================================
+FASE 9 — DADOS MOCKADOS
+========================================
+
+Localizar e remover TODOS os dados fictícios encontrados na auditoria.
+
+Exemplos:
+
+Maria Gomes
+Mariana Lima
+LogiMax
+FinTec Capital
+
+E qualquer outro dado de exemplo.
+
+Substituir por:
+
+- Dados reais
+ou
+- Estado vazio elegante
+
+Jamais exibir informações fictícias ao usuário final.
+
+========================================
+FASE 10 — TESTE FINAL
+========================================
+
+Após concluir:
+
+1. Testar todas as rotas.
+2. Testar todos os botões.
+3. Testar todos os cards clicáveis.
+4. Testar CRM.
+5. Testar Pipeline.
+6. Testar Gestão.
+7. Testar WhatsApp.
+8. Testar onboarding.
+9. Testar perfil.
+
+No final entregar:
+
+- Lista das correções realizadas.
+- O que foi corrigido.
+- O que ainda depende de integração externa.
+- Confirmação de que todos os links e botões estão funcionando.
+
+NÃO gerar nova auditoria.
+
+IMPLEMENTAR AS CORREÇÕES AGORA.

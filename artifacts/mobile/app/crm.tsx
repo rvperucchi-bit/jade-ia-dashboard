@@ -3,9 +3,11 @@ import { Feather } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import React, { useEffect, useRef, useState } from "react";
 import {
+  Alert,
   Animated,
   Easing,
   FlatList,
+  Linking,
   Modal,
   Platform,
   ScrollView,
@@ -73,6 +75,10 @@ interface Contact {
   lastContact: string;
   score: number;
   phone: string;
+  cidade?: string;
+  endereco?: string;
+  notes?: string;
+  dataAbordagem?: string;
 }
 
 const STATUS_CONFIG: Record<ContactStatus, { label: string; color: string }> = {
@@ -144,6 +150,10 @@ function leadToContact(l: CrmLeadLocal): Contact {
     lastContact: formatDate(l.dataAbordagem),
     score: scoreFromStatus(l.status),
     phone: l.telefone,
+    cidade: l.cidade,
+    endereco: l.endereco,
+    notes: l.pipeline,
+    dataAbordagem: l.dataAbordagem,
   };
 }
 
@@ -181,6 +191,26 @@ function ContactDetailModal({ contact, visible, onClose }: { contact: Contact | 
   const cfg = STATUS_CONFIG[contact.status];
   const scoreColor = contact.score >= 80 ? "#22CC88" : contact.score >= 60 ? "#FF8800" : "#AA4444";
 
+  const callPhone = () => {
+    const p = contact.phone?.replace(/\D/g, "");
+    if (p) Linking.openURL("tel:" + p);
+  };
+
+  const openWhatsApp = () => {
+    const p = contact.phone?.replace(/\D/g, "");
+    if (p) Linking.openURL("https://wa.me/55" + p);
+    onClose();
+  };
+
+  const nextActions: Record<string, string[]> = {
+    novo:        ["Fazer primeiro contato via WhatsApp", "Identificar necessidade principal", "Agendar apresentação"],
+    em_contato:  ["Enviar material de apoio", "Confirmar interesse e urgência", "Registrar objeções levantadas"],
+    quente:      ["Preparar proposta personalizada", "Confirmar decisor e prazo", "Marcar reunião de fechamento"],
+    negociacao:  ["Negociar condições finais", "Solicitar aprovação formal", "Preparar contrato"],
+    fechado:     ["Solicitar indicações de clientes", "Iniciar onboarding", "Coletar feedback pós-venda"],
+    perdido:     ["Entender motivo de perda", "Registrar feedback no CRM", "Avaliar retomada em 90 dias"],
+  };
+
   return (
     <Modal visible={visible} transparent animationType="none" onRequestClose={onClose}>
       <View style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.72)", justifyContent: "flex-end" }}>
@@ -188,69 +218,124 @@ function ContactDetailModal({ contact, visible, onClose }: { contact: Contact | 
         <Animated.View style={[DM.sheet, { backgroundColor: colors.background, opacity, transform: [{ translateY: slideY }] }]}>
           <View style={[DM.handle, { backgroundColor: colors.border }]} />
 
-          {/* Header */}
-          <View style={DM.header}>
-            <View style={[DM.avatar, { backgroundColor: PINK + "22" }]}>
-              <Text style={DM.avatarText}>{contact.name[0]?.toUpperCase() ?? "?"}</Text>
-            </View>
-            <View style={{ flex: 1, gap: 3 }}>
-              <Text style={[DM.name, { color: colors.text }]}>{contact.name}</Text>
-              {contact.company !== contact.name && (
-                <Text style={[DM.company, { color: colors.mutedForeground }]}>{contact.company}</Text>
-              )}
-              <View style={{ flexDirection: "row", gap: 8, marginTop: 2 }}>
-                <View style={[DM.statusPill, { backgroundColor: cfg.color + "22" }]}>
-                  <Text style={[DM.statusText, { color: cfg.color }]}>{cfg.label}</Text>
-                </View>
-                <View style={[DM.statusPill, { backgroundColor: scoreColor + "22" }]}>
-                  <Text style={[DM.statusText, { color: scoreColor }]}>Score {contact.score}</Text>
+          <ScrollView showsVerticalScrollIndicator={false} bounces={false}>
+            {/* Header */}
+            <View style={DM.header}>
+              <View style={[DM.avatar, { backgroundColor: PINK + "22" }]}>
+                <Text style={DM.avatarText}>{contact.name[0]?.toUpperCase() ?? "?"}</Text>
+              </View>
+              <View style={{ flex: 1, gap: 3 }}>
+                <Text style={[DM.name, { color: colors.text }]}>{contact.name}</Text>
+                {contact.company !== contact.name && (
+                  <Text style={[DM.company, { color: colors.mutedForeground }]}>{contact.company}</Text>
+                )}
+                <View style={{ flexDirection: "row", gap: 8, marginTop: 2 }}>
+                  <View style={[DM.statusPill, { backgroundColor: cfg.color + "22" }]}>
+                    <Text style={[DM.statusText, { color: cfg.color }]}>{cfg.label}</Text>
+                  </View>
+                  <View style={[DM.statusPill, { backgroundColor: scoreColor + "22" }]}>
+                    <Text style={[DM.statusText, { color: scoreColor }]}>Score {contact.score}</Text>
+                  </View>
                 </View>
               </View>
+              <TouchableOpacity onPress={onClose} hitSlop={{ top: 12, right: 12, bottom: 12, left: 12 }}>
+                <Feather name="x" size={20} color={colors.mutedForeground} />
+              </TouchableOpacity>
             </View>
-            <TouchableOpacity onPress={onClose} hitSlop={{ top: 12, right: 12, bottom: 12, left: 12 }}>
-              <Feather name="x" size={20} color={colors.mutedForeground} />
-            </TouchableOpacity>
-          </View>
 
-          {/* Info pills */}
-          <View style={DM.pills}>
-            {contact.segment && contact.segment !== "—" && (
-              <View style={[DM.pill, { backgroundColor: PURPLE + "18", borderColor: PURPLE + "33" }]}>
-                <Feather name="tag" size={11} color={PURPLE} />
-                <Text style={[DM.pillText, { color: PURPLE }]}>{contact.segment}</Text>
+            {/* Info pills */}
+            <View style={DM.pills}>
+              {contact.segment && contact.segment !== "—" && (
+                <View style={[DM.pill, { backgroundColor: PURPLE + "18", borderColor: PURPLE + "33" }]}>
+                  <Feather name="tag" size={11} color={PURPLE} />
+                  <Text style={[DM.pillText, { color: PURPLE }]}>{contact.segment}</Text>
+                </View>
+              )}
+              {contact.phone ? (
+                <View style={[DM.pill, { backgroundColor: "rgba(255,255,255,0.06)", borderColor: colors.border }]}>
+                  <Feather name="phone" size={11} color={colors.mutedForeground} />
+                  <Text style={[DM.pillText, { color: colors.mutedForeground }]}>{contact.phone}</Text>
+                </View>
+              ) : null}
+              {contact.cidade ? (
+                <View style={[DM.pill, { backgroundColor: "rgba(255,255,255,0.06)", borderColor: colors.border }]}>
+                  <Feather name="map-pin" size={11} color={colors.mutedForeground} />
+                  <Text style={[DM.pillText, { color: colors.mutedForeground }]}>{contact.cidade}</Text>
+                </View>
+              ) : null}
+            </View>
+
+            {/* Stats */}
+            <View style={DM.statsRow}>
+              {[
+                { label: "Último Contato", value: contact.lastContact },
+                { label: "Score",          value: `${contact.score}` },
+                { label: "Status",         value: cfg.label },
+              ].map((s, i) => (
+                <View key={i} style={[DM.statCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+                  <Text style={[DM.statVal, { color: colors.text }]}>{s.value}</Text>
+                  <Text style={[DM.statLbl, { color: colors.mutedForeground }]}>{s.label}</Text>
+                </View>
+              ))}
+            </View>
+
+            {/* Detalhes adicionais */}
+            {(contact.endereco || contact.notes || contact.dataAbordagem) && (
+              <View style={[DM.detailsCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+                {contact.endereco ? (
+                  <View style={DM.detailRow}>
+                    <Feather name="home" size={13} color={colors.mutedForeground} />
+                    <Text style={[DM.detailText, { color: colors.mutedForeground }]}>{contact.endereco}</Text>
+                  </View>
+                ) : null}
+                {contact.notes ? (
+                  <View style={DM.detailRow}>
+                    <Feather name="file-text" size={13} color={colors.mutedForeground} />
+                    <Text style={[DM.detailText, { color: colors.mutedForeground }]}>{contact.notes}</Text>
+                  </View>
+                ) : null}
+                {contact.dataAbordagem ? (
+                  <View style={DM.detailRow}>
+                    <Feather name="calendar" size={13} color={colors.mutedForeground} />
+                    <Text style={[DM.detailText, { color: colors.mutedForeground }]}>Cadastrado {formatDate(contact.dataAbordagem)}</Text>
+                  </View>
+                ) : null}
               </View>
             )}
-            {contact.phone ? (
-              <View style={[DM.pill, { backgroundColor: "rgba(255,255,255,0.06)", borderColor: colors.border }]}>
-                <Feather name="phone" size={11} color={colors.mutedForeground} />
-                <Text style={[DM.pillText, { color: colors.mutedForeground }]}>{contact.phone}</Text>
-              </View>
-            ) : null}
-          </View>
 
-          {/* Stats */}
-          <View style={DM.statsRow}>
-            {[
-              { label: "Último Contato", value: contact.lastContact },
-              { label: "Score",          value: `${contact.score}` },
-              { label: "Status",         value: cfg.label },
-            ].map((s, i) => (
-              <View key={i} style={[DM.statCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-                <Text style={[DM.statVal, { color: colors.text }]}>{s.value}</Text>
-                <Text style={[DM.statLbl, { color: colors.mutedForeground }]}>{s.label}</Text>
-              </View>
-            ))}
-          </View>
+            {/* Próximas ações */}
+            <Text style={[DM.sectionTitle, { color: colors.mutedForeground }]}>PRÓXIMAS AÇÕES</Text>
+            <View style={[DM.actionsCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+              {(nextActions[contact.status] ?? nextActions.novo).map((action, i) => (
+                <View key={i} style={[DM.actionRow, { borderTopColor: colors.border, borderTopWidth: i > 0 ? StyleSheet.hairlineWidth : 0 }]}>
+                  <View style={{ width: 20, height: 20, borderRadius: 10, backgroundColor: i === 0 ? PINK + "22" : "rgba(255,255,255,0.06)", alignItems: "center", justifyContent: "center" }}>
+                    <View style={{ width: 7, height: 7, borderRadius: 3.5, backgroundColor: i === 0 ? PINK : "rgba(255,255,255,0.2)" }} />
+                  </View>
+                  <Text style={[DM.actionRowText, { color: i === 0 ? colors.text : colors.mutedForeground }]}>{action}</Text>
+                </View>
+              ))}
+            </View>
+
+            <View style={{ height: 16 }} />
+          </ScrollView>
 
           {/* Actions */}
           <View style={[DM.actions, { borderTopColor: colors.border }]}>
             {contact.phone ? (
-              <TouchableOpacity style={[DM.actionBtn, { backgroundColor: colors.surface, borderColor: colors.border }]} activeOpacity={0.8}>
+              <TouchableOpacity
+                style={[DM.actionBtn, { backgroundColor: colors.surface, borderColor: colors.border }]}
+                activeOpacity={0.8}
+                onPress={callPhone}
+              >
                 <Feather name="phone" size={16} color={colors.text} />
                 <Text style={[DM.actionText, { color: colors.text }]}>Ligar</Text>
               </TouchableOpacity>
             ) : null}
-            <TouchableOpacity style={[DM.actionBtnPrimary, { backgroundColor: PINK }]} activeOpacity={0.85} onPress={onClose}>
+            <TouchableOpacity
+              style={[DM.actionBtnPrimary, { backgroundColor: PINK }]}
+              activeOpacity={0.85}
+              onPress={openWhatsApp}
+            >
               <Feather name="message-circle" size={16} color="#fff" />
               <Text style={DM.actionTextPrimary}>WhatsApp</Text>
             </TouchableOpacity>
@@ -262,7 +347,7 @@ function ContactDetailModal({ contact, visible, onClose }: { contact: Contact | 
 }
 
 const DM = StyleSheet.create({
-  sheet:           { borderTopLeftRadius: 26, borderTopRightRadius: 26, maxHeight: "80%", paddingTop: 12 },
+  sheet:           { borderTopLeftRadius: 26, borderTopRightRadius: 26, maxHeight: "88%", paddingTop: 12 },
   handle:          { width: 40, height: 4, borderRadius: 2, alignSelf: "center", marginBottom: 16 },
   header:          { flexDirection: "row", alignItems: "flex-start", gap: 12, paddingHorizontal: 20, paddingBottom: 16 },
   avatar:          { width: 48, height: 48, borderRadius: 24, alignItems: "center", justifyContent: "center" },
@@ -278,6 +363,13 @@ const DM = StyleSheet.create({
   statCard:        { flex: 1, borderRadius: 12, borderWidth: 1, paddingVertical: 10, alignItems: "center" },
   statVal:         { fontSize: 14, fontFamily: "SpaceGrotesk_700Bold" },
   statLbl:         { fontSize: 10, fontFamily: "SpaceGrotesk_400Regular", marginTop: 2 },
+  detailsCard:     { marginHorizontal: 20, borderRadius: 12, borderWidth: 1, padding: 12, gap: 10, marginBottom: 16 },
+  detailRow:       { flexDirection: "row", alignItems: "flex-start", gap: 8 },
+  detailText:      { flex: 1, fontSize: 13, fontFamily: "SpaceGrotesk_400Regular" },
+  sectionTitle:    { fontSize: 10, fontFamily: "SpaceGrotesk_700Bold", letterSpacing: 1.2, paddingHorizontal: 20, marginBottom: 10 },
+  actionsCard:     { marginHorizontal: 20, borderRadius: 14, borderWidth: 1, overflow: "hidden", marginBottom: 4 },
+  actionRow:       { flexDirection: "row", alignItems: "flex-start", gap: 10, padding: 12 },
+  actionRowText:   { flex: 1, fontSize: 13, fontFamily: "SpaceGrotesk_400Regular" },
   actions:         { flexDirection: "row", gap: 10, padding: 16, paddingBottom: 28, borderTopWidth: StyleSheet.hairlineWidth },
   actionBtn:       { flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 7, height: 48, borderRadius: 12, borderWidth: 1, paddingHorizontal: 20 },
   actionText:      { fontSize: 14, fontFamily: "SpaceGrotesk_600SemiBold" },
@@ -375,7 +467,11 @@ export default function CRMScreen() {
           <TouchableOpacity onPress={() => setShowSearch(!showSearch)} style={S.iconBtn} activeOpacity={0.7}>
             <Feather name="search" size={20} color={showSearch ? PINK : colors.mutedForeground} />
           </TouchableOpacity>
-          <TouchableOpacity style={[S.addBtn, { backgroundColor: PINK }]} activeOpacity={0.85}>
+          <TouchableOpacity
+            style={[S.addBtn, { backgroundColor: PINK }]}
+            activeOpacity={0.85}
+            onPress={() => Alert.alert("Adicionar Contato", "Peça à JADE para prospectar e qualificar novos leads. Eles serão adicionados automaticamente ao CRM.", [{ text: "OK" }])}
+          >
             <Feather name="plus" size={18} color="#fff" />
           </TouchableOpacity>
         </View>

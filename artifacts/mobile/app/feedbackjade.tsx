@@ -33,12 +33,7 @@ interface Vendedor {
   pipeline: string;
 }
 
-const VENDEDORES: Vendedor[] = [
-  { id: "v1", nome: "Ana Paula",    avatarColor: "#FF0080", meta: 30000, realizado: 36000, segmento: "PME",        pipeline: "8 oportunidades ativas, 3 em proposta" },
-  { id: "v2", nome: "Carlos Rocha", avatarColor: "#FF0080", meta: 60000, realizado: 34800, segmento: "Enterprise", pipeline: "5 oportunidades, travado na qualificação" },
-  { id: "v3", nome: "Mariana Lima", avatarColor: "#FF0080", meta: 25000, realizado: 21250, segmento: "Varejo",     pipeline: "12 leads novos, poucos avanços" },
-  { id: "v4", nome: "Diego Nunes",  avatarColor: "#8400FF", meta: 45000, realizado: 20250, segmento: "SaaS",       pipeline: "4 oportunidades, perda de 2 deals esta semana" },
-];
+const VENDEDORES: Vendedor[] = [];
 
 function pct(realizado: number, meta: number) { return meta ? Math.min(Math.round((realizado / meta) * 100), 999) : 0; }
 function fmt(n: number) { return "R$ " + n.toLocaleString("pt-BR"); }

@@ -21,21 +21,7 @@ const GREEN  = "#FF0080";
 
 type Period = "hoje" | "semana" | "mes";
 
-// ─── Seed data ──────────────────────────────────────────────────────────────
-const TEAM = [
-  { name: "Rodrigo (você)", vendas: 38500, meta: 51000, deals: 12 },
-  { name: "João Silva",     vendas: 24000, meta: 30000, deals: 8  },
-  { name: "Maria Gomes",    vendas: 16800, meta: 30000, deals: 5  },
-  { name: "Lucas Ramos",    vendas:  8500, meta: 30000, deals: 3  },
-];
-
-const FEED = [
-  { text: "João fechou R$ 8.500 em Pizzaria Milano",  time: "5min atrás",   icon: "briefcase", color: GREEN  },
-  { text: "Maria enviou 3 propostas hoje",             time: "28min atrás",  icon: "file-text", color: PURPLE },
-  { text: "JADE prospectou 12 leads nesta manhã",     time: "1h atrás",     icon: "zap",       color: PINK   },
-  { text: "Lucas agendou reunião com Burguer King",   time: "2h atrás",     icon: "calendar",  color: PINK   },
-  { text: "Rodrigo fechou R$ 12.000 com Sushi Zen",  time: "3h atrás",     icon: "briefcase", color: GREEN  },
-];
+// Sem dados mockados — ranking e feed virão de API real
 
 const KPI_DATA: Record<Period, {
   metaTotal: number; realizado: number; diasRestantes: number;
@@ -122,7 +108,7 @@ const K = StyleSheet.create({
 });
 
 // ─── Team Row ─────────────────────────────────────────────────────────────────
-function TeamRow({ member, rank }: { member: typeof TEAM[0]; rank: number }) {
+function TeamRow({ member, rank }: { member: { name: string; vendas: number; meta: number; deals: number }; rank: number }) {
   const colors = useColors();
   const pct    = Math.min(1, member.vendas / member.meta);
   const pctN   = Math.round(pct * 100);
@@ -172,11 +158,14 @@ const TR = StyleSheet.create({
 });
 
 // ─── Screen ───────────────────────────────────────────────────────────────────
+type ActiveTab = "pipeline" | "crm";
+
 export default function PainelExecutivoScreen() {
-  const colors  = useColors();
-  const insets  = useSafeAreaInsets();
-  const router  = useRouter();
-  const [period, setPeriod] = useState<Period>("mes");
+  const colors     = useColors();
+  const insets     = useSafeAreaInsets();
+  const router     = useRouter();
+  const [period,    setPeriod]    = useState<Period>("mes");
+  const [activeTab, setActiveTab] = useState<ActiveTab>("pipeline");
 
   const kpi      = KPI_DATA[period];
   const pct      = Math.min(1, kpi.realizado / kpi.metaTotal);
@@ -188,9 +177,6 @@ export default function PainelExecutivoScreen() {
   const bottomPad = Platform.OS === "web" ? 84 : insets.bottom + 60;
 
   const fmt  = (v: number) => v >= 1000 ? `R$${(v / 1000).toFixed(0)}k` : `R$${v}`;
-  const fmtN = (v: number, t: number) => `${v} / ${t}`;
-
-  const sortedTeam = [...TEAM].sort((a, b) => b.vendas / b.meta - a.vendas / a.meta);
 
   return (
     <ScrollView
@@ -203,125 +189,119 @@ export default function PainelExecutivoScreen() {
         <TouchableOpacity onPress={() => router.back()} style={S.backBtn} activeOpacity={0.7}>
           <Feather name="arrow-left" size={20} color={colors.text} />
         </TouchableOpacity>
-        <Text style={[S.title, { color: colors.text }]}>Central Comercial</Text>
+        <Text style={[S.title, { color: colors.text }]}>Pipeline da Equipe</Text>
         <View style={[S.goldBadge, { backgroundColor: PINK + "22" }]}>
           <Text style={[S.goldBadgeText, { color: PINK }]}>Enterprise</Text>
         </View>
       </View>
 
-      {/* Period selector */}
-      <View style={S.periodRow}>
-        {(["hoje", "semana", "mes"] as Period[]).map((p) => (
+      {/* Tab switcher */}
+      <View style={S.tabRow}>
+        {([
+          { key: "pipeline", label: "Pipeline" },
+          { key: "crm",      label: "CRM da Equipe" },
+        ] as { key: ActiveTab; label: string }[]).map((t) => (
           <TouchableOpacity
-            key={p}
-            style={[S.periodBtn, { backgroundColor: period === p ? PURPLE : colors.surface, borderColor: period === p ? PURPLE : colors.border }]}
-            onPress={() => { Haptics.selectionAsync(); setPeriod(p); }}
+            key={t.key}
+            style={[S.tabBtn, { borderBottomColor: activeTab === t.key ? PINK : "transparent" }]}
+            onPress={() => { Haptics.selectionAsync(); setActiveTab(t.key); }}
             activeOpacity={0.8}
           >
-            <Text style={[S.periodText, { color: period === p ? "#fff" : colors.mutedForeground }]}>
-              {p === "hoje" ? "Hoje" : p === "semana" ? "Semana" : "Mês"}
-            </Text>
+            <Text style={[S.tabText, { color: activeTab === t.key ? PINK : colors.mutedForeground }]}>{t.label}</Text>
           </TouchableOpacity>
         ))}
       </View>
 
-      {/* Meta principal */}
-      <View style={[S.metaCard, { backgroundColor: colors.card, borderColor: PURPLE + "40" }]}>
-        <View style={S.metaHeader}>
-          <View>
-            <Text style={[S.metaLabel, { color: colors.mutedForeground }]}>Meta {period === "hoje" ? "do Dia" : period === "semana" ? "da Semana" : "do Mês"}</Text>
-            <Text style={[S.metaVal, { color: colors.text }]}>{fmt(kpi.realizado)}</Text>
-            <Text style={[S.metaDe, { color: colors.mutedForeground }]}>de {fmt(kpi.metaTotal)}</Text>
+      {activeTab === "pipeline" ? (
+        <>
+          {/* Period selector */}
+          <View style={S.periodRow}>
+            {(["hoje", "semana", "mes"] as Period[]).map((p) => (
+              <TouchableOpacity
+                key={p}
+                style={[S.periodBtn, { backgroundColor: period === p ? PURPLE : colors.surface, borderColor: period === p ? PURPLE : colors.border }]}
+                onPress={() => { Haptics.selectionAsync(); setPeriod(p); }}
+                activeOpacity={0.8}
+              >
+                <Text style={[S.periodText, { color: period === p ? "#fff" : colors.mutedForeground }]}>
+                  {p === "hoje" ? "Hoje" : p === "semana" ? "Semana" : "Mês"}
+                </Text>
+              </TouchableOpacity>
+            ))}
           </View>
-          <View style={[S.pctCircle, { borderColor: barColor }]}>
-            <Text style={[S.pctNum, { color: barColor }]}>{pctN}%</Text>
-          </View>
-        </View>
-        <ProgressBar value={kpi.realizado} max={kpi.metaTotal} color={barColor} />
-        <View style={S.metaFooter}>
-          <Text style={[S.statusMsg, { color: colors.mutedForeground }]}>{statusMsg}</Text>
-          {period === "mes" && kpi.diasRestantes > 0 && (
-            <View style={[S.diasBadge, { backgroundColor: barColor + "22" }]}>
-              <Feather name="clock" size={11} color={barColor} />
-              <Text style={[S.diasText, { color: barColor }]}>{kpi.diasRestantes} dias restantes</Text>
-            </View>
-          )}
-        </View>
-      </View>
 
-      {/* KPI Grid */}
-      <Text style={[S.sectionCap, { color: colors.mutedForeground }]}>INDICADORES</Text>
-      <View style={S.kpiGrid}>
-        <KpiCard
-          label="Vendas"
-          value={fmt(kpi.vendasHoje)}
-          meta={`meta ${fmt(kpi.metaDiaria)}`}
-          up={kpi.vendasHoje >= kpi.metaDiaria * 0.7}
-          color={GREEN}
-        />
-        <KpiCard
-          label="Leads Prosp."
-          value={String(kpi.leadsProspectados)}
-          meta={`meta ${kpi.metaLeads}`}
-          up={kpi.leadsProspectados >= kpi.metaLeads}
-          color={PURPLE}
-        />
-        <KpiCard
-          label="Tx. Conversão"
-          value={`${kpi.taxaConversao}%`}
-          meta={`meta ${kpi.metaTaxa}%`}
-          up={kpi.taxaConversao >= kpi.metaTaxa}
-          color={PINK}
-        />
-        <KpiCard
-          label="Ticket Médio"
-          value={fmt(kpi.ticketMedio)}
-          meta={`meta ${fmt(kpi.metaTicket)}`}
-          up={kpi.ticketMedio >= kpi.metaTicket}
-          color={PINK}
-        />
-        <KpiCard
-          label="Reuniões"
-          value={String(kpi.reunioes)}
-          meta="realizadas"
-          up
-          color="#FF0080"
-        />
-        <KpiCard
-          label="Propostas"
-          value={String(kpi.propostas)}
-          meta="enviadas"
-          up
-          color="#8400FF"
-        />
-      </View>
-
-      {/* Ranking do Time */}
-      <Text style={[S.sectionCap, { color: colors.mutedForeground }]}>RANKING DO TIME</Text>
-      <View style={[S.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
-        {sortedTeam.map((m, i) => (
-          <TeamRow key={m.name} member={m} rank={i + 1} />
-        ))}
-      </View>
-
-      {/* Feed de Atividades */}
-      <Text style={[S.sectionCap, { color: colors.mutedForeground }]}>ATIVIDADE RECENTE</Text>
-      <View style={[S.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
-        {FEED.map((f, i) => (
-          <React.Fragment key={i}>
-            <View style={S.feedRow}>
-              <View style={[S.feedIcon, { backgroundColor: f.color + "22" }]}>
-                <Feather name={f.icon as any} size={14} color={f.color} />
+          {/* Meta principal */}
+          <View style={[S.metaCard, { backgroundColor: colors.card, borderColor: PURPLE + "40" }]}>
+            <View style={S.metaHeader}>
+              <View>
+                <Text style={[S.metaLabel, { color: colors.mutedForeground }]}>Meta {period === "hoje" ? "do Dia" : period === "semana" ? "da Semana" : "do Mês"}</Text>
+                <Text style={[S.metaVal, { color: colors.text }]}>{fmt(kpi.realizado)}</Text>
+                <Text style={[S.metaDe, { color: colors.mutedForeground }]}>de {fmt(kpi.metaTotal)}</Text>
               </View>
-              <View style={{ flex: 1 }}>
-                <Text style={[S.feedText, { color: colors.text }]}>{f.text}</Text>
-                <Text style={[S.feedTime, { color: colors.mutedForeground }]}>{f.time}</Text>
+              <View style={[S.pctCircle, { borderColor: barColor }]}>
+                <Text style={[S.pctNum, { color: barColor }]}>{pctN}%</Text>
               </View>
             </View>
-            {i < FEED.length - 1 && <View style={[S.div, { backgroundColor: colors.border }]} />}
-          </React.Fragment>
-        ))}
-      </View>
+            <ProgressBar value={kpi.realizado} max={kpi.metaTotal} color={barColor} />
+            <View style={S.metaFooter}>
+              <Text style={[S.statusMsg, { color: colors.mutedForeground }]}>{statusMsg}</Text>
+              {period === "mes" && kpi.diasRestantes > 0 && (
+                <View style={[S.diasBadge, { backgroundColor: barColor + "22" }]}>
+                  <Feather name="clock" size={11} color={barColor} />
+                  <Text style={[S.diasText, { color: barColor }]}>{kpi.diasRestantes} dias restantes</Text>
+                </View>
+              )}
+            </View>
+          </View>
+
+          {/* KPI Grid */}
+          <Text style={[S.sectionCap, { color: colors.mutedForeground }]}>INDICADORES</Text>
+          <View style={S.kpiGrid}>
+            <KpiCard label="Vendas"       value={fmt(kpi.vendasHoje)}          meta={`meta ${fmt(kpi.metaDiaria)}`}     up={kpi.vendasHoje >= kpi.metaDiaria * 0.7}       color={GREEN}   />
+            <KpiCard label="Leads Prosp." value={String(kpi.leadsProspectados)} meta={`meta ${kpi.metaLeads}`}           up={kpi.leadsProspectados >= kpi.metaLeads}       color={PURPLE}  />
+            <KpiCard label="Tx. Conversão"value={`${kpi.taxaConversao}%`}       meta={`meta ${kpi.metaTaxa}%`}           up={kpi.taxaConversao >= kpi.metaTaxa}            color={PINK}    />
+            <KpiCard label="Ticket Médio" value={fmt(kpi.ticketMedio)}          meta={`meta ${fmt(kpi.metaTicket)}`}     up={kpi.ticketMedio >= kpi.metaTicket}            color={PINK}    />
+            <KpiCard label="Reuniões"     value={String(kpi.reunioes)}          meta="realizadas"                        up                                                color="#FF0080" />
+            <KpiCard label="Propostas"    value={String(kpi.propostas)}         meta="enviadas"                          up                                                color="#8400FF" />
+          </View>
+
+          {/* Ranking do Time — empty state */}
+          <Text style={[S.sectionCap, { color: colors.mutedForeground }]}>RANKING DO TIME</Text>
+          <View style={[S.card, { backgroundColor: colors.card, borderColor: colors.border, alignItems: "center", padding: 32, gap: 12 }]}>
+            <Feather name="users" size={32} color={colors.mutedForeground} />
+            <Text style={{ fontSize: 14, fontFamily: "SpaceGrotesk_400Regular", color: colors.mutedForeground, textAlign: "center" }}>
+              Nenhum membro do time adicionado ainda.{"\n"}Configure sua equipe para ver o ranking.
+            </Text>
+          </View>
+
+          {/* Feed de Atividades — empty state */}
+          <Text style={[S.sectionCap, { color: colors.mutedForeground }]}>ATIVIDADE RECENTE</Text>
+          <View style={[S.card, { backgroundColor: colors.card, borderColor: colors.border, alignItems: "center", padding: 28, gap: 12 }]}>
+            <Feather name="activity" size={28} color={colors.mutedForeground} />
+            <Text style={{ fontSize: 14, fontFamily: "SpaceGrotesk_400Regular", color: colors.mutedForeground, textAlign: "center" }}>
+              Nenhuma atividade recente do time.
+            </Text>
+          </View>
+        </>
+      ) : (
+        /* CRM da Equipe — empty state */
+        <View style={{ alignItems: "center", paddingTop: 60, paddingHorizontal: 32, gap: 16 }}>
+          <View style={{ width: 64, height: 64, borderRadius: 32, backgroundColor: PINK + "18", alignItems: "center", justifyContent: "center" }}>
+            <Feather name="users" size={28} color={PINK} />
+          </View>
+          <Text style={{ fontSize: 18, fontFamily: "SpaceGrotesk_700Bold", color: colors.text, textAlign: "center" }}>CRM da Equipe</Text>
+          <Text style={{ fontSize: 14, fontFamily: "SpaceGrotesk_400Regular", color: colors.mutedForeground, textAlign: "center", lineHeight: 22 }}>
+            O CRM compartilhado da equipe ficará disponível quando os membros do time forem configurados. Use o CRM individual no menu Comercial.
+          </Text>
+          <TouchableOpacity
+            style={{ backgroundColor: PINK, borderRadius: 12, paddingHorizontal: 24, paddingVertical: 12, marginTop: 8 }}
+            onPress={() => router.push("/crm" as any)}
+            activeOpacity={0.85}
+          >
+            <Text style={{ color: "#fff", fontSize: 14, fontFamily: "SpaceGrotesk_700Bold" }}>Abrir meu CRM</Text>
+          </TouchableOpacity>
+        </View>
+      )}
     </ScrollView>
   );
 }
@@ -333,6 +313,9 @@ const S = StyleSheet.create({
   title:    { fontSize: 20, fontFamily: "SpaceGrotesk_700Bold", flex: 1 },
   goldBadge:{ paddingHorizontal: 10, paddingVertical: 4, borderRadius: 10 },
   goldBadgeText: { fontSize: 11, fontFamily: "SpaceGrotesk_700Bold" },
+  tabRow:   { flexDirection: "row", paddingHorizontal: 16, marginBottom: 16, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: "#1E1E2E" },
+  tabBtn:   { flex: 1, alignItems: "center", paddingVertical: 12, borderBottomWidth: 2 },
+  tabText:  { fontSize: 14, fontFamily: "SpaceGrotesk_600SemiBold" },
   periodRow:{ flexDirection: "row", gap: 8, paddingHorizontal: 16, marginBottom: 16 },
   periodBtn:{ flex: 1, height: 36, borderRadius: 10, borderWidth: 1, alignItems: "center", justifyContent: "center" },
   periodText: { fontSize: 15, fontFamily: "SpaceGrotesk_600SemiBold" },

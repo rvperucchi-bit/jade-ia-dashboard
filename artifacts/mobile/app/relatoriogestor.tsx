@@ -23,12 +23,7 @@ const API_BASE =
     ? ""
     : `https://${process.env.EXPO_PUBLIC_DOMAIN ?? ""}`;
 
-const VENDEDORES = [
-  { nome: "Ana Paula",    meta: 30000, realizado: 36000, leads: 38, conversao: 24, avatarColor: "#FF0080" },
-  { nome: "Carlos Rocha", meta: 60000, realizado: 34800, leads: 22, conversao: 12, avatarColor: "#FF0080" },
-  { nome: "Mariana Lima", meta: 25000, realizado: 21250, leads: 44, conversao: 18, avatarColor: "#FF0080" },
-  { nome: "Diego Nunes",  meta: 45000, realizado: 20250, leads: 28, conversao: 10, avatarColor: "#8400FF" },
-];
+const VENDEDORES: { nome: string; meta: number; realizado: number; leads: number; conversao: number; avatarColor: string }[] = [];
 
 function pct(v: number, t: number) { return t ? Math.min(Math.round((v / t) * 100), 999) : 0; }
 function fmt(n: number) { return "R$ " + n.toLocaleString("pt-BR"); }
@@ -100,7 +95,9 @@ export default function RelatorioGestorScreen() {
         body: JSON.stringify({
           messages: [{
             role: "user",
-            content: `Com base no desempenho do time este mês (${pTotal}% da meta, ${fmt(realTotal)} de ${fmt(metaTotal)}), top performer: ${topPerformer.nome} (${pct(topPerformer.realizado, topPerformer.meta)}%), precisa de atenção: ${precisaAtencao.nome} (${pct(precisaAtencao.realizado, precisaAtencao.meta)}%). Gere uma estratégia detalhada para o próximo mês: metas individuais revisadas, foco de segmento, ações de capacitação, e como usar os pontos fortes do time para superar as fraquezas.`,
+            content: sorted.length > 0
+              ? `Com base no desempenho do time este mês (${pTotal}% da meta, ${fmt(realTotal)} de ${fmt(metaTotal)}), top performer: ${topPerformer!.nome} (${pct(topPerformer!.realizado, topPerformer!.meta)}%), precisa de atenção: ${precisaAtencao!.nome} (${pct(precisaAtencao!.realizado, precisaAtencao!.meta)}%). Gere uma estratégia detalhada para o próximo mês: metas individuais revisadas, foco de segmento, ações de capacitação, e como usar os pontos fortes do time para superar as fraquezas.`
+              : `Ainda não há dados de vendedores cadastrados. Gere uma estratégia inicial para estruturar um time de vendas do zero: como definir metas, segmentar prospects, criar rotina de prospecção e acompanhamento de pipeline. Tom prático e motivador.`,
           }],
         }),
         signal: ctrl2.signal,
@@ -159,18 +156,20 @@ export default function RelatorioGestorScreen() {
           </View>
         </View>
 
-        <View style={S.spotlightRow}>
-          <View style={[S.spotCard, { backgroundColor: "rgba(255,255,255,0.06)", borderColor: "rgba(255,255,255,0.06)" }]}>
-            <Text style={[S.spotLabel, { color: "rgba(255,255,255,0.55)" }]}>🏆 Top Performer</Text>
-            <Text style={[S.spotNome, { color: colors.text }]}>{topPerformer.nome}</Text>
-            <Text style={[S.spotPct, { color: "rgba(255,255,255,0.55)" }]}>{pct(topPerformer.realizado, topPerformer.meta)}%</Text>
+        {sorted.length > 0 && (
+          <View style={S.spotlightRow}>
+            <View style={[S.spotCard, { backgroundColor: "rgba(255,255,255,0.06)", borderColor: "rgba(255,255,255,0.06)" }]}>
+              <Text style={[S.spotLabel, { color: "rgba(255,255,255,0.55)" }]}>🏆 Top Performer</Text>
+              <Text style={[S.spotNome, { color: colors.text }]}>{topPerformer!.nome}</Text>
+              <Text style={[S.spotPct, { color: "rgba(255,255,255,0.55)" }]}>{pct(topPerformer!.realizado, topPerformer!.meta)}%</Text>
+            </View>
+            <View style={[S.spotCard, { backgroundColor: "rgba(255,255,255,0.06)", borderColor: "rgba(255,255,255,0.06)" }]}>
+              <Text style={[S.spotLabel, { color: "rgba(255,255,255,0.5)" }]}>⚠️ Precisa de atenção</Text>
+              <Text style={[S.spotNome, { color: colors.text }]}>{precisaAtencao!.nome}</Text>
+              <Text style={[S.spotPct, { color: "rgba(255,255,255,0.5)" }]}>{pct(precisaAtencao!.realizado, precisaAtencao!.meta)}%</Text>
+            </View>
           </View>
-          <View style={[S.spotCard, { backgroundColor: "rgba(255,255,255,0.06)", borderColor: "rgba(255,255,255,0.06)" }]}>
-            <Text style={[S.spotLabel, { color: "rgba(255,255,255,0.5)" }]}>⚠️ Precisa de atenção</Text>
-            <Text style={[S.spotNome, { color: colors.text }]}>{precisaAtencao.nome}</Text>
-            <Text style={[S.spotPct, { color: "rgba(255,255,255,0.5)" }]}>{pct(precisaAtencao.realizado, precisaAtencao.meta)}%</Text>
-          </View>
-        </View>
+        )}
 
         <Text style={[S.sectionLabel, { color: colors.mutedForeground }]}>PERFORMANCE INDIVIDUAL</Text>
 

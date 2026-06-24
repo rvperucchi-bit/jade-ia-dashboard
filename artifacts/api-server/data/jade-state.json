@@ -1270,6 +1270,35 @@
   ],
   "activity_events": [
     {
+      "id": "b1ff8ae74d46a22c",
+      "type": "message",
+      "text": "JADE respondeu: \"Preciso de leads\"",
+      "icon": "robot",
+      "color": "#FF0080",
+      "created_at": "2026-06-24T04:25:44.941Z"
+    },
+    {
+      "id": "109f753adc5947dd",
+      "type": "lead",
+      "text": "CRM: Plennus Construção e Reformas → Primeiro Contato",
+      "icon": "user-plus",
+      "color": "#FF0080",
+      "created_at": "2026-06-24T04:25:44.712Z"
+    },
+    {
+      "id": "38ad07caf4b964b3",
+      "type": "lead",
+      "text": "JADE encontrou 10 leads reais em Criciúma",
+      "icon": "map-pin",
+      "color": "#FF0080",
+      "metadata": {
+        "cidade": "Criciúma",
+        "tipo": "construtoras empresas de construção reformas",
+        "count": 10
+      },
+      "created_at": "2026-06-24T04:25:44.582Z"
+    },
+    {
       "id": "71c850c779fac148",
       "type": "message",
       "text": "JADE respondeu: \"Já registou?\"",
@@ -3197,38 +3226,6 @@
         "session_id": "57cfb859f947280a"
       },
       "created_at": "2026-06-22T18:47:52.818Z"
-    },
-    {
-      "id": "a816fa29735c659b",
-      "type": "module",
-      "text": "CRM/Leads desativado",
-      "icon": "users",
-      "color": "#00D68F",
-      "metadata": {
-        "module": "leads",
-        "active": false
-      },
-      "created_at": "2026-06-22T17:29:51.907Z"
-    },
-    {
-      "id": "2d8159e2eb65c697",
-      "type": "module",
-      "text": "CRM/Leads ativado",
-      "icon": "users",
-      "color": "#00D68F",
-      "metadata": {
-        "module": "leads",
-        "active": true
-      },
-      "created_at": "2026-06-22T17:29:46.908Z"
-    },
-    {
-      "id": "381b92d6c3baffd1",
-      "type": "lead",
-      "text": "Novo lead adicionado: Ana Paula Costa (Doce Sonho Padaria & Confeitaria)",
-      "icon": "user-plus",
-      "color": "#6C63FF",
-      "created_at": "2026-06-21T14:10:15.275Z"
     }
   ],
   "marketing_campaigns": [
@@ -3254,6 +3251,24 @@
     }
   ],
   "jade_sessions": [
+    {
+      "id": "6241d70096fc97f8",
+      "title": "Preciso de leads",
+      "messages": [
+        {
+          "role": "user",
+          "content": "Preciso de leads",
+          "time": "2026-06-24T04:25:44.565Z"
+        },
+        {
+          "role": "model",
+          "content": "Encontrei 10 opções em Criciúma. Aqui vai o primeiro:\n\n🏗️ Plennus Construção e Reformas\n📍 R. Antônio de Bona, 159 - São Defende, Criciúma - SC, 88808-350, Brasil\n📞 (48) 99916-8122 · ⭐ 5\n\nA gestão manual e descentralizada de orçamentos e propostas pode\n\nAbordo esse ou você mesmo fala com ele?",
+          "time": "2026-06-24T04:25:44.571Z"
+        }
+      ],
+      "created_at": "2026-06-24T04:25:40.566Z",
+      "updated_at": "2026-06-24T04:25:44.571Z"
+    },
     {
       "id": "11b84ba990b3523b",
       "title": "Preciso de leads",

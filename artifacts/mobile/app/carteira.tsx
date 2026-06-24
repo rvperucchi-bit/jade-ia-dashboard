@@ -40,15 +40,7 @@ interface Cliente {
   observacao?: string;
 }
 
-const SEED: Cliente[] = [
-  { id: "c1", empresa: "TechBrasil LTDA", contato: "Carlos Mendes", responsavel: "Ana Paula", diasSemContato: 5, tipo: "farmer", status: "em_dia", ultimaInteracao: "16/06/2026" },
-  { id: "c2", empresa: "Inova Digital", contato: "Fernanda Souza", responsavel: "Carlos Rocha", diasSemContato: 18, tipo: "farmer", status: "atencao", ultimaInteracao: "02/06/2026" },
-  { id: "c3", empresa: "LogiMax", contato: "Roberto Lima", responsavel: "Mariana Lima", diasSemContato: 35, tipo: "farmer", status: "em_risco", ultimaInteracao: "16/05/2026" },
-  { id: "c4", empresa: "StartUp Hub", contato: "Juliana Ferreira", responsavel: "Diego Nunes", diasSemContato: 4, tipo: "hunter", status: "em_dia", ultimaInteracao: "17/06/2026" },
-  { id: "c5", empresa: "FinTec Capital", contato: "Pedro Rocha", responsavel: "Ana Paula", diasSemContato: 22, tipo: "hunter", status: "atencao", ultimaInteracao: "29/05/2026" },
-  { id: "c6", empresa: "Comercial Norte", contato: "Diego Alves", responsavel: "Carlos Rocha", diasSemContato: 65, tipo: "farmer", status: "inativo", ultimaInteracao: "17/04/2026" },
-  { id: "c7", empresa: "EduTech Plus", contato: "Beatriz Santos", responsavel: "Mariana Lima", diasSemContato: 42, tipo: "farmer", status: "em_risco", ultimaInteracao: "09/05/2026" },
-];
+const SEED: Cliente[] = [];
 
 const STATUS_TABS: { key: ClienteStatus; label: string; color: string }[] = [
   { key: "em_dia",   label: "Em dia",   color: "rgba(255,255,255,0.55)" },

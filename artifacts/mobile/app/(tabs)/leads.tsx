@@ -1,5 +1,6 @@
 import React, { useRef, useState } from "react";
 import {
+  Alert,
   Animated,
   Easing,
   Modal,
@@ -461,7 +462,11 @@ export default function LeadsScreen() {
             {leads.length} leads no pipeline
           </Text>
         </View>
-        <TouchableOpacity style={[L.addBtn, { backgroundColor: colors.primary }]} activeOpacity={0.8}>
+        <TouchableOpacity
+          style={[L.addBtn, { backgroundColor: colors.primary }]}
+          activeOpacity={0.8}
+          onPress={() => Alert.alert("Novo Lead", "Peça à JADE na aba principal para prospectar novos leads. Eles aparecerão automaticamente aqui.", [{ text: "OK" }])}
+        >
           <Feather name="plus" size={20} color="#fff" />
         </TouchableOpacity>
       </View>

@@ -65,12 +65,7 @@ function medalha(rank: number): string {
   return "";
 }
 
-const SEED: Vendedor[] = [
-  { id: "v1", nome: "Ana Paula",    email: "ana@empresa.com",     segmento: "PME",        metaMensal: 30000, metaLeads: 40, realizado: 36000, avatarColor: "#FF0080", ultimaAtividade: "Hoje, 14h",   status: "ativo" },
-  { id: "v2", nome: "Carlos Rocha", email: "carlos@empresa.com",  segmento: "Enterprise", metaMensal: 60000, metaLeads: 25, realizado: 34800, avatarColor: "#FF0080", ultimaAtividade: "Hoje, 10h",   status: "ativo" },
-  { id: "v3", nome: "Mariana Lima", email: "mariana@empresa.com", segmento: "Varejo",     metaMensal: 25000, metaLeads: 50, realizado: 21250, avatarColor: "#FF0080", ultimaAtividade: "Ontem, 16h",  status: "ferias" },
-  { id: "v4", nome: "Diego Nunes",  email: "diego@empresa.com",   segmento: "SaaS",       metaMensal: 45000, metaLeads: 30, realizado: 20250, avatarColor: "#8400FF", ultimaAtividade: "Ontem, 9h",   status: "ativo" },
-];
+const SEED: Vendedor[] = [];
 
 export default function MeuTimeScreen() {
   const colors = useColors();
