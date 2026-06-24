@@ -21,17 +21,32 @@ import { useColors } from "@/hooks/useColors";
 const PINK = "#FF0080";
 const PURPLE = "#8400FF";
 
-function cleanSeg(seg: string): string {
-  if (!seg || seg === "—") return seg;
-  const t = seg.trim();
-  if (t.length <= 22) return t;
-  const words = t.split(/\s+/);
-  let r = "";
-  for (const w of words) {
-    const next = r ? r + " " + w : w;
-    if (next.length <= 20) r = next; else break;
+const SEGMENT_KEYWORDS: { label: string; keys: string[] }[] = [
+  { label: "Serviços & Construção",    keys: ["constru", "reforma", "obra", "pedreiro", "engenharia", "arquitet"] },
+  { label: "Clínicas & Saúde",         keys: ["clínica", "clinica", "saúde", "saude", "médic", "medic", "dentist", "hospital", "fisio", "odonto"] },
+  { label: "Imobiliário",              keys: ["imóvel", "imovel", "imobiliar", "apartamento", "corretor", "loteamento", "incorpor"] },
+  { label: "Advocacia",                keys: ["advogad", "advocacia", "jurídic", "juridic", "escritório jurídico"] },
+  { label: "Varejo & E-commerce",      keys: ["varejo", "loja", "e-commerce", "ecommerce", "comércio", "comercio", "supermercado"] },
+  { label: "Consultoria & B2B/SaaS",   keys: ["consultor", "saas", "software", "b2b", "tecnologia", "tech", "startup"] },
+  { label: "Seguros",                  keys: ["seguro", "proteção", "protecao", "apólice", "apolice", "corretora de seguro"] },
+  { label: "Educação",                 keys: ["escola", "curso", "educação", "educacao", "faculdade", "colégio", "colegio", "ensino"] },
+  { label: "Financeiro & Crédito",     keys: ["crédito", "credito", "financeiro", "banco", "empréstimo", "emprestimo", "fintech"] },
+  { label: "Alimentação & Food Service", keys: ["restaurante", "lanchonete", "alimentação", "alimentacao", "food", "padaria", "bar ", "café", "pizzar"] },
+  { label: "Beleza",                   keys: ["salão", "salao", "beleza", "estética", "estetica", "cabeleir", "maquiagem", "spa", "barbearia"] },
+  { label: "Oficinas & Manutenção",    keys: ["oficina", "mecânica", "mecanica", "autopeça", "autopeca", "elétrica automotiva"] },
+  { label: "Marketing & Publicidade",  keys: ["marketing", "publicidade", "agência", "agencia", "propaganda", "mídia", "midia"] },
+  { label: "Moda",                     keys: ["moda", "roupa", "vestuário", "vestuario", "confecção", "confeccao", "boutique"] },
+];
+
+function resolveSegLabel(seg: string): string {
+  if (!seg || seg === "—") return "";
+  const t = seg.trim().toLowerCase();
+  for (const { label, keys } of SEGMENT_KEYWORDS) {
+    if (keys.some((k) => t.includes(k))) return label;
   }
-  return r || t.slice(0, 20);
+  // Fallback: se for curto, usa direto; senão pega primeira palavra
+  if (t.length <= 22) return seg.trim();
+  return seg.trim().split(/\s+/)[0] ?? seg.slice(0, 18);
 }
 
 export interface CrmLeadLocal {
@@ -285,9 +300,9 @@ function ContactCard({ contact, onPress }: { contact: Contact; onPress: () => vo
             <Text style={[CC.company, { color: colors.mutedForeground }]} numberOfLines={1}>{contact.company}</Text>
           )}
           <View style={CC.tagsRow}>
-            {cleanSeg(contact.segment) && cleanSeg(contact.segment) !== "—" && (
+            {resolveSegLabel(contact.segment) !== "" && (
               <View style={[CC.segTag, { backgroundColor: PURPLE + "18" }]}>
-                <Text style={[CC.segText, { color: PURPLE }]}>{cleanSeg(contact.segment)}</Text>
+                <Text style={[CC.segText, { color: PURPLE }]}>{resolveSegLabel(contact.segment)}</Text>
               </View>
             )}
             <View style={[CC.statusTag, { backgroundColor: cfg.color + "18" }]}>
