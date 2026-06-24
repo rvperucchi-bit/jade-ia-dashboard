@@ -28,7 +28,6 @@ const PINK   = "#FF0080";
 const INDIGO = "#6366F1";
 const GRID_SIZE = 48;
 
-const DEV_PLAN_KEY = "@jade_dev_plan";
 
 // ─── Plan Gate Modal ──────────────────────────────────────────────────────────
 function PlanGateModal({ visible, plan, featureName, onClose, onUpgrade }: {
@@ -347,16 +346,14 @@ export default function MaisScreen() {
     tapTimer.current = setTimeout(() => { tapCount.current = 0; }, 2500);
   };
 
-  const handleChangePlan = async (p: Plan) => {
+  const handleChangePlan = (p: Plan) => {
     setUserPlan(p);
-    try { await AsyncStorage.setItem(DEV_PLAN_KEY, p); } catch { /* ignore */ }
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
   };
 
-  const handleExitDev = async () => {
+  const handleExitDev = () => {
     setDevMode(false);
     setUserPlan(REAL_PLAN);
-    try { await AsyncStorage.removeItem(DEV_PLAN_KEY); } catch { /* ignore */ }
     setDevModal(false);
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
   };

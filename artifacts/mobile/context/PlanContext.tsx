@@ -1,25 +1,26 @@
-import React, { createContext, useContext, useEffect, useState } from "react";
+import React, { createContext, useCallback, useContext, useEffect, useState } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export type Plan = "start" | "pro" | "enterprise";
 
-const DEMO_KEY = "@jade_demo_state";
+const PLAN_KEY  = "@jade_dev_plan";
+const DEMO_KEY  = "@jade_demo_state";
 
 interface DemoState {
   used: boolean;
   feature: string | null;
-  expiry: number | null; // timestamp ms
+  expiry: number | null;
 }
 
 interface PlanContextValue {
   userPlan: Plan;
   setUserPlan: (plan: Plan) => void;
+  planLoaded: boolean;
   isDevMode: boolean;
   setDevMode: (v: boolean) => void;
   isPro: boolean;
   isEnterprise: boolean;
   canAccess: (required: "pro" | "enterprise") => boolean;
-  // Demo gratuita (Start plan)
   demo: DemoState;
   hasDemoAvailable: boolean;
   isDemoActiveFor: (feature: string) => boolean;
@@ -30,13 +31,14 @@ interface PlanContextValue {
 const defaultDemo: DemoState = { used: false, feature: null, expiry: null };
 
 const PlanContext = createContext<PlanContextValue>({
-  userPlan: "pro",
+  userPlan: "start",
   setUserPlan: () => {},
+  planLoaded: false,
   isDevMode: false,
   setDevMode: () => {},
-  isPro: true,
+  isPro: false,
   isEnterprise: false,
-  canAccess: () => true,
+  canAccess: () => false,
   demo: defaultDemo,
   hasDemoAvailable: false,
   isDemoActiveFor: () => false,
@@ -44,27 +46,41 @@ const PlanContext = createContext<PlanContextValue>({
   clearDemo: async () => {},
 });
 
-export function PlanProvider({ children }: { children: React.ReactNode }) {
-  const [userPlan, setUserPlan] = useState<Plan>("pro");
-  const [isDevMode, setDevMode] = useState(false);
-  const [demo, setDemo] = useState<DemoState>(defaultDemo);
+const VALID_PLANS: Plan[] = ["start", "pro", "enterprise"];
 
-  // Load demo state on mount
+export function PlanProvider({ children }: { children: React.ReactNode }) {
+  const [userPlan,   setUserPlanState] = useState<Plan>("start");
+  const [planLoaded, setPlanLoaded]    = useState(false);
+  const [isDevMode,  setDevMode]       = useState(false);
+  const [demo,       setDemo]          = useState<DemoState>(defaultDemo);
+
   useEffect(() => {
-    AsyncStorage.getItem(DEMO_KEY).then((raw) => {
-      if (raw) {
+    Promise.all([
+      AsyncStorage.getItem(PLAN_KEY),
+      AsyncStorage.getItem(DEMO_KEY),
+    ]).then(([planRaw, demoRaw]) => {
+      if (planRaw && VALID_PLANS.includes(planRaw as Plan)) {
+        setUserPlanState(planRaw as Plan);
+      }
+      if (demoRaw) {
         try {
-          const saved = JSON.parse(raw) as DemoState;
-          // Check if demo expired
+          const saved = JSON.parse(demoRaw) as DemoState;
           if (saved.used && saved.expiry && Date.now() > saved.expiry) {
-            setDemo(defaultDemo);
             AsyncStorage.removeItem(DEMO_KEY).catch(() => {});
           } else {
             setDemo(saved);
           }
         } catch { /* ignore */ }
       }
+      setPlanLoaded(true);
+    }).catch(() => {
+      setPlanLoaded(true);
     });
+  }, []);
+
+  const setUserPlan = useCallback((plan: Plan) => {
+    setUserPlanState(plan);
+    AsyncStorage.setItem(PLAN_KEY, plan).catch(() => {});
   }, []);
 
   const isPro        = userPlan === "pro" || userPlan === "enterprise";
@@ -76,10 +92,8 @@ export function PlanProvider({ children }: { children: React.ReactNode }) {
     return true;
   };
 
-  // Demo is available if: plan=start, not yet used
   const hasDemoAvailable = userPlan === "start" && !demo.used;
 
-  // Demo is active for a specific feature if used + not expired + same feature
   const isDemoActiveFor = (feature: string): boolean => {
     if (!demo.used || !demo.feature || !demo.expiry) return false;
     if (Date.now() > demo.expiry) return false;
@@ -87,7 +101,7 @@ export function PlanProvider({ children }: { children: React.ReactNode }) {
   };
 
   const useDemo = async (feature: string) => {
-    const expiry = Date.now() + 24 * 60 * 60 * 1000; // 24h
+    const expiry = Date.now() + 24 * 60 * 60 * 1000;
     const next: DemoState = { used: true, feature, expiry };
     setDemo(next);
     try { await AsyncStorage.setItem(DEMO_KEY, JSON.stringify(next)); } catch { /* ignore */ }
@@ -100,7 +114,9 @@ export function PlanProvider({ children }: { children: React.ReactNode }) {
 
   return (
     <PlanContext.Provider value={{
-      userPlan, setUserPlan, isDevMode, setDevMode, isPro, isEnterprise, canAccess,
+      userPlan, setUserPlan, planLoaded,
+      isDevMode, setDevMode,
+      isPro, isEnterprise, canAccess,
       demo, hasDemoAvailable, isDemoActiveFor, useDemo, clearDemo,
     }}>
       {children}
