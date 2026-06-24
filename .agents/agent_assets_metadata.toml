@@ -113,3 +113,9 @@ id = "3CXm-lyc6XXWJWnHDkg3F"
 uri = "file://exports/mapa-navegacao-apis-jade-2026-06-24.pdf"
 type = "pdf"
 title = "Mapa de Navegação & APIs (PDF)"
+
+[[outputs]]
+id = "sXQcZ6rCt2cC4-naCCF_D"
+uri = "file://exports/auditoria-ia-jade-2026-06-24.pdf"
+type = "pdf"
+title = "Auditoria de Arquitetura de IA — JADE IA"
