@@ -1,6 +1,6 @@
 import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -32,11 +32,13 @@ interface VendedorMeta {
   forecast: number;
 }
 
-const VENDEDORES: VendedorMeta[] = [
-  { id: "v1", nome: "Ana Paula",    avatarColor: "#FF0080", meta: 30000, realizado: 36000, forecast: 38000 },
+const AVATAR_COLORS = ["#6C63FF", "#FF0080", "#00D68F", "#FFB300"];
+
+const VENDEDORES_FALLBACK: VendedorMeta[] = [
+  { id: "v1", nome: "Ana Paula",    avatarColor: "#6C63FF", meta: 30000, realizado: 36000, forecast: 38000 },
   { id: "v2", nome: "Carlos Rocha", avatarColor: "#FF0080", meta: 60000, realizado: 34800, forecast: 42000 },
-  { id: "v3", nome: "Mariana Lima", avatarColor: "#FF0080", meta: 25000, realizado: 21250, forecast: 24000 },
-  { id: "v4", nome: "Diego Nunes",  avatarColor: "#8400FF", meta: 45000, realizado: 20250, forecast: 27000 },
+  { id: "v3", nome: "Mariana Lima", avatarColor: "#00D68F", meta: 25000, realizado: 21250, forecast: 24000 },
+  { id: "v4", nome: "Diego Nunes",  avatarColor: "#FFB300", meta: 45000, realizado: 20250, forecast: 27000 },
 ];
 
 type Periodo = "mes" | "anterior" | "trimestre";
@@ -55,10 +57,31 @@ export default function MetasScreen() {
   const [periodo, setPeriodo] = useState<Periodo>("mes");
   const [estrategia, setEstrategia] = useState("");
   const [loadingEst, setLoadingEst] = useState(false);
+  const [vendedores, setVendedores] = useState<VendedorMeta[]>(VENDEDORES_FALLBACK);
 
-  const metaTotal   = VENDEDORES.reduce((s, v) => s + v.meta, 0);
-  const realizadoTotal = VENDEDORES.reduce((s, v) => s + v.realizado, 0);
-  const forecastTotal  = VENDEDORES.reduce((s, v) => s + v.forecast, 0);
+  useEffect(() => {
+    fetch(`${API_BASE}/api/metas`)
+      .then((r) => r.json())
+      .then((data) => {
+        if (Array.isArray(data.metas) && data.metas.length > 0) {
+          setVendedores(
+            data.metas.map((m: any, i: number) => ({
+              id: m.vendedorId ?? String(i),
+              nome: m.nome,
+              avatarColor: AVATAR_COLORS[i % AVATAR_COLORS.length],
+              meta: m.meta,
+              realizado: m.realizado,
+              forecast: m.forecast,
+            }))
+          );
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  const metaTotal   = vendedores.reduce((s, v) => s + v.meta, 0);
+  const realizadoTotal = vendedores.reduce((s, v) => s + v.realizado, 0);
+  const forecastTotal  = vendedores.reduce((s, v) => s + v.forecast, 0);
   const pTotal = pct(realizadoTotal, metaTotal);
   const bc = barColor(pTotal);
 
@@ -72,7 +95,7 @@ export default function MetasScreen() {
     setLoadingEst(true);
     setEstrategia("");
     try {
-      const resumo = VENDEDORES.map(
+      const resumo = vendedores.map(
         (v) => `${v.nome}: ${pct(v.realizado, v.meta)}% da meta (R$${v.realizado.toLocaleString()} de R$${v.meta.toLocaleString()})`
       ).join("; ");
       const controller = new AbortController();
@@ -158,7 +181,7 @@ export default function MetasScreen() {
 
         <Text style={[S.sectionLabel, { color: colors.mutedForeground }]}>POR VENDEDOR</Text>
 
-        {[...VENDEDORES].sort((a, b) => pct(b.realizado, b.meta) - pct(a.realizado, a.meta)).map((v) => {
+        {[...vendedores].sort((a, b) => pct(b.realizado, b.meta) - pct(a.realizado, a.meta)).map((v) => {
           const p = pct(v.realizado, v.meta);
           const bc2 = barColor(p);
           const pf = pct(v.forecast, v.meta);

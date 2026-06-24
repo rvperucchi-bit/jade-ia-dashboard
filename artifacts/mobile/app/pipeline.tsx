@@ -3,12 +3,12 @@ import { Feather } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
-  Alert,
   Modal,
   Platform,
   ScrollView,
   StyleSheet,
   Text,
+  TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
@@ -209,6 +209,8 @@ export default function PipelineScreen() {
   const [deals,          setDeals]          = useState<Deal[]>([]);
   const [selectedDeal,   setSelectedDeal]   = useState<Deal | null>(null);
   const [dealModalVisible, setDealModalVisible] = useState(false);
+  const [novoOpen, setNovoOpen] = useState(false);
+  const [novoForm, setNovoForm] = useState({ nome: "", empresa: "", valor: "", stage: "prospeccao" as Stage });
 
   const topPad    = Platform.OS === "web" ? 67 : insets.top;
   const bottomPad = Platform.OS === "web" ? 84 : insets.bottom + 60;
@@ -222,6 +224,22 @@ export default function PipelineScreen() {
       } catch {}
     });
   }, []);
+
+  const salvarNovoDeal = () => {
+    if (!novoForm.nome.trim()) return;
+    const deal: Deal = {
+      id: Date.now().toString(),
+      name: novoForm.nome.trim(),
+      company: novoForm.empresa.trim() || novoForm.nome.trim(),
+      value: parseFloat(novoForm.valor.replace(/\D/g, "")) || 0,
+      stage: novoForm.stage,
+      daysInStage: 0,
+      probability: probFromStage(novoForm.stage),
+    };
+    setDeals((p) => [deal, ...p]);
+    setNovoForm({ nome: "", empresa: "", valor: "", stage: "prospeccao" });
+    setNovoOpen(false);
+  };
 
   const totalValue    = deals.filter(d => d.stage !== "fechado").reduce((s, d) => s + d.value, 0);
   const closedValue   = deals.filter(d => d.stage === "fechado").reduce((s, d) => s + d.value, 0);
@@ -240,7 +258,7 @@ export default function PipelineScreen() {
         <TouchableOpacity
           style={[S.addBtn, { backgroundColor: PINK }]}
           activeOpacity={0.85}
-          onPress={() => Alert.alert("Novo Negócio", "Adicione leads via CRM para que apareçam automaticamente no Pipeline.", [{ text: "OK" }])}
+          onPress={() => setNovoOpen(true)}
         >
           <Feather name="plus" size={18} color="#fff" />
         </TouchableOpacity>
@@ -312,6 +330,61 @@ export default function PipelineScreen() {
         visible={dealModalVisible}
         onClose={() => setDealModalVisible(false)}
       />
+
+      <Modal visible={novoOpen} transparent animationType="slide" onRequestClose={() => setNovoOpen(false)}>
+        <TouchableOpacity style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.65)", justifyContent: "flex-end" }} activeOpacity={1} onPress={() => setNovoOpen(false)}>
+          <TouchableOpacity activeOpacity={1} style={{ backgroundColor: colors.background, borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 20, gap: 14 }}>
+            <View style={{ width: 40, height: 4, borderRadius: 2, backgroundColor: colors.border, alignSelf: "center", marginBottom: 6 }} />
+            <Text style={{ fontSize: 18, fontFamily: "SpaceGrotesk_700Bold", color: colors.text }}>Novo Negócio</Text>
+            {[
+              { key: "nome",    label: "Nome *",       placeholder: "Lead ou empresa",   keyboard: "default" as const },
+              { key: "empresa", label: "Empresa",      placeholder: "Empresa Ltda",       keyboard: "default" as const },
+              { key: "valor",   label: "Valor (R$)",   placeholder: "0",                 keyboard: "numeric" as const },
+            ].map((f) => (
+              <View key={f.key} style={{ gap: 5 }}>
+                <Text style={{ fontSize: 11, fontFamily: "SpaceGrotesk_600SemiBold", color: colors.mutedForeground, letterSpacing: 0.7 }}>{f.label.toUpperCase()}</Text>
+                <View style={{ backgroundColor: colors.surface, borderRadius: 12, borderWidth: 1, borderColor: colors.border, paddingHorizontal: 14, height: 46, justifyContent: "center" }}>
+                  <TextInput
+                    style={{ fontSize: 14, fontFamily: "SpaceGrotesk_400Regular", color: colors.text }}
+                    placeholder={f.placeholder}
+                    placeholderTextColor={colors.mutedForeground}
+                    value={novoForm[f.key as keyof typeof novoForm]}
+                    onChangeText={(v) => setNovoForm((p) => ({ ...p, [f.key]: v }))}
+                    keyboardType={f.keyboard}
+                  />
+                </View>
+              </View>
+            ))}
+            <View style={{ gap: 5 }}>
+              <Text style={{ fontSize: 11, fontFamily: "SpaceGrotesk_600SemiBold", color: colors.mutedForeground, letterSpacing: 0.7 }}>ETAPA</Text>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8 }}>
+                {STAGES.map((s) => {
+                  const cfg = STAGE_CONFIG[s];
+                  return (
+                    <TouchableOpacity
+                      key={s}
+                      style={{ paddingHorizontal: 12, paddingVertical: 8, borderRadius: 20, backgroundColor: novoForm.stage === s ? cfg.color + "22" : colors.surface, borderWidth: 1, borderColor: novoForm.stage === s ? cfg.color : colors.border }}
+                      onPress={() => setNovoForm((p) => ({ ...p, stage: s }))}
+                      activeOpacity={0.8}
+                    >
+                      <Text style={{ fontSize: 12, fontFamily: "SpaceGrotesk_500Medium", color: novoForm.stage === s ? cfg.color : colors.mutedForeground }}>{cfg.label}</Text>
+                    </TouchableOpacity>
+                  );
+                })}
+              </ScrollView>
+            </View>
+            <TouchableOpacity
+              style={{ backgroundColor: PINK, height: 50, borderRadius: 14, alignItems: "center", justifyContent: "center", opacity: novoForm.nome.trim() ? 1 : 0.4 }}
+              onPress={salvarNovoDeal}
+              disabled={!novoForm.nome.trim()}
+              activeOpacity={0.85}
+            >
+              <Text style={{ fontSize: 15, fontFamily: "SpaceGrotesk_700Bold", color: "#fff" }}>Adicionar Negócio</Text>
+            </TouchableOpacity>
+            <View style={{ height: 20 }} />
+          </TouchableOpacity>
+        </TouchableOpacity>
+      </Modal>
     </View>
   );
 }

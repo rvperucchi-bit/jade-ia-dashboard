@@ -14,7 +14,10 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+
+const API_BASE = Platform.OS === "web" ? "" : `https://${process.env.EXPO_PUBLIC_DOMAIN ?? ""}`;
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 function maskPhone(raw: string): string {
@@ -82,13 +85,27 @@ export default function CadastroScreen() {
     if (!termsAccepted) return;
     if (!validate()) return;
     setLoading(true);
-    await new Promise((r) => setTimeout(r, 900));
-    setLoading(false);
-    Alert.alert(
-      "Conta criada! ✓",
-      "Sua conta foi criada com sucesso. Faça login para continuar.",
-      [{ text: "Fazer login", onPress: () => router.replace("/login") }]
-    );
+    try {
+      const res = await fetch(`${API_BASE}/api/auth/register`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ nome: nome.trim(), email: email.trim(), password: senha }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        Alert.alert("Erro", data.error ?? "Não foi possível criar a conta.");
+        return;
+      }
+      Alert.alert(
+        "Conta criada! ✓",
+        "Sua conta foi criada com sucesso. Faça login para continuar.",
+        [{ text: "Fazer login", onPress: () => router.replace("/login") }]
+      );
+    } catch {
+      Alert.alert("Erro", "Sem conexão. Verifique sua internet e tente novamente.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const errorKeys = ["nome", "email", "phone", "senha", "confirmar"];

@@ -436,6 +436,8 @@ export default function CRMScreen() {
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [selectedContact, setSelectedContact] = useState<Contact | null>(null);
   const [detailVisible, setDetailVisible]     = useState(false);
+  const [novoOpen, setNovoOpen] = useState(false);
+  const [novoForm, setNovoForm] = useState({ nome: "", empresa: "", telefone: "", segmento: "" });
 
   const topPad    = Platform.OS === "web" ? 67 : insets.top;
   const bottomPad = Platform.OS === "web" ? 84 : insets.bottom + 60;
@@ -449,6 +451,27 @@ export default function CRMScreen() {
       } catch {}
     });
   }, []);
+
+  const salvarNovoContato = async () => {
+    if (!novoForm.nome.trim()) return;
+    const lead: CrmLeadLocal = {
+      id: Date.now().toString(),
+      nome: novoForm.nome.trim(),
+      empresa: novoForm.empresa.trim() || novoForm.nome.trim(),
+      telefone: novoForm.telefone.trim(),
+      endereco: "", segmento: novoForm.segmento.trim(),
+      status: "Primeiro Contato", pipeline: "Novo",
+      dataAbordagem: new Date().toISOString(), cidade: "",
+    };
+    try {
+      const raw = await AsyncStorage.getItem("crm_leads");
+      const existing: CrmLeadLocal[] = raw ? JSON.parse(raw) : [];
+      await AsyncStorage.setItem("crm_leads", JSON.stringify([lead, ...existing].slice(0, 500)));
+    } catch {}
+    setContacts((p) => [leadToContact(lead), ...p]);
+    setNovoForm({ nome: "", empresa: "", telefone: "", segmento: "" });
+    setNovoOpen(false);
+  };
 
   const filtered = contacts.filter((c) => {
     const matchFilter = filter === "todos" || c.status === filter;
@@ -470,7 +493,7 @@ export default function CRMScreen() {
           <TouchableOpacity
             style={[S.addBtn, { backgroundColor: PINK }]}
             activeOpacity={0.85}
-            onPress={() => Alert.alert("Adicionar Contato", "Peça à JADE para prospectar e qualificar novos leads. Eles serão adicionados automaticamente ao CRM.", [{ text: "OK" }])}
+            onPress={() => setNovoOpen(true)}
           >
             <Feather name="plus" size={18} color="#fff" />
           </TouchableOpacity>
@@ -560,6 +583,45 @@ export default function CRMScreen() {
         visible={detailVisible}
         onClose={() => setDetailVisible(false)}
       />
+
+      <Modal visible={novoOpen} transparent animationType="slide" onRequestClose={() => setNovoOpen(false)}>
+        <TouchableOpacity style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.65)", justifyContent: "flex-end" }} activeOpacity={1} onPress={() => setNovoOpen(false)}>
+          <TouchableOpacity activeOpacity={1} style={{ backgroundColor: colors.background, borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 20, gap: 14 }}>
+            <View style={{ width: 40, height: 4, borderRadius: 2, backgroundColor: colors.border, alignSelf: "center", marginBottom: 6 }} />
+            <Text style={{ fontSize: 18, fontFamily: "SpaceGrotesk_700Bold", color: colors.text }}>Novo Contato</Text>
+            {[
+              { key: "nome",      label: "Nome *",      placeholder: "João Silva",            keyboard: "default" as const },
+              { key: "empresa",   label: "Empresa",     placeholder: "Empresa Ltda",          keyboard: "default" as const },
+              { key: "telefone",  label: "Telefone",    placeholder: "(48) 99999-9999",       keyboard: "phone-pad" as const },
+              { key: "segmento",  label: "Segmento",    placeholder: "Saúde, Varejo, SaaS…", keyboard: "default" as const },
+            ].map((f) => (
+              <View key={f.key} style={{ gap: 5 }}>
+                <Text style={{ fontSize: 11, fontFamily: "SpaceGrotesk_600SemiBold", color: colors.mutedForeground, letterSpacing: 0.7 }}>{f.label.toUpperCase()}</Text>
+                <View style={{ backgroundColor: colors.surface, borderRadius: 12, borderWidth: 1, borderColor: colors.border, paddingHorizontal: 14, height: 46, justifyContent: "center" }}>
+                  <TextInput
+                    style={{ fontSize: 14, fontFamily: "SpaceGrotesk_400Regular", color: colors.text }}
+                    placeholder={f.placeholder}
+                    placeholderTextColor={colors.mutedForeground}
+                    value={novoForm[f.key as keyof typeof novoForm]}
+                    onChangeText={(v) => setNovoForm((p) => ({ ...p, [f.key]: v }))}
+                    keyboardType={f.keyboard}
+                    autoCapitalize={f.keyboard === "default" ? "words" : "none"}
+                  />
+                </View>
+              </View>
+            ))}
+            <TouchableOpacity
+              style={{ backgroundColor: PINK, height: 50, borderRadius: 14, alignItems: "center", justifyContent: "center", opacity: novoForm.nome.trim() ? 1 : 0.4 }}
+              onPress={salvarNovoContato}
+              disabled={!novoForm.nome.trim()}
+              activeOpacity={0.85}
+            >
+              <Text style={{ fontSize: 15, fontFamily: "SpaceGrotesk_700Bold", color: "#fff" }}>Adicionar Contato</Text>
+            </TouchableOpacity>
+            <View style={{ height: 20 }} />
+          </TouchableOpacity>
+        </TouchableOpacity>
+      </Modal>
     </View>
   );
 }

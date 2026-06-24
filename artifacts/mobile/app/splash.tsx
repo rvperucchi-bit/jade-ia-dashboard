@@ -1,3 +1,4 @@
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
 import React, { useEffect, useRef } from "react";
 import {
@@ -22,40 +23,50 @@ export default function SplashScreen() {
   const logoRotate  = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
-    const native = Platform.OS !== "web";
+    let isMounted = true;
 
-    // Na web o callback do Animated pode não disparar — usamos setTimeout direto
-    if (!native) {
-      const t = setTimeout(() => router.replace("/login"), 1800);
-      logoOpacity.setValue(1);
-      return () => clearTimeout(t);
-    }
+    (async () => {
+      let token: string | null = null;
+      try { token = await AsyncStorage.getItem("@jade_ia:auth_token"); } catch {}
+      if (!isMounted) return;
 
-    Animated.parallel([
-      Animated.timing(logoOpacity, {
-        toValue: 1,
-        duration: 500,
-        easing: Easing.out(Easing.cubic),
-        useNativeDriver: true,
-      }),
-      Animated.timing(logoRotate, {
-        toValue: 1,
-        duration: 1400,
-        easing: Easing.out(Easing.cubic),
-        useNativeDriver: true,
-      }),
-    ]).start(() => {
-      setTimeout(() => {
+      const dest: any = token ? "/(tabs)" : "/login";
+      const native = Platform.OS !== "web";
+
+      if (!native) {
+        logoOpacity.setValue(1);
+        setTimeout(() => { if (isMounted) router.replace(dest); }, 1800);
+        return;
+      }
+
+      Animated.parallel([
         Animated.timing(logoOpacity, {
-          toValue: 0,
-          duration: 420,
-          easing: Easing.in(Easing.cubic),
+          toValue: 1,
+          duration: 500,
+          easing: Easing.out(Easing.cubic),
           useNativeDriver: true,
-        }).start(() => {
-          router.replace("/login");
-        });
-      }, 900);
-    });
+        }),
+        Animated.timing(logoRotate, {
+          toValue: 1,
+          duration: 1400,
+          easing: Easing.out(Easing.cubic),
+          useNativeDriver: true,
+        }),
+      ]).start(() => {
+        setTimeout(() => {
+          Animated.timing(logoOpacity, {
+            toValue: 0,
+            duration: 420,
+            easing: Easing.in(Easing.cubic),
+            useNativeDriver: true,
+          }).start(() => {
+            if (isMounted) router.replace(dest);
+          });
+        }, 900);
+      });
+    })();
+
+    return () => { isMounted = false; };
   }, []);
 
   const rotate = logoRotate.interpolate({

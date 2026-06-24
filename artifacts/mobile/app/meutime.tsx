@@ -1,7 +1,7 @@
 import { Feather } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import { useRouter } from "expo-router";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Modal,
   Platform,
@@ -18,6 +18,37 @@ import { useColors } from "@/hooks/useColors";
 
 const PINK   = "#FF0080";
 const PURPLE = "#8400FF";
+
+const API_BASE = Platform.OS === "web" ? "" : `https://${process.env.EXPO_PUBLIC_DOMAIN ?? ""}`;
+
+interface ApiVendedor {
+  id: string; nome: string; email: string; segmento: string;
+  metaMensal: number; metaLeads: number; realizado: number;
+  avatarColor: string; ultimaAtividade: string;
+}
+
+function vendedorToColaborador(v: ApiVendedor): Colaborador {
+  return {
+    id: v.id, nome: v.nome, email: v.email,
+    cargo: v.segmento || "Executivo Comercial",
+    telefone: "",
+    dataEntrada: new Date().toLocaleDateString("pt-BR"),
+    status: "Ativo",
+    permissao: "Executivo",
+    meta: v.metaMensal, leads: v.metaLeads,
+    oportunidades: 0, vendas: v.realizado,
+    ticketMedio: v.realizado > 0 ? Math.round(v.realizado / Math.max(v.metaLeads, 1)) : 0,
+    conversao: v.metaMensal > 0 ? Math.round((v.realizado / v.metaMensal) * 100) : 0,
+    pipeline: [
+      { etapa: "Prospecção",   qtd: Math.ceil(v.metaLeads * 0.4) },
+      { etapa: "Qualificação", qtd: Math.ceil(v.metaLeads * 0.3) },
+      { etapa: "Proposta",     qtd: Math.ceil(v.metaLeads * 0.2) },
+      { etapa: "Fechamento",   qtd: Math.ceil(v.metaLeads * 0.1) },
+    ],
+    atividades: { ligacoes: 0, whatsapp: 0, reunioes: 0, followups: 0 },
+    historico: v.ultimaAtividade ? [{ data: v.ultimaAtividade, texto: "Última atividade registrada." }] : [],
+  };
+}
 
 type Permissao = "Executivo" | "Gestor" | "Administrador";
 type StatusCol = "Ativo" | "Inativo";
@@ -93,6 +124,17 @@ export default function MeuTimeScreen() {
 
   const [colaboradores, setColaboradores] = useState<Colaborador[]>(MOCK);
   const [perfilOpen,    setPerfilOpen]    = useState(false);
+
+  useEffect(() => {
+    fetch(`${API_BASE}/api/time`)
+      .then((r) => r.json())
+      .then((data) => {
+        if (Array.isArray(data.vendedores) && data.vendedores.length > 0) {
+          setColaboradores(data.vendedores.map(vendedorToColaborador));
+        }
+      })
+      .catch(() => {});
+  }, []);
   const [selecionado,   setSelecionado]   = useState<Colaborador | null>(null);
   const [tabPerfil,     setTabPerfil]     = useState<TabPerfil>("Dados");
   const [novoOpen,      setNovoOpen]      = useState(false);
@@ -125,6 +167,17 @@ export default function MeuTimeScreen() {
       historico: [],
     };
     setColaboradores((p) => [novo, ...p]);
+    fetch(`${API_BASE}/api/time`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        vendedor: {
+          id: novo.id, nome: novo.nome, email: novo.email,
+          segmento: novo.cargo, metaMensal: novo.meta, metaLeads: novo.leads,
+          realizado: 0, avatarColor: "#FF0080", ultimaAtividade: "Agora",
+        },
+      }),
+    }).catch(() => {});
     setForm(initNovoForm());
     setNovoOpen(false);
   };

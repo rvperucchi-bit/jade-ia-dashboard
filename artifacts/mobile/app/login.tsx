@@ -3,6 +3,7 @@ import { useRouter } from "expo-router";
 import React, { useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
+  Alert,
   Animated,
   Easing,
   KeyboardAvoidingView,
@@ -119,7 +120,19 @@ export default function LoginScreen() {
           </TouchableOpacity>
 
           {/* ── Esqueci senha ── */}
-          <TouchableOpacity style={S.forgotBtn} activeOpacity={0.7}>
+          <TouchableOpacity
+            style={S.forgotBtn}
+            activeOpacity={0.7}
+            onPress={() =>
+              Alert.alert(
+                "Recuperar senha",
+                email.trim()
+                  ? `Um link de redefinição será enviado para ${email.trim()}.`
+                  : "Informe seu e-mail no campo acima e tente novamente.",
+                [{ text: "OK" }]
+              )
+            }
+          >
             <Text style={S.forgotText}>Esqueci minha senha</Text>
           </TouchableOpacity>
 
@@ -132,12 +145,20 @@ export default function LoginScreen() {
 
           {/* ── Social: lado a lado ── */}
           <View style={S.socialRow}>
-            <TouchableOpacity style={S.socialBtn} activeOpacity={0.75}>
+            <TouchableOpacity
+              style={S.socialBtn}
+              activeOpacity={0.75}
+              onPress={() => Alert.alert("Google", "Login com Google estará disponível em breve.", [{ text: "OK" }])}
+            >
               <FontAwesome name="google" size={20} color="#EA4335" />
               <Text style={S.socialText}>Google</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity style={S.socialBtn} activeOpacity={0.75}>
+            <TouchableOpacity
+              style={S.socialBtn}
+              activeOpacity={0.75}
+              onPress={() => Alert.alert("Apple", "Login com Apple estará disponível em breve.", [{ text: "OK" }])}
+            >
               <FontAwesome name="apple" size={22} color="#fff" />
               <Text style={S.socialText}>Apple</Text>
             </TouchableOpacity>

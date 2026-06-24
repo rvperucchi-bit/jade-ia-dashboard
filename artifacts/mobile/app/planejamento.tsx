@@ -18,13 +18,12 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useColors } from "@/hooks/useColors";
 import { stripMarkdown } from "@/utils/stripMarkdown";
+import { useAuth } from "@/context/AuthContext";
 
 const API_BASE =
   Platform.OS === "web"
     ? ""
     : `https://${process.env.EXPO_PUBLIC_DOMAIN ?? ""}`;
-
-const USER_ID = "u1"; // In a real app this would come from AuthContext
 
 const TIPO_CONFIG = {
   compromisso: { icon: "calendar",  color: "#FF0080", label: "Compromisso" },
@@ -87,6 +86,8 @@ export default function PlanejamentoScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const topPad = Platform.OS === "web" ? 67 : insets.top;
+  const { authToken } = useAuth();
+  const USER_ID = authToken ? "u_" + authToken.slice(0, 12) : "u1";
 
   const [plano, setPlano] = useState<PlanoDia | null>(null);
   const [loading, setLoading] = useState(true);

@@ -34,6 +34,21 @@ router.post("/login", (req: Request, res: Response) => {
   return res.json({ token, email: validEmail, name: "Rodrigo Coral" });
 });
 
+router.post("/register", (req: Request, res: Response) => {
+  const { nome, email, password } = req.body as { nome?: string; email?: string; password?: string };
+  if (!nome || !email || !password) {
+    return res.status(400).json({ error: "nome, email e password são obrigatórios" });
+  }
+  if (!email.includes("@")) {
+    return res.status(400).json({ error: "E-mail inválido" });
+  }
+  if (password.length < 6) {
+    return res.status(400).json({ error: "Senha deve ter no mínimo 6 caracteres" });
+  }
+  const token = makeToken(email);
+  return res.json({ token, email: email.trim().toLowerCase(), name: nome.trim() });
+});
+
 router.post("/logout", (_req: Request, res: Response) => {
   return res.json({ ok: true });
 });

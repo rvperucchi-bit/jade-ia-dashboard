@@ -245,7 +245,7 @@ async function saveCrmLeadToStorage(ld: LeadCardData): Promise<void> {
       cidade:        ld.cidade ?? "",
     };
     await AsyncStorage.setItem("crm_leads", JSON.stringify([lead, ...existing].slice(0, 500)));
-  } catch {}
+  } catch (e) { console.warn("[jade:crm]", e); }
 }
 
 // ─── Audio wave ───────────────────────────────────────────────────────────────
@@ -530,7 +530,7 @@ function LeadCard({
       });
       const data = (await resp.json()) as { whatsappUrl?: string | null; messageText?: string };
       if (data.whatsappUrl) await Linking.openURL(data.whatsappUrl);
-      await saveToCrm().catch(() => {});
+      await saveToCrm().catch((e: unknown) => console.warn("[jade:saveCrm]", e));
       setActionDone(true);
       const confirmText = data.whatsappUrl
         ? `✅ WhatsApp aberto com mensagem pronta. Lead registrado no CRM.\n\nAbordo o próximo?`
@@ -558,7 +558,7 @@ function LeadCard({
         }),
       });
       const data = (await resp.json()) as { whatsappUrl?: string | null; messageText?: string };
-      await saveToCrm().catch(() => {});
+      await saveToCrm().catch((e: unknown) => console.warn("[jade:saveCrm]", e));
       setActionDone(true);
       const copyText = data.messageText ?? "Mensagem não disponível.";
       onAddJadeMessage?.(`📋 Mensagem pronta para copiar:\n\n"${copyText}"\n\nLead registrado no CRM. Abordo o próximo?`);

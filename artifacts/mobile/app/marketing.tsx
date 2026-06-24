@@ -303,6 +303,9 @@ function CriativosTab({ colors }: { colors: any }) {
   const [criatName, setCriatName]     = useState("");
   const [criatGen, setCriatGen]       = useState(false);
   const [criativos, setCriativos]     = useState<Creative[]>(CREATIVES);
+  const [detailCreative, setDetailCreative] = useState<Creative | null>(null);
+  const [detailLoading, setDetailLoading]   = useState(false);
+  const [detailContent, setDetailContent]   = useState("");
 
   const top      = criativos.filter((c) => c.performance === "top");
   const filtered = criativos.filter((c) => filtro === "todos" ? true : c.type === filtro);
@@ -383,7 +386,7 @@ function CriativosTab({ colors }: { colors: any }) {
             <TouchableOpacity
               key={c.id}
               style={[T.criatCard, { backgroundColor: SURF, borderColor: BORD }]}
-              onPress={() => Haptics.selectionAsync()}
+              onPress={() => { Haptics.selectionAsync(); setDetailCreative(c); setDetailContent(""); }}
               activeOpacity={0.85}
             >
               <View style={[T.criatIcon, { backgroundColor: "rgba(255,255,255,0.04)" }]}>{typeIcon(c.type)}</View>
@@ -394,6 +397,75 @@ function CriativosTab({ colors }: { colors: any }) {
           ))}
         </View>
       </View>
+
+      <Modal visible={!!detailCreative} transparent animationType="slide" onRequestClose={() => setDetailCreative(null)}>
+        <TouchableOpacity style={T.overlay} activeOpacity={1} onPress={() => setDetailCreative(null)}>
+          {detailCreative && (
+            <View style={[T.sheet, { backgroundColor: "#0F0D1A" }]} onStartShouldSetResponder={() => true}>
+              <View style={T.sheetHandle} />
+              <View style={{ flexDirection: "row", alignItems: "center", gap: 10, marginBottom: 4 }}>
+                <View style={{ width: 40, height: 40, borderRadius: 10, backgroundColor: "rgba(255,255,255,0.06)", alignItems: "center", justifyContent: "center" }}>
+                  {typeIcon(detailCreative.type)}
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={[T.sheetTitle, { color: "#fff", fontSize: 16, marginBottom: 0 }]}>{detailCreative.name}</Text>
+                  <Text style={{ fontSize: 12, color: MUTED, fontFamily: "SpaceGrotesk_400Regular" }}>{detailCreative.campaign}</Text>
+                </View>
+                <PerfLabel p={detailCreative.performance} />
+              </View>
+              <View style={{ flexDirection: "row", gap: 8, marginVertical: 8 }}>
+                {[
+                  { label: "Impressões", value: detailCreative.impressions },
+                  { label: "Tipo", value: detailCreative.type === "video" ? "Vídeo" : detailCreative.type === "imagem" ? "Imagem" : "Carrossel" },
+                  { label: "Desempenho", value: detailCreative.performance === "top" ? "🔥 Top" : detailCreative.performance === "medio" ? "Médio" : "Baixo" },
+                ].map((s, i) => (
+                  <View key={i} style={{ flex: 1, backgroundColor: SURF, borderRadius: 10, borderWidth: 1, borderColor: BORD, padding: 10, alignItems: "center" }}>
+                    <Text style={{ fontSize: 13, fontFamily: "SpaceGrotesk_700Bold", color: "#fff" }}>{s.value}</Text>
+                    <Text style={{ fontSize: 10, fontFamily: "SpaceGrotesk_400Regular", color: MUTED, marginTop: 2, textAlign: "center" }}>{s.label}</Text>
+                  </View>
+                ))}
+              </View>
+              {!!detailContent && (
+                <View style={{ backgroundColor: "rgba(255,0,128,0.05)", borderRadius: 12, borderWidth: 1, borderColor: "rgba(255,0,128,0.2)", padding: 14, marginBottom: 8 }}>
+                  <Text style={{ fontSize: 10, fontFamily: "SpaceGrotesk_700Bold", color: PINK, letterSpacing: 0.7, marginBottom: 6 }}>JADE GEROU</Text>
+                  <Text style={{ fontSize: 13, fontFamily: "SpaceGrotesk_400Regular", color: "rgba(255,255,255,0.85)", lineHeight: 20 }}>{detailContent}</Text>
+                </View>
+              )}
+              <TouchableOpacity
+                style={[T.sheetBtn, { opacity: detailLoading ? 0.7 : 1 }]}
+                disabled={detailLoading}
+                onPress={async () => {
+                  setDetailLoading(true);
+                  setDetailContent("");
+                  try {
+                    const res = await fetch(`${Platform.OS === "web" ? "" : `https://${process.env.EXPO_PUBLIC_DOMAIN ?? ""}`}/api/marketing/generate`, {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({
+                        type_id: detailCreative.type,
+                        type_title: detailCreative.name,
+                        channel: detailCreative.campaign,
+                        context_input: `Criativo "${detailCreative.name}" do tipo ${detailCreative.type} com ${detailCreative.impressions} impressões. Desempenho: ${detailCreative.performance}.`,
+                        system_context: "Você é JADE, especialista em marketing digital. Gere uma sugestão de copy criativa e objetiva para melhorar o desempenho deste criativo. Máximo 3 parágrafos.",
+                      }),
+                    });
+                    const data = await res.json();
+                    setDetailContent(data.message ?? "Não foi possível gerar conteúdo.");
+                  } catch {
+                    setDetailContent("Erro ao conectar. Verifique sua conexão.");
+                  } finally {
+                    setDetailLoading(false);
+                  }
+                }}
+                activeOpacity={0.85}
+              >
+                <Feather name="zap" size={15} color="#fff" />
+                <Text style={T.sheetBtnText}>{detailLoading ? "Gerando com JADE…" : "Gerar copy com JADE"}</Text>
+              </TouchableOpacity>
+            </View>
+          )}
+        </TouchableOpacity>
+      </Modal>
 
       <Modal visible={novoCriatModal} transparent animationType="slide" onRequestClose={() => setNovoCriatModal(false)}>
         <TouchableOpacity style={T.overlay} activeOpacity={1} onPress={() => setNovoCriatModal(false)}>
