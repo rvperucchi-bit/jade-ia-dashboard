@@ -1,0 +1,178 @@
+CRIAR TELA: MEU TIME
+
+Objetivo:
+
+Criar a tela "Meu Time" dentro do módulo Gestão da JADE.
+
+Esta tela será o local onde gestores e líderes acompanham sua equipe comercial, visualizam desempenho individual e cadastram novos colaboradores.
+
+IMPORTANTE:
+
+Seguir exatamente o padrão visual atual da JADE:
+
+- Dark premium
+- Minimalista
+- Elegante
+- Muito espaço respirando
+- Sem excesso de cores
+- Sem excesso de informações
+- Sem visual de dashboard poluído
+- Sem aparência de ERP antigo
+- Mobile First
+- Consistente com CRM, Gestão e Chat da JADE
+
+--------------------------------
+
+CABEÇALHO
+
+Título:
+
+Meu Time
+
+Subtítulo:
+
+Acompanhe sua equipe comercial.
+
+Botão superior:
+
++ Novo Colaborador
+
+--------------------------------
+
+RESUMO DA EQUIPE
+
+Cards compactos:
+
+- Total de Colaboradores
+- Vendas do Mês
+- Leads Ativos
+- Meta Atingida (%)
+
+Visual discreto e limpo.
+
+--------------------------------
+
+LISTA DE COLABORADORES
+
+Cada colaborador deve aparecer em um card elegante.
+
+Exibir:
+
+- Foto ou avatar
+- Nome
+- Cargo
+- Status (Ativo / Inativo)
+
+Indicadores rápidos:
+
+- Leads ativos
+- Negócios em andamento
+- Vendas do mês
+- Meta atingida
+
+Exemplo:
+
+João Silva
+Executivo Comercial
+
+24 Leads
+8 Oportunidades
+R$ 42.000 vendidos
+84% da meta
+
+--------------------------------
+
+AO CLICAR NO COLABORADOR
+
+Abrir perfil completo.
+
+Exibir:
+
+DADOS
+
+- Nome
+- Cargo
+- Telefone
+- E-mail
+- Data de entrada
+
+DESEMPENHO
+
+- Leads
+- Oportunidades
+- Conversão
+- Vendas
+- Ticket médio
+- Meta
+
+PIPELINE
+
+- Quantidade por etapa
+
+ATIVIDADES
+
+- Ligações
+- WhatsApp
+- Reuniões
+- Follow-ups
+
+HISTÓRICO
+
+- Timeline completa
+
+--------------------------------
+
+CADASTRAR NOVO COLABORADOR
+
+Ao clicar em:
+
++ Novo Colaborador
+
+Abrir formulário:
+
+- Nome
+- Cargo
+- E-mail
+- Telefone
+- Meta mensal
+- Permissão
+
+Permissões:
+
+- Executivo
+- Gestor
+- Administrador
+
+--------------------------------
+
+INTEGRAÇÃO FUTURA
+
+Preparar estrutura para conexão futura com:
+
+- CRM
+- Pipeline
+- WhatsApp
+- Metas & KPIs
+- Ranking de Performance
+
+--------------------------------
+
+EXPERIÊNCIA JADE
+
+A tela deve transmitir sensação de controle, organização e clareza.
+
+Priorizar:
+
+- Leitura rápida
+- Poucos cliques
+- Visual premium
+- Informações realmente úteis
+
+Evitar:
+
+- Gráficos gigantes
+- Excesso de cores
+- Cards desnecessários
+- Elementos decorativos
+
+A tela deve parecer uma extensão natural do restante da JADE.
