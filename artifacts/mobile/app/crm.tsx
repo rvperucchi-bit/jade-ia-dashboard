@@ -1,9 +1,12 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Feather } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
+  Animated,
+  Easing,
   FlatList,
+  Modal,
   Platform,
   ScrollView,
   StyleSheet,
@@ -129,6 +132,131 @@ const SB = StyleSheet.create({
   text: { fontSize: 11, fontFamily: "SpaceGrotesk_700Bold" },
 });
 
+function ContactDetailModal({ contact, visible, onClose }: { contact: Contact | null; visible: boolean; onClose: () => void }) {
+  const colors = useColors();
+  const slideY = useRef(new Animated.Value(80)).current;
+  const opacity = useRef(new Animated.Value(0)).current;
+
+  React.useEffect(() => {
+    if (visible) {
+      Animated.parallel([
+        Animated.timing(slideY,  { toValue: 0,  duration: 340, easing: Easing.out(Easing.cubic), useNativeDriver: true }),
+        Animated.timing(opacity, { toValue: 1,  duration: 260, useNativeDriver: true }),
+      ]).start();
+    } else {
+      slideY.setValue(80);
+      opacity.setValue(0);
+    }
+  }, [visible]);
+
+  if (!contact) return null;
+  const cfg = STATUS_CONFIG[contact.status];
+  const scoreColor = contact.score >= 80 ? "#22CC88" : contact.score >= 60 ? "#FF8800" : "#AA4444";
+
+  return (
+    <Modal visible={visible} transparent animationType="none" onRequestClose={onClose}>
+      <View style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.72)", justifyContent: "flex-end" }}>
+        <TouchableOpacity style={StyleSheet.absoluteFill} activeOpacity={1} onPress={onClose} />
+        <Animated.View style={[DM.sheet, { backgroundColor: colors.background, opacity, transform: [{ translateY: slideY }] }]}>
+          <View style={[DM.handle, { backgroundColor: colors.border }]} />
+
+          {/* Header */}
+          <View style={DM.header}>
+            <View style={[DM.avatar, { backgroundColor: PINK + "22" }]}>
+              <Text style={DM.avatarText}>{contact.name[0]?.toUpperCase() ?? "?"}</Text>
+            </View>
+            <View style={{ flex: 1, gap: 3 }}>
+              <Text style={[DM.name, { color: colors.text }]}>{contact.name}</Text>
+              {contact.company !== contact.name && (
+                <Text style={[DM.company, { color: colors.mutedForeground }]}>{contact.company}</Text>
+              )}
+              <View style={{ flexDirection: "row", gap: 8, marginTop: 2 }}>
+                <View style={[DM.statusPill, { backgroundColor: cfg.color + "22" }]}>
+                  <Text style={[DM.statusText, { color: cfg.color }]}>{cfg.label}</Text>
+                </View>
+                <View style={[DM.statusPill, { backgroundColor: scoreColor + "22" }]}>
+                  <Text style={[DM.statusText, { color: scoreColor }]}>Score {contact.score}</Text>
+                </View>
+              </View>
+            </View>
+            <TouchableOpacity onPress={onClose} hitSlop={{ top: 12, right: 12, bottom: 12, left: 12 }}>
+              <Feather name="x" size={20} color={colors.mutedForeground} />
+            </TouchableOpacity>
+          </View>
+
+          {/* Info pills */}
+          <View style={DM.pills}>
+            {contact.segment && contact.segment !== "—" && (
+              <View style={[DM.pill, { backgroundColor: PURPLE + "18", borderColor: PURPLE + "33" }]}>
+                <Feather name="tag" size={11} color={PURPLE} />
+                <Text style={[DM.pillText, { color: PURPLE }]}>{contact.segment}</Text>
+              </View>
+            )}
+            {contact.phone ? (
+              <View style={[DM.pill, { backgroundColor: "rgba(255,255,255,0.06)", borderColor: colors.border }]}>
+                <Feather name="phone" size={11} color={colors.mutedForeground} />
+                <Text style={[DM.pillText, { color: colors.mutedForeground }]}>{contact.phone}</Text>
+              </View>
+            ) : null}
+          </View>
+
+          {/* Stats */}
+          <View style={DM.statsRow}>
+            {[
+              { label: "Último Contato", value: contact.lastContact },
+              { label: "Score",          value: `${contact.score}` },
+              { label: "Status",         value: cfg.label },
+            ].map((s, i) => (
+              <View key={i} style={[DM.statCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+                <Text style={[DM.statVal, { color: colors.text }]}>{s.value}</Text>
+                <Text style={[DM.statLbl, { color: colors.mutedForeground }]}>{s.label}</Text>
+              </View>
+            ))}
+          </View>
+
+          {/* Actions */}
+          <View style={[DM.actions, { borderTopColor: colors.border }]}>
+            {contact.phone ? (
+              <TouchableOpacity style={[DM.actionBtn, { backgroundColor: colors.surface, borderColor: colors.border }]} activeOpacity={0.8}>
+                <Feather name="phone" size={16} color={colors.text} />
+                <Text style={[DM.actionText, { color: colors.text }]}>Ligar</Text>
+              </TouchableOpacity>
+            ) : null}
+            <TouchableOpacity style={[DM.actionBtnPrimary, { backgroundColor: PINK }]} activeOpacity={0.85} onPress={onClose}>
+              <Feather name="message-circle" size={16} color="#fff" />
+              <Text style={DM.actionTextPrimary}>WhatsApp</Text>
+            </TouchableOpacity>
+          </View>
+        </Animated.View>
+      </View>
+    </Modal>
+  );
+}
+
+const DM = StyleSheet.create({
+  sheet:           { borderTopLeftRadius: 26, borderTopRightRadius: 26, maxHeight: "80%", paddingTop: 12 },
+  handle:          { width: 40, height: 4, borderRadius: 2, alignSelf: "center", marginBottom: 16 },
+  header:          { flexDirection: "row", alignItems: "flex-start", gap: 12, paddingHorizontal: 20, paddingBottom: 16 },
+  avatar:          { width: 48, height: 48, borderRadius: 24, alignItems: "center", justifyContent: "center" },
+  avatarText:      { fontSize: 18, fontFamily: "SpaceGrotesk_700Bold", color: PINK },
+  name:            { fontSize: 17, fontFamily: "SpaceGrotesk_700Bold" },
+  company:         { fontSize: 13, fontFamily: "SpaceGrotesk_400Regular" },
+  statusPill:      { paddingHorizontal: 8, paddingVertical: 3, borderRadius: 20 },
+  statusText:      { fontSize: 11, fontFamily: "SpaceGrotesk_600SemiBold" },
+  pills:           { flexDirection: "row", flexWrap: "wrap", gap: 8, paddingHorizontal: 20, paddingBottom: 16 },
+  pill:            { flexDirection: "row", alignItems: "center", gap: 5, paddingHorizontal: 10, paddingVertical: 5, borderRadius: 20, borderWidth: 1 },
+  pillText:        { fontSize: 12, fontFamily: "SpaceGrotesk_500Medium" },
+  statsRow:        { flexDirection: "row", gap: 8, paddingHorizontal: 20, marginBottom: 16 },
+  statCard:        { flex: 1, borderRadius: 12, borderWidth: 1, paddingVertical: 10, alignItems: "center" },
+  statVal:         { fontSize: 14, fontFamily: "SpaceGrotesk_700Bold" },
+  statLbl:         { fontSize: 10, fontFamily: "SpaceGrotesk_400Regular", marginTop: 2 },
+  actions:         { flexDirection: "row", gap: 10, padding: 16, paddingBottom: 28, borderTopWidth: StyleSheet.hairlineWidth },
+  actionBtn:       { flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 7, height: 48, borderRadius: 12, borderWidth: 1, paddingHorizontal: 20 },
+  actionText:      { fontSize: 14, fontFamily: "SpaceGrotesk_600SemiBold" },
+  actionBtnPrimary:{ flex: 1, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 7, height: 48, borderRadius: 12 },
+  actionTextPrimary: { fontSize: 14, fontFamily: "SpaceGrotesk_700Bold", color: "#fff" },
+});
+
 function ContactCard({ contact, onPress }: { contact: Contact; onPress: () => void }) {
   const colors = useColors();
   const cfg = STATUS_CONFIG[contact.status];
@@ -182,6 +310,8 @@ export default function CRMScreen() {
   const [filter, setFilter]   = useState<ContactStatus | "todos">("todos");
   const [showSearch, setShowSearch] = useState(false);
   const [contacts, setContacts] = useState<Contact[]>([]);
+  const [selectedContact, setSelectedContact] = useState<Contact | null>(null);
+  const [detailVisible, setDetailVisible]     = useState(false);
 
   const topPad    = Platform.OS === "web" ? 67 : insets.top;
   const bottomPad = Platform.OS === "web" ? 84 : insets.bottom + 60;
@@ -238,17 +368,31 @@ export default function CRMScreen() {
         </View>
       )}
 
-      <View style={S.statsRow}>
-        {[
-          { label: "Total",    value: contacts.length,                                        color: colors.text },
-          { label: "Quentes",  value: contacts.filter(c => c.status === "quente").length,     color: "#FF8800" },
-          { label: "Fechados", value: contacts.filter(c => c.status === "fechado").length,    color: "#22CC88" },
-        ].map((s) => (
-          <View key={s.label} style={[S.statCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-            <Text style={[S.statValue, { color: s.color }]}>{s.value}</Text>
-            <Text style={[S.statLabel, { color: colors.mutedForeground }]}>{s.label}</Text>
-          </View>
-        ))}
+      <View style={{ paddingHorizontal: 16, marginBottom: 12, gap: 8 }}>
+        <View style={{ flexDirection: "row", gap: 8 }}>
+          {[
+            { label: "Total",      value: contacts.length,                                           color: colors.text },
+            { label: "Novos",      value: contacts.filter(c => c.status === "novo").length,          color: "#5577FF" },
+            { label: "Em Contato", value: contacts.filter(c => c.status === "em_contato").length,   color: PURPLE },
+          ].map((s) => (
+            <View key={s.label} style={[S.statCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+              <Text style={[S.statValue, { color: s.color }]}>{s.value}</Text>
+              <Text style={[S.statLabel, { color: colors.mutedForeground }]}>{s.label}</Text>
+            </View>
+          ))}
+        </View>
+        <View style={{ flexDirection: "row", gap: 8 }}>
+          {[
+            { label: "Quentes",    value: contacts.filter(c => c.status === "quente").length,      color: "#FF8800" },
+            { label: "Negociação", value: contacts.filter(c => c.status === "negociacao").length,  color: PINK },
+            { label: "Fechados",   value: contacts.filter(c => c.status === "fechado").length,     color: "#22CC88" },
+          ].map((s) => (
+            <View key={s.label} style={[S.statCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+              <Text style={[S.statValue, { color: s.color }]}>{s.value}</Text>
+              <Text style={[S.statLabel, { color: colors.mutedForeground }]}>{s.label}</Text>
+            </View>
+          ))}
+        </View>
       </View>
 
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={S.filterScroll}>
@@ -272,7 +416,7 @@ export default function CRMScreen() {
         keyExtractor={(item) => item.id}
         contentContainerStyle={{ paddingTop: 8, paddingBottom: bottomPad }}
         renderItem={({ item }) => (
-          <ContactCard contact={item} onPress={() => {}} />
+          <ContactCard contact={item} onPress={() => { setSelectedContact(item); setDetailVisible(true); }} />
         )}
         ListEmptyComponent={
           <View style={S.empty}>
@@ -282,6 +426,11 @@ export default function CRMScreen() {
             </Text>
           </View>
         }
+      />
+      <ContactDetailModal
+        contact={selectedContact}
+        visible={detailVisible}
+        onClose={() => setDetailVisible(false)}
       />
     </View>
   );

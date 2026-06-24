@@ -30,6 +30,19 @@ function formatValue(v: number) {
   return `R$ ${v.toLocaleString("pt-BR")}`;
 }
 
+function cleanTag(tag: string): string {
+  if (!tag) return "";
+  const t = tag.trim();
+  if (t.length <= 22) return t;
+  const words = t.split(/\s+/);
+  let r = "";
+  for (const w of words) {
+    const next = r ? r + " " + w : w;
+    if (next.length <= 20) r = next; else break;
+  }
+  return r || t.slice(0, 20);
+}
+
 // ─── Mock CRM history per lead ────────────────────────────────────────────────
 type ContactEntry = {
   date: string;
@@ -125,24 +138,29 @@ function LeadCard({ lead, onPress }: { lead: Lead; onPress: () => void }) {
             <Text style={[L.cardName, { color: colors.text, flex: 1 }]} numberOfLines={1}>{lead.name}</Text>
             <View style={[L.semDot, { backgroundColor: statusColor }]} />
           </View>
-          <Text style={[L.cardCompany, { color: colors.mutedForeground }]} numberOfLines={1}>{lead.company}</Text>
+          {lead.company !== lead.name && (
+            <Text style={[L.cardCompany, { color: colors.mutedForeground }]} numberOfLines={1}>{lead.company}</Text>
+          )}
         </View>
       </View>
       {/* Score bar */}
       <View style={L.scoreRow}>
         <ScoreBadge lead={lead} />
-        <Text style={[L.scoreLabel, { color: scoreInfo.color }]}>{scoreInfo.label}</Text>
         <View style={[L.scoreTrack, { backgroundColor: "rgba(255,255,255,0.08)" }]}>
           <View style={[L.scoreFill, { width: `${scoreInfo.score}%` as any, backgroundColor: scoreInfo.score >= 70 ? "#FF0080" : "rgba(255,255,255,0.2)" }]} />
         </View>
       </View>
       <View style={L.cardFooter}>
         <Text style={[L.cardValue, { color: colors.primary }]}>{formatValue(lead.value)}</Text>
-        <View style={[L.tag, { backgroundColor: "rgba(255,255,255,0.06)" }]}>
-          <Text style={[L.tagText, { color: "rgba(255,255,255,0.45)" }]}>{lead.tag}</Text>
-        </View>
+        {cleanTag(lead.tag) ? (
+          <View style={[L.tag, { backgroundColor: "rgba(255,255,255,0.06)" }]}>
+            <Text style={[L.tagText, { color: "rgba(255,255,255,0.45)" }]}>{cleanTag(lead.tag)}</Text>
+          </View>
+        ) : null}
       </View>
-      <Text style={[L.cardTime, { color: colors.mutedForeground }]}>{lead.time}</Text>
+      <Text style={[L.cardTime, { color: colors.mutedForeground }]}>
+        {(COLUMNS.find((c) => c.key === lead.column)?.label ?? lead.column)} · {lead.time}
+      </Text>
     </TouchableOpacity>
   );
 }
@@ -257,7 +275,9 @@ function LeadDetailModal({
               </View>
               <View style={{ flex: 1, gap: 3 }}>
                 <Text style={[L.detailName, { color: colors.text }]}>{lead.name}</Text>
-                <Text style={[L.detailCompany, { color: colors.mutedForeground }]}>{lead.company}</Text>
+                {lead.company !== lead.name && (
+                  <Text style={[L.detailCompany, { color: colors.mutedForeground }]}>{lead.company}</Text>
+                )}
                 <View style={L.detailMeta}>
                   <View style={[L.stagePill, { backgroundColor: "rgba(255,255,255,0.06)" }]}>
                     <View style={[L.stageDot, { backgroundColor: stageCol?.color }]} />
@@ -271,13 +291,29 @@ function LeadDetailModal({
               </TouchableOpacity>
             </View>
 
+            {/* ── Info rápida ── */}
+            <View style={[L.infoRow, { marginHorizontal: 20, marginBottom: 16 }]}>
+              {lead.phone ? (
+                <View style={[L.infoPill, { backgroundColor: colors.card, borderColor: colors.border }]}>
+                  <Feather name="phone" size={12} color={colors.mutedForeground} />
+                  <Text style={[L.infoPillText, { color: colors.mutedForeground }]}>{lead.phone}</Text>
+                </View>
+              ) : null}
+              {cleanTag(lead.tag) ? (
+                <View style={[L.infoPill, { backgroundColor: "rgba(132,0,255,0.10)", borderColor: "rgba(132,0,255,0.25)" }]}>
+                  <Feather name="tag" size={12} color="#8400FF" />
+                  <Text style={[L.infoPillText, { color: "#8400FF" }]}>{cleanTag(lead.tag)}</Text>
+                </View>
+              ) : null}
+            </View>
+
             {/* ── CRM stats row ── */}
             <View style={L.statsRow}>
               {[
                 { label: "Contatos",  value: `${totalContacts}` },
                 { label: "Dias CRM",  value: `${daysSinceFirst}` },
                 { label: "Resp. IA",  value: "3" },
-                { label: "Score",     value: "82%" },
+                { label: "Score",     value: `${getLeadScoreInfo(lead).score}` },
               ].map((s, i) => (
                 <View key={i} style={[L.statCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
                   <Text style={[L.statValue, { color: colors.text }]}>{s.value}</Text>
@@ -300,6 +336,24 @@ function LeadDetailModal({
                 </View>
               </View>
               <Text style={[L.aiText, { color: colors.mutedForeground }]}>{summary}</Text>
+            </View>
+
+            {/* ── Próximas ações ── */}
+            <Text style={[L.sectionTitle, { color: colors.text }]}>Próximas Ações</Text>
+            <View style={[L.nextActionsCard, { backgroundColor: colors.card, borderColor: colors.border, marginBottom: 20 }]}>
+              {(lead.column === "novo"
+                ? ["Enviar mensagem de apresentação via WhatsApp", "Qualificar necessidade e orçamento disponível", "Agendar call de 15 min"]
+                : lead.column === "qualificado"
+                ? ["Enviar proposta personalizada com cases do segmento", "Follow-up em 2 dias se sem resposta", "Identificar decisor final"]
+                : lead.column === "proposta"
+                ? ["Confirmar recebimento e entendimento da proposta", "Negociar condições se necessário", "Definir prazo para decisão"]
+                : ["Coletar feedback pós-fechamento", "Solicitar indicações de novos contatos", "Iniciar onboarding"]
+              ).map((action, i) => (
+                <View key={i} style={[L.nextActionItem, i > 0 && { borderTopWidth: 1, borderTopColor: colors.border }]}>
+                  <View style={[L.nextActionDot, { backgroundColor: i === 0 ? "#FF0080" : "rgba(255,255,255,0.15)" }]} />
+                  <Text style={[L.nextActionText, { color: i === 0 ? colors.text : colors.mutedForeground }]}>{action}</Text>
+                </View>
+              ))}
             </View>
 
             {/* ── Contact history timeline ── */}
@@ -440,7 +494,8 @@ export default function LeadsScreen() {
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
-        contentContainerStyle={[L.kanban, { paddingBottom: bottomPad }]}
+        style={{ flex: 1 }}
+        contentContainerStyle={[L.kanban, { paddingBottom: bottomPad, alignItems: "stretch" }]}
       >
         {COLUMNS.map((col) => {
           const rawLeads = leads.filter((l) => l.column === col.key);
@@ -503,7 +558,7 @@ const L = StyleSheet.create({
   addBtn: { width: 40, height: 40, borderRadius: 20, alignItems: "center", justifyContent: "center" },
 
   kanban: { paddingHorizontal: 16, gap: 12, paddingTop: 4 },
-  column: { width: 240, borderRadius: 16, borderWidth: 1, padding: 12, maxHeight: 520 },
+  column: { width: 240, borderRadius: 16, borderWidth: 1, padding: 12, flex: 1 },
   colHeader: { flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 12 },
   colDot:    { width: 8, height: 8, borderRadius: 4 },
   colTitle:  { flex: 1, fontSize: 14, fontFamily: "SpaceGrotesk_600SemiBold" },
@@ -588,6 +643,15 @@ const L = StyleSheet.create({
   aiText:    { fontSize: 13, fontFamily: "SpaceGrotesk_400Regular", lineHeight: 20 },
 
   sectionTitle: { fontSize: 15, fontFamily: "SpaceGrotesk_700Bold", paddingHorizontal: 20, marginBottom: 12 },
+
+  infoRow:      { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+  infoPill:     { flexDirection: "row", alignItems: "center", gap: 6, paddingHorizontal: 10, paddingVertical: 5, borderRadius: 20, borderWidth: 1 },
+  infoPillText: { fontSize: 12, fontFamily: "SpaceGrotesk_500Medium" },
+
+  nextActionsCard: { marginHorizontal: 20, borderRadius: 14, borderWidth: 1, overflow: "hidden" },
+  nextActionItem:  { flexDirection: "row", alignItems: "flex-start", gap: 10, paddingHorizontal: 14, paddingVertical: 12 },
+  nextActionDot:   { width: 8, height: 8, borderRadius: 4, marginTop: 5, flexShrink: 0 },
+  nextActionText:  { flex: 1, fontSize: 13, fontFamily: "SpaceGrotesk_400Regular", lineHeight: 20 },
 
   timelineCard: { marginHorizontal: 20, borderRadius: 14, borderWidth: 1, paddingTop: 16, paddingRight: 14, overflow: "hidden" },
   timelineItem: { flexDirection: "row", gap: 12, paddingLeft: 14 },
