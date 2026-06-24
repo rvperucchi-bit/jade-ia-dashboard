@@ -474,6 +474,9 @@ export default function MaisScreen() {
       {/* ── Header ── */}
       <View style={[S.header, { paddingTop: topPad + 4 }]}>
         <Text style={[S.title, { color: colors.text }]}>Mais</Text>
+        <View style={{ backgroundColor: PINK, borderRadius: 6, paddingHorizontal: 8, paddingVertical: 3, marginBottom: 4 }}>
+          <Text style={{ color: "#fff", fontSize: 11, fontFamily: "SpaceGrotesk_700Bold" }}>✓ BUNDLE ATUAL — 24/06</Text>
+        </View>
         {isDevMode && (
           <TouchableOpacity style={[S.devBadge, { backgroundColor: PINK + "22" }]} onPress={() => setDevModal(true)}>
             <Feather name="terminal" size={11} color={PINK} />
