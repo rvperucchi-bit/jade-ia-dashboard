@@ -1,0 +1,317 @@
+[
+  {
+    "file": "01-splash",
+    "label": "Splash",
+    "route": "/splash",
+    "ok": true,
+    "skipped": true
+  },
+  {
+    "file": "02-login",
+    "label": "Login",
+    "route": "/login",
+    "ok": true,
+    "skipped": true
+  },
+  {
+    "file": "03-cadastro",
+    "label": "Cadastro",
+    "route": "/cadastro",
+    "ok": true,
+    "skipped": true
+  },
+  {
+    "file": "04-onboarding",
+    "label": "Onboarding",
+    "route": "/onboarding",
+    "ok": true,
+    "skipped": true
+  },
+  {
+    "file": "05-sucesso",
+    "label": "Sucesso",
+    "route": "/sucesso",
+    "ok": true,
+    "skipped": true
+  },
+  {
+    "file": null,
+    "label": "Home (redireciona p/ JADE)",
+    "route": "/(tabs)",
+    "redirect": true,
+    "redirectsTo": "/(tabs)/jade"
+  },
+  {
+    "file": "07-leads",
+    "label": "Leads",
+    "route": "/leads",
+    "ok": true,
+    "skipped": true
+  },
+  {
+    "file": "08-conversas",
+    "label": "Conversas",
+    "route": "/conversas",
+    "ok": true,
+    "skipped": true
+  },
+  {
+    "file": "09-conversa-detalhe",
+    "label": "Conversa (detalhe)",
+    "route": "/conversa/1",
+    "ok": true,
+    "skipped": true
+  },
+  {
+    "file": "10-jade-chat",
+    "label": "JADE (chat)",
+    "route": "/jade",
+    "ok": true,
+    "skipped": true
+  },
+  {
+    "file": null,
+    "label": "Mais (redireciona p/ JADE)",
+    "route": "/mais",
+    "redirect": true,
+    "redirectsTo": "/(tabs)/jade"
+  },
+  {
+    "file": "12-crm",
+    "label": "CRM",
+    "route": "/crm",
+    "ok": true,
+    "skipped": true
+  },
+  {
+    "file": "13-pipeline",
+    "label": "Pipeline / Funil",
+    "route": "/pipeline",
+    "ok": true,
+    "skipped": true
+  },
+  {
+    "file": "14-carteira",
+    "label": "Carteira",
+    "route": "/carteira",
+    "ok": true,
+    "skipped": true
+  },
+  {
+    "file": "15-scanner",
+    "label": "Scanner",
+    "route": "/scanner",
+    "ok": true,
+    "skipped": true
+  },
+  {
+    "file": "16-criar-rota",
+    "label": "Criar rota",
+    "route": "/criarrota",
+    "ok": true,
+    "skipped": true
+  },
+  {
+    "file": "17-roteiro",
+    "label": "Roteiro",
+    "route": "/roteiro",
+    "ok": true,
+    "skipped": true
+  },
+  {
+    "file": "18-briefing",
+    "label": "Briefing",
+    "route": "/briefing",
+    "ok": true,
+    "skipped": true
+  },
+  {
+    "file": "19-objecoes",
+    "label": "Objeções",
+    "route": "/objecoes",
+    "ok": true,
+    "skipped": true
+  },
+  {
+    "file": "20-roleplay",
+    "label": "Roleplay",
+    "route": "/roleplay",
+    "ok": true,
+    "skipped": true
+  },
+  {
+    "file": "21-treinamento",
+    "label": "Treinamento",
+    "route": "/treinamento",
+    "ok": true,
+    "skipped": true
+  },
+  {
+    "file": "22-biblioteca",
+    "label": "Biblioteca",
+    "route": "/biblioteca",
+    "ok": true,
+    "skipped": true
+  },
+  {
+    "file": "23-marketing",
+    "label": "Marketing",
+    "route": "/marketing",
+    "ok": true,
+    "skipped": true
+  },
+  {
+    "file": "24-metas",
+    "label": "Metas",
+    "route": "/metas",
+    "ok": true,
+    "skipped": true
+  },
+  {
+    "file": "25-meu-time",
+    "label": "Meu time",
+    "route": "/meutime",
+    "ok": true,
+    "skipped": true
+  },
+  {
+    "file": "26-gestao",
+    "label": "Gestão",
+    "route": "/gestao",
+    "ok": true,
+    "skipped": true
+  },
+  {
+    "file": "27-planejamento",
+    "label": "Planejamento",
+    "route": "/planejamento",
+    "ok": true,
+    "skipped": true
+  },
+  {
+    "file": "28-relatorios",
+    "label": "Relatórios",
+    "route": "/relatorios",
+    "ok": true,
+    "skipped": true
+  },
+  {
+    "file": "29-relatorio-gestor",
+    "label": "Relatório do gestor",
+    "route": "/relatoriogestor",
+    "ok": true,
+    "skipped": true
+  },
+  {
+    "file": "30-analise",
+    "label": "Análise",
+    "route": "/analise",
+    "ok": true,
+    "skipped": true
+  },
+  {
+    "file": "31-laudo",
+    "label": "Laudo",
+    "route": "/laudo",
+    "ok": true,
+    "skipped": true
+  },
+  {
+    "file": "32-painel-executivo",
+    "label": "Painel executivo",
+    "route": "/painelexecutivo",
+    "ok": true,
+    "skipped": true
+  },
+  {
+    "file": "33-feedback-executivo",
+    "label": "Feedback executivo",
+    "route": "/feedbackexecutivo",
+    "ok": true,
+    "skipped": true
+  },
+  {
+    "file": "34-feedback-jade",
+    "label": "Feedback JADE",
+    "route": "/feedbackjade",
+    "ok": true,
+    "skipped": true
+  },
+  {
+    "file": "35-notificacoes",
+    "label": "Notificações",
+    "route": "/notificacoes",
+    "ok": true,
+    "skipped": true
+  },
+  {
+    "file": "36-historico",
+    "label": "Histórico",
+    "route": "/historico",
+    "ok": true,
+    "skipped": true
+  },
+  {
+    "file": "37-empresa",
+    "label": "Empresa",
+    "route": "/empresa",
+    "ok": true,
+    "skipped": true
+  },
+  {
+    "file": "38-loja",
+    "label": "Loja",
+    "route": "/loja",
+    "ok": true,
+    "skipped": true
+  },
+  {
+    "file": "39-plano",
+    "label": "Plano",
+    "route": "/plano",
+    "ok": true,
+    "skipped": true
+  },
+  {
+    "file": "40-uso",
+    "label": "Uso",
+    "route": "/uso",
+    "ok": true,
+    "skipped": true
+  },
+  {
+    "file": "41-perfil",
+    "label": "Perfil",
+    "route": "/perfil",
+    "ok": true,
+    "skipped": true
+  },
+  {
+    "file": "42-ajuda",
+    "label": "Ajuda",
+    "route": "/ajuda",
+    "ok": true,
+    "skipped": true
+  },
+  {
+    "file": "43-whatsapp-config",
+    "label": "WhatsApp config",
+    "route": "/whatsapp-config",
+    "ok": true,
+    "skipped": true
+  },
+  {
+    "file": "44-privacidade",
+    "label": "Privacidade",
+    "route": "/privacidade",
+    "ok": true,
+    "skipped": true
+  },
+  {
+    "file": "45-termos",
+    "label": "Termos",
+    "route": "/termos",
+    "ok": true,
+    "skipped": true
+  }
+]

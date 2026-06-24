@@ -101,3 +101,15 @@ id = "RCc8SuzN-sYWk4DWBUFs6"
 uri = "file://exports/relatorio-correcoes-jade-2026-06-24.pdf"
 type = "pdf"
 title = "Relatório de Correções — JADE IA (11 telas)"
+
+[[outputs]]
+id = "7XvAZOzCjNTTlUv_GgPrS"
+uri = "file://exports/jade-ia-telas-e-mapa-2026-06-24.zip"
+type = "unspecified"
+title = "JADE IA — Telas + Mapa (ZIP)"
+
+[[outputs]]
+id = "3CXm-lyc6XXWJWnHDkg3F"
+uri = "file://exports/mapa-navegacao-apis-jade-2026-06-24.pdf"
+type = "pdf"
+title = "Mapa de Navegação & APIs (PDF)"
