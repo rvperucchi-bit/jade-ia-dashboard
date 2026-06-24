@@ -1,6 +1,6 @@
 import { Redirect, Tabs } from "expo-router";
 import React from "react";
-import { View } from "react-native";
+import { Platform, View } from "react-native";
 
 import { useOnboarding } from "@/context/OnboardingContext";
 

@@ -71,3 +71,9 @@ id = "lNhPN834wdSL7vPM-Bk2Z"
 uri = "file://JADE_IA_Documentacao.pdf"
 type = "pdf"
 title = "JADE IA — Documentação Completa"
+
+[[outputs]]
+id = "u4Wo5O0dDle6lav8mNN7r"
+uri = "file://JADE_IA_Telas.zip"
+type = "unspecified"
+title = "JADE IA — 41 Telas (Screenshots)"
