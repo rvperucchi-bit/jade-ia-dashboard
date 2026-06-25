@@ -358,35 +358,49 @@ function ChatView({ onMenu }: { onMenu: () => void }) {
         )}
       </ScrollView>
 
-      {/* Indicador de gravação ativo */}
-      {recording && (
-        <View style={S.recordingBar}>
-          <View style={S.recordingDot} />
-          <Text style={S.recordingText}>Gravando… toque 🎙️ para enviar</Text>
-        </View>
-      )}
-
       <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"}>
         <View style={[S.inputContainer, { paddingBottom: insets.bottom + 12 }]}>
-          <View style={S.inputRow}>
-            <TouchableOpacity style={S.innerBarBtn} onPress={pickImage} activeOpacity={0.7}>
-              <Text style={S.barIcon}>＋</Text>
-            </TouchableOpacity>
-            <TextInput
-              style={S.textInput}
-              placeholder="Perguntar à JADE..."
-              placeholderTextColor="#626880"
-              value={input}
-              onChangeText={setInput}
-              multiline
-            />
-            <TouchableOpacity
-              style={[S.sendBtn, recording && { backgroundColor: "#E93E3E" }]}
-              onPress={hasText ? send : toggleRecording}
-              activeOpacity={0.8}
-            >
-              <Text style={S.sendIcon}>{hasText ? "▲" : "🎙️"}</Text>
-            </TouchableOpacity>
+          <View style={S.inputRowInside}>
+            {!recording ? (
+              <>
+                <TouchableOpacity style={S.innerBarButton} onPress={pickImage} activeOpacity={0.6}>
+                  <Text style={S.barIcon}>＋</Text>
+                </TouchableOpacity>
+                <TextInput
+                  style={S.textInputStyle}
+                  placeholder="Perguntar à JADE..."
+                  placeholderTextColor="#626880"
+                  value={input}
+                  onChangeText={setInput}
+                  multiline
+                />
+                <TouchableOpacity
+                  style={S.sendButtonCircle}
+                  onPress={hasText ? send : toggleRecording}
+                  activeOpacity={0.8}
+                >
+                  <Text style={S.sendIcon}>{hasText ? "▲" : "🎙️"}</Text>
+                </TouchableOpacity>
+              </>
+            ) : (
+              <View style={S.recordingWaveContainer}>
+                <Text style={S.recordingLabel}>Gravando áudio...</Text>
+                <View style={S.waveRow}>
+                  <View style={[S.waveLine, { height: 12 }]} />
+                  <View style={[S.waveLine, { height: 24 }]} />
+                  <View style={[S.waveLine, { height: 18 }]} />
+                  <View style={[S.waveLine, { height: 28 }]} />
+                  <View style={[S.waveLine, { height: 14 }]} />
+                </View>
+                <TouchableOpacity
+                  style={[S.sendButtonCircle, { backgroundColor: "#38A169" }]}
+                  onPress={toggleRecording}
+                  activeOpacity={0.8}
+                >
+                  <Text style={[S.sendIcon, { color: "#FFFFFF" }]}>✓</Text>
+                </TouchableOpacity>
+              </View>
+            )}
           </View>
         </View>
       </KeyboardAvoidingView>
@@ -1961,12 +1975,16 @@ const S = StyleSheet.create({
   bubbleTextUser: { color: "#090A0F", fontWeight: "500" },
   bubbleTextAi:   { color: "#FFFFFF" },
   inputContainer: { paddingHorizontal: 16, paddingTop: 8, backgroundColor: "#090A0F" },
-  inputRow: { flexDirection: "row", backgroundColor: "#161822", borderRadius: 28, alignItems: "center", paddingHorizontal: 8, paddingVertical: 6, borderWidth: 1, borderColor: "#242736" },
-  innerBarBtn: { width: 36, height: 36, borderRadius: 18, alignItems: "center", justifyContent: "center" },
-  barIcon: { color: "#8F94A8", fontSize: 20 },
-  textInput: { flex: 1, color: "#FFFFFF", fontSize: 15, paddingHorizontal: 10, maxHeight: 100, paddingTop: Platform.OS === "ios" ? 8 : 4 },
-  sendBtn: { width: 38, height: 38, borderRadius: 19, backgroundColor: "#FFFFFF", alignItems: "center", justifyContent: "center" },
-  sendIcon: { color: "#090A0F", fontSize: 14, fontWeight: "700" },
+  inputRowInside: { flexDirection: "row", backgroundColor: "#161822", borderRadius: 28, alignItems: "center", paddingHorizontal: 12, paddingVertical: 8, borderWidth: 1, borderColor: "#242736", minHeight: 52 },
+  innerBarButton:         { width: 36, height: 36, borderRadius: 18, backgroundColor: "transparent", alignItems: "center", justifyContent: "center" },
+  barIcon:                { color: "#FFFFFF", fontSize: 20, fontWeight: "300" },
+  textInputStyle:         { flex: 1, color: "#FFFFFF", fontSize: 15, paddingHorizontal: 10, maxHeight: 100 },
+  sendButtonCircle:       { width: 36, height: 36, borderRadius: 18, backgroundColor: "#FFFFFF", alignItems: "center", justifyContent: "center" },
+  sendIcon:               { color: "#090A0F", fontSize: 14, fontWeight: "700" },
+  recordingWaveContainer: { flex: 1, flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: 4 },
+  recordingLabel:         { color: "#8F94A8", fontSize: 14, fontWeight: "500" },
+  waveRow:                { flexDirection: "row", alignItems: "center", justifyContent: "center", height: 30 },
+  waveLine:               { width: 3, backgroundColor: "#FFFFFF", marginHorizontal: 2, borderRadius: 1.5 },
 
   // Route screen
   mapPreview: { height: 160, marginHorizontal: 20, borderRadius: 16, backgroundColor: "#161822", marginBottom: 20, alignItems: "center", justifyContent: "center", borderWidth: 1, borderColor: "#242736" },
