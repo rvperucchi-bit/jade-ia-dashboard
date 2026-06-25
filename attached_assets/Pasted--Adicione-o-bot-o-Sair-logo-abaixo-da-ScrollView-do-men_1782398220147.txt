@@ -1,0 +1,63 @@
+// Adicione o botão "Sair" logo abaixo da ScrollView do menu da sua Sidebar:
+return (
+  <View style={styles.drawerWrapper}>
+    {/* HEADER DA SIDEBAR */}
+    {/* ... Seu código do header com JADE e Notificação ... */}
+
+    {/* MENU COM SCROLL */}
+    <ScrollView style={styles.menuScroll} showsVerticalScrollIndicator={false}>
+      
+      {/* Categoria Conversas, Comercial e Gestão... */}
+      
+      {/* CATEGORIA CONTA ATUALIZADA COMPLETA */}
+      <TouchableOpacity style={styles.menuHeaderButton} onPress={() => setContaOpen(!contaOpen)}>
+        <Text style={styles.menuHeaderTitle}>⚙️ Conta</Text>
+        <Text style={styles.arrowIcon}>{contaOpen ? '▼' : '►'}</Text>
+      </TouchableOpacity>
+      {contaOpen && (
+        <View style={styles.subMenuContainer}>
+          <TouchableOpacity style={styles.subMenuItem} onPress={() => props.navigation.navigate('management/account-settings')}><Text style={styles.subMenuText}>👤 Meu Perfil</Text></TouchableOpacity>
+          <TouchableOpacity style={styles.subMenuItem} onPress={() => props.navigation.navigate('management/my-company')}><Text style={styles.subMenuText}>🏢 Minha Empresa</Text></TouchableOpacity>
+          <TouchableOpacity style={styles.subMenuItem} onPress={() => props.navigation.navigate('management/whatsapp-config')}><Text style={styles.subMenuText}>💬 Configurações WhatsApp</Text></TouchableOpacity>
+          <TouchableOpacity style={styles.subMenuItem} onPress={() => props.navigation.navigate('management/usage')}><Text style={styles.subMenuText}>📈 Uso e Limites</Text></TouchableOpacity>
+          <TouchableOpacity style={styles.subMenuItem} onPress={() => props.navigation.navigate('management/shop')}><Text style={styles.subMenuText}>🛒 Loja de Créditos</Text></TouchableOpacity>
+          <TouchableOpacity style={styles.subMenuItem} onPress={() => props.navigation.navigate('management/subscription')}><Text style={styles.subMenuText}>💳 Planos & Assinatura</Text></TouchableOpacity>
+          <TouchableOpacity style={styles.subMenuItem} onPress={() => props.navigation.navigate('management/privacy')}><Text style={styles.subMenuText}>🔒 Privacidade e LGPD</Text></TouchableOpacity>
+          <TouchableOpacity style={styles.subMenuItem} onPress={() => props.navigation.navigate('management/help')}><Text style={styles.subMenuText}>❓ Ajuda & Suporte</Text></TouchableOpacity>
+        </View>
+      )}
+    </ScrollView>
+
+    {/* 🔥 FIXADO NA BASE ESQUERDA DA SIDEBAR: BOTÃO SAIR */}
+    <View style={styles.footerContainer}>
+      <TouchableOpacity 
+        style={styles.logoutBtn} 
+        onPress={() => props.navigation.navigate('login')} // Te joga de volta para a tela de login limpa
+        activeOpacity={0.7}
+      >
+        <Text style={styles.logoutBtnText}>🚪 Sair da Conta</Text>
+      </TouchableOpacity>
+    </View>
+  </View>
+);
+
+// Adicione estes estilos no StyleSheet da sua Sidebar:
+const styles = StyleSheet.create({
+  // ... Seus estilos anteriores ...
+  footerContainer: {
+    borderTopWidth: 1,
+    borderColor: '#161822',
+    paddingVertical: 16,
+    alignItems: 'flex-start', // Alinha totalmente à esquerda na base
+  },
+  logoutBtn: {
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    backgroundColor: 'transparent'
+  },
+  logoutBtnText: {
+    color: '#E93E3E', // Vermelho premium discreto para botão de sair
+    fontSize: 15,
+    fontWeight: '600'
+  }
+});

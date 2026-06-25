@@ -28,7 +28,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as Linking from "expo-linking";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
-type Route = "Chat" | "Pipeline" | "Route" | "Prospecting" | "Meeting" | "Farmer" | "Reports" | "Marketing" | "Management" | "Kpis" | "CorporatePortfolio" | "Broadcast" | "Feedbacks" | "TeamPulse" | "PulseCheck" | "AccountSettings" | "Subscription" | "MyProfile" | "MyCompany" | "Usage" | "WhatsApp" | "Shop" | "Help";
+type Route = "Chat" | "Pipeline" | "Route" | "Prospecting" | "Meeting" | "Farmer" | "Reports" | "Marketing" | "Management" | "Kpis" | "CorporatePortfolio" | "Broadcast" | "Feedbacks" | "TeamPulse" | "PulseCheck" | "AccountSettings" | "Subscription" | "MyProfile" | "MyCompany" | "Usage" | "WhatsApp" | "Shop" | "Help" | "Privacy";
 type PipelineLead  = { id: string; name: string; company: string; value: string; stage: string; daysIdle: number; phone: string };
 type AiLead        = { id: string; name: string; segment: string; address: string };
 type HistoryItem   = { id: string; query: string; location: string; date: string; leadsCount: number };
@@ -153,9 +153,6 @@ function Sidebar({ visible, onClose, currentRoute, onNavigate }: {
               <TouchableOpacity style={S.drawerSubItem} onPress={() => go("Chat")} activeOpacity={0.7}>
                 <Text style={S.drawerSubText}>🕒 Histórico de Chats</Text>
               </TouchableOpacity>
-              <TouchableOpacity style={S.drawerSubItem} onPress={() => go("WhatsApp")} activeOpacity={0.7}>
-                <Text style={[S.drawerSubText, currentRoute === "WhatsApp" && S.drawerSubTextActive]}>📱 WhatsApp JADE</Text>
-              </TouchableOpacity>
             </View>
           )}
 
@@ -227,21 +224,36 @@ function Sidebar({ visible, onClose, currentRoute, onNavigate }: {
               <TouchableOpacity style={S.drawerSubItem} onPress={() => go("MyCompany")} activeOpacity={0.7}>
                 <Text style={[S.drawerSubText, currentRoute === "MyCompany" && S.drawerSubTextActive]}>🏢 Minha Empresa</Text>
               </TouchableOpacity>
-              <TouchableOpacity style={S.drawerSubItem} onPress={() => go("Subscription")} activeOpacity={0.7}>
-                <Text style={[S.drawerSubText, currentRoute === "Subscription" && S.drawerSubTextActive]}>💳 Planos de Assinatura</Text>
+              <TouchableOpacity style={S.drawerSubItem} onPress={() => go("WhatsApp")} activeOpacity={0.7}>
+                <Text style={[S.drawerSubText, currentRoute === "WhatsApp" && S.drawerSubTextActive]}>💬 Configurações WhatsApp</Text>
               </TouchableOpacity>
               <TouchableOpacity style={S.drawerSubItem} onPress={() => go("Usage")} activeOpacity={0.7}>
-                <Text style={[S.drawerSubText, currentRoute === "Usage" && S.drawerSubTextActive]}>📊 Consumo do Plano</Text>
+                <Text style={[S.drawerSubText, currentRoute === "Usage" && S.drawerSubTextActive]}>📈 Uso e Limites</Text>
               </TouchableOpacity>
               <TouchableOpacity style={S.drawerSubItem} onPress={() => go("Shop")} activeOpacity={0.7}>
-                <Text style={[S.drawerSubText, currentRoute === "Shop" && S.drawerSubTextActive]}>🛍️ Loja Sleek</Text>
+                <Text style={[S.drawerSubText, currentRoute === "Shop" && S.drawerSubTextActive]}>🛒 Loja de Créditos</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={S.drawerSubItem} onPress={() => go("Subscription")} activeOpacity={0.7}>
+                <Text style={[S.drawerSubText, currentRoute === "Subscription" && S.drawerSubTextActive]}>💳 Planos & Assinatura</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={S.drawerSubItem} onPress={() => go("Privacy")} activeOpacity={0.7}>
+                <Text style={[S.drawerSubText, currentRoute === "Privacy" && S.drawerSubTextActive]}>🔒 Privacidade e LGPD</Text>
               </TouchableOpacity>
               <TouchableOpacity style={S.drawerSubItem} onPress={() => go("Help")} activeOpacity={0.7}>
-                <Text style={[S.drawerSubText, currentRoute === "Help" && S.drawerSubTextActive]}>❓ Central de Ajuda</Text>
+                <Text style={[S.drawerSubText, currentRoute === "Help" && S.drawerSubTextActive]}>❓ Ajuda & Suporte</Text>
               </TouchableOpacity>
             </View>
           )}
         </ScrollView>
+
+        {/* ── Botão Sair fixado na base ── */}
+        <View style={S.drawerFooter}>
+          <TouchableOpacity style={S.logoutBtn} onPress={() => { onClose(); onNavigate("Chat"); }}
+            activeOpacity={0.7}>
+            <Text style={S.logoutBtnText}>🚪 Sair da Conta</Text>
+          </TouchableOpacity>
+        </View>
+
       </Animated.View>
     </Modal>
   );
@@ -1864,6 +1876,31 @@ function SubscriptionView({ onMenu }: { onMenu: () => void }) {
   );
 }
 
+// ─── Screen: Privacy ─────────────────────────────────────────────────────────
+function PrivacyView({ onMenu }: { onMenu: () => void }) {
+  return (
+    <View style={{ flex: 1 }}>
+      <TopBar title="Privacidade" subtitle="⚙️ CONTA" onMenu={onMenu} />
+      <ScrollView style={S.form} showsVerticalScrollIndicator={false}>
+        <View style={S.privacySecBox}>
+          <Text style={S.privacySecTitle}>🔒 Criptografia Ponta a Ponta Ativa</Text>
+          <Text style={S.privacySecText}>Todas as credenciais corporativas, tokens de comunicação e históricos de mensagens capturados pelo cérebro da JADE são blindados sob chaves de criptografia AES-256 em servidores isolados em nuvem.</Text>
+        </View>
+        <Text style={[S.sectionLabel, { marginBottom: 12 }]}>CONTRATOS E TERMOS</Text>
+        <View style={S.privacyItem}>
+          <Text style={S.privacyItemMain}>Termos de Uso do Ecossistema</Text>
+          <Text style={S.privacyItemSub}>Revisado em Jun/2026</Text>
+        </View>
+        <View style={S.privacyItem}>
+          <Text style={S.privacyItemMain}>Políticas de Conformidade LGPD</Text>
+          <Text style={S.privacyItemSub}>Conformidade Avançada</Text>
+        </View>
+        <View style={{ height: 40 }} />
+      </ScrollView>
+    </View>
+  );
+}
+
 // ─── Screen: WhatsApp Config ─────────────────────────────────────────────────
 const SHOP_ITEMS = [
   { id: "1", title: "Pacote 1.000 Mensagens IA",        price: "R$ 89,00",     desc: "Injete mais saldo para conversas autônomas da JADE no WhatsApp." },
@@ -2286,6 +2323,7 @@ export default function PreviewUnifiedScreen() {
       {route === "WhatsApp"          && <WhatsAppConfigView    onMenu={openMenu} />}
       {route === "Shop"              && <ShopView              onMenu={openMenu} />}
       {route === "Help"              && <HelpView              onMenu={openMenu} />}
+      {route === "Privacy"           && <PrivacyView           onMenu={openMenu} />}
 
       <Sidebar visible={sidebar} onClose={() => setSidebar(false)} currentRoute={route} onNavigate={setRoute} />
     </View>
@@ -2559,6 +2597,19 @@ const S = StyleSheet.create({
   mktModalHeader: { flexDirection: "row", alignItems: "center", paddingHorizontal: 16, height: 60, borderBottomWidth: 1, borderColor: "#161822" },
   strategyBox: { backgroundColor: "rgba(0,229,255,0.02)", borderWidth: 1, borderColor: "rgba(0,229,255,0.15)", borderRadius: 16, padding: 18, marginTop: 28 },
   mktOutputText: { fontSize: 13, color: "#8F94A8", lineHeight: 19, marginBottom: 12 },
+
+  // Privacy screen
+  privacySecBox:  { backgroundColor: "rgba(56,161,105,0.02)", borderWidth: 1, borderColor: "rgba(56,161,105,0.15)", borderRadius: 16, padding: 18, marginBottom: 24 },
+  privacySecTitle:{ color: "#38A169", fontSize: 15, fontWeight: "700", marginBottom: 8 },
+  privacySecText: { color: "#8F94A8", fontSize: 13, lineHeight: 20 },
+  privacyItem:    { backgroundColor: "#161822", borderRadius: 12, padding: 16, borderWidth: 1, borderColor: "#242736", marginBottom: 10, flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
+  privacyItemMain:{ color: "#FFFFFF", fontSize: 14, fontWeight: "500" },
+  privacyItemSub: { color: "#4E5366", fontSize: 12 },
+
+  // Sidebar logout footer
+  drawerFooter:   { borderTopWidth: 1, borderColor: "#161822", paddingVertical: 16 },
+  logoutBtn:      { paddingHorizontal: 4, paddingVertical: 8, backgroundColor: "transparent" },
+  logoutBtnText:  { color: "#E93E3E", fontSize: 15, fontWeight: "600" },
 
   // WhatsApp Config screen
   waConfigCard:    { flexDirection: "row", justifyContent: "space-between", alignItems: "center", backgroundColor: "#161822", padding: 16, borderRadius: 14, borderWidth: 1, borderColor: "#242736", marginBottom: 14 },
