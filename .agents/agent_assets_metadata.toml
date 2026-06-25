@@ -239,3 +239,9 @@ id = "ZgWpuqVoZiIV7XBMAW2-b"
 uri = "file://exports/redesign-leads-monocromatico.pdf"
 type = "pdf"
 title = "Redesign Leads — CRM/Pipeline + Bottom Sheet"
+
+[[outputs]]
+id = "pBOl_GLS3WoFY1T0FBo_C"
+uri = "file://exports/auditoria-jade-ia.pdf"
+type = "pdf"
+title = "JADE IA — Auditoria Completa do Sistema"
