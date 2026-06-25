@@ -12,7 +12,7 @@
         "2026-06": {
           "year_month": "2026-06",
           "counters": {
-            "chat": 1,
+            "chat": 4,
             "radar": 0,
             "audio": 0,
             "image_generation": 0,
@@ -21,6 +21,30 @@
             "embeddings": 0
           },
           "events": [
+            {
+              "id": "36dc0d710c41",
+              "ts": "2026-06-25T10:06:47.072Z",
+              "operation": "chat",
+              "model": "gpt-5.4-mini",
+              "duration_ms": 1086,
+              "status": "ok"
+            },
+            {
+              "id": "0cdc7e7ffe68",
+              "ts": "2026-06-25T10:06:02.927Z",
+              "operation": "chat",
+              "model": "gpt-5.4-mini",
+              "duration_ms": 1535,
+              "status": "ok"
+            },
+            {
+              "id": "59742f2ad492",
+              "ts": "2026-06-25T10:04:27.317Z",
+              "operation": "chat",
+              "model": "gpt-5.4-mini",
+              "duration_ms": 1989,
+              "status": "ok"
+            },
             {
               "id": "6c6eb2cf3c0a",
               "ts": "2026-06-25T07:13:13.200Z",
@@ -38,7 +62,7 @@
               "status": "ok"
             }
           ],
-          "last_updated": "2026-06-25T07:13:13.200Z"
+          "last_updated": "2026-06-25T10:06:47.072Z"
         }
       }
     },

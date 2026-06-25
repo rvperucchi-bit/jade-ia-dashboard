@@ -451,6 +451,14 @@ export default function LeadsScreen() {
           <Text style={[L.headerTitle, { color: colors.text }]}>Leads</Text>
           <Text style={[L.headerSub, { color: colors.mutedForeground }]}>{leads.length} leads</Text>
         </View>
+        {/* PREVIEW TEMPORÁRIO — remover depois */}
+        <TouchableOpacity
+          style={{ paddingHorizontal: 12, paddingVertical: 6, borderRadius: 10, borderWidth: 1, borderColor: colors.border }}
+          onPress={() => router.push("/preview-pipeline" as any)}
+          activeOpacity={0.8}
+        >
+          <Text style={{ color: colors.mutedForeground, fontSize: 12, fontFamily: "SpaceGrotesk_500Medium" }}>Preview</Text>
+        </TouchableOpacity>
       </View>
 
       {/* View toggle: CRM / Pipeline */}

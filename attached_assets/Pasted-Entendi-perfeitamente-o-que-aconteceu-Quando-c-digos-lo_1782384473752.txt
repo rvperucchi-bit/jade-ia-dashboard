@@ -1,0 +1,415 @@
+Entendi perfeitamente o que aconteceu. Quando códigos longos são colados no Replit de uma vez só, é comum que algumas partes quebrem ou que o arquivo não rode por falta dos imports estruturados corretos.
+Para resolver isso agora, o código abaixo foi unificado em um único bloco completo, fechado e sem cortes.
+Para rodar nativamente no seu Expo Go e fazer os botões de ação funcionarem de verdade, adicionei a biblioteca nativa expo-linking, que já vem pré-instalada no ecossistema do Expo.
+Substitua todo o conteúdo do seu arquivo App.js (ou index.js) no Replit por este bloco:
+
+import React, { useState } from 'react';
+import { 
+  StyleSheet, 
+  Text, 
+  View, 
+  FlatList, 
+  ScrollView, 
+  TouchableOpacity, 
+  SafeAreaView, 
+  StatusBar,
+  Modal
+} from 'react-native';
+import * as Linking from 'expo-linking';
+
+// 1. DADOS DO CRM (MOCK DATA)
+const INITIAL_LEADS = [
+  { id: '1', name: 'Alex Silva', company: 'TechNova Solutions', value: 'R$ 15.400', stage: 'Prospecção', daysIdle: 2, phone: '5511999999999' },
+  { id: '2', name: 'Beatriz Costa', company: 'Acme Corp', value: 'R$ 42.000', stage: 'Prospecção', daysIdle: 5, phone: '5511988888888' },
+  { id: '3', name: 'Carlos Eduardo', company: 'Vortex Media', value: 'R$ 8.900', stage: 'Contato', daysIdle: 1, phone: '5511977777777' },
+  { id: '4', name: 'Diana Prince', company: 'Wayne Enterprises', value: 'R$ 120.000', stage: 'Proposta', daysIdle: 3, phone: '5511966666666' },
+  { id: '5', name: 'Felipe Ramos', company: 'Stark Labs', value: 'R$ 65.500', stage: 'Fechados', daysIdle: 0, phone: '5511955555555' },
+];
+
+const PIPELINE_STAGES = ['Prospecção', 'Contato', 'Proposta', 'Fechados'];
+
+export default function App() {
+  const [currentStage, setCurrentStage] = useState('Prospecção');
+  const [selectedLead, setSelectedLead] = useState(null);
+
+  // Filtra os leads com base na aba ativa do pipeline
+  const filteredLeads = INITIAL_LEADS.filter(lead => lead.stage === currentStage);
+
+  // Calcula o valor financeiro acumulado da etapa selecionada
+  const totalValue = filteredLeads.reduce((acc, lead) => {
+    const numericValue = parseFloat(lead.value.replace('R$ ', '').replace('.', ''));
+    return acc + numericValue;
+  }, 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+
+  // Funções nativas de comunicação
+  const handleWhatsApp = (phone) => {
+    Linking.openURL(`whatsapp://send?phone=${phone}`);
+  };
+
+  const handleCall = (phone) => {
+    Linking.openURL(`tel:${phone}`);
+  };
+
+  // Renderizador dos Cards do Pipeline
+  const renderLeadCard = ({ item }) => (
+    <TouchableOpacity 
+      activeOpacity={0.7} 
+      style={styles.card}
+      onPress={() => setSelectedLead(item)}
+    >
+      <View style={styles.cardHeader}>
+        <Text style={styles.clientName}>{item.name}</Text>
+        <View style={styles.badge}>
+          <Text style={styles.badgeText}>{item.daysIdle}d ativo</Text>
+        </View>
+      </View>
+      
+      <Text style={styles.companyName}>{item.company}</Text>
+      
+      <View style={styles.cardFooter}>
+        <Text style={styles.dealValue}>{item.value}</Text>
+        <View style={[styles.priorityDot, { backgroundColor: currentStage === 'Fechados' ? '#38A169' : '#00E5FF' }]} />
+      </View>
+    </TouchableOpacity>
+  );
+
+  return (
+    <SafeAreaView style={styles.container}>
+      <StatusBar barStyle="light-content" backgroundColor="#090A0F" />
+      
+      {/* HEADER PRINCIPAL */}
+      <View style={styles.header}>
+        <View>
+          <Text style={styles.greeting}>Pipeline Geral</Text>
+          <Text style={styles.stageTotal}>{totalValue}</Text>
+        </View>
+        <TouchableOpacity activeOpacity={0.7} style={styles.avatar}>
+          <Text style={styles.avatarText}>CR</Text>
+        </TouchableOpacity>
+      </View>
+
+      {/* SELETOR DE ABAS HORIZONTAIS */}
+      <View style={styles.tabsWrapper}>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.tabsScroll}>
+          {PIPELINE_STAGES.map((stage) => {
+            const isActive = currentStage === stage;
+            const count = INITIAL_LEADS.filter(l => l.stage === stage).length;
+            return (
+              <TouchableOpacity
+                key={stage}
+                activeOpacity={0.8}
+                onPress={() => setCurrentStage(stage)}
+                style={[styles.tabButton, isActive && styles.activeTabButton]}
+              >
+                <Text style={[styles.tabText, isActive && styles.activeTabText]}>
+                  {stage} <Text style={styles.tabCount}>({count})</Text>
+                </Text>
+                {isActive && <View style={styles.tabIndicator} />}
+              </TouchableOpacity>
+            );
+          })}
+        </ScrollView>
+      </View>
+
+      {/* LISTAGEM DE LEADS */}
+      <FlatList
+        data={filteredLeads}
+        keyExtractor={(item) => item.id}
+        renderItem={renderLeadCard}
+        contentContainerStyle={styles.listContent}
+        ListEmptyComponent={
+          <View style={styles.emptyContainer}>
+            <Text style={styles.emptyText}>Nenhum lead nesta etapa</Text>
+          </View>
+        }
+      />
+
+      {/* BOTTOM SHEET INTERATIVO */}
+      <Modal
+        visible={selectedLead !== null}
+        animationType="slide"
+        transparent={true}
+        onRequestClose={() => setSelectedLead(null)}
+      >
+        <TouchableOpacity 
+          style={styles.modalOverlay} 
+          activeOpacity={1} 
+          onPress={() => setSelectedLead(null)}
+        >
+          <View style={styles.bottomSheet} onStartShouldSetResponder={() => true}>
+            <View style={styles.dragIndicator} />
+            
+            {selectedLead && (
+              <>
+                <Text style={styles.modalCompanyName}>{selectedLead.company}</Text>
+                <Text style={styles.modalClientName}>{selectedLead.name}</Text>
+                <Text style={styles.modalValue}>{selectedLead.value}</Text>
+                
+                <View style={styles.modalStageBadge}>
+                  <Text style={styles.modalStageText}>Etapa atual: {selectedLead.stage}</Text>
+                </View>
+
+                {/* DISPARADORES DE AÇÕES NATIVAS DO SMARTPHONE */}
+                <View style={styles.actionRow}>
+                  <TouchableOpacity 
+                    style={styles.actionButton}
+                    onPress={() => handleWhatsApp(selectedLead.phone)}
+                  >
+                    <Text style={styles.actionButtonText}>WhatsApp</Text>
+                  </TouchableOpacity>
+                  
+                  <TouchableOpacity 
+                    style={[styles.actionButton, styles.actionButtonSecondary]}
+                    onPress={() => handleCall(selectedLead.phone)}
+                  >
+                    <Text style={styles.actionButtonTextSecondary}>Ligar</Text>
+                  </TouchableOpacity>
+                </View>
+              </>
+            )}
+          </View>
+        </TouchableOpacity>
+      </Modal>
+    </SafeAreaView>
+  );
+}
+
+// ESTILOS VISUAIS DARK PREMIUM
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#090A0F',
+  },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingTop: 20,
+    paddingBottom: 15,
+  },
+  greeting: {
+    fontSize: 14,
+    color: '#8F94A8',
+    fontWeight: '500',
+    letterSpacing: 0.5,
+    textTransform: 'uppercase',
+  },
+  stageTotal: {
+    fontSize: 28,
+    fontWeight: '700',
+    color: '#FFFFFF',
+    letterSpacing: -0.5,
+    marginTop: 4,
+  },
+  avatar: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#161822',
+    borderWidth: 1,
+    borderColor: '#242736',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  avatarText: {
+    color: '#00E5FF',
+    fontWeight: '600',
+    fontSize: 14,
+  },
+  tabsWrapper: {
+    borderBottomWidth: 1,
+    borderColor: '#161822',
+  },
+  tabsScroll: {
+    paddingHorizontal: 20,
+    paddingBottom: 12,
+  },
+  tabButton: {
+    marginRight: 24,
+    paddingBottom: 6,
+    position: 'relative',
+  },
+  tabText: {
+    fontSize: 15,
+    fontWeight: '500',
+    color: '#4E5366',
+  },
+  activeTabText: {
+    color: '#FFFFFF',
+    fontWeight: '700',
+  },
+  tabCount: {
+    fontSize: 12,
+    fontWeight: '400',
+    opacity: 0.6,
+  },
+  tabIndicator: {
+    position: 'absolute',
+    bottom: -13,
+    left: 0,
+    right: 0,
+    height: 2,
+    backgroundColor: '#00E5FF',
+    borderRadius: 1,
+  },
+  listContent: {
+    padding: 20,
+  },
+  card: {
+    backgroundColor: '#161822',
+    borderRadius: 16,
+    padding: 18,
+    marginBottom: 14,
+    borderWidth: 1,
+    borderColor: '#242736',
+  },
+  cardHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 4,
+  },
+  clientName: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#FFFFFF',
+    letterSpacing: -0.3,
+  },
+  companyName: {
+    fontSize: 13,
+    color: '#8F94A8',
+    marginBottom: 16,
+  },
+  badge: {
+    backgroundColor: 'rgba(255, 255, 255, 0.04)',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 6,
+  },
+  badgeText: {
+    fontSize: 11,
+    color: '#8F94A8',
+    fontWeight: '500',
+  },
+  cardFooter: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  dealValue: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#FFFFFF',
+    letterSpacing: -0.5,
+  },
+  priorityDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+  },
+  emptyContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 60,
+  },
+  emptyText: {
+    color: '#4E5366',
+    fontSize: 14,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+    justifyContent: 'flex-end',
+  },
+  bottomSheet: {
+    backgroundColor: '#11131A',
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    paddingHorizontal: 24,
+    paddingTop: 12,
+    paddingBottom: 40,
+    borderTopWidth: 1,
+    borderColor: '#242736',
+  },
+  dragIndicator: {
+    width: 36,
+    height: 4,
+    backgroundColor: '#242736',
+    borderRadius: 2,
+    alignSelf: 'center',
+    marginBottom: 24,
+  },
+  modalCompanyName: {
+    fontSize: 13,
+    color: '#00E5FF',
+    fontWeight: '600',
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+    marginBottom: 6,
+  },
+  modalClientName: {
+    fontSize: 24,
+    fontWeight: '700',
+    color: '#FFFFFF',
+    letterSpacing: -0.5,
+  },
+  modalValue: {
+    fontSize: 32,
+    fontWeight: '800',
+    color: '#FFFFFF',
+
+marginTop: 12,
+letterSpacing: -1,
+},
+modalStageBadge: {
+alignSelf: 'flex-start',
+backgroundColor: 'rgba(255, 255, 255, 0.05)',
+paddingHorizontal: 12,
+paddingVertical: 6,
+borderRadius: 8,
+marginTop: 14,
+marginBottom: 32,
+},
+modalStageText: {
+color: '#8F94A8',
+fontSize: 13,
+fontWeight: '500',
+},
+actionRow: {
+flexDirection: 'row',
+justifyContent: 'space-between',
+},
+actionButton: {
+flex: 1,
+backgroundColor: '#FFFFFF',
+height: 52,
+borderRadius: 14,
+alignItems: 'center',
+justifyContent: 'center',
+marginRight: 12,
+},
+actionButtonText: {
+color: '#090A0F',
+fontWeight: '600',
+fontSize: 15,
+},
+actionButtonSecondary: {
+backgroundColor: 'transparent',
+borderWidth: 1,
+borderColor: '#242736',
+marginRight: 0,
+},
+actionButtonTextSecondary: {
+color: '#FFFFFF',
+fontWeight: '600',
+fontSize: 15,
+},
+});
+
+
+Se você precisar ajustar as funcionalidades, me avise:
+* Quer adicionar um **mecanismo para mudar o lead de coluna** diretamente de dentro do Modal?
+* Precisa de ajuda configurando o **banco de dados** (como o Firebase ou Supabase) no seu Replit?
+
+
