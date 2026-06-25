@@ -1,0 +1,82 @@
+import React, { useState } from 'react';
+// IMPORTANTE: Mantenha os seus imports de estilo e componentes visuais intocados (View, Text, etc)
+
+export default function TelaMarketing() {
+  // 1. ESTADOS FUNCIONAIS (Para gerenciar os dados sem mexer no visual)
+  const [nicho, setNicho] = useState('');
+  const [orcamento, setOrcamento] = useState('');
+  const [resultadoIA, setResultadoIA] = useState(null);
+
+  // 2. BANCO DE DADOS MINIMALISTA DA IA
+  const IA_ESTRATEGIAS = {
+    default: {
+      canais: ["Meta Ads (Instagram)", "Google App Campaigns"],
+      publico: "Interesses gerais relacionados ao nicho do seu app.",
+      dica: "Crie criativos focados no visual Glassmorphism e na facilidade do login em 1 clique."
+    },
+    delivery: {
+      canais: ["Meta Ads (Stories/Reels locais)", "Google Maps"],
+      publico: "Raio de 5km de distância do comércio, horários de pico (almoço/jantar).",
+      dica: "Anuncie cupons de primeira compra utilizando vídeos curtos e dinâmicos."
+    },
+    produtividade: {
+      canais: ["Apple Search Ads", "Meta Ads (Público Corporativo)"],
+      publico: "Profissionais, estudantes e pessoas focadas em rotina organizacional.",
+      dica: "Destaque a rapidez do Onboarding e ganho de tempo nos primeiros segundos do vídeo."
+    },
+    financas: {
+      canais: ["Google Search (Fundo de funil)", "YouTube Ads"],
+      publico: "Pessoas buscando planilhas, controle de gastos ou investimentos.",
+      dica: "Passe segurança total nos criativos, destacando a privacidade do login Apple/Google."
+    }
+  };
+
+  // 3. LÓGICA DO AGENTE DE IA
+  const lidarComSugestaoIA = () => {
+    if (!nicho) return;
+
+    const nichoChave = nicho.toLowerCase().trim();
+    const estrategiaBase = IA_ESTRATEGIAS[nichoChave] || IA_ESTRATEGIAS.default;
+    const valorDiario = parseFloat(orcamento) || 0;
+    
+    let distribuicaoVerba = "";
+    if (valorDiario < 20) {
+      distribuicaoVerba = `Foque 100% em ${estrategiaBase.canais[0]} para não pulverizar seu orçamento de R$ ${valorDiario}/dia.`;
+    } else {
+      distribuicaoVerba = `Divida a verba: 60% em ${estrategiaBase.canais[0]} e 40% em ${estrategiaBase.canais[1] || 'TikTok Ads'}.`;
+    }
+
+    // Define o resultado final que será renderizado nos seus textos atuais
+    setResultadoIA({
+      plano: `Plano Otimizado para App de ${nicho}`,
+      canaisRecomendados: estrategiaBase.canais.join(", "),
+      publicoAlvo: estrategiaBase.publico,
+      distribuicaoOrcamento: distribuicaoVerba,
+      insightDaIA: estrategiaBase.dica
+    });
+
+    console.log("Estratégia calculada pelo Agente de IA para Expo Go.");
+  };
+
+  /* 
+    4. COMO CONECTAR ISSO NOS SEUS COMPONENTES EXISTENTES:
+    
+    - No seu <TextInput> de Nicho, adicione: 
+        onChangeText={setNicho} value={nicho}
+        
+    - No seu <TextInput> de Orçamento, adicione: 
+        onChangeText={setOrcamento} value={orcamento} keyboardType="numeric"
+        
+    - No seu botão Glassmorphism (TouchableOpacity/Pressable), adicione: 
+        onPress={lidarComSugestaoIA}
+        
+    - Nos seus blocos de <Text> onde o resultado deve aparecer, use as variáveis:
+        {resultadoIA?.plano}
+        {resultadoIA?.canaisRecomendados}
+        {resultadoIA?.publicoAlvo}
+        {resultadoIA?.distribuicaoOrcamento}
+        {resultadoIA?.insightDaIA}
+  */
+
+  // O seu return() com todo o visual lindo em Glassmorphism continua aqui embaixo EXATAMENTE igual.
+}

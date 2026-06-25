@@ -944,7 +944,16 @@ function ReportsView({ onMenu }: { onMenu: () => void }) {
 
 // ─── Screen: Marketing ───────────────────────────────────────────────────────
 type AiStrategy = { meta: string; google: string; bestTimes: string; expectedLeads: string };
+type ResultadoIA = { plano: string; canaisRecomendados: string; publicoAlvo: string; distribuicaoOrcamento: string; insightDaIA: string };
 const MARKETING_TABS = ["Campanhas Ativas", "Criativos Redes"] as const;
+const IA_ESTRATEGIAS: Record<string, { canais: string[]; publico: string; dica: string }> = {
+  default:       { canais: ["Meta Ads (Instagram)", "Google App Campaigns"],           publico: "Interesses gerais relacionados ao nicho do seu negócio.",                       dica: "Crie criativos focados no visual moderno e na facilidade do onboarding rápido." },
+  delivery:      { canais: ["Meta Ads (Stories/Reels locais)", "Google Maps"],          publico: "Raio de 5 km do comércio, horários de pico (almoço/jantar).",                   dica: "Anuncie cupons de primeira compra com vídeos curtos e dinâmicos."               },
+  produtividade: { canais: ["Apple Search Ads", "Meta Ads (Público Corporativo)"],      publico: "Profissionais, estudantes e pessoas focadas em rotina organizacional.",          dica: "Destaque a rapidez do onboarding e o ganho de tempo nos primeiros segundos."    },
+  financas:      { canais: ["Google Search (Fundo de funil)", "YouTube Ads"],           publico: "Pessoas buscando planilhas, controle de gastos ou investimentos.",              dica: "Passe segurança total nos criativos, destacando privacidade e proteção de dados." },
+  saude:         { canais: ["Meta Ads (Saúde & Bem-estar)", "Google Search"],           publico: "Adultos 25–55 interessados em saúde, academia ou medicina preventiva.",          dica: "Use depoimentos reais e evite promessas exageradas para cumprir políticas do Meta." },
+  varejo:        { canais: ["Meta Ads (Catálogo Dinâmico)", "Google Shopping"],         publico: "Compradores online por interesse em produto, retargeting de visitantes.",         dica: "Ative o Pixel de conversão e crie públicos semelhantes (Lookalike 1–3%)."        },
+};
 const CREATIVE_HEADLINE = '"Cansado de perder leads na sua empresa?"';
 const CREATIVE_BODY = "Legenda sugerida: Deixar dinheiro na mesa dói. Enquanto você atende um cliente, nossa IA qualifica e agenda os próximos direto no seu WhatsApp comercial. Toque no link e mude o ritmo do seu negócio.";
 
@@ -956,6 +965,8 @@ function MarketingView({ onMenu }: { onMenu: () => void }) {
   const [investment,  setInvestment]  = useState("");
   const [days,        setDays]        = useState("");
   const [strategy,    setStrategy]    = useState<AiStrategy | null>(null);
+  const [nicho,       setNicho]       = useState("");
+  const [resultadoIA, setResultadoIA] = useState<ResultadoIA | null>(null);
 
   const generate = () => {
     if (!investment || !days) return;
@@ -968,6 +979,28 @@ function MarketingView({ onMenu }: { onMenu: () => void }) {
         google:        `R$ ${(v * 0.4).toFixed(0)} no Google Ads (Busca Local)`,
         bestTimes:     "Terças e Quintas, das 11:30 às 13:30 e 18:00 às 20:30",
         expectedLeads: `${Math.floor(v / 8)} a ${Math.floor(v / 5)} leads qualificados`,
+      });
+    }, 2000);
+  };
+
+  const lidarComSugestaoIA = () => {
+    if (!nicho) return;
+    setCalculating(true);
+    setResultadoIA(null);
+    setTimeout(() => {
+      setCalculating(false);
+      const nichoChave = nicho.toLowerCase().trim();
+      const estrategiaBase = IA_ESTRATEGIAS[nichoChave] ?? IA_ESTRATEGIAS.default;
+      const valorDiario = parseFloat(investment) || 0;
+      const distribuicaoVerba = valorDiario < 20
+        ? `Foque 100% em ${estrategiaBase.canais[0]} para não pulverizar seu orçamento de R$ ${valorDiario}/dia.`
+        : `Divida a verba: 60% em ${estrategiaBase.canais[0]} e 40% em ${estrategiaBase.canais[1] ?? "TikTok Ads"}.`;
+      setResultadoIA({
+        plano:                `Plano Otimizado para ${nicho.charAt(0).toUpperCase() + nicho.slice(1)}`,
+        canaisRecomendados:   estrategiaBase.canais.join(", "),
+        publicoAlvo:          estrategiaBase.publico,
+        distribuicaoOrcamento: distribuicaoVerba,
+        insightDaIA:          estrategiaBase.dica,
       });
     }, 2000);
   };
@@ -1065,28 +1098,33 @@ function MarketingView({ onMenu }: { onMenu: () => void }) {
           <ScrollView style={S.form} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false} keyboardDismissMode="on-drag">
             <Text style={{ fontSize: 22, fontWeight: "700", color: "#FFFFFF", marginBottom: 24, letterSpacing: -0.5 }}>Calculadora de Mídia IA</Text>
 
-            <Text style={S.label}>QUANTO DESEJA INVESTIR? (R$ TOTAL)</Text>
-            <TextInput style={S.input} placeholder="Ex: 1500" placeholderTextColor="#4E5366" keyboardType="numeric" value={investment} onChangeText={setInvestment} />
+            <Text style={S.label}>NICHO DO SEU NEGÓCIO</Text>
+            <TextInput style={S.input} placeholder="Ex: delivery, financas, varejo, saude" placeholderTextColor="#4E5366" value={nicho} onChangeText={setNicho} autoCapitalize="none" />
+
+            <Text style={S.label}>ORÇAMENTO DIÁRIO (R$)</Text>
+            <TextInput style={S.input} placeholder="Ex: 50" placeholderTextColor="#4E5366" keyboardType="numeric" value={investment} onChangeText={setInvestment} />
 
             <Text style={S.label}>NÚMERO DE DIAS DA CAMPANHA</Text>
             <TextInput style={S.input} placeholder="Ex: 10" placeholderTextColor="#4E5366" keyboardType="numeric" value={days} onChangeText={setDays} />
 
-            <TouchableOpacity style={[S.primaryBtn, (!investment || !days) && S.primaryBtnDisabled]} activeOpacity={0.8} onPress={generate} disabled={calculating || !investment || !days}>
+            <TouchableOpacity style={[S.primaryBtn, !nicho && S.primaryBtnDisabled]} activeOpacity={0.8} onPress={lidarComSugestaoIA} disabled={calculating || !nicho}>
               {calculating ? <ActivityIndicator color="#FFFFFF" /> : <Text style={S.primaryBtnText}>Otimizar Canais e Horários</Text>}
             </TouchableOpacity>
 
-            {strategy && (
+            {resultadoIA && (
               <View style={S.strategyBox}>
-                <Text style={{ fontSize: 15, fontWeight: "700", color: "#FFFFFF", marginBottom: 16 }}>Planejamento Recomendado</Text>
-                <Text style={S.label2}>ONDE POSTAR & QUANTO INVESTIR:</Text>
-                <Text style={S.mktOutputText}>• {strategy.meta}</Text>
-                <Text style={S.mktOutputText}>• {strategy.google}</Text>
+                <Text style={{ fontSize: 15, fontWeight: "700", color: "#FFFFFF", marginBottom: 16 }}>{resultadoIA.plano}</Text>
+                <Text style={S.label2}>CANAIS RECOMENDADOS:</Text>
+                <Text style={S.mktOutputText}>• {resultadoIA.canaisRecomendados}</Text>
                 <View style={{ height: 1, backgroundColor: "#242736", marginVertical: 12 }} />
-                <Text style={S.label2}>DIAS E HORÁRIOS CRÍTICOS (MAIOR CONVERSÃO):</Text>
-                <Text style={S.mktOutputText}>{strategy.bestTimes}</Text>
+                <Text style={S.label2}>PÚBLICO-ALVO:</Text>
+                <Text style={S.mktOutputText}>{resultadoIA.publicoAlvo}</Text>
                 <View style={{ height: 1, backgroundColor: "#242736", marginVertical: 12 }} />
-                <Text style={S.label2}>PREVISÃO DISPARADA PELO HISTÓRICO:</Text>
-                <Text style={[S.mktOutputText, { color: "#00E5FF", fontWeight: "700" }]}>{strategy.expectedLeads}</Text>
+                <Text style={S.label2}>DISTRIBUIÇÃO DO ORÇAMENTO:</Text>
+                <Text style={S.mktOutputText}>{resultadoIA.distribuicaoOrcamento}</Text>
+                <View style={{ height: 1, backgroundColor: "#242736", marginVertical: 12 }} />
+                <Text style={S.label2}>INSIGHT DA IA:</Text>
+                <Text style={[S.mktOutputText, { color: "#00E5FF", fontWeight: "700" }]}>{resultadoIA.insightDaIA}</Text>
               </View>
             )}
             <View style={{ height: 60 }} />

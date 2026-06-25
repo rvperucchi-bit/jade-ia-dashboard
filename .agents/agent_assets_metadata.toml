@@ -281,3 +281,9 @@ id = "JINf4lgLNcb9rLMrjiXY2"
 uri = "file://exports/glassmorphism-swipe-keyboard-2025-06-25.pdf"
 type = "pdf"
 title = "Resumo — Glassmorphism + Swipe + Keyboard Dismiss"
+
+[[outputs]]
+id = "RFyGbfJdjnMPy1DVNp5Jj"
+uri = "file://exports/marketing-ia-logica-2025-06-25.pdf"
+type = "pdf"
+title = "Resumo — Marketing IA: Lógica Injetada"
