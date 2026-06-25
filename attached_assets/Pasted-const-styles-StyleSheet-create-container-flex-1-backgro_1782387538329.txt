@@ -1,0 +1,144 @@
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#090A0F', // Fundo escuro premium unificado
+  },
+  topBar: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingTop: Platform.OS === 'ios' ? 10 : 20,
+    height: 60,
+  },
+  transparentButton: {
+    width: 42,
+    height: 42,
+    borderRadius: 12,
+    backgroundColor: 'rgba(255, 255, 255, 0.03)', // Efeito translúcido discreto
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.05)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  topIconText: {
+    color: '#FFFFFF',
+    fontSize: 18,
+  },
+  topTitle: {
+    color: '#8F94A8',
+    fontSize: 14,
+    fontWeight: '600',
+    letterSpacing: 1,
+    textTransform: 'uppercase',
+  },
+  chatArea: {
+    flexGrow: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 30,
+  },
+  welcomeContainer: {
+    alignItems: 'center',
+  },
+  aiLogoGlow: {
+    fontSize: 48,
+    marginBottom: 20,
+  },
+  welcomeText: {
+    color: '#FFFFFF',
+    fontSize: 18,
+    fontWeight: '500',
+    textAlign: 'center',
+    lineHeight: 26,
+    letterSpacing: -0.3,
+  },
+  inputContainer: {
+    paddingHorizontal: 16,
+    paddingBottom: Platform.OS === 'ios' ? 24 : 16,
+    paddingTop: 8,
+    backgroundColor: '#090A0F',
+  },
+  inputRowInside: {
+    flexDirection: 'row',
+    backgroundColor: '#161822', // Surface
+    borderRadius: 28, // Barra totalmente arredondada estilo ChatGPT
+    alignItems: 'center',
+    paddingHorizontal: 8,
+    paddingVertical: 6,
+    borderWidth: 1,
+    borderColor: '#242736',
+  },
+  innerBarButton: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  barIcon: {
+    color: '#8F94A8',
+    fontSize: 20,
+  },
+  textInputStyle: {
+    flex: 1,
+    color: '#FFFFFF',
+    fontSize: 15,
+    paddingHorizontal: 10,
+    maxHeight: 100, // Impede o campo de engolir a tela se o texto for gigante
+    paddingTop: Platform.OS === 'ios' ? 8 : 4,
+  },
+  sendButtonCircle: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    backgroundColor: '#FFFFFF', // Círculo branco de alto impacto para envio
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  sendIcon: {
+    color: '#090A0F',
+    fontSize: 14,
+    fontWeight: '700',
+  },
+  
+  // ESTILOS DA SIDEBAR (DRAWER)
+  drawerContainer: {
+    flex: 1,
+    backgroundColor: '#11131A', // Lateral levemente elevada em relação ao fundo
+    paddingHorizontal: 16,
+  },
+  drawerHeader: {
+    paddingVertical: 30,
+    borderBottomWidth: 1,
+    borderColor: '#242736',
+    marginBottom: 20,
+  },
+  drawerBrand: {
+    color: '#FFFFFF',
+    fontSize: 20,
+    fontWeight: '700',
+    letterSpacing: -0.5,
+  },
+  drawerUser: {
+    color: '#00E5FF',
+    fontSize: 12,
+    fontWeight: '500',
+    marginTop: 4,
+  },
+  drawerItem: {
+    height: 52,
+    borderRadius: 12,
+    justifyContent: 'center',
+    paddingHorizontal: 16,
+    marginBottom: 8,
+    backgroundColor: 'rgba(255, 255, 255, 0.02)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.03)',
+  },
+  drawerItemText: {
+    color: '#E2E8F0',
+    fontSize: 15,
+    fontWeight: '500',
+  },
+});

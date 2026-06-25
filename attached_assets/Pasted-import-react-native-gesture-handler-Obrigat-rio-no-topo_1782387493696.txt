@@ -1,0 +1,156 @@
+import 'react-native-gesture-handler'; // Obrigatório no topo para os gestos da Sidebar funcionarem
+import React, { useState } from 'react';
+import { 
+  StyleSheet, 
+  Text, 
+  View, 
+  TextInput, 
+  TouchableOpacity, 
+  SafeAreaView, 
+  StatusBar,
+  ScrollView,
+  KeyboardAvoidingView,
+  Platform
+} from 'react-native';
+import { createDrawerNavigator, DrawerContentScrollView } from '@react-navigation/drawer';
+import { NavigationContainer } from '@react-navigation/native';
+
+// 1. CONTEÚDO CUSTOMIZADO DA SIDEBAR (BARRA LATERAL ESQUERDA)
+function CustomDrawerContent(props) {
+  // Lista com os bastantes botões que seu app comercial possui
+  const menuItems = [
+    { label: '💬 Chat Principal', route: 'Chat' },
+    { label: '📊 Pipeline Comercial', route: 'Pipeline' },
+    { label: '🔍 Prospecção Maps IA', route: 'Prospecting' },
+    { label: '🌱 Carteira & Farmer', route: 'Farmer' },
+    { label: '👥 Meus Clientes', route: 'Clients' },
+    { label: '📈 Relatórios Globais', route: 'Reports' },
+    { label: '💳 Assinatura & Faturamento', route: 'Billing' },
+  ];
+
+  return (
+    <DrawerContentScrollView {...props} style={styles.drawerContainer}>
+      <View style={styles.drawerHeader}>
+        <Text style={styles.drawerBrand}>Sleek CRM</Text>
+        <Text style={styles.drawerUser}>Agente Autónomo Ativo</Text>
+      </View>
+      
+      {menuItems.map((item, index) => (
+        <TouchableOpacity 
+          key={index} 
+          style={styles.drawerItem} 
+          activeOpacity={0.7}
+          onPress={() => props.navigation.navigate(item.route)}
+        >
+          <Text style={styles.drawerItemText}>{item.label}</Text>
+        </TouchableOpacity>
+      ))}
+    </DrawerContentScrollView>
+  );
+}
+
+// 2. TELA DO CHAT IA PRINCIPAL (ESTILO CHATGPT / GEMINI)
+function ChatScreen({ navigation }) {
+  const [inputText, setInputText] = useState('');
+
+  return (
+    <SafeAreaView style={styles.container}>
+      <StatusBar barStyle="light-content" backgroundColor="#090A0F" />
+      
+      {/* BOTÕES TRANSPARENTES FLUTUANTES NO TOPO */}
+      <View style={styles.topBar}>
+        <TouchableOpacity 
+          style={styles.transparentButton} 
+          onPress={() => navigation.openDrawer()}
+          activeOpacity={0.6}
+        >
+          <Text style={styles.topIconText}>☰</Text> 
+        </TouchableOpacity>
+
+        <Text style={styles.topTitle}>Sleek IA</Text>
+
+        <TouchableOpacity 
+          style={styles.transparentButton}
+          activeOpacity={0.6}
+        >
+          <Text style={styles.topIconText}>⚙️</Text>
+        </TouchableOpacity>
+      </View>
+
+      {/* ÁREA DE CONVERSA LIMPA (FUNDO ESCURO ESPACIAL) */}
+      <ScrollView 
+        contentContainerStyle={styles.chatArea}
+        showsVerticalScrollIndicator={false}
+      >
+        <View style={styles.welcomeContainer}>
+          <Text style={styles.aiLogoGlow}>🤖</Text>
+          <Text style={styles.welcomeText}>Como posso alavancar suas vendas hoje?</Text>
+        </ScrollView>
+
+      {/* BARRA DE DIGITAÇÃO ESTILO PREMIUM MÁXIMO (FIXADA EMBAIXO COM EVASÃO DE TECLADO) */}
+      <KeyboardAvoidingView 
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 10 : 0}
+      >
+        <View style={styles.inputContainer}>
+          <View style={styles.inputRowInside}>
+            
+            {/* Botão de Enviar Imagem / Anexo */}
+            <TouchableOpacity style={styles.innerBarButton} activeOpacity={0.6}>
+              <Text style={styles.barIcon}>＋</Text>
+            </TouchableOpacity>
+
+            {/* Campo de Texto Limpo */}
+            <TextInput 
+              style={styles.textInputStyle}
+              placeholder="Perguntar ao Sleek IA..."
+              placeholderTextColor="#626880"
+              value={inputText}
+              onChangeText={setInputText}
+              multiline
+            />
+
+            {/* Botão de Enviar Áudio ou Mensagem (Dinâmico) */}
+            <TouchableOpacity style={styles.sendButtonCircle} activeOpacity={0.8}>
+              <Text style={styles.sendIcon}>
+                {inputText.trim().length > 0 ? '▲' : '🎙️'}
+              </Text>
+            </TouchableOpacity>
+
+          </View>
+        </View>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
+  );
+}
+
+// 3. TELAS DE ESPAÇO PARA O MENU DIRECIONAR (MOCKS DAS QUE CRIAMOS ANTES)
+function PlaceholderScreen({ name }) {
+  return (
+    <SafeAreaView style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
+      <Text style={{ color: '#FFF', fontSize: 18 }}>Tela: {name}</Text>
+    </SafeAreaView>
+  );
+}
+
+const Drawer = createDrawerNavigator();
+
+export default function App() {
+  return (
+    <NavigationContainer>
+      <Drawer.Navigator
+        drawerContent={(props) => <CustomDrawerContent {...props} />}
+        screenOptions={{
+          headerShown: false,
+          drawerStyle: { width: 280 },
+          swipeEnabled: true, // Permite arrastar da esquerda para abrir nativamente no celular
+        }}
+      >
+        <Drawer.Screen name="Chat" component={ChatScreen} />
+        <Drawer.Screen name="Pipeline" children={() => <PlaceholderScreen name="Pipeline Comercial" />} />
+        <Drawer.Screen name="Prospecting" children={() => <PlaceholderScreen name="Prospecção" />} />
+        <Drawer.Screen name="Farmer" children={() => <PlaceholderScreen name="Carteira Farmer" />} />
+      </Drawer.Navigator>
+    </NavigationContainer>
+  );
+}
