@@ -88,13 +88,13 @@ const MEETING_DAYS = ["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"] as const;
 
 // ─── Sidebar (accordion estilo JADE / ChatGPT) ───────────────────────────────
 const COMERCIAL_ITEMS: { label: string; route: Route }[] = [
-  { label: "💼 Pipeline de Vendas",     route: "Pipeline"    },
-  { label: "🗺️ Rota Otimizada do Dia",  route: "Route"       },
-  { label: "🤖 Prospecção Maps IA",     route: "Prospecting" },
-  { label: "🗓️ Agenda & Briefings",     route: "Meeting"     },
-  { label: "📈 Farmer & Retenção",      route: "Farmer"      },
-  { label: "📉 KPIs & Relatórios",      route: "Reports"     },
-  { label: "🚀 Tráfego & Marketing IA", route: "Marketing"   },
+  { label: "Pipeline de Vendas",     route: "Pipeline"    },
+  { label: "Rota Otimizada do Dia",  route: "Route"       },
+  { label: "Prospecção Maps IA",     route: "Prospecting" },
+  { label: "Agenda & Briefings",     route: "Meeting"     },
+  { label: "Farmer & Retenção",      route: "Farmer"      },
+  { label: "KPIs & Relatórios",      route: "Reports"     },
+  { label: "Tráfego & Marketing IA", route: "Marketing"   },
 ];
 
 function Sidebar({ visible, onClose, currentRoute, onNavigate }: {
@@ -130,10 +130,10 @@ function Sidebar({ visible, onClose, currentRoute, onNavigate }: {
           <Text style={S.drawerBrand}>JADE</Text>
           <View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
             <TouchableOpacity activeOpacity={0.6} style={S.drawerNotifBtn}>
-              <Text style={{ fontSize: 18 }}>🔔</Text>
+              <Text style={{ fontSize: 16, color: "#8F94A8" }}>○</Text>
             </TouchableOpacity>
             <View style={S.drawerAvatar}>
-              <Text style={{ fontSize: 18 }}>👤</Text>
+              <Text style={{ fontSize: 14, color: "#8F94A8", fontWeight: "600" }}>A</Text>
             </View>
           </View>
         </View>
@@ -141,17 +141,17 @@ function Sidebar({ visible, onClose, currentRoute, onNavigate }: {
         <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 60 }}>
           {/* ── Conversas ── */}
           <TouchableOpacity style={S.drawerSection} onPress={() => setConversasOpen((v) => !v)} activeOpacity={0.7}>
-            <Text style={S.drawerSectionTitle}>✉️ Conversas</Text>
+            <Text style={S.drawerSectionTitle}>Conversas</Text>
             <Text style={S.drawerArrow}>{conversasOpen ? "▼" : "►"}</Text>
           </TouchableOpacity>
 
           {conversasOpen && (
             <View style={S.drawerSubMenu}>
               <TouchableOpacity style={S.drawerSubItem} onPress={() => go("Chat")} activeOpacity={0.7}>
-                <Text style={[S.drawerSubText, currentRoute === "Chat" && S.drawerSubTextActive]}>✨ Novo Chat</Text>
+                <Text style={[S.drawerSubText, currentRoute === "Chat" && S.drawerSubTextActive]}>Novo Chat</Text>
               </TouchableOpacity>
               <TouchableOpacity style={S.drawerSubItem} onPress={() => go("Chat")} activeOpacity={0.7}>
-                <Text style={S.drawerSubText}>🕒 Histórico de Chats</Text>
+                <Text style={S.drawerSubText}>Histórico de Chats</Text>
               </TouchableOpacity>
             </View>
           )}
@@ -160,7 +160,7 @@ function Sidebar({ visible, onClose, currentRoute, onNavigate }: {
 
           {/* ── Comercial ── */}
           <TouchableOpacity style={S.drawerSection} onPress={() => setComercialOpen((v) => !v)} activeOpacity={0.7}>
-            <Text style={S.drawerSectionTitle}>📊 Comercial</Text>
+            <Text style={S.drawerSectionTitle}>Comercial</Text>
             <Text style={S.drawerArrow}>{comercialOpen ? "▼" : "►"}</Text>
           </TouchableOpacity>
 
@@ -178,32 +178,32 @@ function Sidebar({ visible, onClose, currentRoute, onNavigate }: {
 
           {/* ── Gestão ── */}
           <TouchableOpacity style={S.drawerSection} onPress={() => setGestaoOpen((v) => !v)} activeOpacity={0.7}>
-            <Text style={S.drawerSectionTitle}>🛠️ Gestão</Text>
+            <Text style={S.drawerSectionTitle}>Gestão</Text>
             <Text style={S.drawerArrow}>{gestaoOpen ? "▼" : "►"}</Text>
           </TouchableOpacity>
 
           {gestaoOpen && (
             <View style={S.drawerSubMenu}>
               <TouchableOpacity style={S.drawerSubItem} onPress={() => go("Management")} activeOpacity={0.7}>
-                <Text style={[S.drawerSubText, currentRoute === "Management" && S.drawerSubTextActive]}>👥 Controle de Time & Metas</Text>
+                <Text style={[S.drawerSubText, currentRoute === "Management" && S.drawerSubTextActive]}>Controle de Time & Metas</Text>
               </TouchableOpacity>
               <TouchableOpacity style={S.drawerSubItem} onPress={() => go("Kpis")} activeOpacity={0.7}>
-                <Text style={[S.drawerSubText, currentRoute === "Kpis" && S.drawerSubTextActive]}>📊 Metas & KPIs Detalhados</Text>
+                <Text style={[S.drawerSubText, currentRoute === "Kpis" && S.drawerSubTextActive]}>Metas & KPIs Detalhados</Text>
               </TouchableOpacity>
               <TouchableOpacity style={S.drawerSubItem} onPress={() => go("CorporatePortfolio")} activeOpacity={0.7}>
-                <Text style={[S.drawerSubText, currentRoute === "CorporatePortfolio" && S.drawerSubTextActive]}>🏢 Carteira Corporativa</Text>
+                <Text style={[S.drawerSubText, currentRoute === "CorporatePortfolio" && S.drawerSubTextActive]}>Carteira Corporativa</Text>
               </TouchableOpacity>
               <TouchableOpacity style={S.drawerSubItem} onPress={() => go("Broadcast")} activeOpacity={0.7}>
-                <Text style={[S.drawerSubText, currentRoute === "Broadcast" && S.drawerSubTextActive]}>📣 Mural da Equipe</Text>
+                <Text style={[S.drawerSubText, currentRoute === "Broadcast" && S.drawerSubTextActive]}>Mural da Equipe</Text>
               </TouchableOpacity>
               <TouchableOpacity style={S.drawerSubItem} onPress={() => go("Feedbacks")} activeOpacity={0.7}>
-                <Text style={[S.drawerSubText, currentRoute === "Feedbacks" && S.drawerSubTextActive]}>🗣️ Feedbacks 1-on-1</Text>
+                <Text style={[S.drawerSubText, currentRoute === "Feedbacks" && S.drawerSubTextActive]}>Feedbacks 1-on-1</Text>
               </TouchableOpacity>
               <TouchableOpacity style={S.drawerSubItem} onPress={() => go("TeamPulse")} activeOpacity={0.7}>
-                <Text style={[S.drawerSubText, currentRoute === "TeamPulse" && S.drawerSubTextActive]}>🧠 Clima Comercial</Text>
+                <Text style={[S.drawerSubText, currentRoute === "TeamPulse" && S.drawerSubTextActive]}>Clima Comercial</Text>
               </TouchableOpacity>
               <TouchableOpacity style={S.drawerSubItem} onPress={() => go("PulseCheck")} activeOpacity={0.7}>
-                <Text style={[S.drawerSubText, currentRoute === "PulseCheck" && S.drawerSubTextActive]}>💬 Check de Sentimento</Text>
+                <Text style={[S.drawerSubText, currentRoute === "PulseCheck" && S.drawerSubTextActive]}>Check de Sentimento</Text>
               </TouchableOpacity>
             </View>
           )}
@@ -212,35 +212,35 @@ function Sidebar({ visible, onClose, currentRoute, onNavigate }: {
 
           {/* ── Conta ── */}
           <TouchableOpacity style={S.drawerSection} onPress={() => setContaOpen((v) => !v)} activeOpacity={0.7}>
-            <Text style={S.drawerSectionTitle}>⚙️ Conta</Text>
+            <Text style={S.drawerSectionTitle}>Conta</Text>
             <Text style={S.drawerArrow}>{contaOpen ? "▼" : "►"}</Text>
           </TouchableOpacity>
 
           {contaOpen && (
             <View style={S.drawerSubMenu}>
               <TouchableOpacity style={S.drawerSubItem} onPress={() => go("MyProfile")} activeOpacity={0.7}>
-                <Text style={[S.drawerSubText, currentRoute === "MyProfile" && S.drawerSubTextActive]}>👤 Meu Perfil</Text>
+                <Text style={[S.drawerSubText, currentRoute === "MyProfile" && S.drawerSubTextActive]}>Meu Perfil</Text>
               </TouchableOpacity>
               <TouchableOpacity style={S.drawerSubItem} onPress={() => go("MyCompany")} activeOpacity={0.7}>
-                <Text style={[S.drawerSubText, currentRoute === "MyCompany" && S.drawerSubTextActive]}>🏢 Minha Empresa</Text>
+                <Text style={[S.drawerSubText, currentRoute === "MyCompany" && S.drawerSubTextActive]}>Minha Empresa</Text>
               </TouchableOpacity>
               <TouchableOpacity style={S.drawerSubItem} onPress={() => go("WhatsApp")} activeOpacity={0.7}>
-                <Text style={[S.drawerSubText, currentRoute === "WhatsApp" && S.drawerSubTextActive]}>💬 Configurações WhatsApp</Text>
+                <Text style={[S.drawerSubText, currentRoute === "WhatsApp" && S.drawerSubTextActive]}>Configurações WhatsApp</Text>
               </TouchableOpacity>
               <TouchableOpacity style={S.drawerSubItem} onPress={() => go("Usage")} activeOpacity={0.7}>
-                <Text style={[S.drawerSubText, currentRoute === "Usage" && S.drawerSubTextActive]}>📈 Uso e Limites</Text>
+                <Text style={[S.drawerSubText, currentRoute === "Usage" && S.drawerSubTextActive]}>Uso e Limites</Text>
               </TouchableOpacity>
               <TouchableOpacity style={S.drawerSubItem} onPress={() => go("Shop")} activeOpacity={0.7}>
-                <Text style={[S.drawerSubText, currentRoute === "Shop" && S.drawerSubTextActive]}>🛒 Loja de Créditos</Text>
+                <Text style={[S.drawerSubText, currentRoute === "Shop" && S.drawerSubTextActive]}>Loja de Créditos</Text>
               </TouchableOpacity>
               <TouchableOpacity style={S.drawerSubItem} onPress={() => go("Subscription")} activeOpacity={0.7}>
-                <Text style={[S.drawerSubText, currentRoute === "Subscription" && S.drawerSubTextActive]}>💳 Planos & Assinatura</Text>
+                <Text style={[S.drawerSubText, currentRoute === "Subscription" && S.drawerSubTextActive]}>Planos & Assinatura</Text>
               </TouchableOpacity>
               <TouchableOpacity style={S.drawerSubItem} onPress={() => go("Privacy")} activeOpacity={0.7}>
-                <Text style={[S.drawerSubText, currentRoute === "Privacy" && S.drawerSubTextActive]}>🔒 Privacidade e LGPD</Text>
+                <Text style={[S.drawerSubText, currentRoute === "Privacy" && S.drawerSubTextActive]}>Privacidade e LGPD</Text>
               </TouchableOpacity>
               <TouchableOpacity style={S.drawerSubItem} onPress={() => go("Help")} activeOpacity={0.7}>
-                <Text style={[S.drawerSubText, currentRoute === "Help" && S.drawerSubTextActive]}>❓ Ajuda & Suporte</Text>
+                <Text style={[S.drawerSubText, currentRoute === "Help" && S.drawerSubTextActive]}>Ajuda & Suporte</Text>
               </TouchableOpacity>
             </View>
           )}
@@ -250,7 +250,7 @@ function Sidebar({ visible, onClose, currentRoute, onNavigate }: {
         <View style={S.drawerFooter}>
           <TouchableOpacity style={S.logoutBtn} onPress={() => { onClose(); onNavigate("Chat"); }}
             activeOpacity={0.7}>
-            <Text style={S.logoutBtnText}>🚪 Sair da Conta</Text>
+            <Text style={S.logoutBtnText}>Sair da Conta</Text>
           </TouchableOpacity>
         </View>
 
@@ -272,7 +272,7 @@ function TopBar({ title, subtitle, onMenu }: { title: string; subtitle?: string;
         <Text style={S.topTitle}>{title}</Text>
       </View>
       <TouchableOpacity style={S.iconBtn} activeOpacity={0.6}>
-        <Text style={S.topIconText}>⚙️</Text>
+        <Text style={S.topIconText}>···</Text>
       </TouchableOpacity>
     </View>
   );
@@ -505,7 +505,7 @@ function RouteView({ onMenu }: { onMenu: () => void }) {
 
   return (
     <View style={{ flex: 1 }}>
-      <TopBar title="Rota Otimizada 📍" subtitle="PLANEJAMENTO DIÁRIO" onMenu={onMenu} />
+      <TopBar title="Rota Otimizada" subtitle="PLANEJAMENTO DIÁRIO" onMenu={onMenu} />
 
       {/* Map placeholder */}
       <View style={S.mapPreview}>
@@ -1880,7 +1880,7 @@ function SubscriptionView({ onMenu }: { onMenu: () => void }) {
 function PrivacyView({ onMenu }: { onMenu: () => void }) {
   return (
     <View style={{ flex: 1 }}>
-      <TopBar title="Privacidade" subtitle="⚙️ CONTA" onMenu={onMenu} />
+      <TopBar title="Privacidade" subtitle="CONTA" onMenu={onMenu} />
       <ScrollView style={S.form} showsVerticalScrollIndicator={false}>
         <View style={S.privacySecBox}>
           <Text style={S.privacySecTitle}>🔒 Criptografia Ponta a Ponta Ativa</Text>
@@ -1916,7 +1916,7 @@ function WhatsAppConfigView({ onMenu }: { onMenu: () => void }) {
 
   return (
     <View style={{ flex: 1 }}>
-      <TopBar title="WhatsApp JADE" subtitle="✉️ CONVERSAS" onMenu={onMenu} />
+      <TopBar title="WhatsApp JADE" subtitle="CONVERSAS" onMenu={onMenu} />
       <ScrollView style={S.form} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
 
         <View style={[S.insightBox, { marginBottom: 20 }]}>
@@ -1960,7 +1960,7 @@ function WhatsAppConfigView({ onMenu }: { onMenu: () => void }) {
 function ShopView({ onMenu }: { onMenu: () => void }) {
   return (
     <View style={{ flex: 1 }}>
-      <TopBar title="Loja JADE" subtitle="⚙️ CONTA" onMenu={onMenu} />
+      <TopBar title="Loja JADE" subtitle="CONTA" onMenu={onMenu} />
       <ScrollView style={S.form} showsVerticalScrollIndicator={false}>
         <Text style={[S.cardSub, { marginBottom: 20 }]}>Adicione recursos avulsos ou expanda os limites da sua operação instantaneamente.</Text>
 
@@ -1994,7 +1994,7 @@ const FAQ_ITEMS = [
 function HelpView({ onMenu }: { onMenu: () => void }) {
   return (
     <View style={{ flex: 1 }}>
-      <TopBar title="Central de Ajuda" subtitle="⚙️ CONTA" onMenu={onMenu} />
+      <TopBar title="Central de Ajuda" subtitle="CONTA" onMenu={onMenu} />
       <ScrollView style={S.form} showsVerticalScrollIndicator={false}>
 
         <Text style={[S.sectionLabel, { marginBottom: 12 }]}>DÚVIDAS FREQUENTES</Text>
@@ -2082,7 +2082,7 @@ function UsageView({ onMenu }: { onMenu: () => void }) {
 
   return (
     <View style={{ flex: 1 }}>
-      <TopBar title="Consumo do Plano" subtitle="⚙️ CONTA" onMenu={onMenu} />
+      <TopBar title="Consumo do Plano" subtitle="CONTA" onMenu={onMenu} />
       <ScrollView style={S.form} showsVerticalScrollIndicator={false}>
 
         <View style={S.usagePlanCard}>
@@ -2155,7 +2155,7 @@ function MyCompanyView({ onMenu }: { onMenu: () => void }) {
 
   return (
     <View style={{ flex: 1 }}>
-      <TopBar title="Minha Empresa" subtitle="⚙️ CONTA" onMenu={onMenu} />
+      <TopBar title="Minha Empresa" subtitle="CONTA" onMenu={onMenu} />
       <ScrollView style={S.form} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
 
         <View style={[S.insightBox, { marginBottom: 20 }]}>
@@ -2231,7 +2231,7 @@ function MyProfileView({ onMenu }: { onMenu: () => void }) {
 
   return (
     <View style={{ flex: 1 }}>
-      <TopBar title="Meu Perfil" subtitle="⚙️ CONTA" onMenu={onMenu} />
+      <TopBar title="Meu Perfil" subtitle="CONTA" onMenu={onMenu} />
       <ScrollView style={S.form} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
 
         {/* Avatar */}

@@ -18,13 +18,13 @@ import { useRouter } from "expo-router";
 
 // ─── Sidebar items ────────────────────────────────────────────────────────────
 const MENU_ITEMS = [
-  { label: "💬 Chat Principal",          route: "Chat" },
-  { label: "📊 Pipeline Comercial",      route: "Pipeline" },
-  { label: "🔍 Prospecção Maps IA",      route: "Prospecting" },
-  { label: "🌱 Carteira & Farmer",       route: "Farmer" },
-  { label: "👥 Meus Clientes",           route: "Clients" },
-  { label: "📈 Relatórios Globais",      route: "Reports" },
-  { label: "💳 Assinatura & Faturamento",route: "Billing" },
+  { label: "Chat Principal",          route: "Chat" },
+  { label: "Pipeline Comercial",      route: "Pipeline" },
+  { label: "Prospecção Maps IA",      route: "Prospecting" },
+  { label: "Carteira & Farmer",       route: "Farmer" },
+  { label: "Meus Clientes",           route: "Clients" },
+  { label: "Relatórios Globais",      route: "Reports" },
+  { label: "Assinatura & Faturamento",route: "Billing" },
 ];
 
 const SIDEBAR_W = 280;
