@@ -476,7 +476,7 @@ const S = StyleSheet.create({
   loadingText: { fontSize: 14, fontFamily: "SpaceGrotesk_400Regular" },
 
   header:    { flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: 16, paddingBottom: 16 },
-  backBtn:   { width: 36, height: 36, alignItems: "center", justifyContent: "center" },
+  backBtn:   { width: 44, height: 44, borderRadius: 22, backgroundColor: "rgba(255,255,255,0.08)", borderWidth: 1, borderColor: "rgba(255,255,255,0.12)", alignItems: "center", justifyContent: "center" },
   refreshBtn:{ width: 36, height: 36, alignItems: "center", justifyContent: "center" },
   headerTitle:{ fontSize: 17, fontFamily: "SpaceGrotesk_700Bold" },
   headerSub:  { fontSize: 11, fontFamily: "SpaceGrotesk_400Regular", marginTop: 1 },

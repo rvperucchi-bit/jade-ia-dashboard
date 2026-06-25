@@ -876,7 +876,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16, paddingBottom: 14,
     borderBottomWidth: StyleSheet.hairlineWidth,
   },
-  backBtn: { width: 40, height: 40, borderRadius: 20, alignItems: "center", justifyContent: "center", marginLeft: -8 },
+  backBtn: { width: 44, height: 44, borderRadius: 22, backgroundColor: "rgba(255,255,255,0.08)", borderWidth: 1, borderColor: "rgba(255,255,255,0.12)", alignItems: "center", justifyContent: "center" },
   headerTitle: { fontSize: 22, fontFamily: "SpaceGrotesk_700Bold" },
   headerSub: { fontSize: 13, fontFamily: "SpaceGrotesk_400Regular", marginTop: 1 },
   lupaBtn: { width: 42, height: 42, borderRadius: 12, borderWidth: 1, alignItems: "center", justifyContent: "center" },

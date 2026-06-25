@@ -293,3 +293,9 @@ id = "SWW96yEuL2zBqYlM06Tp7"
 uri = "file://exports/sidebar-melhorias-2025-06-25.pdf"
 type = "pdf"
 title = "Resumo — Sidebar: 5 Melhorias"
+
+[[outputs]]
+id = "Yfe5kTsZlhfZLABUem1tT"
+uri = "file://exports/botoes-redondos-sidebar-2025-06-25.pdf"
+type = "pdf"
+title = "Resumo — Botões Circulares em Todo o App"

@@ -82,8 +82,7 @@ export default function PreviewProspectingScreen() {
     <SafeAreaView style={S.container} edges={["top", "bottom"]}>
       {/* Back */}
       <TouchableOpacity style={S.backBtn} onPress={() => router.back()} activeOpacity={0.7}>
-        <Feather name="chevron-left" size={26} color="#fff" />
-        <Text style={S.backLabel}>Voltar</Text>
+        <Feather name="chevron-left" size={22} color="#fff" />
       </TouchableOpacity>
 
       {/* Header */}
@@ -194,7 +193,7 @@ export default function PreviewProspectingScreen() {
 const S = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#090A0F" },
 
-  backBtn: { flexDirection: "row", alignItems: "center", paddingHorizontal: 16, paddingTop: 8, paddingBottom: 4 },
+  backBtn: { width: 44, height: 44, borderRadius: 22, backgroundColor: "rgba(255,255,255,0.08)", borderWidth: 1, borderColor: "rgba(255,255,255,0.12)", alignItems: "center", justifyContent: "center", marginHorizontal: 16, marginTop: 8, marginBottom: 4 },
   backLabel: { color: "#8F94A8", fontSize: 15, marginLeft: 2 },
 
   header: { paddingHorizontal: 20, paddingTop: 12, paddingBottom: 15 },

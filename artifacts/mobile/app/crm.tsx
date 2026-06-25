@@ -633,7 +633,7 @@ export default function CRMScreen() {
 const S = StyleSheet.create({
   root:        { flex: 1 },
   header:      { flexDirection: "row", alignItems: "center", paddingHorizontal: 16, paddingBottom: 12, gap: 12 },
-  backBtn:     { padding: 4 },
+  backBtn:     { width: 44, height: 44, borderRadius: 22, backgroundColor: "rgba(255,255,255,0.08)", borderWidth: 1, borderColor: "rgba(255,255,255,0.12)", alignItems: "center", justifyContent: "center" },
   title:       { fontSize: 22, fontFamily: "SpaceGrotesk_700Bold", flex: 1 },
   headerRight: { flexDirection: "row", alignItems: "center", gap: 10 },
   iconBtn:     { padding: 6 },

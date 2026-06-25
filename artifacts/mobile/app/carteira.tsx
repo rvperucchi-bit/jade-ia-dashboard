@@ -283,7 +283,7 @@ export default function CarteiraScreen() {
 const S = StyleSheet.create({
   root: { flex: 1 },
   header: { flexDirection: "row", alignItems: "center", gap: 12, paddingHorizontal: 20, paddingBottom: 14, borderBottomWidth: StyleSheet.hairlineWidth },
-  backBtn: { width: 44, height: 44, borderRadius: 22, alignItems: "center", justifyContent: "center" },
+  backBtn: { width: 44, height: 44, borderRadius: 22, backgroundColor: "rgba(255,255,255,0.08)", borderWidth: 1, borderColor: "rgba(255,255,255,0.12)", alignItems: "center", justifyContent: "center" },
   title: { fontSize: 18, fontFamily: "SpaceGrotesk_700Bold" },
   sub: { fontSize: 13, fontFamily: "SpaceGrotesk_400Regular", marginTop: 2 },
   alerts: { padding: 16, paddingBottom: 0, gap: 8 },

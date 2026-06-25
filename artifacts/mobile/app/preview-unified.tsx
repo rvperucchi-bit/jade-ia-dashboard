@@ -146,6 +146,13 @@ function Sidebar({ visible, onClose, currentRoute, onNavigate }: {
           </View>
         </View>
 
+        {/* Botão fechar fixo (fora do scroll) */}
+        <View style={{ paddingBottom: 16 }} pointerEvents="box-none">
+          <TouchableOpacity style={S.sidebarCloseCircle} onPress={onClose} activeOpacity={0.7}>
+            <Ionicons name="chevron-back" size={22} color="rgba(255,255,255,0.85)" />
+          </TouchableOpacity>
+        </View>
+
         <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false} keyboardDismissMode="on-drag" contentContainerStyle={{ paddingBottom: 32 }}>
           {/* ── Conversas ── */}
           <TouchableOpacity style={S.drawerSection} onPress={() => setConversasOpen((v) => !v)} activeOpacity={0.7}>
@@ -2383,7 +2390,8 @@ export default function PreviewUnifiedScreen() {
 const S = StyleSheet.create({
   root: { flex: 1, backgroundColor: "#090A0F" },
 
-  backAbsolute: { position: "absolute", right: 16, zIndex: 30, backgroundColor: "rgba(255,255,255,0.04)", borderRadius: 10, borderWidth: 1, borderColor: "rgba(255,255,255,0.06)", paddingHorizontal: 12, paddingVertical: 6 },
+  backAbsolute: { position: "absolute", right: 16, zIndex: 30, width: 44, height: 44, borderRadius: 22, backgroundColor: "rgba(255,255,255,0.08)", borderWidth: 1, borderColor: "rgba(255,255,255,0.12)", alignItems: "center", justifyContent: "center" },
+  sidebarCloseCircle: { width: 44, height: 44, borderRadius: 22, backgroundColor: "rgba(255,255,255,0.08)", borderWidth: 1, borderColor: "rgba(255,255,255,0.12)", alignItems: "center", justifyContent: "center" },
 
   topBar: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", paddingHorizontal: 16, paddingBottom: 14 },
   iconBtn: { width: 42, height: 42, borderRadius: 12, backgroundColor: "transparent", borderWidth: 0, alignItems: "center", justifyContent: "center" },

@@ -142,7 +142,7 @@ export default function AccountSettingsScreen() {
 const S = StyleSheet.create({
   container:       { flex: 1, backgroundColor: "#090A0F" },
   topBar:          { flexDirection: "row", justifyContent: "space-between", alignItems: "center", paddingHorizontal: 16, paddingBottom: 14 },
-  iconBtn:         { width: 42, height: 42, borderRadius: 12, backgroundColor: "transparent", alignItems: "center", justifyContent: "center" },
+  iconBtn:         { width: 44, height: 44, borderRadius: 22, backgroundColor: "rgba(255,255,255,0.08)", borderWidth: 1, borderColor: "rgba(255,255,255,0.12)", alignItems: "center", justifyContent: "center" },
   iconBtnText:     { color: "#FFFFFF", fontSize: 22 },
   topTitle:        { fontSize: 20, fontWeight: "700", color: "#FFFFFF", letterSpacing: -0.4 },
   tabsWrapper:     { borderBottomWidth: 1, borderColor: "#161822" },

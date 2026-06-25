@@ -309,7 +309,7 @@ export default function PainelExecutivoScreen() {
 const S = StyleSheet.create({
   root:     { flex: 1 },
   header:   { flexDirection: "row", alignItems: "center", gap: 12, paddingHorizontal: 16, paddingBottom: 12 },
-  backBtn:  { width: 36, height: 36, borderRadius: 18, alignItems: "center", justifyContent: "center" },
+  backBtn:  { width: 44, height: 44, borderRadius: 22, backgroundColor: "rgba(255,255,255,0.08)", borderWidth: 1, borderColor: "rgba(255,255,255,0.12)", alignItems: "center", justifyContent: "center" },
   title:    { fontSize: 20, fontFamily: "SpaceGrotesk_700Bold", flex: 1 },
   goldBadge:{ paddingHorizontal: 10, paddingVertical: 4, borderRadius: 10 },
   goldBadgeText: { fontSize: 11, fontFamily: "SpaceGrotesk_700Bold" },

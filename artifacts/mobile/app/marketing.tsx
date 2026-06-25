@@ -901,7 +901,7 @@ export default function MarketingScreen() {
 const R = StyleSheet.create({
   container:    { flex: 1 },
   header:       { flexDirection: "row", alignItems: "center", paddingHorizontal: 16, paddingBottom: 14, gap: 12 },
-  backBtn:      { width: 44, height: 44, borderRadius: 22, alignItems: "center", justifyContent: "center", backgroundColor: SURF, borderWidth: 1, borderColor: BORD },
+  backBtn:      { width: 44, height: 44, borderRadius: 22, alignItems: "center", justifyContent: "center", backgroundColor: "rgba(255,255,255,0.08)", borderWidth: 1, borderColor: "rgba(255,255,255,0.12)" },
   title:        { flex: 1, fontSize: 20, fontFamily: "SpaceGrotesk_700Bold", color: "#fff" },
   autoToggleRow:{ flexDirection: "row", alignItems: "center", gap: 6 },
   autoLabel:    { fontSize: 13, fontFamily: "SpaceGrotesk_600SemiBold" },

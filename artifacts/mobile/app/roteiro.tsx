@@ -237,7 +237,7 @@ const S = StyleSheet.create({
     paddingHorizontal: 20, paddingBottom: 14,
     borderBottomWidth: StyleSheet.hairlineWidth,
   },
-  backBtn: { width: 44, height: 44, borderRadius: 22, alignItems: "center", justifyContent: "center" },
+  backBtn: { width: 44, height: 44, borderRadius: 22, backgroundColor: "rgba(255,255,255,0.08)", borderWidth: 1, borderColor: "rgba(255,255,255,0.12)", alignItems: "center", justifyContent: "center" },
   headerTitle: { fontSize: 18, fontFamily: "SpaceGrotesk_700Bold" },
   headerSub: { fontSize: 13, fontFamily: "SpaceGrotesk_400Regular", marginTop: 2 },
   intro: { padding: 20, gap: 12 },

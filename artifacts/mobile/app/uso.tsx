@@ -161,7 +161,7 @@ export default function UsoScreen() {
 const U = StyleSheet.create({
   root:     { flex: 1 },
   header:   { flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: 16, paddingBottom: 16 },
-  backBtn:  { width: 36, height: 36, alignItems: "center", justifyContent: "center" },
+  backBtn:  { width: 44, height: 44, borderRadius: 22, backgroundColor: "rgba(255,255,255,0.08)", borderWidth: 1, borderColor: "rgba(255,255,255,0.12)", alignItems: "center", justifyContent: "center" },
   headerTitle: { fontSize: 17, fontFamily: "SpaceGrotesk_700Bold" },
 
   planCard:    { flexDirection: "row", alignItems: "center", gap: 10, borderRadius: 14, borderWidth: 1, padding: 14 },

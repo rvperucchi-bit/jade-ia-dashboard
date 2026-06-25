@@ -382,7 +382,7 @@ export default function LojaScreen() {
 const S = StyleSheet.create({
   root:        { flex: 1, backgroundColor: C.bg },
   header:      { flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: 16, paddingVertical: 14, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: C.border },
-  backBtn:     { width: 40, height: 40, alignItems: "center", justifyContent: "center" },
+  backBtn:     { width: 44, height: 44, borderRadius: 22, backgroundColor: "rgba(255,255,255,0.08)", borderWidth: 1, borderColor: "rgba(255,255,255,0.12)", alignItems: "center", justifyContent: "center" },
   headerTitle: { fontSize: 17, fontFamily: "SpaceGrotesk_700Bold", color: C.text },
 
   tabRow:  { flexDirection: "row", borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: C.border },
