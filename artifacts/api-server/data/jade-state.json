@@ -1270,6 +1270,49 @@
   ],
   "activity_events": [
     {
+      "id": "5949f1b69e8e8545",
+      "type": "message",
+      "text": "JADE respondeu a uma mensagem",
+      "icon": "robot",
+      "color": "#FF0080",
+      "metadata": {},
+      "created_at": "2026-06-25T00:04:22.707Z"
+    },
+    {
+      "id": "ef77dc85587601a3",
+      "type": "campaign",
+      "text": "Campanha criada: Post Redes Sociais para instagram",
+      "icon": "zap",
+      "color": "#FFB300",
+      "metadata": {
+        "campaign_id": "ad824119edd293e5",
+        "type": "post_redes"
+      },
+      "created_at": "2026-06-25T00:04:16.143Z"
+    },
+    {
+      "id": "4bcac4fd8e385a46",
+      "type": "message",
+      "text": "JADE respondeu a uma mensagem",
+      "icon": "robot",
+      "color": "#FF0080",
+      "metadata": {},
+      "created_at": "2026-06-25T00:03:29.914Z"
+    },
+    {
+      "id": "514fe99a9ad9bb27",
+      "type": "lead",
+      "text": "JADE encontrou 10 leads reais em Campinas",
+      "icon": "map-pin",
+      "color": "#FF0080",
+      "metadata": {
+        "cidade": "Campinas",
+        "tipo": "empresa comércio",
+        "count": 10
+      },
+      "created_at": "2026-06-25T00:03:26.131Z"
+    },
+    {
       "id": "13033351c10df9cc",
       "type": "message",
       "text": "JADE respondeu a uma mensagem",
@@ -3176,52 +3219,19 @@
       "icon": "robot",
       "color": "#FF0080",
       "created_at": "2026-06-23T02:14:38.988Z"
-    },
-    {
-      "id": "3e73df68c8b54c7e",
-      "type": "message",
-      "text": "JADE respondeu a uma mensagem",
-      "icon": "robot",
-      "color": "#FF0080",
-      "metadata": {
-        "session_id": "aaa79d10ba007764"
-      },
-      "created_at": "2026-06-23T02:14:38.707Z"
-    },
-    {
-      "id": "6b3e9ae30e3add13",
-      "type": "message",
-      "text": "JADE respondeu a uma mensagem",
-      "icon": "robot",
-      "color": "#FF0080",
-      "metadata": {
-        "session_id": "aaa79d10ba007764"
-      },
-      "created_at": "2026-06-23T02:13:57.264Z"
-    },
-    {
-      "id": "8ad9bb59331355db",
-      "type": "module",
-      "text": "Scanner Radar ativado",
-      "icon": "crosshair",
-      "color": "#6C63FF",
-      "metadata": {
-        "module": "scanner",
-        "active": true
-      },
-      "created_at": "2026-06-23T01:22:57.270Z"
-    },
-    {
-      "id": "2f3c4178c08e06e0",
-      "type": "message",
-      "text": "JADE respondeu a uma mensagem",
-      "icon": "robot",
-      "color": "#FF0080",
-      "metadata": {},
-      "created_at": "2026-06-22T23:38:31.161Z"
     }
   ],
   "marketing_campaigns": [
+    {
+      "id": "ad824119edd293e5",
+      "type_id": "post_redes",
+      "type_title": "Post Redes Sociais",
+      "channel": "instagram",
+      "context_input": "Criar post sobre internet fibra para PMEs",
+      "generated_content": "Certo! Aqui está o post curto e agressivo para Instagram, focado em fechamento rápido:\n\n---\n\n**Cansado de internet lenta que trava sua PME? CHEGA!**\nTeleVendas Pro: Fibra Dedicada com SLA 99,9% em Campinas.\nInstalação em 48h, suporte 24/7 SEM FILA e SEM FIDELIDADE.\nPlano 500MB a R$129,90. Sua empresa merece o melhor!\nNão perca tempo. Clique no link e garanta sua estabilidade AGORA!\n\n---",
+      "status": "draft",
+      "created_at": "2026-06-25T00:04:16.139Z"
+    },
     {
       "id": "bd6b6394fd67462d",
       "type_id": "story",

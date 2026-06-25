@@ -1,6 +1,7 @@
 import { Router, Request, Response } from "express";
 import { engine } from "../lib/ai/index.js";
-import { addCampaign, getAllCampaigns, getCampaign, addActivityEvent } from "../db/store.js";
+import { addCampaign, getAllCampaigns, getCampaign, addActivityEvent, getCompanyConfig } from "../db/store.js";
+import { buildMarketingMemoryBlock } from "../lib/context/builder.js";
 
 const router = Router();
 
@@ -19,7 +20,15 @@ router.post("/generate", async (req: Request, res: Response) => {
   }
 
   try {
-    const prompt = `${system_context}\n\nContexto fornecido pelo usuário: ${context_input.trim()}`;
+    // Enrich with server-stored company memory (marketing profile: diferenciais,
+    // publicoAlvo, tom). Falls back gracefully if no company is configured yet.
+    const storedConfig = getCompanyConfig();
+    const memoryBlock = storedConfig?.nome ? buildMarketingMemoryBlock(storedConfig) : '';
+    const enrichedContext = memoryBlock
+      ? `${memoryBlock}\n\n${system_context}`
+      : system_context;
+
+    const prompt = `${enrichedContext}\n\nContexto fornecido pelo usuário: ${context_input.trim()}`;
     const content = await engine.generate({ prompt, operation: 'marketing:generate' });
 
     const campaign = addCampaign({

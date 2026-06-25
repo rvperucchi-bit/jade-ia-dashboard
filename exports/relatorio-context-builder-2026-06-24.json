@@ -1,0 +1,64 @@
+{
+  "title": "JADE Context Builder — Carregamento Inteligente de Contexto",
+  "subtitle": "Engine monta dinamicamente apenas os blocos necessários por operação",
+  "date": "24/06/2026",
+  "output": "relatorio-context-builder-2026-06-24.pdf",
+  "sections": [
+    {
+      "heading": "Objetivo",
+      "body": [
+        "Implementar um Context Builder central que substitui o envio de contexto monolítico para a IA por uma montagem dinâmica e específica por operação — reduzindo tokens, aumentando relevância e mantendo compatibilidade com a JADE Memory existente."
+      ]
+    },
+    {
+      "heading": "Novo módulo: lib/context/builder.ts",
+      "bullets": [
+        "Função principal: buildContextForOperation(profile, companyConfig?) → BuiltContext",
+        "Tipo ContextProfile: 'chat' | 'marketing' | 'reports' | 'support' | 'lead-analysis'",
+        "Retorna: systemPrompt (string pronta), profile (log), blocks (lista dos blocos incluídos)",
+        "Helpers exportados: buildMarketingMemoryBlock, buildReportsMemoryBlock, buildSupportMemoryBlock",
+        "Fallback para 'chat' quando perfil desconhecido — sem quebra de compatibilidade"
+      ]
+    },
+    {
+      "heading": "Blocos por perfil de operação",
+      "bullets": [
+        "chat → identity + objeções + linguagem + exemplos + BANT + identidade + SPIN + WhatsApp + full company memory (7 campos)",
+        "marketing → identity (minimal) + linguagem + memória marketing (diferenciais, publicoAlvo, concorrentes, tom, planos)",
+        "reports → identity (minimal) + linguagem + memória relatórios (metas, equipe, regrasComerciais)",
+        "support → identity (minimal) + linguagem + memória atendimento (regrasComerciais, objeçõesComuns)",
+        "lead-analysis → sem system prompt — usa raw prompt (comportamento anterior preservado)"
+      ]
+    },
+    {
+      "heading": "Integrações nas rotas",
+      "bullets": [
+        "routes/jade.ts: assembly manual (JADE_SYSTEM_PROMPT + buildCompanyMemoryBlock) substituído por buildContextForOperation('chat', companyConfig) — uma linha, mesma qualidade",
+        "routes/marketing.ts: enriquecido com buildMarketingMemoryBlock(storedConfig) prefixando o system_context enviado pelo app — sem alterar assinatura da rota ou corpo da requisição",
+        "Nenhuma rota pública foi alterada (paths, métodos e contratos HTTP preservados)",
+        "App mobile não foi tocado"
+      ]
+    },
+    {
+      "heading": "Validação",
+      "bullets": [
+        "Typecheck api-server: zero erros.",
+        "Chat comercial: pergunta sobre diferenciais vs Vivo Empresas → resposta citou fibra dedicada SLA 99,9%, instalação 48h, suporte 24/7 sem fila e sem fidelidade — todos da JADE Memory.",
+        "Chat geral: pergunta sobre follow-up → resposta consultiva direta e contextualizada.",
+        "Marketing gerado: post do Instagram citou TeleVendas Pro, Campinas, plano 500MB R$129,90, SLA 99,9% — dados da JADE Memory sem o usuário informar nada no prompt.",
+        "Revisão técnica (architect): aguardando resultado."
+      ]
+    },
+    {
+      "heading": "Compatibilidade mantida",
+      "bullets": [
+        "OpenAI no chat principal — inalterado.",
+        "Gemini em marketing, lead-analysis e prospectar — inalterado.",
+        "Whisper na transcrição — inalterado.",
+        "JADE Memory (buildCompanyMemoryBlock) continua sendo usada pelo perfil chat — zero alteração de comportamento.",
+        "Backward-compat com company_config client-sent no body do chat — mantido.",
+        "Fallback gracioso quando empresa não cadastrada — todos os perfis retornam prompt válido."
+      ]
+    }
+  ]
+}

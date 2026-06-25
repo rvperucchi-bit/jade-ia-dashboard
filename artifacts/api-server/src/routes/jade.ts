@@ -6,8 +6,7 @@ import {
   getCompanyConfig, saveCrmLead, getCrmLeads, updateCrmLead,
   type CompanyConfig, type CrmStatus, type CrmPipeline,
 } from '../db/store.js';
-import { JADE_SYSTEM_PROMPT } from '../lib/prompts/index.js';
-import { buildCompanyMemoryBlock } from '../lib/memory/company.js';
+import { buildContextForOperation } from '../lib/context/builder.js';
 
 const BATCH_SIZE = 5;
 
@@ -312,10 +311,8 @@ router.post('/chat', async (req: Request, res: Response) => {
       } : null
     );
 
-    let systemPrompt = JADE_SYSTEM_PROMPT;
-    if (companyConfig?.nome) {
-      systemPrompt += '\n\n' + buildCompanyMemoryBlock(companyConfig);
-    }
+    const { systemPrompt, blocks: contextBlocks } = buildContextForOperation('chat', companyConfig);
+    req.log.debug({ profile: 'chat', blocks: contextBlocks, hasMemory: contextBlocks.includes('company-memory-full') }, 'context built');
 
     const lastMessage = messagesArray[messagesArray.length - 1];
     const lastUserText = lastMessage!.content;

@@ -143,3 +143,9 @@ id = "4ZPhtXWWADzA-pL5hfu2f"
 uri = "file://exports/relatorio-jade-memory-2026-06-24.pdf"
 type = "pdf"
 title = "Relatório — JADE Memory"
+
+[[outputs]]
+id = "E1-M514X21wD0NMltUG-r"
+uri = "file://exports/relatorio-context-builder-2026-06-24.pdf"
+type = "pdf"
+title = "Relatório — JADE Context Builder"
