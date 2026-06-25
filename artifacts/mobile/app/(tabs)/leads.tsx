@@ -451,14 +451,23 @@ export default function LeadsScreen() {
           <Text style={[L.headerTitle, { color: colors.text }]}>Leads</Text>
           <Text style={[L.headerSub, { color: colors.mutedForeground }]}>{leads.length} leads</Text>
         </View>
-        {/* PREVIEW TEMPORÁRIO — remover depois */}
-        <TouchableOpacity
-          style={{ paddingHorizontal: 12, paddingVertical: 6, borderRadius: 10, borderWidth: 1, borderColor: colors.border }}
-          onPress={() => router.push("/preview-pipeline" as any)}
-          activeOpacity={0.8}
-        >
-          <Text style={{ color: colors.mutedForeground, fontSize: 12, fontFamily: "SpaceGrotesk_500Medium" }}>Preview</Text>
-        </TouchableOpacity>
+        {/* PREVIEW TEMPORÁRIOS — remover depois */}
+        <View style={{ flexDirection: "row", gap: 6 }}>
+          <TouchableOpacity
+            style={{ paddingHorizontal: 10, paddingVertical: 6, borderRadius: 10, borderWidth: 1, borderColor: colors.border }}
+            onPress={() => router.push("/preview-pipeline" as any)}
+            activeOpacity={0.8}
+          >
+            <Text style={{ color: colors.mutedForeground, fontSize: 11, fontFamily: "SpaceGrotesk_500Medium" }}>P1</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={{ paddingHorizontal: 10, paddingVertical: 6, borderRadius: 10, borderWidth: 1, borderColor: colors.border }}
+            onPress={() => router.push("/preview-prospecting" as any)}
+            activeOpacity={0.8}
+          >
+            <Text style={{ color: colors.mutedForeground, fontSize: 11, fontFamily: "SpaceGrotesk_500Medium" }}>P2</Text>
+          </TouchableOpacity>
+        </View>
       </View>
 
       {/* View toggle: CRM / Pipeline */}

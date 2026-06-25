@@ -1,0 +1,124 @@
+import React, { useState } from 'react';
+import { 
+  StyleSheet, 
+  Text, 
+  View, 
+  FlatList, 
+  ScrollView, 
+  TouchableOpacity, 
+  SafeAreaView, 
+  TextInput,
+  ActivityIndicator
+} from 'react-native';
+
+const AI_FOUND_LEADS = [
+  { id: '1', name: 'Oficina Mecânica Silva', segment: 'Mecânica', address: 'Centro, Criciúma', status: 'Extraído' },
+  { id: '2', name: 'Padaria Pão Quente', segment: 'Panificadora', address: 'Próspera, Criciúma', status: 'Extraído' },
+  { id: '3', name: 'Clínica Sorriso Clean', segment: 'Odontologia', address: 'Michel, Criciúma', status: 'Extraído' },
+];
+
+const SEARCH_HISTORY = [
+  { id: 'h1', query: 'Restaurantes', location: 'Centro, Criciúma', date: 'Hoje, 14:30', leadsCount: 42 },
+  { id: 'h2', query: 'Salões de Beleza', location: 'Pio Correa, Criciúma', date: 'Ontem, 09:15', leadsCount: 18 },
+  { id: 'h3', query: 'Academias', location: 'Grande Próspera', date: '22 Jun, 11:00', leadsCount: 29 },
+];
+
+const PROSPECT_TABS = ['Busca Manual', 'Agente IA', 'Histórico'];
+
+export default function ProspectingScreen() {
+  const [activeTab, setActiveTab] = useState('Busca Manual');
+  const [segment, setSegment] = useState('');
+  const [city, setCity] = useState('');
+  const [neighborhood, setNeighborhood] = useState('');
+  const [isScanning, setIsScanning] = useState(false);
+
+  const handleStartScan = () => {
+    if (!segment || !city) return;
+    setIsScanning(true);
+    setTimeout(() => {
+      setIsScanning(false);
+      setActiveTab('Agente IA');
+    }, 3000);
+  };
+
+  const renderAiLeadCard = ({ item }) => (
+    <View style={styles.card}>
+      <View style={styles.cardHeader}>
+        <Text style={styles.clientName}>{item.name}</Text>
+        <View style={styles.aiBadge}>
+          <Text style={styles.aiBadgeText}>🤖 Maps IA</Text>
+        </View>
+      </View>
+      <Text style={styles.companyName}>{item.segment} • {item.address}</Text>
+      <View style={styles.cardFooter}>
+        <Text style={styles.statusText}>Pronto para exportar</Text>
+        <TouchableOpacity style={styles.miniButton}>
+          <Text style={styles.miniButtonText}>+ Enviar</Text>
+        </TouchableOpacity>
+      </View>
+    </View>
+  );
+
+  const renderHistoryCard = ({ item }) => (
+    <View style={styles.card}>
+      <View style={styles.cardHeader}>
+        <Text style={styles.clientName}>{item.query}</Text>
+        <Text style={styles.dateText}>{item.date}</Text>
+      </View>
+      <Text style={styles.companyName}>{item.location}</Text>
+      <View style={styles.historyFooter}>
+        <Text style={styles.historyLeadsCount}>📈 {item.leadsCount} leads gerados</Text>
+      </View>
+    </View>
+  );
+
+  return (
+    <SafeAreaView style={styles.container}>
+      <View style={styles.header}>
+        <Text style={styles.greeting}>Prospecção Automatizada</Text>
+        <Text style={styles.stageTotal}>Captura Instantânea</Text>
+      </View>
+
+      <View style={styles.tabsWrapper}>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.tabsScroll}>
+          {PROSPECT_TABS.map((tab) => {
+            const isActive = activeTab === tab;
+            return (
+              <TouchableOpacity key={tab} activeOpacity={0.8} onPress={() => setActiveTab(tab)} style={styles.tabButton}>
+                <Text style={[styles.tabText, isActive && styles.activeTabText]}>{tab}</Text>
+                {isActive && <View style={styles.tabIndicator} />}
+              </TouchableOpacity>
+            );
+          })}
+        </ScrollView>
+      </View>
+
+      {activeTab === 'Busca Manual' && (
+        <ScrollView style={styles.formContainer} keyboardShouldPersistTaps="handled">
+          <Text style={styles.sectionTitle}>Segmentação do Alvo</Text>
+          <Text style={styles.label}>O QUE VOCÊ BUSCA? (SEGUIMENTO)</Text>
+          <TextInput style={styles.input} placeholder="Ex: Clínicas, Auto peças" placeholderTextColor="#4E5366" value={segment} onChangeText={setSegment} />
+          
+          <Text style={styles.label}>CIDADE</Text>
+          <TextInput style={styles.input} placeholder="Ex: São Paulo, Criciúma" placeholderTextColor="#4E5366" value={city} onChangeText={setCity} />
+          
+          <Text style={styles.label}>BAIRRO (OPCIONAL)</Text>
+          <TextInput style={styles.input} placeholder="Ex: Centro, Pinheirinho" placeholderTextColor="#4E5366" value={neighborhood} onChangeText={setNeighborhood} />
+
+          <TouchableOpacity style={[styles.primaryButton, (!segment || !city) && styles.disabledButton]} activeOpacity={0.8} onPress={handleStartScan} disabled={isScanning || !segment || !city}>
+            {isScanning ? <ActivityIndicator color="#090A0F" /> : <Text style={styles.primaryButtonText}>Ligar Agente Google Maps 🤖</Text>}
+          </TouchableOpacity>
+          <Text style={styles.helperText}>O robô vai simular cliques reais no mapa para extrair telefones válidos.</Text>
+        </ScrollView>
+      )}
+
+      {activeTab === 'Agente IA' && (
+        <FlatList data={AI_FOUND_LEADS} keyExtractor={(item) => item.id} renderItem={renderAiLeadCard} contentContainerStyle={styles.listContent} ListEmptyComponent={<View style={styles.emptyContainer}><Text style={styles.emptyText}>Ative o robô na busca manual primeiro</Text></View>} />
+      )}
+
+      {activeTab === 'Histórico' && (
+        <FlatList data={SEARCH_HISTORY} keyExtractor={(item) => item.id} renderItem={renderHistoryCard} contentContainerStyle={styles.listContent} />
+      )}
+    </SafeAreaView>
+  );
+}
