@@ -1,0 +1,158 @@
+import React, { useState } from 'react';
+import { 
+  StyleSheet, 
+  Text, 
+  View, 
+  FlatList, 
+  ScrollView, 
+  TouchableOpacity, 
+  SafeAreaView, 
+  ActivityIndicator
+} from 'react-native';
+
+const CLIENTS_DATA = [
+  { id: '1', name: 'Marta Souza', company: 'Logix Transportes', health: 'Saudável', lastContact: 'Há 2 dias', valueMRR: 'R$ 2.500/mês', status: 'Ativo' },
+  { id: '2', name: 'Roberto Lima', company: 'Glow Estética', health: 'Risco de Churn', lastContact: 'Há 24 dias', valueMRR: 'R$ 1.200/mês', status: 'Atenção' },
+  { id: '3', name: 'Julia Neves', company: 'Alpha Construtora', health: 'Saudável', lastContact: 'Há 5 dias', valueMRR: 'R$ 5.800/mês', status: 'Ativo' },
+  { id: '4', name: 'Guilherme Faria', company: 'Ponto do Café', health: 'Esfriando', lastContact: 'Há 15 dias', valueMRR: 'R$ 900/mês', status: 'Atenção' },
+];
+
+const FARMER_TABS = ['Minha Carteira', 'Monitoramento IA', 'Alertas'];
+
+export default function FarmerScreen() {
+  const [activeTab, setActiveTab] = useState('Minha Carteira');
+  const [isAiAnalyzing, setIsAiAnalyzing] = useState(false);
+  const [aiReport, setAiReport] = useState(null);
+
+  // Ativa o acompanhamento automático e gera o relatório preditivo
+  const handleAiAnalysis = () => {
+    setIsAiAnalyzing(true);
+    setTimeout(() => {
+      setIsAiAnalyzing(false);
+      setAiReport({
+        healthScore: '92%',
+        churnPrevented: '2 clientes salvos',
+        expansionOpportunity: 'R$ 4.300 em Up-sell detectado'
+      });
+    }, 2500);
+  };
+
+  // Filtra os clientes normais vs os que precisam de atenção imediata
+  const displayedClients = activeTab === 'Alertas' 
+    ? CLIENTS_DATA.filter(c => c.status === 'Atenção') 
+    : CLIENTS_DATA;
+
+  const renderClientCard = ({ item }) => {
+    const isRisk = item.health === 'Risco de Churn' || item.health === 'Esfriando';
+    return (
+      <View style={styles.card}>
+        <View style={styles.cardHeader}>
+          <View>
+            <Text style={styles.clientName}>{item.name}</Text>
+            <Text style={styles.companyName}>{item.company}</Text>
+          </View>
+          <View style={[styles.healthBadge, isRisk && styles.healthBadgeRisk]}>
+            <Text style={[styles.healthBadgeText, isRisk && styles.healthBadgeTextRisk]}>
+              {item.health}
+            </Text>
+          </View>
+        </View>
+        
+        <View style={styles.cardFooter}>
+          <View>
+            <Text style={styles.labelMini}>CONTRATO RECORRENTE</Text>
+            <Text style={styles.dealValue}>{item.valueMRR}</Text>
+          </View>
+          <View style={{ alignItems: 'flex-end' }}>
+            <Text style={styles.labelMini}>ÚLTIMO CONTATO</Text>
+            <Text style={styles.dateText}>{item.lastContact}</Text>
+          </View>
+        </View>
+      </View>
+    );
+  };
+
+  return (
+    <SafeAreaView style={styles.container}>
+      {/* HEADER DA TELA */}
+      <View style={styles.header}>
+        <Text style={styles.greeting}>Retenção & Farmer</Text>
+        <Text style={styles.stageTotal}>Carteira Ativa</Text>
+      </View>
+
+      {/* ABAS DESIGN SYSTEM UNIFICADO */}
+      <View style={styles.tabsWrapper}>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.tabsScroll}>
+          {FARMER_TABS.map((tab) => {
+            const isActive = activeTab === tab;
+            return (
+              <TouchableOpacity key={tab} activeOpacity={0.8} onPress={() => setActiveTab(tab)} style={styles.tabButton}>
+                <Text style={[styles.tabText, isActive && styles.activeTabText]}>{tab}</Text>
+                {isActive && <View style={styles.tabIndicator} />}
+              </TouchableOpacity>
+            );
+          })}
+        </ScrollView>
+      </View>
+
+      {/* ABA 1: LISTAGEM DA CARTEIRA / ABA 3: ALERTAS DE CHURN */}
+      {(activeTab === 'Minha Carteira' || activeTab === 'Alertas') && (
+        <FlatList
+          data={displayedClients}
+          keyExtractor={(item) => item.id}
+          renderItem={renderClientCard}
+          contentContainerStyle={styles.listContent}
+        />
+      )}
+
+      {/* ABA 2: MONITORAMENTO AUTOMÁTICO COM INTELIGÊNCIA ARTIFICIAL */}
+      {activeTab === 'Monitoramento IA' && (
+        <ScrollView style={styles.aiContainer}>
+          <View style={styles.aiHeroCard}>
+            <Text style={styles.aiTitle}>Acompanhamento Pós-Venda Autónomo 🤖</Text>
+            <Text style={styles.aiDescription}>
+              Nossa IA analisa o histórico de conversas, intervalo de mensagens e interações de suporte para prever insatisfações antes que o cliente cancele.
+            </Text>
+
+            <TouchableOpacity 
+              style={[styles.primaryButton, isAiAnalyzing && styles.disabledButton]} 
+              activeOpacity={0.8}
+              onPress={handleAiAnalysis}
+              disabled={isAiAnalyzing}
+            >
+              {isAiAnalyzing ? (
+                <ActivityIndicator color="#090A0F" />
+              ) : (
+                <Text style={styles.primaryButtonText}>Escanear Carteira com IA</Text>
+              )}
+            </TouchableOpacity>
+          </View>
+
+          {/* EXIBIÇÃO DO RELATÓRIO PREDITIVO GERADO */}
+          {aiReport && (
+            <View style={styles.reportWrapper}>
+              <Text style={styles.sectionTitle}>Análise Comercial Concluída</Text>
+              
+              <View style={styles.metricsGrid}>
+                <View style={styles.metricCard}>
+                  <Text style={styles.metricLabel}>HEALTH SCORE GERAL</Text>
+                  <Text style={styles.metricValue}>{aiReport.healthScore}</Text>
+                </View>
+                <View style={styles.metricCard}>
+                  <Text style={styles.metricLabel}>EXPANSÃO DE CONTAS</Text>
+                  <Text style={[styles.metricValue, { color: '#38A169' }]}>Up-sell</Text>
+                </View>
+              </View>
+
+              <View style={styles.insightBox}>
+                <Text style={styles.insightTitle}>⚡ Insights de Farmer Prontos:</Text>
+                <Text style={styles.insightText}>• {aiReport.churnPrevented} agendando mensagem de relacionamento automática.</Text>
+                <Text style={styles.insightText}>• {aiReport.expansionOpportunity}.</Text>
+              </View>
+            </View>
+          )}
+        </ScrollView>
+      )}
+    </SafeAreaView>
+  );
+}
