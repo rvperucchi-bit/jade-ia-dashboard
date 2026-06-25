@@ -262,8 +262,7 @@ function Sidebar({ visible, onClose, currentRoute, onNavigate }: {
             onPress={() => { onClose(); }}
             activeOpacity={0.7}
           >
-            <Ionicons name="log-out-outline" size={16} color="#4E5366" />
-            <Text style={[S.logoutBtnText, { marginLeft: 6 }]}>Sair</Text>
+            <Ionicons name="log-out-outline" size={20} color="rgba(255,255,255,0.35)" />
           </TouchableOpacity>
         </View>
 
@@ -2413,7 +2412,7 @@ const S = StyleSheet.create({
   sidebarCloseCircle: { width: 44, height: 44, borderRadius: 22, backgroundColor: "rgba(255,255,255,0.08)", borderWidth: 1, borderColor: "rgba(255,255,255,0.12)", alignItems: "center", justifyContent: "center" },
 
   topBar: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", paddingHorizontal: 16, paddingBottom: 14 },
-  iconBtn: { width: 42, height: 42, borderRadius: 12, backgroundColor: "transparent", borderWidth: 0, alignItems: "center", justifyContent: "center" },
+  iconBtn: { width: 40, height: 40, borderRadius: 20, backgroundColor: "rgba(255,255,255,0.06)", borderWidth: 1, borderColor: "rgba(255,255,255,0.08)", alignItems: "center", justifyContent: "center" },
   topIconText: { color: "#FFFFFF", fontSize: 18 },
   topSubtitle: { fontSize: 11, color: "#8F94A8", fontWeight: "600", letterSpacing: 0.5, textTransform: "uppercase" },
   topTitle: { fontSize: 22, fontWeight: "700", color: "#FFFFFF", letterSpacing: -0.5 },
@@ -2488,11 +2487,11 @@ const S = StyleSheet.create({
   bubbleTextUser: { color: "#090A0F", fontWeight: "500" },
   bubbleTextAi:   { color: "#FFFFFF" },
   inputContainer: { paddingHorizontal: 16, paddingTop: 8, backgroundColor: "#090A0F" },
-  inputRowInside: { flexDirection: "row", backgroundColor: "#161822", borderRadius: 28, alignItems: "center", paddingHorizontal: 12, paddingVertical: 8, borderWidth: 1, borderColor: "#242736", minHeight: 52 },
+  inputRowInside: { flexDirection: "row", backgroundColor: "#1A1C26", borderRadius: 32, alignItems: "center", paddingHorizontal: 16, paddingVertical: 10, borderWidth: 1, borderColor: "#242736", minHeight: 58 },
   innerBarButton:         { width: 36, height: 36, borderRadius: 18, backgroundColor: "transparent", alignItems: "center", justifyContent: "center" },
   barIcon:                { color: "#FFFFFF", fontSize: 20, fontWeight: "300" },
   textInputStyle:         { flex: 1, color: "#FFFFFF", fontSize: 15, paddingHorizontal: 10, maxHeight: 100 },
-  sendButtonCircle:       { width: 36, height: 36, borderRadius: 18, backgroundColor: "rgba(255,255,255,0.10)", alignItems: "center", justifyContent: "center", borderWidth: 1, borderColor: "rgba(255,255,255,0.18)", overflow: "hidden", ...Platform.select({ web: { backdropFilter: "blur(10px)", WebkitBackdropFilter: "blur(10px)" } as any, default: {} }) } as any,
+  sendButtonCircle:       { width: 40, height: 40, borderRadius: 20, backgroundColor: "#D36A9D", alignItems: "center", justifyContent: "center", borderWidth: 0, overflow: "hidden" },
   sendIcon:               { color: "#FFFFFF", fontSize: 14, fontWeight: "700" },
   recordingWaveContainer: { flex: 1, flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: 4 },
   recordingLabel:         { color: "#8F94A8", fontSize: 14, fontWeight: "500" },
@@ -2685,17 +2684,15 @@ const S = StyleSheet.create({
   // Sidebar logout footer
   drawerFooter:   { borderTopWidth: 0, paddingVertical: 12, paddingHorizontal: 4 },
   logoutBtn: {
-    flexDirection: "row",
+    width: 40,
+    height: 40,
     borderRadius: 20,
+    backgroundColor: "rgba(255,255,255,0.04)",
     borderWidth: 1,
     borderColor: "rgba(255,255,255,0.08)",
-    backgroundColor: "transparent",
-    paddingVertical: 7,
-    paddingHorizontal: 14,
     alignItems: "center",
     justifyContent: "center",
-    alignSelf: "flex-start",
-  } as any,
+  },
   logoutBtnText:  { color: "#4E5366", fontSize: 12, fontWeight: "500" },
 
   // WhatsApp Config screen
