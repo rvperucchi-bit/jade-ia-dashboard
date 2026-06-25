@@ -14,6 +14,18 @@ import {
   retrieveRelevantChunks,
 } from '../lib/memory/company.js';
 import { extractFileContent } from '../lib/file/extractor.js';
+import {
+  checkLimit, recordUsage, recordBlocked, getAllCompanies,
+  type PlanKey,
+} from '../lib/usage/index.js';
+
+/** Retorna companyId e plano para registro de uso */
+function getUsageCtx(): { companyId: string; plan: PlanKey } {
+  const config = getCompanyConfig();
+  const companyId = config?.nome?.trim() || 'default';
+  const plan: PlanKey = getAllCompanies()[companyId]?.plan ?? 'start';
+  return { companyId, plan };
+}
 
 const BATCH_SIZE = 5;
 
@@ -383,6 +395,18 @@ router.post('/chat', async (req: Request, res: Response) => {
       const { tipo, cidade } = extractSearchParams(lastUserText, companyConfig, true);
       req.log.info({ tipo, cidade }, 'prospecting intent → calling Google Places');
 
+      // ── Usage: verificar limite de Radar ──────────────────────────────────
+      const radarCtx = getUsageCtx();
+      const radarLimit = checkLimit(radarCtx.companyId, radarCtx.plan, 'radar');
+      if (!radarLimit.allowed) {
+        recordBlocked(radarCtx.companyId, radarCtx.plan, 'radar');
+        return res.status(429).json({
+          error: 'Limite de Radar atingido.',
+          upgradeHint: radarLimit.upgradeHint,
+          used: radarLimit.used, limit: radarLimit.limit,
+        });
+      }
+
       const places = await searchPlacesForJade(tipo, cidade, mapsApiKey);
 
       if (places.length > 0) {
@@ -413,6 +437,9 @@ router.post('/chat', async (req: Request, res: Response) => {
           icon: 'map-pin', color: '#FF0080',
           metadata: { cidade, tipo, count: places.length },
         });
+
+        // ── Usage: registrar busca Radar ────────────────────────────────────
+        recordUsage({ companyId: radarCtx.companyId, plan: radarCtx.plan, operation: 'radar', model: 'google-places', status: 'ok' });
 
         req.log.info({ count: places.length, cidade, tipo }, 'Google Places leads delivered');
         return res.json({
@@ -465,12 +492,27 @@ router.post('/chat', async (req: Request, res: Response) => {
       'context built',
     );
 
+    // ── Usage: verificar limite de Chat antes de chamar IA ───────────────────
+    const chatCtx = getUsageCtx();
+    const chatLimit = checkLimit(chatCtx.companyId, chatCtx.plan, 'chat');
+    if (!chatLimit.allowed) {
+      recordBlocked(chatCtx.companyId, chatCtx.plan, 'chat');
+      return res.status(429).json({
+        error: 'Limite de mensagens IA atingido para este mês.',
+        upgradeHint: chatLimit.upgradeHint,
+        used: chatLimit.used, limit: chatLimit.limit,
+      });
+    }
+
+    const t0Chat = Date.now();
     const text = await engine.chat({
       systemPrompt,
       history: messagesArray.slice(0, -1).map((m) => ({ role: m.role as 'user' | 'assistant', content: m.content })),
       userMessage: lastUserText,
       operation: 'chat',
     });
+
+    recordUsage({ companyId: chatCtx.companyId, plan: chatCtx.plan, operation: 'chat', model: 'gpt-5.4-mini', duration_ms: Date.now() - t0Chat, status: 'ok' });
 
     req.log.info({ chars: text.length, session_id: body.session_id }, 'JADE responded');
 
@@ -713,14 +755,33 @@ Responda APENAS com o texto da mensagem, sem aspas, sem markdown, sem emojis no 
 // ── POST /api/jade/transcribe ─────────────────────────────────────────────────
 // Transcribes a base64-encoded audio clip using OpenAI Whisper
 router.post('/transcribe', async (req: Request, res: Response) => {
-  const { audioBase64, mimeType } = req.body as { audioBase64?: string; mimeType?: string };
+  const { audioBase64, mimeType, durationMinutes } = req.body as {
+    audioBase64?: string; mimeType?: string; durationMinutes?: number;
+  };
   if (!audioBase64) return res.status(400).json({ error: 'audioBase64 required' });
 
+  const audioMin = typeof durationMinutes === 'number' && durationMinutes > 0 ? durationMinutes : 1;
+
+  // ── Usage: verificar limite de Áudio ─────────────────────────────────────
+  const audioCtx = getUsageCtx();
+  const audioLimit = checkLimit(audioCtx.companyId, audioCtx.plan, 'audio', audioMin);
+  if (!audioLimit.allowed) {
+    recordBlocked(audioCtx.companyId, audioCtx.plan, 'audio');
+    return res.status(429).json({
+      error: 'Limite de minutos de áudio atingido para este mês.',
+      upgradeHint: audioLimit.upgradeHint,
+      used: audioLimit.used, limit: audioLimit.limit,
+    });
+  }
+
   try {
+    const t0 = Date.now();
     const text = await engine.transcribe({ audioBase64, mimeType: mimeType ?? 'audio/m4a' });
+    recordUsage({ companyId: audioCtx.companyId, plan: audioCtx.plan, operation: 'audio', model: 'gpt-4o-transcribe', audio_minutes: audioMin, duration_ms: Date.now() - t0, status: 'ok' });
     req.log.info({ chars: text.length }, 'audio transcribed via whisper');
     return res.json({ text });
   } catch (err) {
+    recordUsage({ companyId: audioCtx.companyId, plan: audioCtx.plan, operation: 'audio', model: 'gpt-4o-transcribe', audio_minutes: 0, status: 'error', error: String(err) });
     req.log.error(err, 'transcribe failed');
     return res.status(500).json({ error: 'Transcription failed' });
   }
@@ -750,7 +811,20 @@ router.post('/analyze-image', async (req: Request, res: Response) => {
     });
   }
 
+  // ── Usage: verificar limite Vision ───────────────────────────────────────
+  const visionCtx = getUsageCtx();
+  const visionLimit = checkLimit(visionCtx.companyId, visionCtx.plan, 'vision');
+  if (!visionLimit.allowed) {
+    recordBlocked(visionCtx.companyId, visionCtx.plan, 'vision');
+    return res.status(429).json({
+      error: 'Limite de análises Vision atingido para este mês.',
+      upgradeHint: visionLimit.upgradeHint,
+      used: visionLimit.used, limit: visionLimit.limit,
+    });
+  }
+
   try {
+    const t0 = Date.now();
     const analysis = await engine.analyzeImage({
       imageBase64,
       mimeType: resolvedMime,
@@ -758,9 +832,11 @@ router.post('/analyze-image', async (req: Request, res: Response) => {
       systemPrompt: systemPrompt?.trim() || undefined,
     });
 
+    recordUsage({ companyId: visionCtx.companyId, plan: visionCtx.plan, operation: 'vision', model: 'gpt-4o', duration_ms: Date.now() - t0, status: 'ok' });
     req.log.info({ chars: analysis.length }, 'jade: image analyzed');
     return res.json({ analysis, model: 'gpt-4o' });
   } catch (err) {
+    recordUsage({ companyId: visionCtx.companyId, plan: visionCtx.plan, operation: 'vision', model: 'gpt-4o', status: 'error', error: String(err) });
     req.log.error(err, 'jade: analyze-image failed');
     return res.status(500).json({ error: 'Falha na análise da imagem.' });
   }
@@ -804,6 +880,18 @@ router.post('/read-file', async (req: Request, res: Response) => {
 
   // Image: route to vision API for extraction
   if (result.type === 'image') {
+    // ── Usage: verificar limite Vision para imagem do arquivo ───────────────
+    const rfVisionCtx = getUsageCtx();
+    const rfVisionLimit = checkLimit(rfVisionCtx.companyId, rfVisionCtx.plan, 'vision');
+    if (!rfVisionLimit.allowed) {
+      recordBlocked(rfVisionCtx.companyId, rfVisionCtx.plan, 'vision');
+      return res.status(429).json({
+        error: 'Limite de análises Vision atingido para este mês.',
+        upgradeHint: rfVisionLimit.upgradeHint,
+        used: rfVisionLimit.used, limit: rfVisionLimit.limit,
+      });
+    }
+
     try {
       const imagePrompt =
         prompt?.trim() ||
@@ -811,12 +899,14 @@ router.post('/read-file', async (req: Request, res: Response) => {
         'Inclua: textos presentes, informações de contato, preços, nomes de empresas, produtos ou ' +
         'qualquer dado relevante para vendas.';
 
+      const t0 = Date.now();
       const analysis = await engine.analyzeImage({
         imageBase64: result.base64,
         mimeType: result.mimeType,
         prompt: imagePrompt,
       });
 
+      recordUsage({ companyId: rfVisionCtx.companyId, plan: rfVisionCtx.plan, operation: 'vision', model: 'gpt-4o', duration_ms: Date.now() - t0, status: 'ok' });
       req.log.info({ fileName, chars: analysis.length }, 'jade: file image analyzed via vision');
       return res.json({
         extracted: analysis,
@@ -825,6 +915,7 @@ router.post('/read-file', async (req: Request, res: Response) => {
         model: 'gpt-4o',
       });
     } catch (err) {
+      recordUsage({ companyId: rfVisionCtx.companyId, plan: rfVisionCtx.plan, operation: 'vision', model: 'gpt-4o', status: 'error', error: String(err) });
       req.log.error(err, 'jade: read-file vision failed');
       return res.status(500).json({ error: 'Falha ao analisar imagem do arquivo.' });
     }
@@ -840,6 +931,20 @@ router.post('/read-file', async (req: Request, res: Response) => {
   }
 
   // analyze=true: send extracted text to JADE
+  // ── Usage: verificar limite de documentos ───────────────────────────────
+  const docCtx = getUsageCtx();
+  const docLimit = checkLimit(docCtx.companyId, docCtx.plan, 'document_analysis');
+  if (!docLimit.allowed) {
+    recordBlocked(docCtx.companyId, docCtx.plan, 'document_analysis');
+    // Ainda retorna o texto extraído — apenas a análise IA é bloqueada
+    return res.status(429).json({
+      error: 'Limite de documentos IA atingido para este mês.',
+      upgradeHint: docLimit.upgradeHint,
+      used: docLimit.used, limit: docLimit.limit,
+      extracted, truncated, type: 'text',
+    });
+  }
+
   try {
     const companyConfig = getCompanyConfig();
     const { systemPrompt } = buildContextForOperation('chat', companyConfig);
@@ -849,6 +954,7 @@ router.post('/read-file', async (req: Request, res: Response) => {
         : 'Analise o conteúdo do arquivo abaixo e extraia os pontos mais relevantes para vendas. ') +
       `Arquivo: ${fileName ?? 'documento'}\n\n---\n${extracted}`;
 
+    const t0 = Date.now();
     const analysis = await engine.chat({
       operation: 'chat',
       systemPrompt,
@@ -856,9 +962,11 @@ router.post('/read-file', async (req: Request, res: Response) => {
       userMessage: userPrompt,
     });
 
+    recordUsage({ companyId: docCtx.companyId, plan: docCtx.plan, operation: 'document_analysis', model: 'gpt-5.4-mini', duration_ms: Date.now() - t0, status: 'ok' });
     req.log.info({ fileName, chars: extracted.length, truncated }, 'jade: file analyzed by JADE');
     return res.json({ extracted, truncated, analysis, type: 'text' });
   } catch (err) {
+    recordUsage({ companyId: docCtx.companyId, plan: docCtx.plan, operation: 'document_analysis', model: 'gpt-5.4-mini', status: 'error', error: String(err) });
     req.log.error(err, 'jade: read-file analysis failed');
     // Return extracted text even if JADE analysis fails
     return res.json({ extracted, truncated, type: 'text', analysisError: String(err) });

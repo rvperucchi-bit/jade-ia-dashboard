@@ -18,6 +18,7 @@ import planejamentoRouter from "./planejamento.js";
 import notificacoesRouter from "./notificacoes.js";
 import stripeRouter from "./stripe.js";
 import whatsappRouter from "./whatsapp.js";
+import adminRouter from "./admin.js";
 
 const router: IRouter = Router();
 
@@ -40,5 +41,6 @@ router.use("/planejamento", planejamentoRouter);
 router.use("/notificacoes", notificacoesRouter);
 router.use("/stripe", stripeRouter);
 router.use("/whatsapp", whatsappRouter);
+router.use("/admin", adminRouter);
 
 export default router;

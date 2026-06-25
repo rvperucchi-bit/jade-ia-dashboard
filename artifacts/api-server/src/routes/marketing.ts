@@ -2,6 +2,14 @@ import { Router, Request, Response } from "express";
 import { engine } from "../lib/ai/index.js";
 import { addCampaign, getAllCampaigns, getCampaign, addActivityEvent, getCompanyConfig } from "../db/store.js";
 import { buildMarketingMemoryBlock } from "../lib/context/builder.js";
+import { checkLimit, recordUsage, recordBlocked, getAllCompanies, type PlanKey } from "../lib/usage/index.js";
+
+function getUsageCtx(): { companyId: string; plan: PlanKey } {
+  const config = getCompanyConfig();
+  const companyId = config?.nome?.trim() || 'default';
+  const plan: PlanKey = getAllCompanies()[companyId]?.plan ?? 'start';
+  return { companyId, plan };
+}
 
 const router = Router();
 
@@ -19,6 +27,18 @@ router.post("/generate", async (req: Request, res: Response) => {
     return res.status(400).json({ error: "context_input e system_context são obrigatórios" });
   }
 
+  // ── Usage: verificar limite de Chat (geração de texto usa mesmo limite) ───
+  const genCtx = getUsageCtx();
+  const genLimit = checkLimit(genCtx.companyId, genCtx.plan, 'chat');
+  if (!genLimit.allowed) {
+    recordBlocked(genCtx.companyId, genCtx.plan, 'chat');
+    return res.status(429).json({
+      error: 'Limite de mensagens IA atingido para este mês.',
+      upgradeHint: genLimit.upgradeHint,
+      used: genLimit.used, limit: genLimit.limit,
+    });
+  }
+
   try {
     // Enrich with server-stored company memory (marketing profile: diferenciais,
     // publicoAlvo, tom). Falls back gracefully if no company is configured yet.
@@ -29,7 +49,9 @@ router.post("/generate", async (req: Request, res: Response) => {
       : system_context;
 
     const prompt = `${enrichedContext}\n\nContexto fornecido pelo usuário: ${context_input.trim()}`;
+    const t0 = Date.now();
     const content = await engine.generate({ prompt, operation: 'marketing:generate' });
+    recordUsage({ companyId: genCtx.companyId, plan: genCtx.plan, operation: 'chat', model: 'gpt-5.4-mini', duration_ms: Date.now() - t0, status: 'ok' });
 
     const campaign = addCampaign({
       type_id: type_id ?? "custom",
@@ -89,6 +111,18 @@ router.post("/generate-image", async (req: Request, res: Response) => {
     return res.status(400).json({ error: "prompt é obrigatório." });
   }
 
+  // ── Usage: verificar limite de Geração de Imagens ─────────────────────────
+  const imgCtx = getUsageCtx();
+  const imgLimit = checkLimit(imgCtx.companyId, imgCtx.plan, 'image_generation');
+  if (!imgLimit.allowed) {
+    recordBlocked(imgCtx.companyId, imgCtx.plan, 'image_generation');
+    return res.status(429).json({
+      error: 'Limite de geração de imagens atingido para este mês.',
+      upgradeHint: imgLimit.upgradeHint,
+      used: imgLimit.used, limit: imgLimit.limit,
+    });
+  }
+
   // Enrich prompt with company context if available
   const storedConfig = getCompanyConfig();
   const enrichedPrompt = storedConfig?.nome
@@ -96,11 +130,14 @@ router.post("/generate-image", async (req: Request, res: Response) => {
     : prompt.trim();
 
   try {
+    const t0 = Date.now();
     const result = await engine.generateImage({
       prompt: enrichedPrompt,
       size,
       quality,
     });
+
+    recordUsage({ companyId: imgCtx.companyId, plan: imgCtx.plan, operation: 'image_generation', model: 'gpt-image-1', duration_ms: Date.now() - t0, status: 'ok' });
 
     addActivityEvent({
       type: "campaign",
@@ -110,8 +147,9 @@ router.post("/generate-image", async (req: Request, res: Response) => {
     });
 
     req.log.info({ promptChars: prompt.length }, "marketing: image generated");
-    return res.json({ url: result.url, revisedPrompt: result.revisedPrompt, model: "dall-e-3" });
+    return res.json({ url: result.url, revisedPrompt: result.revisedPrompt, model: "gpt-image-1", isDataUri: result.isDataUri });
   } catch (err) {
+    recordUsage({ companyId: imgCtx.companyId, plan: imgCtx.plan, operation: 'image_generation', model: 'gpt-image-1', status: 'error', error: String(err) });
     req.log.error(err, "marketing: generate-image failed");
     return res.status(500).json({ error: "Falha ao gerar imagem.", detail: String(err) });
   }

@@ -1270,6 +1270,15 @@
   ],
   "activity_events": [
     {
+      "id": "323bd8001c38b9ee",
+      "type": "message",
+      "text": "JADE respondeu a uma mensagem",
+      "icon": "robot",
+      "color": "#FF0080",
+      "metadata": {},
+      "created_at": "2026-06-25T07:13:09.444Z"
+    },
+    {
       "id": "f937d5be3d4d501f",
       "type": "campaign",
       "text": "Imagem gerada: Banner profissional para campanha B2B, fundo escuro, estilo …",
@@ -3206,17 +3215,6 @@
         "session_id": "1ae38e23897c8bdf"
       },
       "created_at": "2026-06-23T20:31:54.910Z"
-    },
-    {
-      "id": "1d4c1e47e4b8e4b0",
-      "type": "message",
-      "text": "JADE respondeu a uma mensagem",
-      "icon": "robot",
-      "color": "#FF0080",
-      "metadata": {
-        "session_id": "b26483b3925d7c53"
-      },
-      "created_at": "2026-06-23T20:31:43.467Z"
     }
   ],
   "marketing_campaigns": [

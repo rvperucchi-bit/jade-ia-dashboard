@@ -203,3 +203,9 @@ id = "KUAv-OaAG8uuwtXjLt--C"
 uri = "file://exports/openai-visual-file-capabilities.pdf"
 type = "pdf"
 title = "JADE IA — Visão, Imagens e Arquivos"
+
+[[outputs]]
+id = "aOnrPw5hqPizRYWVozCaf"
+uri = "file://exports/usage-engine.pdf"
+type = "pdf"
+title = "JADE IA — Usage Engine completo"

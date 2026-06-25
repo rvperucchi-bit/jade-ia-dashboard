@@ -13,3 +13,4 @@
 - [PDF Generation](pdf-generation.md) — preferência: sempre gerar PDF em exports/ ao concluir tarefa; usar scripts/src/gerar-pdf.ts (pdfkit, JSON→PDF); output relativo ao dir do JSON, rodar com caminho absoluto
 - [JADE AI Engine — OpenAI](jade-ai-engine.md) — lib/ai/ 100% OpenAI; chat=gpt-4.1-mini, ops secundárias=gpt-4o-mini, embed=text-embedding-3-small, transcribe=gpt-4o-transcribe; gemini.ts isolado (não importado pelo engine)
 - [Company Memory Embeddings](company-memory-embeddings.md) — embeddings em data/jade-memory.json (separado do jade-state.json); chave=MD5(nome)[0:12]; refresh automático no POST /empresa + lazy no /jade/chat; cosineSimilarity topK=4 threshold=0.3
+- [Usage Engine](usage-engine.md) — src/lib/usage/ controla limites/custos/ROI; data/jade-usage.json; checkLimit() antes de cada rota IA, recordUsage() após; plano via POST /api/admin/usage/:companyId/plan; 5 endpoints admin

@@ -1,0 +1,66 @@
+{
+  "companies": {
+    "default": {
+      "company_id": "default",
+      "plan": "start",
+      "months": {}
+    },
+    "Teste Embeddings Ltda": {
+      "company_id": "Teste Embeddings Ltda",
+      "plan": "start",
+      "months": {
+        "2026-06": {
+          "year_month": "2026-06",
+          "counters": {
+            "chat": 1,
+            "radar": 0,
+            "audio": 0,
+            "image_generation": 0,
+            "vision": 1,
+            "document_analysis": 0,
+            "embeddings": 0
+          },
+          "events": [
+            {
+              "id": "6c6eb2cf3c0a",
+              "ts": "2026-06-25T07:13:13.200Z",
+              "operation": "vision",
+              "model": "gpt-4o",
+              "duration_ms": 3560,
+              "status": "ok"
+            },
+            {
+              "id": "69ed1d4cf68a",
+              "ts": "2026-06-25T07:13:09.441Z",
+              "operation": "chat",
+              "model": "gpt-5.4-mini",
+              "duration_ms": 933,
+              "status": "ok"
+            }
+          ],
+          "last_updated": "2026-06-25T07:13:13.200Z"
+        }
+      }
+    },
+    "empresa-teste": {
+      "company_id": "empresa-teste",
+      "plan": "start",
+      "months": {
+        "2026-06": {
+          "year_month": "2026-06",
+          "counters": {
+            "chat": 500,
+            "radar": 50,
+            "audio": 30,
+            "image_generation": 10,
+            "vision": 20,
+            "document_analysis": 20,
+            "embeddings": 0
+          },
+          "events": [],
+          "last_updated": "2026-06-25T00:00:00.000Z"
+        }
+      }
+    }
+  }
+}
