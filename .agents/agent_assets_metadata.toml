@@ -197,3 +197,9 @@ id = "AzX825s8PEUMnLVva-zvF"
 uri = "file://exports/gpt54-mini-update.pdf"
 type = "pdf"
 title = "Atualização — gpt-5.4-mini"
+
+[[outputs]]
+id = "KUAv-OaAG8uuwtXjLt--C"
+uri = "file://exports/openai-visual-file-capabilities.pdf"
+type = "pdf"
+title = "JADE IA — Visão, Imagens e Arquivos"

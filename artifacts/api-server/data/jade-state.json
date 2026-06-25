@@ -1270,6 +1270,33 @@
   ],
   "activity_events": [
     {
+      "id": "f937d5be3d4d501f",
+      "type": "campaign",
+      "text": "Imagem gerada: Banner profissional para campanha B2B, fundo escuro, estilo …",
+      "icon": "image",
+      "color": "#C9A24B",
+      "created_at": "2026-06-25T06:47:52.414Z"
+    },
+    {
+      "id": "78407f6ead5c89cf",
+      "type": "message",
+      "text": "JADE respondeu: \"Oi\"",
+      "icon": "robot",
+      "color": "#FF0080",
+      "created_at": "2026-06-25T06:22:27.640Z"
+    },
+    {
+      "id": "15ff405ce4d6dd1b",
+      "type": "message",
+      "text": "JADE respondeu a uma mensagem",
+      "icon": "robot",
+      "color": "#FF0080",
+      "metadata": {
+        "session_id": "7e8aa7c85092f1d7"
+      },
+      "created_at": "2026-06-25T06:22:27.358Z"
+    },
+    {
       "id": "382f0c5ecee1407f",
       "type": "message",
       "text": "JADE respondeu a uma mensagem",
@@ -3190,36 +3217,6 @@
         "session_id": "b26483b3925d7c53"
       },
       "created_at": "2026-06-23T20:31:43.467Z"
-    },
-    {
-      "id": "42a073a90169b5d9",
-      "type": "message",
-      "text": "JADE respondeu a uma mensagem",
-      "icon": "robot",
-      "color": "#FF0080",
-      "metadata": {
-        "session_id": "97fb8bd3082a9421"
-      },
-      "created_at": "2026-06-23T20:31:31.197Z"
-    },
-    {
-      "id": "8915fcc1b8d3981c",
-      "type": "message",
-      "text": "JADE respondeu: \"O que vc pode fazer por mim?\"",
-      "icon": "robot",
-      "color": "#FF0080",
-      "created_at": "2026-06-23T20:31:03.939Z"
-    },
-    {
-      "id": "9a959156964cd67e",
-      "type": "message",
-      "text": "JADE respondeu a uma mensagem",
-      "icon": "robot",
-      "color": "#FF0080",
-      "metadata": {
-        "session_id": "a56a68abe0357b26"
-      },
-      "created_at": "2026-06-23T20:31:03.599Z"
     }
   ],
   "marketing_campaigns": [
@@ -3255,6 +3252,24 @@
     }
   ],
   "jade_sessions": [
+    {
+      "id": "7e8aa7c85092f1d7",
+      "title": "Nova conversa",
+      "messages": [
+        {
+          "role": "user",
+          "content": "Oi",
+          "time": "2026-06-25T06:22:27.349Z"
+        },
+        {
+          "role": "model",
+          "content": "Foco no que precisa avançar. O que está travando seu pipeline?",
+          "time": "2026-06-25T06:22:27.354Z"
+        }
+      ],
+      "created_at": "2026-06-25T06:22:24.783Z",
+      "updated_at": "2026-06-25T06:22:27.354Z"
+    },
     {
       "id": "66078e58665c8f3a",
       "title": "Nova conversa",

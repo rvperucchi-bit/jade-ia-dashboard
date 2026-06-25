@@ -2,6 +2,8 @@ import { logger } from '../logger.js';
 import {
   OPERATION_CONFIG,
   isOpenAIConfig,
+  isOpenAIVisionConfig,
+  isDallEConfig,
   isOpenAIEmbeddingConfig,
   isWhisperConfig,
   type OperationConfig,
@@ -9,7 +11,15 @@ import {
 import { OpenAIProvider } from './providers/openai.js';
 import { WhisperProvider } from './providers/whisper.js';
 import { JadeAIConfigError } from './types.js';
-import type { ChatOptions, EmbedOptions, GenerateOptions, TranscribeOptions } from './types.js';
+import type {
+  ChatOptions,
+  EmbedOptions,
+  GenerateOptions,
+  TranscribeOptions,
+  AnalyzeImageOptions,
+  GenerateImageOptions,
+  GenerateImageResult,
+} from './types.js';
 
 function isTransient(err: unknown): boolean {
   const msg = String(err).toLowerCase();
@@ -101,6 +111,69 @@ export class JadeAIEngine {
       'jade-ai: generate complete',
     );
     return text;
+  }
+
+  // ── Vision: analyze image ───────────────────────────────────────────────────
+  async analyzeImage(opts: AnalyzeImageOptions): Promise<string> {
+    const config = resolveConfig('image-analysis');
+    if (!isOpenAIVisionConfig(config)) {
+      throw new JadeAIConfigError('image-analysis operation is not configured as openai-vision');
+    }
+
+    const systemPrompt =
+      opts.systemPrompt ??
+      'Você é JADE, assistente comercial especializada em vendas B2B no mercado brasileiro. ' +
+      'Analise a imagem enviada com foco em informações relevantes para vendas: ' +
+      'identifique empresas, produtos, materiais de marketing, propostas, contratos ou qualquer ' +
+      'elemento comercial. Responda em português, de forma objetiva e acionável.';
+
+    const prompt =
+      opts.prompt ?? 'Analise esta imagem e extraia as informações mais relevantes para uma equipe de vendas.';
+
+    const t0 = Date.now();
+    const text = await withRetry(
+      () =>
+        this.openai.analyzeImage({
+          imageBase64: opts.imageBase64,
+          mimeType: opts.mimeType,
+          prompt,
+          systemPrompt,
+          config,
+        }),
+      'image-analysis',
+    );
+
+    logger.info(
+      { model: config.model, ms: Date.now() - t0, chars: text.length },
+      'jade-ai: image-analysis complete',
+    );
+    return text;
+  }
+
+  // ── DALL-E 3: generate image ────────────────────────────────────────────────
+  async generateImage(opts: GenerateImageOptions): Promise<GenerateImageResult> {
+    const config = resolveConfig('image-generation');
+    if (!isDallEConfig(config)) {
+      throw new JadeAIConfigError('image-generation operation is not configured as dalle');
+    }
+
+    const effectiveConfig = {
+      ...config,
+      size:    opts.size    ?? config.size,
+      quality: opts.quality ?? config.quality,
+    };
+
+    const t0 = Date.now();
+    const result = await withRetry(
+      () => this.openai.generateImage({ prompt: opts.prompt, config: effectiveConfig }),
+      'image-generation',
+    );
+
+    logger.info(
+      { model: config.model, ms: Date.now() - t0 },
+      'jade-ai: image-generation complete',
+    );
+    return result;
   }
 
   async embed(opts: EmbedOptions): Promise<number[][]> {

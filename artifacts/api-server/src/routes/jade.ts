@@ -13,6 +13,7 @@ import {
   isEmbeddingStale,
   retrieveRelevantChunks,
 } from '../lib/memory/company.js';
+import { extractFileContent } from '../lib/file/extractor.js';
 
 const BATCH_SIZE = 5;
 
@@ -722,6 +723,145 @@ router.post('/transcribe', async (req: Request, res: Response) => {
   } catch (err) {
     req.log.error(err, 'transcribe failed');
     return res.status(500).json({ error: 'Transcription failed' });
+  }
+});
+
+// ── POST /api/jade/analyze-image ──────────────────────────────────────────────
+// Receives a base64 image and returns a JADE textual analysis.
+// Body: { imageBase64: string, mimeType?: string, prompt?: string, systemPrompt?: string }
+// Response: { analysis: string, model: string }
+router.post('/analyze-image', async (req: Request, res: Response) => {
+  const { imageBase64, mimeType, prompt, systemPrompt } = req.body as {
+    imageBase64?: string;
+    mimeType?: string;
+    prompt?: string;
+    systemPrompt?: string;
+  };
+
+  if (!imageBase64) {
+    return res.status(400).json({ error: 'imageBase64 é obrigatório.' });
+  }
+
+  const resolvedMime = mimeType ?? 'image/jpeg';
+  const validImageMimes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+  if (!validImageMimes.some((m) => resolvedMime.startsWith('image/'))) {
+    return res.status(400).json({
+      error: `mimeType inválido: ${resolvedMime}. Use image/jpeg, image/png, image/gif ou image/webp.`,
+    });
+  }
+
+  try {
+    const analysis = await engine.analyzeImage({
+      imageBase64,
+      mimeType: resolvedMime,
+      prompt: prompt?.trim() || undefined,
+      systemPrompt: systemPrompt?.trim() || undefined,
+    });
+
+    req.log.info({ chars: analysis.length }, 'jade: image analyzed');
+    return res.json({ analysis, model: 'gpt-4o' });
+  } catch (err) {
+    req.log.error(err, 'jade: analyze-image failed');
+    return res.status(500).json({ error: 'Falha na análise da imagem.' });
+  }
+});
+
+// ── POST /api/jade/read-file ──────────────────────────────────────────────────
+// Receives a base64-encoded file, extracts text (or routes to vision for images),
+// and optionally runs the extracted content through JADE for a sales-focused summary.
+//
+// Body: {
+//   fileBase64: string,      — base64 file content
+//   mimeType?: string,       — MIME type (inferred from fileName if omitted)
+//   fileName?: string,       — original file name (used for MIME inference + display)
+//   prompt?: string,         — optional instruction for JADE analysis
+//   analyze?: boolean        — if true, send extracted content to JADE chat (default: false)
+// }
+// Response: {
+//   extracted: string,       — raw extracted text (or image analysis)
+//   truncated: boolean,
+//   analysis?: string,       — present when analyze=true
+//   type: 'text'|'image'|'unsupported'
+// }
+router.post('/read-file', async (req: Request, res: Response) => {
+  const { fileBase64, mimeType, fileName, prompt, analyze } = req.body as {
+    fileBase64?: string;
+    mimeType?: string;
+    fileName?: string;
+    prompt?: string;
+    analyze?: boolean;
+  };
+
+  if (!fileBase64) {
+    return res.status(400).json({ error: 'fileBase64 é obrigatório.' });
+  }
+
+  const result = extractFileContent(fileBase64, mimeType ?? 'application/octet-stream', fileName);
+
+  if (result.type === 'unsupported') {
+    return res.status(422).json({ error: result.reason, type: 'unsupported' });
+  }
+
+  // Image: route to vision API for extraction
+  if (result.type === 'image') {
+    try {
+      const imagePrompt =
+        prompt?.trim() ||
+        'Extraia e descreva todo o conteúdo textual e visual desta imagem de forma estruturada. ' +
+        'Inclua: textos presentes, informações de contato, preços, nomes de empresas, produtos ou ' +
+        'qualquer dado relevante para vendas.';
+
+      const analysis = await engine.analyzeImage({
+        imageBase64: result.base64,
+        mimeType: result.mimeType,
+        prompt: imagePrompt,
+      });
+
+      req.log.info({ fileName, chars: analysis.length }, 'jade: file image analyzed via vision');
+      return res.json({
+        extracted: analysis,
+        truncated: false,
+        type: 'image',
+        model: 'gpt-4o',
+      });
+    } catch (err) {
+      req.log.error(err, 'jade: read-file vision failed');
+      return res.status(500).json({ error: 'Falha ao analisar imagem do arquivo.' });
+    }
+  }
+
+  // Text: optionally run through JADE for a sales-focused summary
+  const extracted = result.content;
+  const truncated = result.truncated;
+
+  if (!analyze) {
+    req.log.info({ fileName, chars: extracted.length, truncated }, 'jade: file text extracted');
+    return res.json({ extracted, truncated, type: 'text' });
+  }
+
+  // analyze=true: send extracted text to JADE
+  try {
+    const companyConfig = getCompanyConfig();
+    const { systemPrompt } = buildContextForOperation('chat', companyConfig);
+    const userPrompt =
+      (prompt?.trim()
+        ? `${prompt.trim()}\n\n`
+        : 'Analise o conteúdo do arquivo abaixo e extraia os pontos mais relevantes para vendas. ') +
+      `Arquivo: ${fileName ?? 'documento'}\n\n---\n${extracted}`;
+
+    const analysis = await engine.chat({
+      operation: 'chat',
+      systemPrompt,
+      history: [],
+      userMessage: userPrompt,
+    });
+
+    req.log.info({ fileName, chars: extracted.length, truncated }, 'jade: file analyzed by JADE');
+    return res.json({ extracted, truncated, analysis, type: 'text' });
+  } catch (err) {
+    req.log.error(err, 'jade: read-file analysis failed');
+    // Return extracted text even if JADE analysis fails
+    return res.json({ extracted, truncated, type: 'text', analysisError: String(err) });
   }
 });
 

@@ -67,4 +67,54 @@ router.get("/campaigns/:id", (req: Request, res: Response) => {
   return res.json({ campaign });
 });
 
+// ── POST /api/marketing/generate-image ────────────────────────────────────────
+// Generates a marketing image via DALL-E 3 from a text prompt.
+// Intended for future use in the Marketing module — no UI yet.
+//
+// Body: {
+//   prompt: string,                                — image description (required)
+//   size?: '1024x1024' | '1792x1024' | '1024x1792',
+//   quality?: 'standard' | 'hd',
+//   style?: 'vivid' | 'natural'
+// }
+// Response: { url: string, revisedPrompt: string, model: string }
+router.post("/generate-image", async (req: Request, res: Response) => {
+  const { prompt, size, quality } = req.body as {
+    prompt?: string;
+    size?: '1024x1024' | '1792x1024' | '1024x1792';
+    quality?: 'standard' | 'hd';
+  };
+
+  if (!prompt?.trim()) {
+    return res.status(400).json({ error: "prompt é obrigatório." });
+  }
+
+  // Enrich prompt with company context if available
+  const storedConfig = getCompanyConfig();
+  const enrichedPrompt = storedConfig?.nome
+    ? `${prompt.trim()} — estilo profissional para a empresa ${storedConfig.nome} (${storedConfig.segmento ?? 'negócios'})`
+    : prompt.trim();
+
+  try {
+    const result = await engine.generateImage({
+      prompt: enrichedPrompt,
+      size,
+      quality,
+    });
+
+    addActivityEvent({
+      type: "campaign",
+      text: `Imagem gerada: ${prompt.trim().slice(0, 60)}${prompt.length > 60 ? '…' : ''}`,
+      icon: "image",
+      color: "#C9A24B",
+    });
+
+    req.log.info({ promptChars: prompt.length }, "marketing: image generated");
+    return res.json({ url: result.url, revisedPrompt: result.revisedPrompt, model: "dall-e-3" });
+  } catch (err) {
+    req.log.error(err, "marketing: generate-image failed");
+    return res.status(500).json({ error: "Falha ao gerar imagem.", detail: String(err) });
+  }
+});
+
 export default router;

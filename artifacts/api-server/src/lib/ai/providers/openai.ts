@@ -1,11 +1,18 @@
 import { JadeAIConfigError } from '../types.js';
-import type { OpenAIOperationConfig } from '../config.js';
+import type { OpenAIOperationConfig, OpenAIVisionConfig, DallEConfig } from '../config.js';
+import type { GenerateImageResult } from '../types.js';
 
 type OpenAIChatRole = 'system' | 'user' | 'assistant';
 
 interface OpenAIChatMessage {
   role: OpenAIChatRole;
-  content: string;
+  content: string | OpenAIContentPart[];
+}
+
+interface OpenAIContentPart {
+  type: 'text' | 'image_url';
+  text?: string;
+  image_url?: { url: string; detail?: 'low' | 'high' | 'auto' };
 }
 
 export interface OpenAIHistoryItem {
@@ -15,6 +22,7 @@ export interface OpenAIHistoryItem {
 
 const REQUEST_TIMEOUT_MS = 60000;
 const EMBED_TIMEOUT_MS   = 20000;
+const IMAGE_GEN_TIMEOUT  = 90000;
 
 export class OpenAIProvider {
   constructor(private readonly apiKey: string) {}
@@ -27,7 +35,7 @@ export class OpenAIProvider {
 
   private async complete(
     messages: OpenAIChatMessage[],
-    config: OpenAIOperationConfig,
+    config: OpenAIOperationConfig | OpenAIVisionConfig,
   ): Promise<string> {
     this.assertKey();
 
@@ -44,7 +52,7 @@ export class OpenAIProvider {
           model: config.model,
           messages,
           temperature: config.temperature,
-          max_tokens: config.maxTokens,
+          max_completion_tokens: config.maxTokens,
         }),
         signal: controller.signal,
       });
@@ -101,6 +109,103 @@ export class OpenAIProvider {
   }): Promise<string> {
     const messages: OpenAIChatMessage[] = [{ role: 'user', content: opts.prompt }];
     return this.complete(messages, opts.config);
+  }
+
+  // ── Vision: analyze image ───────────────────────────────────────────────────
+  // Sends image as base64 data URI to the vision-capable model.
+  // Returns a textual analysis (Portuguese by default via system prompt).
+  async analyzeImage(opts: {
+    imageBase64: string;
+    mimeType: string;
+    prompt: string;
+    systemPrompt: string;
+    config: OpenAIVisionConfig;
+  }): Promise<string> {
+    this.assertKey();
+
+    const dataUri = `data:${opts.mimeType};base64,${opts.imageBase64}`;
+
+    const messages: OpenAIChatMessage[] = [];
+
+    if (opts.systemPrompt) {
+      messages.push({ role: 'system', content: opts.systemPrompt });
+    }
+
+    messages.push({
+      role: 'user',
+      content: [
+        {
+          type: 'image_url',
+          image_url: { url: dataUri, detail: 'high' },
+        },
+        {
+          type: 'text',
+          text: opts.prompt,
+        },
+      ],
+    });
+
+    return this.complete(messages, opts.config);
+  }
+
+  // ── DALL-E 3: generate image ────────────────────────────────────────────────
+  // Returns the CDN URL of the generated image and the revised prompt.
+  async generateImage(opts: {
+    prompt: string;
+    config: DallEConfig;
+  }): Promise<GenerateImageResult> {
+    this.assertKey();
+
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), IMAGE_GEN_TIMEOUT);
+    try {
+      const res = await fetch('https://api.openai.com/v1/images/generations', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${this.apiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: opts.config.model,
+          prompt: opts.prompt,
+          n: 1,
+          size: opts.config.size,
+          quality: opts.config.quality,
+        }),
+        signal: controller.signal,
+      });
+
+      if (!res.ok) {
+        const errBody = await res.text();
+        throw new Error(`DALL-E API error ${res.status}: ${errBody}`);
+      }
+
+      const data = (await res.json()) as {
+        data: Array<{ url?: string; b64_json?: string; revised_prompt?: string }>;
+      };
+
+      const item = data.data[0];
+      if (!item) throw new Error('Image generation API returned no data');
+
+      // gpt-image-1 returns b64_json; dall-e-3 returns url
+      if (item.url) {
+        return { url: item.url, revisedPrompt: item.revised_prompt ?? opts.prompt };
+      }
+
+      if (item.b64_json) {
+        const dataUri = `data:image/png;base64,${item.b64_json}`;
+        return { url: dataUri, revisedPrompt: item.revised_prompt ?? opts.prompt, isDataUri: true };
+      }
+
+      throw new Error('Image generation API returned neither url nor b64_json');
+    } catch (err) {
+      if (err instanceof Error && err.name === 'AbortError') {
+        throw new Error(`DALL-E request timeout after ${IMAGE_GEN_TIMEOUT}ms`);
+      }
+      throw err;
+    } finally {
+      clearTimeout(timer);
+    }
   }
 
   // ── Embeddings API ──────────────────────────────────────────────────────────
