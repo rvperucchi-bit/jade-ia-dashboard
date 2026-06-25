@@ -29,6 +29,8 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as Linking from "expo-linking";
 import { useRouter } from "expo-router";
 
+const OPENAI_API_KEY = "";
+
 // ─── Types ────────────────────────────────────────────────────────────────────
 type Route = "Chat" | "Pipeline" | "Route" | "Prospecting" | "Meeting" | "Farmer" | "Reports" | "Marketing" | "Management" | "Kpis" | "CorporatePortfolio" | "Broadcast" | "Feedbacks" | "TeamPulse" | "PulseCheck" | "AccountSettings" | "Subscription" | "MyProfile" | "MyCompany" | "Usage" | "WhatsApp" | "Shop" | "Help" | "Privacy";
 type PipelineLead  = { id: string; name: string; company: string; value: string; stage: string; daysIdle: number; phone: string };
@@ -114,7 +116,7 @@ function Sidebar({ visible, onClose, currentRoute, onNavigate, onLogout }: {
   const swipePan = useRef(
     PanResponder.create({
       onMoveShouldSetPanResponder: (_, g) => g.dx < -20 && Math.abs(g.dx) > Math.abs(g.dy) * 2,
-      onPanResponderRelease: (_, g) => { if (g.dx < -100) onClose(); },
+      onPanResponderRelease: (_, g) => { if (g.dx < -60) onClose(); },
     })
   ).current;
 
@@ -264,7 +266,7 @@ function Sidebar({ visible, onClose, currentRoute, onNavigate, onLogout }: {
             onPress={() => { onClose(); onLogout(); }}
             activeOpacity={0.7}
           >
-            <Ionicons name="log-out-outline" size={20} color="rgba(255,255,255,0.35)" />
+            <Ionicons name="log-out-outline" size={20} color="rgba(255,255,255,0.4)" />
           </TouchableOpacity>
         </View>
 
@@ -274,23 +276,19 @@ function Sidebar({ visible, onClose, currentRoute, onNavigate, onLogout }: {
 }
 
 // ─── Shared top bar ───────────────────────────────────────────────────────────
-function TopBar({ title, subtitle, onMenu, onBack }: { title: string; subtitle?: string; onMenu: () => void; onBack?: () => void }) {
+function TopBar({ title, subtitle, onMenu }: { title: string; subtitle?: string; onMenu: () => void; onBack?: () => void }) {
   const insets = useSafeAreaInsets();
   return (
     <View style={[S.topBar, { paddingTop: insets.top + 10 }]}>
-      {onBack ? (
-        <TouchableOpacity style={S.iconBtn} onPress={onBack} activeOpacity={0.6}>
-          <Ionicons name="chevron-back" size={22} color="#FFFFFF" />
-        </TouchableOpacity>
-      ) : (
-        <View style={S.iconBtn} />
-      )}
+      <TouchableOpacity style={S.iconBtn} onPress={onMenu} activeOpacity={0.6}>
+        <Text style={S.topIconText}>☰</Text>
+      </TouchableOpacity>
       <View style={{ alignItems: "center" }}>
         {subtitle && <Text style={S.topSubtitle}>{subtitle}</Text>}
         {!!title && <Text style={S.topTitle}>{title}</Text>}
       </View>
-      <TouchableOpacity style={S.iconBtn} onPress={onMenu} activeOpacity={0.6}>
-        <Text style={S.topIconText}>☰</Text>
+      <TouchableOpacity style={S.iconBtn} activeOpacity={0.6}>
+        <Text style={S.topIconText}>···</Text>
       </TouchableOpacity>
     </View>
   );
@@ -321,11 +319,27 @@ function ChatView({ onMenu, onBack }: { onMenu: () => void; onBack?: () => void 
   // fetchJadeAIResponse — stub preparado para receber chave de API
   // Substitua o conteúdo desta função com sua chamada real (OpenAI / Anthropic)
   // ──────────────────────────────────────────────────────────────────────────
-  const fetchJadeAIResponse = async (_userMessage: string): Promise<string> => {
-    // TODO: substituir pela chamada real à API
-    // Exemplo: const res = await openai.chat.completions.create({ ... })
-    await new Promise((r) => setTimeout(r, 1200));
-    return "Analisando seus dados comerciais… Em breve trarei insights sobre seu pipeline e oportunidades de up-sell.";
+  const fetchJadeAIResponse = async (userMessage: string): Promise<string> => {
+    try {
+      const res = await fetch("https://api.openai.com/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${OPENAI_API_KEY}`,
+        },
+        body: JSON.stringify({
+          model: "gpt-4o-mini",
+          messages: [
+            { role: "system", content: "Você é JADE, assistente comercial especializada em vendas B2B. Responda de forma objetiva e estratégica em português." },
+            { role: "user", content: userMessage },
+          ],
+        }),
+      });
+      const data = await res.json();
+      return data.choices?.[0]?.message?.content ?? "Não foi possível obter resposta da IA.";
+    } catch {
+      return "Erro ao conectar com a IA. Verifique sua conexão e a chave de API.";
+    }
   };
 
   // ── Enviar mensagem de texto ────────────────────────────────────────────────
@@ -1060,7 +1074,7 @@ function MarketingView({ onMenu, onBack }: { onMenu: () => void; onBack?: () => 
       <TopBar title="Marketing IA" subtitle="GROWTH & TRÁFEGO" onMenu={onMenu} onBack={onBack} />
 
       {/* Budget launcher */}
-      <View style={{ paddingHorizontal: 20, marginBottom: 14 }}>
+      <View style={{ paddingHorizontal: 20, paddingTop: 20, marginBottom: 14 }}>
         <TouchableOpacity style={S.mktLaunchBtn} onPress={() => setBudgetOpen(true)} activeOpacity={0.8}>
           <Text style={S.mktLaunchText}>Planejar Verba de Tráfego Pago →</Text>
         </TouchableOpacity>
@@ -1213,13 +1227,9 @@ function ManagementView({ onMenu, onBack }: { onMenu: () => void; onBack?: () =>
     <View style={{ flex: 1 }}>
       {/* Top bar manual — sem TopBar genérico para ter botão "+ Novo" */}
       <View style={[S.topBar, { paddingTop: (Platform.OS === "web" ? 24 : insets.top + 4) + 6 }]}>
-        {onBack ? (
-          <TouchableOpacity style={S.iconBtn} onPress={onBack} activeOpacity={0.6}>
-            <Ionicons name="chevron-back" size={22} color="#FFFFFF" />
-          </TouchableOpacity>
-        ) : (
-          <View style={S.iconBtn} />
-        )}
+        <TouchableOpacity style={S.iconBtn} onPress={onMenu} activeOpacity={0.7}>
+          <Text style={S.topIconText}>☰</Text>
+        </TouchableOpacity>
         <View style={{ flex: 1, marginHorizontal: 12 }}>
           <Text style={S.topSubtitle}>PAINEL DO DIRETOR</Text>
           <Text style={S.topTitle}>Gestão de Time</Text>
@@ -1433,7 +1443,7 @@ function CorporatePortfolioView({ onMenu, onBack }: { onMenu: () => void; onBack
   return (
     <View style={{ flex: 1 }}>
       <TopBar title="Carteira Corporativa" subtitle="VISÃO MACRO" onMenu={onMenu} onBack={onBack} />
-      <ScrollView showsVerticalScrollIndicator={false} keyboardDismissMode="on-drag" contentContainerStyle={{ paddingTop: 16 }}>
+      <ScrollView showsVerticalScrollIndicator={false} keyboardDismissMode="on-drag" contentContainerStyle={{ paddingTop: 20 }}>
         {/* Macro grid */}
         <View style={S.corpMacroRow}>
           {[
@@ -1715,17 +1725,10 @@ function PulseCheckView({ onMenu, onBack }: { onMenu: () => void; onBack?: () =>
     <View style={{ flex: 1 }}>
       {/* minimal top bar just for menu access */}
       <View style={[S.topBar, { paddingTop: Platform.OS === "web" ? 24 : insets.top + 4 }]}>
-        {onBack ? (
-          <TouchableOpacity style={S.iconBtn} onPress={onBack} activeOpacity={0.6}>
-            <Ionicons name="chevron-back" size={22} color="#FFFFFF" />
-          </TouchableOpacity>
-        ) : (
-          <View style={S.iconBtn} />
-        )}
-        <View style={{ flex: 1 }} />
         <TouchableOpacity style={S.iconBtn} onPress={onMenu} activeOpacity={0.6}>
           <Text style={S.topIconText}>☰</Text>
         </TouchableOpacity>
+        <View style={{ flex: 1 }} />
       </View>
 
       <ScrollView contentContainerStyle={S.pulseCheckWrapper} showsVerticalScrollIndicator={false} keyboardDismissMode="on-drag">
@@ -2532,7 +2535,7 @@ const S = StyleSheet.create({
   innerBarButton:         { width: 36, height: 36, borderRadius: 18, backgroundColor: "rgba(255,255,255,0.08)", borderWidth: 1, borderColor: "rgba(255,255,255,0.12)", alignItems: "center", justifyContent: "center" },
   barIcon:                { color: "#FFFFFF", fontSize: 20, fontWeight: "300" },
   textInputStyle:         { flex: 1, color: "#FFFFFF", fontSize: 15, paddingHorizontal: 10, maxHeight: 100 },
-  sendButtonCircle:       { width: 44, height: 44, borderRadius: 22, backgroundColor: "rgba(211,106,157,0.85)", alignItems: "center", justifyContent: "center", borderWidth: 0, overflow: "hidden" },
+  sendButtonCircle:       { width: 44, height: 44, borderRadius: 22, backgroundColor: "rgba(211,106,157,0.9)", alignItems: "center", justifyContent: "center", borderWidth: 0, overflow: "hidden" },
   sendIcon:               { color: "#FFFFFF", fontSize: 14, fontWeight: "700" },
   recordingWaveContainer: { flex: 1, flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: 4 },
   recordingLabel:         { color: "#8F94A8", fontSize: 14, fontWeight: "500" },
@@ -2540,7 +2543,7 @@ const S = StyleSheet.create({
   waveLine:               { width: 3, backgroundColor: "#D36A9D", marginHorizontal: 2, borderRadius: 1.5 },
 
   // Route screen
-  mapPreview: { height: 160, marginHorizontal: 20, borderRadius: 16, backgroundColor: "#161822", marginBottom: 20, alignItems: "center", justifyContent: "center", borderWidth: 1, borderColor: "#242736" },
+  mapPreview: { height: 160, marginHorizontal: 20, marginTop: 20, borderRadius: 16, backgroundColor: "#161822", marginBottom: 20, alignItems: "center", justifyContent: "center", borderWidth: 1, borderColor: "#242736" },
   mapText: { color: "#4E5366", fontWeight: "600", fontSize: 14 },
   mapSubText: { color: "#8F94A8", fontSize: 12, marginTop: 4, fontWeight: "500" },
   timelineRow: { flexDirection: "row", paddingHorizontal: 20, marginBottom: 4 },
@@ -2684,7 +2687,7 @@ const S = StyleSheet.create({
   pulseLabel: { color: "#8F94A8", fontSize: 11, marginTop: 2, textAlign: "center" },
 
   // Pulse Check screen
-  pulseCheckWrapper:    { flexGrow: 1, paddingHorizontal: 24, paddingBottom: 40, justifyContent: "center" },
+  pulseCheckWrapper:    { flexGrow: 1, paddingHorizontal: 24, paddingTop: 20, paddingBottom: 40, justifyContent: "center" },
   pulseCheckBrand:      { color: "#8F94A8", fontSize: 11, fontWeight: "700", letterSpacing: 1, marginBottom: 8, textAlign: "center" },
   pulseCheckTitle:      { color: "#FFFFFF", fontSize: 22, fontWeight: "700", textAlign: "center", lineHeight: 30, letterSpacing: -0.3, marginBottom: 10 },
   pulseOption:          { flexDirection: "row", alignItems: "center", backgroundColor: "#161822", height: 56, borderRadius: 12, paddingHorizontal: 16, borderWidth: 1, borderColor: "#242736", marginBottom: 12 },
@@ -2728,9 +2731,8 @@ const S = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: "rgba(255,255,255,0.04)",
-    borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.08)",
+    backgroundColor: "transparent",
+    borderWidth: 0,
     alignItems: "center",
     justifyContent: "center",
   },
