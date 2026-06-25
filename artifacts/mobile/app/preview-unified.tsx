@@ -3,6 +3,7 @@ import {
   ActivityIndicator,
   Alert,
   Animated,
+  Switch,
   Easing,
   FlatList,
   KeyboardAvoidingView,
@@ -72,6 +73,13 @@ const MEETINGS: MeetingItem[] = [
   { id: "3", time: "14:00", title: "Proposta — Plano Anual",  company: "Wayne Enterprises",type: "Proposta",   prep: "Levar deck de ROI. Cliente comparou com concorrente X.",       status: "Pendente"   },
   { id: "4", time: "16:30", title: "Check-in Pós-implantação",company: "Stark Labs",       type: "Pós-venda",  prep: "Perguntar sobre adoção. Oportunidade de up-sell módulo IA.",   status: "Sugerido"   },
 ];
+
+type ScheduledMeeting = { id: string; client: string; company: string; time: string; aiSummary: string; painPoints: string; prepTip: string };
+const SCHEDULED_MEETINGS: ScheduledMeeting[] = [
+  { id: "1", client: "Roberto Shinyashiki", company: "Diretriz Comercial", time: "Hoje, 14:00",  aiSummary: "O cliente demonstrou forte interesse em automação de funil. Ele reclamou que a equipe atual perde muitas mensagens no WhatsApp. Tem orçamento aprovado.", painPoints: "Perda de leads, falta de processos", prepTip: "Foque na nossa feature de Agente Autônomo que roda 24/7." },
+  { id: "2", client: "Ananda Silveira",     company: "Lotus Cosméticos",   time: "Amanhã, 10:30",aiSummary: "Abordagem fria feita pela IA no Maps. Ela aceitou a reunião apenas para entender o custo-benefício. Receptiva, mas focada em preço.", painPoints: "Precisa reduzir custo operacional", prepTip: "Demonstre o ROI rápido e o plano de entrada do nosso software." },
+];
+const MEETING_DAYS = ["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"] as const;
 
 const SIDEBAR_W = 280;
 
@@ -389,70 +397,139 @@ function ProspectingView({ onMenu }: { onMenu: () => void }) {
 }
 
 // ─── Screen: Meeting ─────────────────────────────────────────────────────────
-function MeetingView({ onMenu }: { onMenu: () => void }) {
-  const [selected, setSelected] = useState<MeetingItem | null>(null);
+const MEETING_VIEW_TABS = ["Próximas Reuniões", "Configurar Robô"] as const;
 
-  const statusColor = (s: string) =>
-    s === "Confirmado" ? "#38A169" : s === "Pendente" ? "#00E5FF" : "#4E5366";
+function MeetingView({ onMenu }: { onMenu: () => void }) {
+  const [tab,          setTab]          = useState<(typeof MEETING_VIEW_TABS)[number]>("Próximas Reuniões");
+  const [selected,     setSelected]     = useState<ScheduledMeeting | null>(null);
+  const [aiActive,     setAiActive]     = useState(true);
+  const [activeDays,   setActiveDays]   = useState(["Seg","Ter","Qua","Qui","Sex"]);
+
+  const toggleDay = (d: string) =>
+    setActiveDays((prev) => prev.includes(d) ? prev.filter((x) => x !== d) : [...prev, d]);
 
   return (
     <View style={{ flex: 1 }}>
-      <TopBar title="Agenda & Briefing" subtitle="HOJE" onMenu={onMenu} />
+      <TopBar title="Reuniões da IA" subtitle="INTELIGÊNCIA DE VENDAS" onMenu={onMenu} />
 
-      {/* Date strip */}
-      <View style={S.dateStrip}>
-        {["Seg 21","Ter 22","Qua 23","Qui 24","Sex 25"].map((d) => {
-          const active = d === "Sex 25";
-          return (
-            <TouchableOpacity key={d} style={[S.dateChip, active && S.dateChipActive]} activeOpacity={0.7}>
-              <Text style={[S.dateChipText, active && S.dateChipTextActive]}>{d}</Text>
-            </TouchableOpacity>
-          );
-        })}
+      {/* Tabs */}
+      <View style={S.tabsWrapper}>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={S.tabsScroll}>
+          {MEETING_VIEW_TABS.map((t) => {
+            const active = tab === t;
+            return (
+              <TouchableOpacity key={t} style={S.tabBtn} onPress={() => setTab(t)} activeOpacity={0.8}>
+                <Text style={[S.tabText, active && S.tabTextActive]}>{t}</Text>
+                {active && <View style={S.tabLine} />}
+              </TouchableOpacity>
+            );
+          })}
+        </ScrollView>
       </View>
 
-      <FlatList
-        data={MEETINGS}
-        keyExtractor={(i) => i.id}
-        contentContainerStyle={S.list}
-        renderItem={({ item }) => (
-          <TouchableOpacity style={S.meetCard} onPress={() => setSelected(item)} activeOpacity={0.7}>
-            <View style={S.meetTimeCol}>
-              <Text style={S.meetTime}>{item.time}</Text>
-              <View style={[S.meetDot, { backgroundColor: statusColor(item.status) }]} />
-            </View>
-            <View style={{ flex: 1 }}>
+      {/* Aba 1: Próximas Reuniões */}
+      {tab === "Próximas Reuniões" && (
+        <FlatList
+          data={SCHEDULED_MEETINGS}
+          keyExtractor={(i) => i.id}
+          contentContainerStyle={S.list}
+          renderItem={({ item }) => (
+            <TouchableOpacity style={S.card} onPress={() => setSelected(item)} activeOpacity={0.7}>
               <View style={S.cardHead}>
-                <Text style={[S.cardName, { flex: 1 }]} numberOfLines={1}>{item.title}</Text>
-                <View style={[S.statusChip, { borderColor: statusColor(item.status) + "44", backgroundColor: statusColor(item.status) + "11" }]}>
-                  <Text style={[S.statusChipText, { color: statusColor(item.status) }]}>{item.status}</Text>
+                <View style={{ flex: 1 }}>
+                  <Text style={S.cardName}>{item.client}</Text>
+                  <Text style={S.cardSub2}>{item.company}</Text>
                 </View>
+                <View style={S.badge}><Text style={S.badgeText}>{item.time}</Text></View>
               </View>
-              <Text style={S.cardSub}>{item.company} · {item.type}</Text>
-            </View>
-          </TouchableOpacity>
-        )}
-      />
+              <View style={S.meetBriefPreview}>
+                <Text style={S.meetBriefLabel}>🤖 RESUMO DA IA:</Text>
+                <Text style={[S.cardSub, { marginBottom: 4 }]} numberOfLines={2}>{item.aiSummary}</Text>
+              </View>
+              <Text style={{ fontSize: 12, color: "#00E5FF", fontWeight: "500" }}>Toque para ver o Briefing de Preparação →</Text>
+            </TouchableOpacity>
+          )}
+        />
+      )}
 
-      {/* Briefing bottom sheet */}
+      {/* Aba 2: Configurar Robô */}
+      {tab === "Configurar Robô" && (
+        <ScrollView style={S.form} showsVerticalScrollIndicator={false}>
+          {/* AI toggle */}
+          <View style={S.configRow}>
+            <View style={{ flex: 1, marginRight: 16 }}>
+              <Text style={S.cardName}>Agendamento Autônomo</Text>
+              <Text style={[S.cardSub, { marginBottom: 0 }]}>Permitir que a IA marque reuniões direto no WhatsApp</Text>
+            </View>
+            <Switch
+              value={aiActive}
+              onValueChange={setAiActive}
+              trackColor={{ false: "#161822", true: "#00E5FF" }}
+              thumbColor={aiActive ? "#FFFFFF" : "#8F94A8"}
+            />
+          </View>
+
+          {/* Days */}
+          <Text style={[S.sectionLabel, { marginBottom: 14 }]}>DIAS DISPONÍVEIS DA IA</Text>
+          <View style={S.daysGrid}>
+            {MEETING_DAYS.map((d) => {
+              const chosen = activeDays.includes(d);
+              return (
+                <TouchableOpacity
+                  key={d}
+                  style={[S.dayChip, chosen && S.dayChipActive]}
+                  onPress={() => toggleDay(d)}
+                  activeOpacity={0.7}
+                >
+                  <Text style={[S.dayChipText, chosen && S.dayChipTextActive]}>{d}</Text>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+
+          {/* Time window */}
+          <Text style={[S.sectionLabel, { marginBottom: 14 }]}>JANELA HORÁRIA DISPONÍVEL</Text>
+          <TouchableOpacity style={S.timeWindowBtn} activeOpacity={0.7}>
+            <Text style={{ color: "#FFFFFF", fontSize: 16, fontWeight: "600" }}>09:00 às 18:00</Text>
+            <Text style={{ color: "#00E5FF", fontSize: 13, fontWeight: "500" }}>Editar Janela 🗓️</Text>
+          </TouchableOpacity>
+
+          <Text style={S.helperText}>
+            A IA analisará os intervalos ocupados na sua agenda nativa e oferecerá apenas os espaços livres dentro destas configurações.
+          </Text>
+          <View style={{ height: 40 }} />
+        </ScrollView>
+      )}
+
+      {/* Briefing full bottom sheet */}
       <Modal visible={selected !== null} animationType="slide" transparent onRequestClose={() => setSelected(null)}>
         <TouchableOpacity style={S.overlay} activeOpacity={1} onPress={() => setSelected(null)}>
-          <View style={S.sheet}>
+          <View style={[S.sheet, { paddingBottom: 32 }]} onStartShouldSetResponder={() => true}>
             <View style={S.handle} />
             {selected && (
               <>
-                <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 4 }}>
-                  <Text style={[S.sheetCompany, { flex: 1 }]}>{selected.company} · {selected.time}</Text>
-                </View>
-                <Text style={S.sheetName}>{selected.title}</Text>
+                <Text style={S.sheetCompany}>{selected.company}</Text>
+                <Text style={S.sheetName}>{selected.client}</Text>
+                <Text style={[S.cardSub, { marginBottom: 16 }]}>🕒 {selected.time}</Text>
+
                 <View style={S.briefingBox}>
-                  <Text style={S.briefingLabel}>📋 BRIEFING DA IA</Text>
-                  <Text style={S.briefingText}>{selected.prep}</Text>
+                  <Text style={S.briefingLabel}>🤖 HISTÓRICO DA CONVERSA NO WHATSAPP</Text>
+                  <Text style={S.briefingText}>{selected.aiSummary}</Text>
                 </View>
-                <View style={S.actionRow}>
-                  <TouchableOpacity style={S.actionBtn}><Text style={S.actionBtnText}>Iniciar Reunião</Text></TouchableOpacity>
-                  <TouchableOpacity style={[S.actionBtn, S.actionBtnSec]}><Text style={S.actionBtnSecText}>Reagendar</Text></TouchableOpacity>
+
+                <View style={[S.briefingBox, { borderColor: "rgba(233,62,62,0.3)", backgroundColor: "rgba(233,62,62,0.04)", marginTop: 10 }]}>
+                  <Text style={[S.briefingLabel, { color: "#E93E3E" }]}>🔥 DORES CRÍTICAS IDENTIFICADAS</Text>
+                  <Text style={S.briefingText}>{selected.painPoints}</Text>
                 </View>
+
+                <View style={[S.briefingBox, { borderColor: "rgba(56,161,105,0.3)", backgroundColor: "rgba(56,161,105,0.04)", marginTop: 10 }]}>
+                  <Text style={[S.briefingLabel, { color: "#38A169" }]}>🎯 DIRECIONAMENTO PARA FECHAMENTO</Text>
+                  <Text style={S.briefingText}>{selected.prepTip}</Text>
+                </View>
+
+                <TouchableOpacity style={[S.primaryBtn, { marginTop: 20 }]} onPress={() => setSelected(null)} activeOpacity={0.8}>
+                  <Text style={S.primaryBtnText}>Fechar Preparação</Text>
+                </TouchableOpacity>
               </>
             )}
           </View>
@@ -977,6 +1054,17 @@ const S = StyleSheet.create({
   metricRow: { },
   progressTrack: { height: 6, backgroundColor: "#090A0F", borderRadius: 3, overflow: "hidden" },
   progressBar: { height: "100%", borderRadius: 3 },
+
+  // Meeting screen — robot config
+  meetBriefPreview: { backgroundColor: "rgba(255,255,255,0.02)", borderRadius: 10, padding: 12, marginTop: 12, marginBottom: 10, borderWidth: 1, borderColor: "#242736" },
+  meetBriefLabel: { fontSize: 9, color: "#00E5FF", fontWeight: "700", letterSpacing: 0.5, marginBottom: 6 },
+  configRow: { flexDirection: "row", alignItems: "center", backgroundColor: "#161822", borderRadius: 14, padding: 18, borderWidth: 1, borderColor: "#242736", marginBottom: 24 },
+  daysGrid: { flexDirection: "row", flexWrap: "wrap", gap: 10, marginBottom: 24 },
+  dayChip: { paddingHorizontal: 16, paddingVertical: 10, borderRadius: 10, backgroundColor: "#161822", borderWidth: 1, borderColor: "#242736" },
+  dayChipActive: { backgroundColor: "rgba(0,229,255,0.12)", borderColor: "#00E5FF" },
+  dayChipText: { fontSize: 13, color: "#4E5366", fontWeight: "600" },
+  dayChipTextActive: { color: "#00E5FF" },
+  timeWindowBtn: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", backgroundColor: "#161822", borderRadius: 14, padding: 18, borderWidth: 1, borderColor: "#242736", marginBottom: 20 },
 
   // Marketing screen
   mktLaunchBtn: { backgroundColor: "#161822", height: 50, borderRadius: 12, borderWidth: 1, borderColor: "#242736", justifyContent: "center", paddingHorizontal: 16 },
