@@ -1,0 +1,121 @@
+import 'react-native-gesture-handler';
+import React, { useState } from 'react';
+import { StyleSheet, Text, View, TouchableOpacity, ScrollView, Image, Dimensions } from 'react-native';
+import { DrawerContentScrollView } from '@react-navigation/drawer';
+
+const { width } = Dimensions.get('window');
+
+export default function CustomDrawerContent(props) {
+  const [conversasOpen, setConversasOpen] = useState(true);
+  const [comercialOpen, setComercialOpen] = useState(false);
+  const [gestaoOpen, setGestaoOpen] = useState(false);
+  const [contaOpen, setContaOpen] = useState(false);
+
+  return (
+    // 🔥 CORREÇÃO: Força o container a ocupar 100% e permite rolagem livre
+    <View style={styles.drawerWrapper}>
+      
+      {/* HEADER: JADE BRANCO À ESQUERDA, NOTIFICAÇÃO E AVATAR À DIREITA */}
+      <View style={styles.drawerHeader}>
+        <Text style={styles.brandName}>JADE</Text>
+        <View style={styles.headerRightControls}>
+          {/* 🔔 BOTÃO DE NOTIFICAÇÃO TRANSPARENTE SUBSTITUINDO O X */}
+          <TouchableOpacity style={styles.notificationTransparentBtn} activeOpacity={0.6}>
+            <Text style={styles.notificationIconText}>🔔</Text>
+          </TouchableOpacity>
+          <Image 
+            source={{ uri: 'https://unsplash.com' }} 
+            style={styles.executiveAvatar} 
+          />
+        </View>
+      </View>
+
+      {/* 🔥 CORREÇÃO DO ACORDEÃO: ScrollView interna garante que o menu role até o fim */}
+      <ScrollView style={styles.menuScroll} showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 50 }}>
+        
+        {/* SUBMENU: CONVERSAS */}
+        <TouchableOpacity style={styles.menuHeaderButton} onPress={() => setConversasOpen(!conversasOpen)}>
+          <Text style={styles.menuHeaderTitle}>✉️ Conversas</Text>
+          <Text style={styles.arrowIcon}>{conversasOpen ? '▼' : '►'}</Text>
+        </TouchableOpacity>
+        {conversasOpen && (
+          <View style={styles.subMenuContainer}>
+            <TouchableOpacity style={styles.subMenuItem} onPress={() => props.navigation.navigate('chat')}><Text style={styles.subMenuText}>✨ Novo Chat</Text></TouchableOpacity>
+          </View>
+        )}
+
+        <View style={styles.menuDivider} />
+
+        {/* SUBMENU: COMERCIAL */}
+        <TouchableOpacity style={styles.menuHeaderButton} onPress={() => setComercialOpen(!comercialOpen)}>
+          <Text style={styles.menuHeaderTitle}>📊 Comercial</Text>
+          <Text style={styles.arrowIcon}>{comercialOpen ? '▼' : '►'}</Text>
+        </TouchableOpacity>
+        {comercialOpen && (
+          <View style={styles.subMenuContainer}>
+            <TouchableOpacity style={styles.subMenuItem} onPress={() => props.navigation.navigate('pipeline')}><Text style={styles.subMenuText}>💼 Pipeline</Text></TouchableOpacity>
+            <TouchableOpacity style={styles.subMenuItem} onPress={() => props.navigation.navigate('route')}><Text style={styles.subMenuText}>🗺️ Rota do Dia</Text></TouchableOpacity>
+            <TouchableOpacity style={styles.subMenuItem} onPress={() => props.navigation.navigate('prospecting')}><Text style={styles.subMenuText}>🤖 Prospecção</Text></TouchableOpacity>
+            <TouchableOpacity style={styles.subMenuItem} onPress={() => props.navigation.navigate('meeting')}><Text style={styles.subMenuText}>🗓️ Agenda & Briefing</Text></TouchableOpacity>
+            <TouchableOpacity style={styles.subMenuItem} onPress={() => props.navigation.navigate('farmer')}><Text style={styles.subMenuText}>📈 Farmer</Text></TouchableOpacity>
+            <TouchableOpacity style={styles.subMenuItem} onPress={() => props.navigation.navigate('reports')}><Text style={styles.subMenuText}>📉 KPIs & Relatórios</Text></TouchableOpacity>
+            <TouchableOpacity style={styles.subMenuItem} onPress={() => props.navigation.navigate('marketing')}><Text style={styles.subMenuText}>🚀 Marketing IA</Text></TouchableOpacity>
+          </View>
+        )}
+
+        <View style={styles.menuDivider} />
+
+        {/* SUBMENU: GESTÃO */}
+        <TouchableOpacity style={styles.menuHeaderButton} onPress={() => setGestaoOpen(!gestaoOpen)}>
+          <Text style={styles.menuHeaderTitle}>🛠️ Gestão</Text>
+          <Text style={styles.arrowIcon}>{gestaoOpen ? '▼' : '►'}</Text>
+        </TouchableOpacity>
+        {gestaoOpen && (
+          <View style={styles.subMenuContainer}>
+            <TouchableOpacity style={styles.subMenuItem} onPress={() => props.navigation.navigate('management/index')}><Text style={styles.subMenuText}>👥 Controle de Time</Text></TouchableOpacity>
+            <TouchableOpacity style={styles.subMenuItem} onPress={() => props.navigation.navigate('management/kpis')}><Text style={styles.subMenuText}>📊 KPIs Avançados</Text></TouchableOpacity>
+            <TouchableOpacity style={styles.subMenuItem} onPress={() => props.navigation.navigate('management/corporate-portfolio')}><Text style={styles.subMenuText}>🏢 Carteira Global</Text></TouchableOpacity>
+            <TouchableOpacity style={styles.subMenuItem} onPress={() => props.navigation.navigate('management/broadcast')}><Text style={styles.subMenuText}>📢 Central de Avisos</Text></TouchableOpacity>
+            <TouchableOpacity style={styles.subMenuItem} onPress={() => props.navigation.navigate('management/feedbacks')}><Text style={styles.subMenuText}>📝 Histórico de Feedbacks</Text></TouchableOpacity>
+            <TouchableOpacity style={styles.subMenuItem} onPress={() => props.navigation.navigate('management/team-pulse')}><Text style={styles.subMenuText}>🧠 Clima Organizacional</Text></TouchableOpacity>
+          </View>
+        )}
+
+        <View style={styles.menuDivider} />
+
+        {/* SUBMENU: CONTA (CORRIGIDO E SEPARADO) */}
+        <TouchableOpacity style={styles.menuHeaderButton} onPress={() => setContaOpen(!contaOpen)}>
+          <Text style={styles.menuHeaderTitle}>⚙️ Conta</Text>
+          <Text style={styles.arrowIcon}>{contaOpen ? '▼' : '►'}</Text>
+        </TouchableOpacity>
+        {contaOpen && (
+          <View style={styles.subMenuContainer}>
+            <TouchableOpacity style={styles.subMenuItem} onPress={() => props.navigation.navigate('management/account-settings')}><Text style={styles.subMenuText}>👤 Meu Perfil</Text></TouchableOpacity>
+            <TouchableOpacity style={styles.subMenuItem} onPress={() => props.navigation.navigate('management/my-company')}><Text style={styles.subMenuText}>🏢 Minha Empresa</Text></TouchableOpacity>
+            <TouchableOpacity style={styles.subMenuItem} onPress={() => props.navigation.navigate('management/usage')}><Text style={styles.subMenuText}>📈 Uso e Limites</Text></TouchableOpacity>
+            <TouchableOpacity style={styles.subMenuItem} onPress={() => props.navigation.navigate('management/subscription')}><Text style={styles.subMenuText}>💳 Planos & Assinatura</Text></TouchableOpacity>
+          </View>
+        )}
+
+      </ScrollView>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  drawerWrapper: { flex: 1, backgroundColor: '#090A0F', paddingTop: 50, paddingHorizontal: 20 },
+  drawerHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingBottom: 24, borderBottomWidth: 1, borderColor: '#161822', marginBottom: 20 },
+  brandName: { color: '#FFFFFF', fontSize: 24, fontWeight: '800', letterSpacing: 1 },
+  headerRightControls: { flexDirection: 'row', alignItems: 'center' },
+  notificationTransparentBtn: { marginRight: 16, backgroundColor: 'transparent', padding: 6 }, // Totalmente transparente
+  notificationIconText: { fontSize: 18 },
+  executiveAvatar: { width: 44, height: 44, borderRadius: 22 },
+  menuScroll: { flex: 1 },
+  menuHeaderButton: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 14 },
+  menuHeaderTitle: { color: '#FFFFFF', fontSize: 16, fontWeight: '600' },
+  arrowIcon: { color: '#4E5366', fontSize: 12 },
+  subMenuContainer: { paddingLeft: 16, marginTop: 4, marginBottom: 10, borderLeftWidth: 1, borderColor: '#161822' },
+  subMenuItem: { paddingVertical: 11 },
+  subMenuText: { color: '#8F94A8', fontSize: 14, fontWeight: '500' },
+  menuDivider: { height: 1, backgroundColor: '#161822', marginVertical: 10 }
+});

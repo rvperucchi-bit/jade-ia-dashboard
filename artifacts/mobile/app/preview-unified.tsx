@@ -129,16 +129,16 @@ function Sidebar({ visible, onClose, currentRoute, onNavigate }: {
         <View style={S.drawerHeader}>
           <Text style={S.drawerBrand}>JADE</Text>
           <View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
+            <TouchableOpacity activeOpacity={0.6} style={S.drawerNotifBtn}>
+              <Text style={{ fontSize: 18 }}>🔔</Text>
+            </TouchableOpacity>
             <View style={S.drawerAvatar}>
               <Text style={{ fontSize: 18 }}>👤</Text>
             </View>
-            <TouchableOpacity onPress={onClose} activeOpacity={0.7} style={S.drawerCloseBtn}>
-              <Text style={S.drawerCloseBtnText}>✕</Text>
-            </TouchableOpacity>
           </View>
         </View>
 
-        <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
+        <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 60 }}>
           {/* ── Conversas ── */}
           <TouchableOpacity style={S.drawerSection} onPress={() => setConversasOpen((v) => !v)} activeOpacity={0.7}>
             <Text style={S.drawerSectionTitle}>✉️ Conversas</Text>
@@ -2312,6 +2312,7 @@ const S = StyleSheet.create({
   drawerDivider: { height: 1, backgroundColor: "#161822", marginVertical: 10 },
   drawerCloseBtn: { width: 36, height: 36, borderRadius: 10, backgroundColor: "rgba(255,255,255,0.04)", borderWidth: 1, borderColor: "rgba(255,255,255,0.06)", alignItems: "center", justifyContent: "center" },
   drawerCloseBtnText: { color: "#8F94A8", fontSize: 14, fontWeight: "600" },
+  drawerNotifBtn: { width: 36, height: 36, borderRadius: 10, backgroundColor: "transparent", alignItems: "center", justifyContent: "center" },
 
   // Reports screen
   reportBox: { backgroundColor: "#161822", borderRadius: 16, padding: 18, borderWidth: 1, borderColor: "#242736", marginBottom: 28 },
