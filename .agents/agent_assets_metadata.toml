@@ -215,3 +215,9 @@ id = "bJKxjspVm7773cMLn75O1"
 uri = "file://exports/relatorio-revisao-ui-jade-2026-06-25.pdf"
 type = "pdf"
 title = "Relatório — Revisão Completa de UI JADE IA (25/06/2026)"
+
+[[outputs]]
+id = "dsD5mmSi38uP129Vxt0BJ"
+uri = "file://exports/relatorio-comercial-jade-2026-06-25.pdf"
+type = "pdf"
+title = "Relatório — Módulo Comercial JADE IA (25/06/2026)"

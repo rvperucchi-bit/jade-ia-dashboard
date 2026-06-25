@@ -105,7 +105,7 @@ export default function RoteiroScreen() {
   const colors  = useColors();
   const insets  = useSafeAreaInsets();
   const router  = useRouter();
-  const topPad  = Platform.OS === "web" ? 67 : insets.top;
+  const topPad  = Platform.OS === "web" ? 24 : insets.top + 4;
 
   const [open, setOpen] = useState<string | null>(null);
   const { loading, error, result, success, generate } = useJADE();
@@ -131,7 +131,7 @@ export default function RoteiroScreen() {
     <View style={[S.root, { backgroundColor: colors.background }]}>
       <View style={[S.header, { paddingTop: topPad, borderBottomColor: colors.border }]}>
         <TouchableOpacity style={S.backBtn} onPress={() => router.back()} activeOpacity={0.8}>
-          <Feather name="arrow-left" size={20} color={colors.text} />
+          <Feather name="chevron-left" size={22} color={colors.text} />
         </TouchableOpacity>
         <View style={{ flex: 1 }}>
           <Text style={[S.headerTitle, { color: colors.text }]}>Roteiro de Vendas</Text>

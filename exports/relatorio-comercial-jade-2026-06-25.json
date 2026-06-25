@@ -1,0 +1,90 @@
+{
+  "title": "Módulo Comercial — Correções e Restauração do Radar",
+  "subtitle": "Radar restaurado na navegação · Headers padronizados · Cores corrigidas em 10 telas comerciais",
+  "date": "25 de junho de 2026",
+  "output": "relatorio-comercial-jade-2026-06-25.pdf",
+  "sections": [
+    {
+      "heading": "Problema Relatado",
+      "body": [
+        "O módulo Comercial do JADE IA apresentava visual antigo e o Radar estava ausente do menu de navegação. O usuário não conseguia acessar o Radar a partir do módulo Comercial, e as telas comerciais tinham headers desalinhados com o tema atual do app."
+      ]
+    },
+    {
+      "heading": "Prioridade 1 — Radar Restaurado no Menu Comercial",
+      "body": [
+        "O Radar foi adicionado como primeiro item do módulo Comercial no menu lateral (accordion drawer) da tela principal JADE. A rota aponta para /scanner, que é a tela Scanner Radar — a funcionalidade completa de busca geolocalizada de leads por segmento e raio."
+      ],
+      "bullets": [
+        "Arquivo alterado: app/(tabs)/jade.tsx — constante ACCORDION_SECTIONS",
+        "Radar adicionado como item 1 do módulo Comercial (acima de Leads, CRM, etc.)",
+        "Rota: { label: 'Radar', route: '/scanner' }",
+        "Scanner Radar já existia e funcionava — apenas estava fora do menu Comercial"
+      ]
+    },
+    {
+      "heading": "Prioridade 2 — Estrutura Comercial Completa Restaurada",
+      "body": [
+        "O menu Comercial passou de 4 itens incompletos para 9 itens cobrindo todo o fluxo comercial:"
+      ],
+      "bullets": [
+        "Antes (4 itens): Conversas, CRM, Oportunidades, Relatórios",
+        "Depois (9 itens): Radar, Leads, CRM, Pipeline, Carteira, Pré-Reunião, Objeções, Roteiro, Relatórios",
+        "Itens adicionados: Radar (/scanner), Pipeline (/pipeline), Carteira (/carteira), Pré-Reunião (/briefing), Objeções (/objecoes), Roteiro (/roteiro)",
+        "Leads renomeado de 'Oportunidades' para 'Leads' (mais claro e direto)",
+        "'Conversas' removida do Comercial (estava duplicada — existe em tab própria)"
+      ]
+    },
+    {
+      "heading": "Prioridade 3 — Headers Comerciais Padronizados",
+      "body": [
+        "Todas as telas do módulo Comercial tiveram o header corrigido para o padrão oficial: topPad correto por plataforma e chevron-left no botão de voltar."
+      ],
+      "bullets": [
+        "crm.tsx — topPad: 67/insets.top → 24/insets.top+4; arrow-left → chevron-left",
+        "pipeline.tsx — topPad: 67/insets.top → 24/insets.top+4; arrow-left → chevron-left",
+        "carteira.tsx — topPad: 67/insets.top → 24/insets.top+4; arrow-left → chevron-left",
+        "scanner.tsx (Radar) — topPad: 67/insets.top → 24/insets.top+4; arrow-left → chevron-left",
+        "briefing.tsx — topPad: 67/insets.top → 24/insets.top+4; arrow-left → chevron-left",
+        "objecoes.tsx — topPad: 67/insets.top → 24/insets.top+4; arrow-left → chevron-left",
+        "roteiro.tsx — topPad: 67/insets.top → 24/insets.top+4; arrow-left → chevron-left",
+        "relatorios.tsx — topPad: 67/insets.top → 24/insets.top+4; arrow-left → chevron-left"
+      ]
+    },
+    {
+      "heading": "Prioridade 4 — Cores Antigas Corrigidas",
+      "body": [
+        "Cores desatualizadas encontradas e corrigidas nas telas comerciais:"
+      ],
+      "bullets": [
+        "crm.tsx STATUS_CONFIG fechado: #22CC88 → #00D68F (success correto)",
+        "crm.tsx ScoreBadge: #22CC88 → #00D68F, warning #FF8800 → #FFB300",
+        "pipeline.tsx STAGE_CONFIG fechado: #22CC88 → #00D68F",
+        "jade.tsx BG constante: #0B0814 → #0A0A0F (background oficial)"
+      ]
+    },
+    {
+      "heading": "Arquivos Alterados — Resumo",
+      "bullets": [
+        "app/(tabs)/jade.tsx — menu Comercial expandido (Radar + 5 itens), BG corrigido",
+        "app/crm.tsx — topPad, chevron-left, cores #00D68F/#FFB300",
+        "app/pipeline.tsx — topPad, chevron-left, cor #00D68F",
+        "app/carteira.tsx — topPad, chevron-left",
+        "app/scanner.tsx — topPad, chevron-left",
+        "app/briefing.tsx — topPad, chevron-left",
+        "app/objecoes.tsx — topPad, chevron-left",
+        "app/roteiro.tsx — topPad, chevron-left",
+        "app/relatorios.tsx — topPad, chevron-left"
+      ]
+    },
+    {
+      "heading": "Validação",
+      "bullets": [
+        "TypeScript typecheck: 0 erros após todas as correções",
+        "Workflow Expo reiniciado e rodando normalmente",
+        "Nenhuma tela duplicada — todas as rotas apontam para telas únicas existentes",
+        "Radar é funcionalidade própria: busca geolocalizada por segmento/raio, distinta de Leads/Pipeline"
+      ]
+    }
+  ]
+}

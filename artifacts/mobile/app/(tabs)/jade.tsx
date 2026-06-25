@@ -37,7 +37,7 @@ import { Audio } from "expo-av";
 import * as FileSystem from "expo-file-system";
 
 const PINK      = "#FF0080";
-const BG        = "#0B0814";
+const BG        = "#0A0A0F";
 const { width: SCREEN_W } = Dimensions.get("window");
 const DRAWER_W  = SCREEN_W;
 const RDRAWER_W = 76;
@@ -61,9 +61,14 @@ const ACCORDION_SECTIONS: AccordionSection[] = [
     title: "Comercial",
     icon: "trending-up",
     items: [
-      { label: "Conversas",     route: "/(tabs)/conversas" },
+      { label: "Radar",         route: "/scanner" },
+      { label: "Leads",         route: "/(tabs)/leads" },
       { label: "CRM",           route: "/crm" },
-      { label: "Oportunidades", route: "/(tabs)/leads" },
+      { label: "Pipeline",      route: "/pipeline" },
+      { label: "Carteira",      route: "/carteira" },
+      { label: "Pré-Reunião",   route: "/briefing" },
+      { label: "Objeções",      route: "/objecoes" },
+      { label: "Roteiro",       route: "/roteiro" },
       { label: "Relatórios",    route: "/relatorios" },
     ],
   },

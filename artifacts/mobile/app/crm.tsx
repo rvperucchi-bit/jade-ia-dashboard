@@ -86,7 +86,7 @@ const STATUS_CONFIG: Record<ContactStatus, { label: string; color: string }> = {
   em_contato:  { label: "Em contato",  color: PURPLE },
   quente:      { label: "Quente",      color: "#FF8800" },
   negociacao:  { label: "Negociação",  color: PINK },
-  fechado:     { label: "Fechado",     color: "#22CC88" },
+  fechado:     { label: "Fechado",     color: "#00D68F" },
   perdido:     { label: "Perdido",     color: "#AA4444" },
 };
 
@@ -159,7 +159,7 @@ function leadToContact(l: CrmLeadLocal): Contact {
 }
 
 function ScoreBadge({ score }: { score: number }) {
-  const color = score >= 80 ? "#22CC88" : score >= 60 ? "#FF8800" : "#AA4444";
+  const color = score >= 80 ? "#00D68F" : score >= 60 ? "#FFB300" : "#AA4444";
   return (
     <View style={[SB.wrap, { backgroundColor: color + "22", borderColor: color + "44" }]}>
       <Text style={[SB.text, { color }]}>{score}</Text>
@@ -440,7 +440,7 @@ export default function CRMScreen() {
   const [novoOpen, setNovoOpen] = useState(false);
   const [novoForm, setNovoForm] = useState({ nome: "", empresa: "", telefone: "", segmento: "" });
 
-  const topPad    = Platform.OS === "web" ? 67 : insets.top;
+  const topPad    = Platform.OS === "web" ? 24 : insets.top + 4;
   const bottomPad = Platform.OS === "web" ? 84 : insets.bottom + 60;
 
   useEffect(() => {
@@ -482,9 +482,9 @@ export default function CRMScreen() {
 
   return (
     <View style={[S.root, { backgroundColor: colors.background }]}>
-      <View style={[S.header, { paddingTop: topPad + 4 }]}>
+      <View style={[S.header, { paddingTop: topPad }]}>
         <TouchableOpacity onPress={() => router.back()} style={S.backBtn} activeOpacity={0.7}>
-          <Feather name="arrow-left" size={22} color={colors.text} />
+          <Feather name="chevron-left" size={22} color={colors.text} />
         </TouchableOpacity>
         <Text style={[S.title, { color: colors.text }]}>CRM</Text>
         <View style={S.headerRight}>

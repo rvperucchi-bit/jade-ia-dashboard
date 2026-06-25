@@ -37,7 +37,7 @@ const STAGE_CONFIG: Record<Stage, { label: string; color: string; icon: string }
   qualificacao:{ label: "Qualificação",color: "#FF8800", icon: "check-circle" },
   proposta:    { label: "Proposta",    color: PINK,      icon: "file-text" },
   negociacao:  { label: "Negociação",  color: "#FFCC00", icon: "repeat" },
-  fechado:     { label: "Fechado",     color: "#22CC88", icon: "award" },
+  fechado:     { label: "Fechado",     color: "#00D68F", icon: "award" },
 };
 
 const STAGES: Stage[] = ["prospeccao", "contato", "qualificacao", "proposta", "negociacao", "fechado"];
@@ -212,7 +212,7 @@ export default function PipelineScreen() {
   const [novoOpen, setNovoOpen] = useState(false);
   const [novoForm, setNovoForm] = useState({ nome: "", empresa: "", valor: "", stage: "prospeccao" as Stage });
 
-  const topPad    = Platform.OS === "web" ? 67 : insets.top;
+  const topPad    = Platform.OS === "web" ? 24 : insets.top + 4;
   const bottomPad = Platform.OS === "web" ? 84 : insets.bottom + 60;
 
   useEffect(() => {
@@ -250,9 +250,9 @@ export default function PipelineScreen() {
 
   return (
     <View style={[S.root, { backgroundColor: colors.background }]}>
-      <View style={[S.header, { paddingTop: topPad + 4 }]}>
+      <View style={[S.header, { paddingTop: topPad }]}>
         <TouchableOpacity onPress={() => router.back()} style={S.backBtn} activeOpacity={0.7}>
-          <Feather name="arrow-left" size={22} color={colors.text} />
+          <Feather name="chevron-left" size={22} color={colors.text} />
         </TouchableOpacity>
         <Text style={[S.title, { color: colors.text }]}>Pipeline</Text>
         <TouchableOpacity

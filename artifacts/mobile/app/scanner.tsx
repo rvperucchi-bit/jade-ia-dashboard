@@ -307,7 +307,7 @@ export default function ScannerScreen() {
     finally { setBuyingPacote(false); }
   };
 
-  const topPad = Platform.OS === "web" ? 67 : insets.top;
+  const topPad = Platform.OS === "web" ? 24 : insets.top + 4;
 
   const getLocation = async () => {
     if (Platform.OS === "web") {
@@ -428,7 +428,7 @@ export default function ScannerScreen() {
           onPress={() => router.back()}
           activeOpacity={0.8}
         >
-          <Feather name="arrow-left" size={20} color={colors.text} />
+          <Feather name="chevron-left" size={22} color={colors.text} />
         </TouchableOpacity>
         <View style={{ flex: 1 }}>
           <Text style={[styles.headerTitle, { color: colors.text }]}>Scanner Radar</Text>
