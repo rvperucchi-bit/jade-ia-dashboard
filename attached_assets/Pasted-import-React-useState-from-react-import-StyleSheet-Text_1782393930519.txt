@@ -1,0 +1,66 @@
+import React, { useState } from 'react';
+import { StyleSheet, Text, View, ScrollView, TouchableOpacity, SafeAreaView, Switch, Alert } from 'react-native';
+
+export default function TeamPulseScreen() {
+  const [isAutononous, setIsAutonomous] = useState(false);
+
+  const triggerManualPush = () => {
+    Alert.alert('Push Disparado', 'O questionário de clima comercial foi enviado para o smartphone de toda a equipe de vendas.');
+  };
+
+  return (
+    <SafeAreaView style={styles.container}>
+      <ScrollView style={styles.scroll} showsVerticalScrollIndicator={false}>
+        <Text style={styles.title}>Clima Comercial</Text>
+        <Text style={styles.subtitle}>Acompanhe o sentimento interno e evite sobrecarga da equipe</Text>
+
+        {/* INDICADORES DE SENTIMENTO DO DIA */}
+        <Text style={styles.sectionLabel}>TERMÔMETRO CONSOLIDADO (HOJE)</Text>
+        <View style={styles.pulseGrid}>
+          <View style={[styles.pulseCard, { borderColor: '#38A169' }]}><Text style={styles.emoji}>🟢</Text><Text style={styles.pulseCount}>4 Executivos</Text><Text style={styles.pulseLabel}>Super Bem</Text></View>
+          <View style={[styles.pulseCard, { borderColor: '#00E5FF' }]}><Text style={styles.emoji}>🟡</Text><Text style={styles.pulseCount}>2 Executivos</Text><Text style={styles.pulseLabel}>Com Dificuldade</Text></View>
+          <View style={[styles.pulseCard, { borderColor: '#E93E3E' }]}><Text style={styles.emoji}>🔴</Text><Text style={styles.pulseCount}>0 Executivos</Text><Text style={styles.pulseLabel}>Sobrecarga</Text></View>
+        </View>
+
+        {/* CONFIGURAÇÃO DE CONFIGURAÇÃO AUTÔNOMA */}
+        <Text style={styles.sectionLabel}>AUTOMAÇÃO DE CLIMA ORGANIZACIONAL</Text>
+        <View style={styles.configCard}>
+          <View style={styles.configInfo}>
+            <Text style={styles.configTitle}>Rotina de Disparo Autónomo</Text>
+            <Text style={styles.configSub}>Deixe a JADE pesquisar o sentimento do time toda sexta-feira às 17h</Text>
+          </View>
+          <Switch 
+            value={isAutononous} 
+            onValueChange={setIsAutonomous}
+            trackColor={{ false: '#161822', true: '#00E5FF' }}
+            thumbColor={isAutononous ? '#FFFFFF' : '#8F94A8'}
+          />
+        </View>
+
+        {/* ACIONADOR MANUAL DO PUSH */}
+        <TouchableOpacity style={styles.pushTriggerBtn} onPress={triggerManualPush} activeOpacity={0.8}>
+          <Text style={styles.pushTriggerText}>Disparar Push de Sentimento Agora 🧠</Text>
+        </TouchableOpacity>
+      </ScrollView>
+    </SafeAreaView>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: { flex: 1, backgroundColor: '#090A0F' },
+  scroll: { padding: 20 },
+  title: { fontSize: 26, fontWeight: '700', color: '#FFFFFF' },
+  subtitle: { fontSize: 13, color: '#8F94A8', marginTop: 4, marginBottom: 24 },
+  sectionLabel: { fontSize: 11, color: '#8F94A8', fontWeight: '700', letterSpacing: 0.8, marginBottom: 14 },
+  pulseGrid: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 24 },
+  pulseCard: { flex: 1, backgroundColor: '#161822', borderRadius: 14, padding: 12, alignItems: 'center', borderWidth: 1, marginRight: 8 },
+  emoji: { fontSize: 24, marginBottom: 6 },
+  pulseCount: { color: '#FFFFFF', fontSize: 14, fontWeight: '700' },
+  pulseLabel: { color: '#8F94A8', fontSize: 11, marginTop: 2, textAlign: 'center' },
+  configCard: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#161822', padding: 16, borderRadius: 14, borderWidth: 1, borderColor: '#242736', marginBottom: 24 },
+  configInfo: { width: '75%' },
+  configTitle: { color: '#FFFFFF', fontSize: 15, fontWeight: '600' },
+  configSub: { color: '#8F94A8', fontSize: 12, marginTop: 2, lineHeight: 16 },
+  pushTriggerBtn: { backgroundColor: '#FFFFFF', height: 54, borderRadius: 12, alignItems: 'center', justifyContent: 'center', marginTop: 10 },
+  pushTriggerText: { color: '#090A0F', fontWeight: '700', fontSize: 15 }
+});

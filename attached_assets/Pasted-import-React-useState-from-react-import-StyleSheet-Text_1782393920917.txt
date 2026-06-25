@@ -1,0 +1,91 @@
+import React, { useState } from 'react';
+import { StyleSheet, Text, View, ScrollView, TouchableOpacity, SafeAreaView, ActivityIndicator } from 'react-native';
+
+const TEAM_MEMBERS = [
+  { id: '1', name: 'Lucas Santana', lastFeedback: '12/05/2026 - Evolução em Propostas', score: '8.5' },
+  { id: '2', name: 'Mariana Rios', lastFeedback: '02/06/2026 - Meta Superada', score: '9.8' },
+  { id: '3', name: 'Thiago Martins', lastFeedback: '24/05/2026 - Alinhamento de Scripts', score: '7.0' }
+];
+
+export default function FeedbacksScreen() {
+  const [selectedId, setSelectedId] = useState(null);
+  const [loadingAi, setLoadingAi] = useState(false);
+  const [aiFeedbackText, setAiFeedbackText] = useState('');
+
+  const generateAiFeedback = (name) => {
+    setLoadingAi(true);
+    setAiFeedbackText('');
+    setTimeout(() => {
+      setLoadingAi(false);
+      setAiFeedbackText(
+        `Feedback Estruturado para ${name}:\n\n` +
+        `• Ponto Forte: Excelente comprometimento com a rotina e dedicação na execução dos processos.\n` +
+        `• Ponto de Melhoria: Identificamos um leve gargalo na transição de leads da etapa de proposta para o fechamento.\n\n` +
+        `💡 Sugestão Humana de Abordagem:\n"Tenho visto seu esforço nas propostas, e seus números estão ótimos. Vamos sentar juntos nesta semana para analisar duas contas específicas e destravar o fechamento? Quero te ajudar a bater o topo da meta!"`
+      );
+    }, 1500);
+  };
+
+  return (
+    <SafeAreaView style={styles.container}>
+      <ScrollView style={styles.scroll} showsVerticalScrollIndicator={false}>
+        <Text style={styles.title}>Histórico de Feedbacks</Text>
+        <Text style={styles.sectionLabel}>SELECIONE UM EXECUTIVO PARA ANÁLISE</Text>
+        
+        <View style={styles.listWrapper}>
+          {TEAM_MEMBERS.map((member) => (
+            <TouchableOpacity 
+              key={member.id} 
+              style={[styles.itemRow, selectedId === member.id && styles.itemRowActive]} 
+              onPress={() => { setSelectedId(member.id); generateAiFeedback(member.name); }}
+            >
+              <View>
+                <Text style={styles.memberName}>{member.name}</Text>
+                <Text style={styles.lastFeedbackText}>Último: {member.lastFeedback}</Text>
+              </View>
+              <View style={styles.scoreBadge}><Text style={styles.scoreText}>{member.score}</Text></View>
+            </TouchableOpacity>
+          ))}
+        </View>
+
+        {selectedId && (
+          <View style={styles.aiBox}>
+            <Text style={styles.aiBoxTitle}>🤖 Roteiro de Alinhamento 1-on-1 (JADE)</Text>
+            {loadingAi ? (
+              <ActivityIndicator color="#00E5FF" style={{ marginTop: 20 }} />
+            ) : (
+              aiFeedbackText !== '' && (
+                <>
+                  <Text style={styles.generatedText}>{aiFeedbackText}</Text>
+                  <TouchableOpacity style={styles.copyButton}>
+                    <Text style={styles.copyButtonText}>Copiar Roteiro para Reunião 📋</Text>
+                  </TouchableOpacity>
+                </>
+              )
+            )}
+          </View>
+        )}
+        <View style={{ height: 40 }} />
+      </ScrollView>
+    </SafeAreaView>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: { flex: 1, backgroundColor: '#090A0F' },
+  scroll: { padding: 20 },
+  title: { fontSize: 26, fontWeight: '700', color: '#FFFFFF', marginBottom: 24 },
+  sectionLabel: { fontSize: 11, color: '#8F94A8', fontWeight: '700', letterSpacing: 0.8, marginBottom: 12 },
+  listWrapper: { backgroundColor: '#161822', borderRadius: 16, borderWidth: 1, borderColor: '#242736', paddingHorizontal: 16, marginBottom: 24 },
+  itemRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 16, borderBottomWidth: 1, borderColor: '#242736' },
+  itemRowActive: { opacity: 0.7 },
+  memberName: { color: '#FFFFFF', fontSize: 16, fontWeight: '600' },
+  lastFeedbackText: { color: '#8F94A8', fontSize: 12, marginTop: 4 },
+  scoreBadge: { backgroundColor: 'rgba(0, 229, 255, 0.1)', paddingHorizontal: 10, paddingVertical: 6, borderRadius: 8 },
+  scoreText: { color: '#00E5FF', fontWeight: '700', fontSize: 13 },
+  aiBox: { backgroundColor: 'rgba(255, 255, 255, 0.02)', borderWidth: 1, borderColor: '#242736', borderRadius: 16, padding: 18 },
+  aiBoxTitle: { fontSize: 14, fontWeight: '700', color: '#FFFFFF', marginBottom: 16 },
+  generatedText: { color: '#8F94A8', fontSize: 14, lineHeight: 22 },
+  copyButton: { backgroundColor: '#FFFFFF', height: 46, borderRadius: 10, alignItems: 'center', justifyContent: 'center', marginTop: 20 },
+  copyButtonText: { color: '#090A0F', fontWeight: '600', fontSize: 14 }
+});

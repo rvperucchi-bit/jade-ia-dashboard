@@ -28,7 +28,7 @@ import * as Linking from "expo-linking";
 import { useRouter } from "expo-router";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
-type Route = "Chat" | "Pipeline" | "Route" | "Prospecting" | "Meeting" | "Farmer" | "Reports" | "Marketing" | "Management" | "Kpis" | "CorporatePortfolio" | "Broadcast";
+type Route = "Chat" | "Pipeline" | "Route" | "Prospecting" | "Meeting" | "Farmer" | "Reports" | "Marketing" | "Management" | "Kpis" | "CorporatePortfolio" | "Broadcast" | "Feedbacks" | "TeamPulse" | "PulseCheck";
 type PipelineLead  = { id: string; name: string; company: string; value: string; stage: string; daysIdle: number; phone: string };
 type AiLead        = { id: string; name: string; segment: string; address: string };
 type HistoryItem   = { id: string; query: string; location: string; date: string; leadsCount: number };
@@ -194,6 +194,15 @@ function Sidebar({ visible, onClose, currentRoute, onNavigate }: {
               </TouchableOpacity>
               <TouchableOpacity style={S.drawerSubItem} onPress={() => go("Broadcast")} activeOpacity={0.7}>
                 <Text style={[S.drawerSubText, currentRoute === "Broadcast" && S.drawerSubTextActive]}>📣 Mural da Equipe</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={S.drawerSubItem} onPress={() => go("Feedbacks")} activeOpacity={0.7}>
+                <Text style={[S.drawerSubText, currentRoute === "Feedbacks" && S.drawerSubTextActive]}>🗣️ Feedbacks 1-on-1</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={S.drawerSubItem} onPress={() => go("TeamPulse")} activeOpacity={0.7}>
+                <Text style={[S.drawerSubText, currentRoute === "TeamPulse" && S.drawerSubTextActive]}>🧠 Clima Comercial</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={S.drawerSubItem} onPress={() => go("PulseCheck")} activeOpacity={0.7}>
+                <Text style={[S.drawerSubText, currentRoute === "PulseCheck" && S.drawerSubTextActive]}>💬 Check de Sentimento</Text>
               </TouchableOpacity>
             </View>
           )}
@@ -1400,6 +1409,207 @@ function BroadcastView({ onMenu }: { onMenu: () => void }) {
   );
 }
 
+// ─── Data: Feedbacks ─────────────────────────────────────────────────────────
+type TeamMember = { id: string; name: string; lastFeedback: string; score: string };
+const FEEDBACK_TEAM: TeamMember[] = [
+  { id: "1", name: "Lucas Santana",  lastFeedback: "12/05/2026 - Evolução em Propostas",  score: "8.5" },
+  { id: "2", name: "Mariana Rios",   lastFeedback: "02/06/2026 - Meta Superada",           score: "9.8" },
+  { id: "3", name: "Thiago Martins", lastFeedback: "24/05/2026 - Alinhamento de Scripts",  score: "7.0" },
+];
+
+// ─── Screen: Feedbacks 1-on-1 ────────────────────────────────────────────────
+function FeedbacksView({ onMenu }: { onMenu: () => void }) {
+  const [selectedId,       setSelectedId]       = useState<string | null>(null);
+  const [loadingAi,        setLoadingAi]        = useState(false);
+  const [aiFeedbackText,   setAiFeedbackText]   = useState("");
+
+  const generate = (member: TeamMember) => {
+    setSelectedId(member.id);
+    setLoadingAi(true);
+    setAiFeedbackText("");
+    setTimeout(() => {
+      setLoadingAi(false);
+      setAiFeedbackText(
+        `Feedback Estruturado para ${member.name}:\n\n` +
+        `• Ponto Forte: Excelente comprometimento com a rotina e dedicação na execução dos processos.\n` +
+        `• Ponto de Melhoria: Identificamos um leve gargalo na transição de leads da etapa de proposta para o fechamento.\n\n` +
+        `💡 Sugestão de Abordagem:\n"Tenho visto seu esforço nas propostas, e seus números estão ótimos. Vamos sentar juntos nesta semana para analisar duas contas específicas e destravar o fechamento? Quero te ajudar a bater o topo da meta!"`
+      );
+    }, 1500);
+  };
+
+  return (
+    <View style={{ flex: 1 }}>
+      <TopBar title="Feedbacks 1-on-1" subtitle="PAINEL DO DIRETOR" onMenu={onMenu} />
+      <ScrollView style={S.form} showsVerticalScrollIndicator={false}>
+        <Text style={S.sectionLabel}>SELECIONE UM EXECUTIVO PARA ANÁLISE</Text>
+
+        <View style={[S.card, { paddingHorizontal: 0, paddingVertical: 0, overflow: "hidden", marginBottom: 24 }]}>
+          {FEEDBACK_TEAM.map((m, idx) => (
+            <TouchableOpacity
+              key={m.id}
+              style={[
+                S.kpiExecItem,
+                idx < FEEDBACK_TEAM.length - 1 && { borderBottomWidth: 1, borderColor: "#242736" },
+                selectedId === m.id && { opacity: 0.7 },
+              ]}
+              onPress={() => generate(m)}
+              activeOpacity={0.7}
+            >
+              <View>
+                <Text style={S.cardName}>{m.name}</Text>
+                <Text style={[S.cardSub, { marginBottom: 0, marginTop: 4 }]}>Último: {m.lastFeedback}</Text>
+              </View>
+              <View style={S.fbScoreBadge}>
+                <Text style={S.fbScoreText}>{m.score}</Text>
+              </View>
+            </TouchableOpacity>
+          ))}
+        </View>
+
+        {selectedId && (
+          <View style={S.kpiAiBox}>
+            <Text style={S.kpiAiTitle}>🤖 Roteiro de Alinhamento 1-on-1 (JADE)</Text>
+            {loadingAi ? (
+              <ActivityIndicator color="#00E5FF" style={{ marginTop: 20 }} />
+            ) : aiFeedbackText ? (
+              <>
+                <Text style={[S.cardSub, { marginBottom: 20, lineHeight: 22 }]}>{aiFeedbackText}</Text>
+                <TouchableOpacity
+                  style={S.primaryBtn}
+                  onPress={() => Alert.alert("Copiado!", "Roteiro copiado para área de transferência.")}
+                  activeOpacity={0.8}
+                >
+                  <Text style={S.primaryBtnText}>Copiar Roteiro para Reunião 📋</Text>
+                </TouchableOpacity>
+              </>
+            ) : null}
+          </View>
+        )}
+        <View style={{ height: 40 }} />
+      </ScrollView>
+    </View>
+  );
+}
+
+// ─── Screen: Team Pulse ───────────────────────────────────────────────────────
+function TeamPulseView({ onMenu }: { onMenu: () => void }) {
+  const [autoActive, setAutoActive] = useState(false);
+
+  const PULSE_CARDS = [
+    { emoji: "🟢", count: "4 Executivos", label: "Super Bem",        border: "#38A169" },
+    { emoji: "🟡", count: "2 Executivos", label: "Com Dificuldade",  border: "#00E5FF" },
+    { emoji: "🔴", count: "0 Executivos", label: "Sobrecarga",       border: "#E93E3E" },
+  ];
+
+  return (
+    <View style={{ flex: 1 }}>
+      <TopBar title="Clima Comercial" subtitle="SAÚDE DA EQUIPE" onMenu={onMenu} />
+      <ScrollView style={S.form} showsVerticalScrollIndicator={false}>
+        <Text style={[S.cardSub, { marginBottom: 24, marginTop: -4 }]}>Acompanhe o sentimento interno e evite sobrecarga da equipe</Text>
+
+        <Text style={S.sectionLabel}>TERMÔMETRO CONSOLIDADO (HOJE)</Text>
+        <View style={S.pulseGrid}>
+          {PULSE_CARDS.map((c) => (
+            <View key={c.label} style={[S.pulseCard, { borderColor: c.border }]}>
+              <Text style={{ fontSize: 22, marginBottom: 6 }}>{c.emoji}</Text>
+              <Text style={S.pulseCount}>{c.count}</Text>
+              <Text style={S.pulseLabel}>{c.label}</Text>
+            </View>
+          ))}
+        </View>
+
+        <Text style={S.sectionLabel}>AUTOMAÇÃO DE CLIMA ORGANIZACIONAL</Text>
+        <View style={S.configRow}>
+          <View style={{ flex: 1, marginRight: 16 }}>
+            <Text style={S.cardName}>Rotina de Disparo Autônomo</Text>
+            <Text style={[S.cardSub, { marginBottom: 0, marginTop: 4 }]}>Deixe a JADE pesquisar o sentimento do time toda sexta-feira às 17h</Text>
+          </View>
+          <Switch
+            value={autoActive}
+            onValueChange={setAutoActive}
+            trackColor={{ false: "#161822", true: "#00E5FF" }}
+            thumbColor={autoActive ? "#FFFFFF" : "#8F94A8"}
+          />
+        </View>
+
+        <TouchableOpacity
+          style={[S.primaryBtn, { marginTop: 8 }]}
+          onPress={() => Alert.alert("Push Disparado", "O questionário de clima comercial foi enviado para o smartphone de toda a equipe de vendas.")}
+          activeOpacity={0.8}
+        >
+          <Text style={S.primaryBtnText}>Disparar Push de Sentimento Agora 🧠</Text>
+        </TouchableOpacity>
+        <View style={{ height: 40 }} />
+      </ScrollView>
+    </View>
+  );
+}
+
+// ─── Data: Pulse Check ────────────────────────────────────────────────────────
+const SENTIMENT_OPTIONS = [
+  { id: "well",    text: "Estou super bem e performando",              marker: "🟢" },
+  { id: "stuck",   text: "Estou com dificuldades operacionais",        marker: "🟡" },
+  { id: "burnout", text: "Me sinto sobrecarregado / Preciso de suporte", marker: "🔴" },
+  { id: "skip",    text: "Prefiro não responder hoje / Pular",          marker: "⚪" },
+] as const;
+
+// ─── Screen: Pulse Check ─────────────────────────────────────────────────────
+function PulseCheckView({ onMenu }: { onMenu: () => void }) {
+  const insets = useSafeAreaInsets();
+  const [selected, setSelected] = useState<string | null>(null);
+
+  const submit = () => {
+    if (!selected) return;
+    Alert.alert("Obrigado!", "Seu sentimento foi enviado de forma anônima e segura ao painel do gestor.");
+    setSelected(null);
+  };
+
+  return (
+    <View style={{ flex: 1 }}>
+      {/* minimal top bar just for menu access */}
+      <View style={[S.topBar, { paddingTop: Platform.OS === "web" ? 24 : insets.top + 4 }]}>
+        <TouchableOpacity style={S.iconBtn} onPress={onMenu} activeOpacity={0.6}>
+          <Text style={S.topIconText}>☰</Text>
+        </TouchableOpacity>
+        <View style={{ flex: 1 }} />
+      </View>
+
+      <ScrollView contentContainerStyle={S.pulseCheckWrapper} showsVerticalScrollIndicator={false}>
+        <Text style={S.pulseCheckBrand}>✨ JADE INSIGHTS</Text>
+        <Text style={S.pulseCheckTitle}>Como você se sente com a rotina comercial hoje?</Text>
+        <Text style={[S.cardSub, { textAlign: "center", marginBottom: 32, paddingHorizontal: 12 }]}>
+          Sua resposta ajuda a gestão a calibrar o volume de leads e metas da semana para evitar sobrecarga.
+        </Text>
+
+        {SENTIMENT_OPTIONS.map((opt) => {
+          const active = selected === opt.id;
+          return (
+            <TouchableOpacity
+              key={opt.id}
+              style={[S.pulseOption, active && S.pulseOptionActive]}
+              onPress={() => setSelected(opt.id)}
+              activeOpacity={0.7}
+            >
+              <Text style={{ fontSize: 18, marginRight: 14 }}>{opt.marker}</Text>
+              <Text style={[S.pulseOptionText, active && S.pulseOptionTextActive]}>{opt.text}</Text>
+            </TouchableOpacity>
+          );
+        })}
+
+        <TouchableOpacity
+          style={[S.primaryBtn, !selected && S.primaryBtnDisabled, { marginTop: 20 }]}
+          onPress={submit}
+          disabled={!selected}
+          activeOpacity={0.8}
+        >
+          <Text style={S.primaryBtnText}>Enviar Resposta Oficial 🚀</Text>
+        </TouchableOpacity>
+      </ScrollView>
+    </View>
+  );
+}
+
 // ─── Root ─────────────────────────────────────────────────────────────────────
 export default function PreviewUnifiedScreen() {
   const router = useRouter();
@@ -1427,6 +1637,9 @@ export default function PreviewUnifiedScreen() {
       {route === "Kpis"              && <KpisView              onMenu={openMenu} />}
       {route === "CorporatePortfolio"&& <CorporatePortfolioView onMenu={openMenu} />}
       {route === "Broadcast"         && <BroadcastView         onMenu={openMenu} />}
+      {route === "Feedbacks"         && <FeedbacksView         onMenu={openMenu} />}
+      {route === "TeamPulse"         && <TeamPulseView         onMenu={openMenu} />}
+      {route === "PulseCheck"        && <PulseCheckView        onMenu={openMenu} />}
 
       <Sidebar visible={sidebar} onClose={() => setSidebar(false)} currentRoute={route} onNavigate={setRoute} />
     </View>
@@ -1624,6 +1837,25 @@ const S = StyleSheet.create({
   // Corporate Portfolio screen
   corpMacroRow:  { flexDirection: "row", paddingHorizontal: 20, justifyContent: "space-between", marginBottom: 20, gap: 8 },
   corpMacroCard: { flex: 1, backgroundColor: "#161822", borderRadius: 12, padding: 12, borderWidth: 1, borderColor: "#242736" },
+
+  // Feedbacks screen
+  fbScoreBadge: { backgroundColor: "rgba(0,229,255,0.10)", paddingHorizontal: 10, paddingVertical: 6, borderRadius: 8 },
+  fbScoreText:  { color: "#00E5FF", fontWeight: "700", fontSize: 13 },
+
+  // Team Pulse screen
+  pulseGrid:  { flexDirection: "row", justifyContent: "space-between", marginBottom: 24, gap: 8 },
+  pulseCard:  { flex: 1, backgroundColor: "#161822", borderRadius: 14, padding: 12, alignItems: "center", borderWidth: 1 },
+  pulseCount: { color: "#FFFFFF", fontSize: 14, fontWeight: "700" },
+  pulseLabel: { color: "#8F94A8", fontSize: 11, marginTop: 2, textAlign: "center" },
+
+  // Pulse Check screen
+  pulseCheckWrapper:    { flexGrow: 1, paddingHorizontal: 24, paddingBottom: 40, justifyContent: "center" },
+  pulseCheckBrand:      { color: "#00E5FF", fontSize: 11, fontWeight: "700", letterSpacing: 1, marginBottom: 8, textAlign: "center" },
+  pulseCheckTitle:      { color: "#FFFFFF", fontSize: 22, fontWeight: "700", textAlign: "center", lineHeight: 30, letterSpacing: -0.3, marginBottom: 10 },
+  pulseOption:          { flexDirection: "row", alignItems: "center", backgroundColor: "#161822", height: 56, borderRadius: 12, paddingHorizontal: 16, borderWidth: 1, borderColor: "#242736", marginBottom: 12 },
+  pulseOptionActive:    { borderColor: "#00E5FF", backgroundColor: "rgba(0,229,255,0.02)" },
+  pulseOptionText:      { color: "#8F94A8", fontSize: 14, fontWeight: "500", flex: 1 },
+  pulseOptionTextActive:{ color: "#FFFFFF", fontWeight: "600" },
 
   // Broadcast screen
   broadcastAiBtn:     { height: 48, borderRadius: 12, alignItems: "center", justifyContent: "center", borderWidth: 1, borderColor: "#00E5FF", marginBottom: 16 },

@@ -1,0 +1,72 @@
+import React, { useState } from 'react';
+import { StyleSheet, Text, View, TouchableOpacity, SafeAreaView, Alert } from 'react-native';
+
+const SENTIMENT_OPTIONS = [
+  { id: 'well', text: 'Estou super bem e performando', marker: '🟢' },
+  { id: 'stuck', text: 'Estou com dificuldades operacionais', marker: '🟡' },
+  { id: 'burnout', text: 'Me sinto sobrecarregado / Preciso de suporte', marker: '🔴' },
+  { id: 'skip', text: 'Prefiro não responder hoje / Pular', marker: '⚪' }
+];
+
+export default function PulseCheckModalScreen() {
+  const [selectedOption, setSelectedOption] = useState(null);
+
+  const handleSubmitSentiment = () => {
+    if (!selectedOption) return;
+    Alert.alert('Obrigado!', 'Seu sentimento foi enviado de forma anônima e segura ao painel do gestor.');
+    setSelectedOption(null);
+  };
+
+  return (
+    <SafeAreaView style={styles.container}>
+      <View style={styles.wrapper}>
+        <Text style={styles.brandTitle}>✨ JADE INSIGHTS</Text>
+        <Text style={styles.mainTitle}>Como você se sente com a rotina comercial hoje?</Text>
+        <Text style={styles.description}>Sua resposta ajuda a gestão a calibrar o volume de leads e metas da semana para evitar sobrecarga.</Text>
+
+        <View style={styles.optionsContainer}>
+          {SENTIMENT_OPTIONS.map((opt) => {
+            const isSelected = selectedOption === opt.id;
+            return (
+              <TouchableOpacity 
+                key={opt.id} 
+                style={[styles.optionCard, isSelected && styles.optionCardActive]} 
+                onPress={() => setSelectedOption(opt.id)}
+                activeOpacity={0.7}
+              >
+                <Text style={styles.markerText}>{opt.marker}</Text>
+                <Text style={[styles.optionText, isSelected && styles.optionTextActive]}>{opt.text}</Text>
+              </TouchableOpacity>
+            );
+          })}
+        </View>
+
+        <TouchableOpacity 
+          style={[styles.submitButton, !selectedOption && styles.disabled]} 
+          onPress={handleSubmitSentiment} 
+          activeOpacity={0.8}
+          disabled={!selectedOption}
+        >
+          <Text style={styles.submitText}>Enviar Resposta Oficial 🚀</Text>
+        </TouchableOpacity>
+      </View>
+    </SafeAreaView>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: { flex: 1, backgroundColor: '#090A0F', justifyContent: 'center' },
+  wrapper: { padding: 24 },
+  brandTitle: { color: '#00E5FF', fontSize: 11, fontWeight: '700', letterSpacing: 1, marginBottom: 8, textAlign: 'center' },
+  mainTitle: { color: '#FFFFFF', fontSize: 22, fontWeight: '700', textAlign: 'center', lineHeight: 30, letterSpacing: -0.3, marginBottom: 10 },
+  description: { color: '#8F94A8', fontSize: 13, textAlign: 'center', lineHeight: 20, marginBottom: 32, paddingHorizontal: 10 },
+  optionsContainer: { marginBottom: 32 },
+  optionCard: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#161822', height: 56, borderRadius: 12, paddingHorizontal: 16, borderWidth: 1, borderColor: '#242736', marginBottom: 12 },
+  optionCardActive: { borderColor: '#00E5FF', backgroundColor: 'rgba(0, 229, 255, 0.02)' },
+  markerText: { fontSize: 16, marginRight: 12 },
+  optionText: { color: '#8F94A8', fontSize: 14, fontWeight: '500' },
+  optionTextActive: { color: '#FFFFFF', fontWeight: '600' },
+  submitButton: { backgroundColor: '#FFFFFF', height: 54, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
+  disabled: { opacity: 0.4 },
+  submitText: { color: '#090A0F', fontWeight: '700', fontSize: 15 }
+});
