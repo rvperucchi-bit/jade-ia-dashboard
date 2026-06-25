@@ -1,0 +1,96 @@
+import React, { useState } from 'react';
+import { StyleSheet, Text, View, ScrollView, TouchableOpacity, SafeAreaView, Alert } from 'react-native';
+
+const TIERS = [
+  { id: 'start', name: 'Sleek Start', price: 'R$ 199/mês', features: ['Até 100 leads ativos/mês', 'Disparos automáticos básicos', 'Suporte via e-mail', '1 Robô ativo no Maps'] },
+  { id: 'pro', name: 'Sleek Pro', price: 'R$ 499/mês', features: ['Leads ativos ILIMITADOS', 'Cérebro avançado da JADE', 'Integração WhatsApp nativa', 'Laudos de performance em tempo real', 'Suporte prioritário 24/7'] },
+  { id: 'enterprise', name: 'Enterprise', price: 'Sob Consulta', features: ['Múltiplos agentes autônomos', 'Customização avançada de LLM', 'Painel de auditoria multi-vendedores', 'API dedicada de disparo de Push', 'Gerente de conta exclusivo'] }
+];
+
+export default function SubscriptionScreen() {
+  const [currentPlan, setCurrentPlan] = useState('start');
+
+  const handleUpgrade = (planName, id) => {
+    if (id === currentPlan) {
+      Alert.alert('Plano Ativo', 'Sua empresa já está utilizando este plano atualmente.');
+      return;
+    }
+    Alert.alert(
+      'Confirmar Upgrade 💳',
+      `Deseja migrar a assinatura da sua empresa para o plano ${planName}?`,
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        { 
+          text: 'Confirmar', 
+          onPress: () => {
+            setCurrentPlan(id);
+            Alert.alert('Sucesso 🎉', `Upgrade realizado com sucesso! O ecossistema ${planName} já está liberado.`);
+          } 
+        }
+      ]
+    );
+  };
+
+  return (
+    <SafeAreaView style={styles.container}>
+      <ScrollView style={styles.scroll} showsVerticalScrollIndicator={false}>
+        <Text style={styles.title}>Planos & Upgrade</Text>
+        <Text style={styles.subtitle}>Evolua a infraestrutura tecnológica do seu time conforme sua operação cresce</Text>
+
+        <Text style={styles.sectionLabel}>ESCOLHA SEU PLANO DE CRESCIMENTO</Text>
+
+        {TIERS.map((tier) => {
+          const isActive = currentPlan === tier.id;
+          return (
+            <View key={tier.id} style={[styles.tierCard, isActive && styles.tierCardActive]}>
+              <View style={styles.cardHeader}>
+                <View>
+                  <Text style={styles.tierName}>{tier.name}</Text>
+                  {isActive && <Text style={styles.activeLabelText}>✨ PLANO ATUAL</Text>}
+                </View>
+                <Text style={styles.tierPrice}>{tier.price}</Text>
+              </View>
+
+              <View style={styles.featuresList}>
+                {tier.features.map((feature, i) => (
+                  <Text key={i} style={styles.featureItemText}>✓ {feature}</Text>
+                ))}
+              </View>
+
+              <TouchableOpacity 
+                style={[styles.actionBtn, isActive ? styles.btnActive : styles.btnInactive]} 
+                onPress={() => handleUpgrade(tier.name, tier.id)}
+                activeOpacity={0.8}
+              >
+                <Text style={[styles.btnText, isActive && { color: '#00E5FF' }]}>
+                  {isActive ? 'Plano Ativo na Conta' : 'Fazer Upgrade para este Plano'}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          );
+        })}
+        <View style={{ height: 40 }} />
+      </ScrollView>
+    </SafeAreaView>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: { flex: 1, backgroundColor: '#090A0F' },
+  scroll: { padding: 20 },
+  title: { fontSize: 26, fontWeight: '700', color: '#FFFFFF' },
+  subtitle: { fontSize: 13, color: '#8F94A8', marginTop: 4, marginBottom: 24, lineHeight: 18 },
+  sectionLabel: { fontSize: 11, color: '#8F94A8', fontWeight: '700', letterSpacing: 0.8, marginBottom: 16 },
+  tierCard: { backgroundColor: '#161822', borderRadius: 16, padding: 20, marginBottom: 16, borderWidth: 1, borderColor: '#242736' },
+  tierCardActive: { borderColor: '#00E5FF', backgroundColor: 'rgba(0, 229, 255, 0.01)' },
+  cardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', borderBottomWidth: 1, borderColor: '#242736', paddingBottom: 14 },
+  tierName: { color: '#FFFFFF', fontSize: 18, fontWeight: '700' },
+  activeLabelText: { color: '#00E5FF', fontSize: 11, fontWeight: '700', marginTop: 4, letterSpacing: 0.5 },
+  tierPrice: { color: '#FFFFFF', fontSize: 16, fontWeight: '700' },
+  featuresList: { marginVertical: 18 },
+  featureItemText: { color: '#8F94A8', fontSize: 13, paddingVertical: 4, lineHeight: 18 },
+  actionBtn: { height: 48, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
+  btnActive: { backgroundColor: 'transparent', borderWidth: 1, borderColor: 'rgba(0, 229, 255, 0.2)' },
+  btnInactive: { backgroundColor: '#FFFFFF' },
+  btnText: { color: '#090A0F', fontWeight: '700', fontSize: 14 }
+});

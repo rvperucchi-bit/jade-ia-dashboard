@@ -1,0 +1,162 @@
+import React, { useState } from 'react';
+import { StyleSheet, Text, View, ScrollView, TouchableOpacity, SafeAreaView, TextInput, Alert, ActivityIndicator } from 'react-native';
+
+const ACCOUNT_TABS = ['Meu Perfil', 'Cérebro da IA (Empresa)'];
+
+export default function AccountSettingsScreen() {
+  const [activeTab, setActiveTab] = useState('Meu Perfil');
+  const [isSaving, setIsSaving] = useState(false);
+
+  // Estados do Perfil Básico
+  const [userName, setUserName] = useState('Alexandre Silveira');
+  const [userEmail, setUserEmail] = useState('alexandre@sleekia.com.br');
+
+  // Estados do Cérebro da IA (Dados que alimentam o WhatsApp autónomo)
+  const [companyName, setCompanyName] = useState('Sleek Automações');
+  const [segment, setSegment] = useState('Tecnologia B2B');
+  const [products, setProducts] = useState([
+    { id: 1, name: 'Licença Software CRM', value: '299' },
+    { id: 2, name: 'Setup + Treinamento', value: '1500' }
+  ]);
+  const [newProductName, setNewProductName] = useState('');
+  const [newProductValue, setNewProductValue] = useState('');
+  
+  const [activeCampaign, setActiveCampaign] = useState('Desconto de 15% para fechamentos até sexta-feira.');
+  const [city, setCity] = useState('Criciúma');
+  const [neighborhood, setNeighborhood] = useState('Centro');
+  const [state, setState] = useState('SC');
+
+  const handleAddProduct = () => {
+    if (!newProductName || !newProductValue) return;
+    const newProd = {
+      id: products.length + 1,
+      name: newProductName,
+      value: newProductValue
+    };
+    setProducts([...products, newProd]);
+    setNewProductName('');
+    setNewProductValue('');
+  };
+
+  const handleSaveBrain = () => {
+    setIsSaving(true);
+    setTimeout(() => {
+      setIsSaving(false);
+      Alert.alert('Cérebro Atualizado 🧠', 'A JADE assimilou as novas informações e já mudou o comportamento de abordagem no WhatsApp.');
+    }, 1500);
+  };
+
+  return (
+    <SafeAreaView style={styles.container}>
+      {/* HEADER TRANSPARENTE PREMIUM */}
+      <View style={styles.header}>
+        <Text style={styles.title}>Configurações</Text>
+      </View>
+
+      {/* ABAS UNIFICADAS */}
+      <View style={styles.tabsWrapper}>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.tabsScroll}>
+          {ACCOUNT_TABS.map((tab) => {
+            const isActive = activeTab === tab;
+            return (
+              <TouchableOpacity key={tab} activeOpacity={0.8} onPress={() => setActiveTab(tab)} style={styles.tabButton}>
+                <Text style={[styles.tabText, isActive && styles.activeTabText]}>{tab}</Text>
+                {isActive && <View style={styles.tabIndicator} />}
+              </TouchableOpacity>
+            );
+          })}
+        </ScrollView>
+      </View>
+
+      <ScrollView style={styles.scrollContainer} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
+        
+        {/* ABA PERFIL BÁSICO */}
+        {activeTab === 'Meu Perfil' && (
+          <View style={styles.formBlock}>
+            <Text style={styles.inputLabel}>NOME DO EXECUTIVO</Text>
+            <TextInput style={styles.inputStyle} value={userName} onChangeText={setUserName} placeholderTextColor="#4E5366" />
+
+            <Text style={styles.inputLabel}>E-MAIL DE ACESSO</Text>
+            <TextInput style={styles.inputStyle} value={userEmail} onChangeText={setUserEmail} placeholderTextColor="#4E5366" keyboardType="email-address" />
+            
+            <TouchableOpacity style={styles.saveButton} onPress={handleSaveBrain} activeOpacity={0.8}>
+              <Text style={styles.saveButtonText}>Salvar Perfil</Text>
+            </TouchableOpacity>
+          </View>
+        )}
+
+        {/* ABA CÉREBRO DA IA (DADOS COMERCIAIS PROFUNDOS) */}
+        {activeTab === 'Cérebro da IA (Empresa)' && (
+          <View style={styles.formBlock}>
+            <Text style={styles.brainNotice}>🧠 Estes dados moldam o conhecimento da JADE durante as conversas automatizadas com os clientes.</Text>
+
+            <Text style={styles.inputLabel}>NOME DA EMPRESA</Text>
+            <TextInput style={styles.inputStyle} value={companyName} onChangeText={setCompanyName} />
+
+            <Text style={styles.inputLabel}>SEGUIMENTO DE ATUAÇÃO</Text>
+            <TextInput style={styles.inputStyle} value={segment} onChangeText={setSegment} />
+
+            {/* ADICIONAR PRODUTOS */}
+            <Text style={styles.inputLabel}>PRODUTOS E VALORES DO PORTFÓLIO</Text>
+            <View style={styles.productsList}>
+              {products.map((p) => (
+                <View key={p.id} style={styles.productRowItem}>
+                  <Text style={styles.productNameText}>• {p.name}</Text>
+                  <Text style={styles.productValueText}>R$ {p.value}</Text>
+                </View>
+              ))}
+            </View>
+
+            <View style={styles.addProductBox}>
+              <TextInput style={[styles.inputStyle, { flex: 2, marginBottom: 0, marginRight: 8 }]} placeholder="Nome do Produto" placeholderTextColor="#4E5366" value={newProductName} onChangeText={setNewProductName} />
+              <TextInput style={[styles.inputStyle, { flex: 1, marginBottom: 0, marginRight: 8 }]} placeholder="R$ Valor" placeholderTextColor="#4E5366" keyboardType="numeric" value={newProductValue} onChangeText={setNewProductValue} />
+              <TouchableOpacity style={styles.miniAddBtn} onPress={handleAddProduct} activeOpacity={0.7}><Text style={styles.miniAddBtnText}>＋</Text></TouchableOpacity>
+            </View>
+
+            <Text style={styles.inputLabel}>CAMPANHA / GATILHO ATIVO ATUAL</Text>
+            <TextInput style={[styles.inputStyle, { height: 70, paddingTop: 12 }]} value={activeCampaign} onChangeText={setActiveCampaign} multiline />
+
+            <Text style={styles.inputLabel}>LOCALIZAÇÃO DA SEDE (ENDEREÇO DA IA)</Text>
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+              <TextInput style={[styles.inputStyle, { flex: 2, marginRight: 8 }]} value={city} onChangeText={setCity} placeholder="Cidade" />
+              <TextInput style={[styles.inputStyle, { flex: 2, marginRight: 8 }]} value={neighborhood} onChangeText={setNeighborhood} placeholder="Bairro" />
+              <TextInput style={[styles.inputStyle, { flex: 1 }]} value={state} onChangeText={setState} placeholder="UF" maxLength={2} />
+            </View>
+
+            <TouchableOpacity style={[styles.saveButton, styles.brainSaveBtn]} onPress={handleSaveBrain} activeOpacity={0.8} disabled={isSaving}>
+              {isSaving ? <ActivityIndicator color="#090A0F" /> : <Text style={[styles.saveButtonText, { color: '#090A0F' }]}>Sincronizar Cérebro da IA 🚀</Text>}
+            </TouchableOpacity>
+          </View>
+        )}
+        <View style={{ height: 40 }} />
+      </ScrollView>
+    </SafeAreaView>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: { flex: 1, backgroundColor: '#090A0F' },
+  header: { paddingHorizontal: 20, paddingTop: 20 },
+  title: { fontSize: 26, fontWeight: '700', color: '#FFFFFF' },
+  tabsWrapper: { borderBottomWidth: 1, borderColor: '#161822', marginTop: 15 },
+  tabsScroll: { paddingHorizontal: 20, paddingBottom: 12 },
+  tabButton: { marginRight: 28, paddingBottom: 6, position: 'relative' },
+  tabText: { fontSize: 15, fontWeight: '500', color: '#4E5366' },
+  activeTabText: { color: '#FFFFFF', fontWeight: '700' },
+  tabIndicator: { position: 'absolute', bottom: -13, left: 0, right: 0, height: 2, backgroundColor: '#00E5FF', borderRadius: 1 },
+  scrollContainer: { flex: 1, padding: 20 },
+  formBlock: { marginTop: 10 },
+  inputLabel: { fontSize: 11, color: '#8F94A8', fontWeight: '700', letterSpacing: 0.8, marginBottom: 8, marginTop: 14 },
+  inputStyle: { backgroundColor: '#161822', height: 54, borderRadius: 12, paddingHorizontal: 16, color: '#FFFFFF', fontSize: 15, borderWidth: 1, borderColor: '#242736', marginBottom: 12 },
+  brainNotice: { color: '#00E5FF', fontSize: 13, lineHeight: 18, backgroundColor: 'rgba(0, 229, 255, 0.03)', padding: 14, borderRadius: 12, borderWidth: 1, borderColor: 'rgba(0, 229, 255, 0.15)', marginBottom: 16 },
+  productsList: { backgroundColor: '#161822', borderRadius: 12, padding: 14, borderWidth: 1, borderColor: '#242736', marginBottom: 12 },
+  productRowItem: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 6 },
+  productNameText: { color: '#FFFFFF', fontSize: 14 },
+  productValueText: { color: '#8F94A8', fontSize: 14, fontWeight: '600' },
+  addProductBox: { flexDirection: 'row', alignItems: 'center', marginBottom: 20 },
+  miniAddBtn: { backgroundColor: '#161822', width: 54, height: 54, borderRadius: 12, borderWidth: 1, borderColor: '#00E5FF', justifyContent: 'center', alignItems: 'center' },
+  miniAddBtnText: { color: '#00E5FF', fontSize: 20, fontWeight: '600' },
+  saveButton: { backgroundColor: '#161822', height: 54, borderRadius: 12, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: '#242736', marginTop: 12 },
+  brainSaveBtn: { backgroundColor: '#FFFFFF', borderColor: '#FFFFFF', marginTop: 24 },
+  saveButtonText: { color: '#FFFFFF', fontWeight: '700', fontSize: 15 }
+});

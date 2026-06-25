@@ -28,7 +28,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as Linking from "expo-linking";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
-type Route = "Chat" | "Pipeline" | "Route" | "Prospecting" | "Meeting" | "Farmer" | "Reports" | "Marketing" | "Management" | "Kpis" | "CorporatePortfolio" | "Broadcast" | "Feedbacks" | "TeamPulse" | "PulseCheck";
+type Route = "Chat" | "Pipeline" | "Route" | "Prospecting" | "Meeting" | "Farmer" | "Reports" | "Marketing" | "Management" | "Kpis" | "CorporatePortfolio" | "Broadcast" | "Feedbacks" | "TeamPulse" | "PulseCheck" | "AccountSettings" | "Subscription";
 type PipelineLead  = { id: string; name: string; company: string; value: string; stage: string; daysIdle: number; phone: string };
 type AiLead        = { id: string; name: string; segment: string; address: string };
 type HistoryItem   = { id: string; query: string; location: string; date: string; leadsCount: number };
@@ -106,6 +106,7 @@ function Sidebar({ visible, onClose, currentRoute, onNavigate }: {
   const [conversasOpen, setConversasOpen] = useState(true);
   const [comercialOpen, setComercialOpen] = useState(false);
   const [gestaoOpen,    setGestaoOpen]    = useState(false);
+  const [contaOpen,     setContaOpen]     = useState(false);
 
   React.useEffect(() => {
     Animated.timing(slideX, {
@@ -203,6 +204,25 @@ function Sidebar({ visible, onClose, currentRoute, onNavigate }: {
               </TouchableOpacity>
               <TouchableOpacity style={S.drawerSubItem} onPress={() => go("PulseCheck")} activeOpacity={0.7}>
                 <Text style={[S.drawerSubText, currentRoute === "PulseCheck" && S.drawerSubTextActive]}>💬 Check de Sentimento</Text>
+              </TouchableOpacity>
+            </View>
+          )}
+
+          <View style={S.drawerDivider} />
+
+          {/* ── Conta ── */}
+          <TouchableOpacity style={S.drawerSection} onPress={() => setContaOpen((v) => !v)} activeOpacity={0.7}>
+            <Text style={S.drawerSectionTitle}>⚙️ Conta</Text>
+            <Text style={S.drawerArrow}>{contaOpen ? "▼" : "►"}</Text>
+          </TouchableOpacity>
+
+          {contaOpen && (
+            <View style={S.drawerSubMenu}>
+              <TouchableOpacity style={S.drawerSubItem} onPress={() => go("AccountSettings")} activeOpacity={0.7}>
+                <Text style={[S.drawerSubText, currentRoute === "AccountSettings" && S.drawerSubTextActive]}>🧠 Meu Perfil & Cérebro IA</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={S.drawerSubItem} onPress={() => go("Subscription")} activeOpacity={0.7}>
+                <Text style={[S.drawerSubText, currentRoute === "Subscription" && S.drawerSubTextActive]}>💳 Planos de Assinatura</Text>
               </TouchableOpacity>
             </View>
           )}
@@ -1610,6 +1630,211 @@ function PulseCheckView({ onMenu }: { onMenu: () => void }) {
   );
 }
 
+// ─── Data: Account Settings ──────────────────────────────────────────────────
+type Product = { id: number; name: string; value: string };
+const ACCT_TABS = ["Meu Perfil", "Cérebro da IA (Empresa)"];
+
+// ─── Screen: Account Settings ────────────────────────────────────────────────
+function AccountSettingsView({ onMenu }: { onMenu: () => void }) {
+  const [activeTab,       setActiveTab]       = useState(ACCT_TABS[0]);
+  const [isSaving,        setIsSaving]        = useState(false);
+  const [userName,        setUserName]        = useState("Alexandre Silveira");
+  const [userEmail,       setUserEmail]       = useState("alexandre@sleekia.com.br");
+  const [companyName,     setCompanyName]     = useState("Sleek Automações");
+  const [segment,         setSegment]         = useState("Tecnologia B2B");
+  const [activeCampaign,  setActiveCampaign]  = useState("Desconto de 15% para fechamentos até sexta-feira.");
+  const [city,            setCity]            = useState("Criciúma");
+  const [neighborhood,    setNeighborhood]    = useState("Centro");
+  const [uf,              setUf]              = useState("SC");
+  const [products,        setProducts]        = useState<Product[]>([
+    { id: 1, name: "Licença Software CRM", value: "299" },
+    { id: 2, name: "Setup + Treinamento",  value: "1500" },
+  ]);
+  const [newProdName,  setNewProdName]  = useState("");
+  const [newProdValue, setNewProdValue] = useState("");
+
+  const addProduct = () => {
+    if (!newProdName || !newProdValue) return;
+    setProducts((p) => [...p, { id: p.length + 1, name: newProdName, value: newProdValue }]);
+    setNewProdName(""); setNewProdValue("");
+  };
+
+  const save = () => {
+    setIsSaving(true);
+    setTimeout(() => {
+      setIsSaving(false);
+      Alert.alert("Cérebro Atualizado 🧠", "A JADE assimilou as novas informações e já mudou o comportamento de abordagem no WhatsApp.");
+    }, 1500);
+  };
+
+  return (
+    <View style={{ flex: 1 }}>
+      <TopBar title="Configurações" onMenu={onMenu} />
+
+      {/* Abas */}
+      <View style={S.tabsWrapper}>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={S.tabsScroll}>
+          {ACCT_TABS.map((tab) => {
+            const active = activeTab === tab;
+            return (
+              <TouchableOpacity key={tab} style={S.tabBtn} onPress={() => setActiveTab(tab)} activeOpacity={0.8}>
+                <Text style={[S.tabText, active && S.tabTextActive]}>{tab}</Text>
+                {active && <View style={S.tabLine} />}
+              </TouchableOpacity>
+            );
+          })}
+        </ScrollView>
+      </View>
+
+      <ScrollView style={S.form} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
+        {activeTab === "Meu Perfil" && (
+          <View>
+            <Text style={S.label}>NOME DO EXECUTIVO</Text>
+            <TextInput style={S.input} value={userName} onChangeText={setUserName} placeholderTextColor="#4E5366" />
+            <Text style={S.label}>E-MAIL DE ACESSO</Text>
+            <TextInput style={S.input} value={userEmail} onChangeText={setUserEmail} keyboardType="email-address" placeholderTextColor="#4E5366" />
+            <TouchableOpacity style={S.acctSecBtn} onPress={save} activeOpacity={0.8}>
+              <Text style={S.acctSecBtnText}>Salvar Perfil</Text>
+            </TouchableOpacity>
+          </View>
+        )}
+
+        {activeTab === "Cérebro da IA (Empresa)" && (
+          <View>
+            <View style={[S.insightBox, { marginBottom: 20 }]}>
+              <Text style={[S.insightText, { color: "#00E5FF", marginBottom: 0 }]}>🧠 Estes dados moldam o conhecimento da JADE durante as conversas automatizadas com os clientes.</Text>
+            </View>
+
+            <Text style={S.label}>NOME DA EMPRESA</Text>
+            <TextInput style={S.input} value={companyName} onChangeText={setCompanyName} placeholderTextColor="#4E5366" />
+
+            <Text style={S.label}>SEGMENTO DE ATUAÇÃO</Text>
+            <TextInput style={S.input} value={segment} onChangeText={setSegment} placeholderTextColor="#4E5366" />
+
+            <Text style={S.label}>PRODUTOS E VALORES DO PORTFÓLIO</Text>
+            <View style={S.acctProductList}>
+              {products.map((p) => (
+                <View key={p.id} style={S.acctProductRow}>
+                  <Text style={S.cardName}>• {p.name}</Text>
+                  <Text style={S.cardSub2}>R$ {p.value}</Text>
+                </View>
+              ))}
+            </View>
+            <View style={S.acctAddRow}>
+              <TextInput
+                style={[S.input, { flex: 2, marginBottom: 0, marginRight: 8 }]}
+                placeholder="Nome do Produto" placeholderTextColor="#4E5366"
+                value={newProdName} onChangeText={setNewProdName}
+              />
+              <TextInput
+                style={[S.input, { flex: 1, marginBottom: 0, marginRight: 8 }]}
+                placeholder="R$ Valor" placeholderTextColor="#4E5366"
+                keyboardType="numeric" value={newProdValue} onChangeText={setNewProdValue}
+              />
+              <TouchableOpacity style={S.acctMiniBtn} onPress={addProduct} activeOpacity={0.7}>
+                <Text style={S.acctMiniBtnText}>＋</Text>
+              </TouchableOpacity>
+            </View>
+
+            <Text style={S.label}>CAMPANHA / GATILHO ATIVO ATUAL</Text>
+            <TextInput
+              style={[S.input, { height: 70, paddingTop: 12, textAlignVertical: "top" }]}
+              value={activeCampaign} onChangeText={setActiveCampaign} multiline
+              placeholderTextColor="#4E5366"
+            />
+
+            <Text style={S.label}>LOCALIZAÇÃO DA SEDE</Text>
+            <View style={{ flexDirection: "row" }}>
+              <TextInput style={[S.input, { flex: 2, marginRight: 8 }]} value={city}         onChangeText={setCity}         placeholder="Cidade" placeholderTextColor="#4E5366" />
+              <TextInput style={[S.input, { flex: 2, marginRight: 8 }]} value={neighborhood} onChangeText={setNeighborhood} placeholder="Bairro" placeholderTextColor="#4E5366" />
+              <TextInput style={[S.input, { flex: 1 }]}                 value={uf}           onChangeText={setUf}           placeholder="UF"     placeholderTextColor="#4E5366" maxLength={2} />
+            </View>
+
+            <TouchableOpacity style={[S.primaryBtn, { marginTop: 8 }]} onPress={save} disabled={isSaving} activeOpacity={0.8}>
+              {isSaving ? <ActivityIndicator color="#090A0F" /> : <Text style={S.primaryBtnText}>Sincronizar Cérebro da IA 🚀</Text>}
+            </TouchableOpacity>
+          </View>
+        )}
+        <View style={{ height: 40 }} />
+      </ScrollView>
+    </View>
+  );
+}
+
+// ─── Data: Subscription ───────────────────────────────────────────────────────
+type Tier = { id: string; name: string; price: string; features: string[] };
+const TIERS: Tier[] = [
+  { id: "start",      name: "Sleek Start", price: "R$ 199/mês",  features: ["Até 100 leads ativos/mês", "Disparos automáticos básicos", "Suporte via e-mail", "1 Robô ativo no Maps"] },
+  { id: "pro",        name: "Sleek Pro",   price: "R$ 499/mês",  features: ["Leads ativos ILIMITADOS", "Cérebro avançado da JADE", "Integração WhatsApp nativa", "Laudos de performance em tempo real", "Suporte prioritário 24/7"] },
+  { id: "enterprise", name: "Enterprise",  price: "Sob Consulta", features: ["Múltiplos agentes autônomos", "Customização avançada de LLM", "Painel de auditoria multi-vendedores", "API dedicada de disparo de Push", "Gerente de conta exclusivo"] },
+];
+
+// ─── Screen: Subscription ────────────────────────────────────────────────────
+function SubscriptionView({ onMenu }: { onMenu: () => void }) {
+  const [currentPlan, setCurrentPlan] = useState("start");
+
+  const handleUpgrade = (tier: Tier) => {
+    if (tier.id === currentPlan) {
+      Alert.alert("Plano Ativo", "Sua empresa já está utilizando este plano atualmente.");
+      return;
+    }
+    Alert.alert(
+      "Confirmar Upgrade 💳",
+      `Deseja migrar a assinatura para o plano ${tier.name}?`,
+      [
+        { text: "Cancelar", style: "cancel" },
+        { text: "Confirmar", onPress: () => {
+          setCurrentPlan(tier.id);
+          Alert.alert("Sucesso 🎉", `Upgrade realizado! O ecossistema ${tier.name} já está liberado.`);
+        }},
+      ]
+    );
+  };
+
+  return (
+    <View style={{ flex: 1 }}>
+      <TopBar title="Planos & Upgrade" subtitle="ASSINATURA" onMenu={onMenu} />
+      <ScrollView style={S.form} showsVerticalScrollIndicator={false}>
+        <Text style={[S.cardSub, { marginBottom: 20, marginTop: -4 }]}>Evolua a infraestrutura tecnológica do seu time conforme sua operação cresce</Text>
+
+        <Text style={S.sectionLabel}>ESCOLHA SEU PLANO DE CRESCIMENTO</Text>
+
+        {TIERS.map((tier) => {
+          const active = currentPlan === tier.id;
+          return (
+            <View key={tier.id} style={[S.tierCard, active && S.tierCardActive]}>
+              <View style={S.tierCardHeader}>
+                <View>
+                  <Text style={S.tierName}>{tier.name}</Text>
+                  {active && <Text style={S.tierActiveLbl}>✨ PLANO ATUAL</Text>}
+                </View>
+                <Text style={S.tierPrice}>{tier.price}</Text>
+              </View>
+
+              <View style={{ marginVertical: 16 }}>
+                {tier.features.map((f, i) => (
+                  <Text key={i} style={S.tierFeatureText}>✓  {f}</Text>
+                ))}
+              </View>
+
+              <TouchableOpacity
+                style={[S.tierActionBtn, active ? S.tierBtnActive : S.tierBtnInactive]}
+                onPress={() => handleUpgrade(tier)}
+                activeOpacity={0.8}
+              >
+                <Text style={[S.tierBtnText, active && { color: "#00E5FF" }]}>
+                  {active ? "Plano Ativo na Conta" : "Fazer Upgrade para este Plano"}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          );
+        })}
+        <View style={{ height: 40 }} />
+      </ScrollView>
+    </View>
+  );
+}
+
 // ─── Root ─────────────────────────────────────────────────────────────────────
 export default function PreviewUnifiedScreen() {
   const [route,   setRoute]   = useState<Route>("Chat");
@@ -1646,6 +1871,8 @@ export default function PreviewUnifiedScreen() {
       {route === "Feedbacks"         && <FeedbacksView         onMenu={openMenu} />}
       {route === "TeamPulse"         && <TeamPulseView         onMenu={openMenu} />}
       {route === "PulseCheck"        && <PulseCheckView        onMenu={openMenu} />}
+      {route === "AccountSettings"   && <AccountSettingsView   onMenu={openMenu} />}
+      {route === "Subscription"      && <SubscriptionView      onMenu={openMenu} />}
 
       <Sidebar visible={sidebar} onClose={() => setSidebar(false)} currentRoute={route} onNavigate={setRoute} />
     </View>
@@ -1843,6 +2070,28 @@ const S = StyleSheet.create({
   // Corporate Portfolio screen
   corpMacroRow:  { flexDirection: "row", paddingHorizontal: 20, justifyContent: "space-between", marginBottom: 20, gap: 8 },
   corpMacroCard: { flex: 1, backgroundColor: "#161822", borderRadius: 12, padding: 12, borderWidth: 1, borderColor: "#242736" },
+
+  // Account Settings screen
+  acctSecBtn:        { backgroundColor: "#161822", height: 54, borderRadius: 12, alignItems: "center", justifyContent: "center", borderWidth: 1, borderColor: "#242736", marginTop: 12 },
+  acctSecBtnText:    { color: "#FFFFFF", fontWeight: "700", fontSize: 15 },
+  acctProductList:   { backgroundColor: "#161822", borderRadius: 12, padding: 14, borderWidth: 1, borderColor: "#242736", marginBottom: 12 },
+  acctProductRow:    { flexDirection: "row", justifyContent: "space-between", paddingVertical: 6 },
+  acctAddRow:        { flexDirection: "row", alignItems: "center", marginBottom: 20 },
+  acctMiniBtn:       { backgroundColor: "#161822", width: 54, height: 54, borderRadius: 12, borderWidth: 1, borderColor: "#00E5FF", justifyContent: "center", alignItems: "center" },
+  acctMiniBtnText:   { color: "#00E5FF", fontSize: 20, fontWeight: "600" },
+
+  // Subscription screen
+  tierCard:        { backgroundColor: "#161822", borderRadius: 16, padding: 20, marginBottom: 16, borderWidth: 1, borderColor: "#242736" },
+  tierCardActive:  { borderColor: "#00E5FF", backgroundColor: "rgba(0,229,255,0.01)" },
+  tierCardHeader:  { flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start", borderBottomWidth: 1, borderColor: "#242736", paddingBottom: 14 },
+  tierName:        { color: "#FFFFFF", fontSize: 18, fontWeight: "700" },
+  tierActiveLbl:   { color: "#00E5FF", fontSize: 11, fontWeight: "700", marginTop: 4, letterSpacing: 0.5 },
+  tierPrice:       { color: "#FFFFFF", fontSize: 16, fontWeight: "700" },
+  tierFeatureText: { color: "#8F94A8", fontSize: 13, paddingVertical: 4, lineHeight: 18 },
+  tierActionBtn:   { height: 48, borderRadius: 12, alignItems: "center", justifyContent: "center" },
+  tierBtnActive:   { backgroundColor: "transparent", borderWidth: 1, borderColor: "rgba(0,229,255,0.2)" },
+  tierBtnInactive: { backgroundColor: "#FFFFFF" },
+  tierBtnText:     { color: "#090A0F", fontWeight: "700", fontSize: 14 },
 
   // Feedbacks screen
   fbScoreBadge: { backgroundColor: "rgba(0,229,255,0.10)", paddingHorizontal: 10, paddingVertical: 6, borderRadius: 8 },

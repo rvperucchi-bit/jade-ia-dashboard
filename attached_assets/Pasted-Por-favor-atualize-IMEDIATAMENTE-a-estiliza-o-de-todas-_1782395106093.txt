@@ -1,0 +1,165 @@
+Por favor, atualize IMEDIATAMENTE a estilização de todas as barras de cabeçalho (headers) e, especificamente, a barra de digitação da 'ChatScreen.js' (ou o arquivo correspondente na pasta app/) para remover todas as cores automáticas, ícones coloridos e o efeito rosa. Substitua o layout e os estilos pelo código nativo abaixo:
+
+1. REMOÇÃO DE CORES DOS ÍCONES (TELA CHEIA E TOPO):
+Todos os botões de controle de topo (como '☰' e '⚙️') devem ter fundo 100% transparente. Use apenas fontes de texto simples em branco puro (#FFFFFF) ou cinza (#8F94A8) para os ícones de texto. Remova qualquer imagem ou biblioteca de ícone externa colorida de terceiros.
+
+2. NOVA BARRA DE DIGITAÇÃO COM ONDAS SONORAS (ESTILO CHATGPT):
+Substitua o container de input e os botões da base pelo seguinte código estruturado em React Native para garantir o visual de ondas sonoras brancas dentro da caixa ao gravar áudio:
+
+--------------------------------------------------
+// CÓDIGO DA BARRA DE DIGITAÇÃO PARA SUBSTITUIR NA TELA DE CHAT:
+
+const [isRecording, setIsRecording] = useState(false); // Estado para ativar o modo gravação
+const [inputText, setInputText] = useState('');
+
+{/* RENDERIZAÇÃO DA BARRA DE BAIXO */}
+<View style={styles.inputContainer}>
+  <View style={styles.inputRowInside}>
+    
+    {!isRecording ? (
+      <>
+        {/* Botão de Anexo (+) Transparente */}
+        <TouchableOpacity style={styles.innerBarButton} activeOpacity={0.6}>
+          <Text style={styles.barIcon}>＋</Text>
+        </TouchableOpacity>
+
+        {/* Campo de Texto Limpo */}
+        <TextInput 
+          style={styles.textInputStyle}
+          placeholder="Perguntar ao Sleek IA..."
+          placeholderTextColor="#626880"
+          value={inputText}
+          onChangeText={setInputText}
+          multiline
+        />
+
+        {/* Botão de Enviar ou Iniciar Gravação */}
+        <TouchableOpacity 
+          style={styles.sendButtonCircle} 
+          activeOpacity={0.8}
+          onPress={() => {
+            if (inputText.trim().length === 0) {
+              setIsRecording(true); // Se vazio, inicia gravação e mostra ondas
+            } else {
+              // Função de enviar texto
+              setInputText('');
+            }
+          }}
+        >
+          <Text style={styles.sendIcon}>
+            {inputText.trim().length > 0 ? '▲' : '🎙️'}
+          </Text>
+        </TouchableOpacity>
+      </>
+    ) : (
+      /* MODO GRAVAÇÃO ATIVO: REMOVE O INPUT E EXIBE AS ONDAS SONORAS BRANCAS */
+      <View style={styles.recordingWaveContainer}>
+        <Text style={styles.recordingLabel}>Gravando áudio...</Text>
+        
+        {/* Ondas Sonoras Estilizadas Minimalistas em Branco */}
+        <View style={styles.waveRow}>
+          <View style={[styles.waveLine, { height: 12 }]} />
+          <View style={[styles.waveLine, { height: 24 }]} />
+          <View style={[styles.waveLine, { height: 18 }]} />
+          <View style={[styles.waveLine, { height: 28 }]} />
+          <View style={[styles.waveLine, { height: 14 }]} />
+        </View>
+
+        {/* Botão para parar a gravação e enviar */}
+        <TouchableOpacity 
+          style={[styles.sendButtonCircle, { backgroundColor: '#38A169' }]} 
+          onPress={() => setIsRecording(false)}
+          activeOpacity={0.8}
+        >
+          <Text style={[styles.sendIcon, { color: '#FFFFFF' }]}>✓</Text>
+        </TouchableOpacity>
+      </View>
+    )}
+
+  </View>
+</View>
+
+--------------------------------------------------
+// CÓDIGO CSS DO DESIGN SYSTEM PARA COLAR NO STYLESHEET:
+
+const styles = StyleSheet.create({
+  inputContainer: {
+    paddingHorizontal: 16,
+    paddingBottom: Platform.OS === 'ios' ? 24 : 16,
+    paddingTop: 8,
+    backgroundColor: '#090A0F',
+  },
+  inputRowInside: {
+    flexDirection: 'row',
+    backgroundColor: '#161822', // Surface escura
+    borderRadius: 28,
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderWidth: 1,
+    borderColor: '#242736',
+    minHeight: 52,
+  },
+  innerBarButton: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: 'transparent', // Totalmente transparente sem cor
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  barIcon: {
+    color: '#FFFFFF', // Letras e ícones estritamente brancos
+    fontSize: 20,
+    fontWeight: '300',
+  },
+  textInputStyle: {
+    flex: 1,
+    color: '#FFFFFF',
+    fontSize: 15,
+    paddingHorizontal: 10,
+    maxHeight: 100,
+  },
+  sendButtonCircle: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: '#FFFFFF', // Círculo branco limpo estilo ChatGPT
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  sendIcon: {
+    color: '#090A0F', // Ícone escuro dentro do círculo branco
+    fontSize: 14,
+    fontWeight: '700',
+  },
+  
+  // ESTILOS DAS ONDAS SONORAS DE GRAVAÇÃO BRANCAS
+  recordingWaveContainer: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 4,
+  },
+  recordingLabel: {
+    color: '#8F94A8',
+    fontSize: 14,
+    fontWeight: '500',
+  },
+  waveRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    height: 30,
+  },
+  waveLine: {
+    width: 3,
+    backgroundColor: '#FFFFFF', // Ondas sonoras brancas puras premium
+    marginHorizontal: 2,
+    borderRadius: 1.5,
+  },
+});
+--------------------------------------------------
+
+Varra todos os arquivos de visualização, aplique essa limpeza rigorosa de paleta de cores nos botões de cabeçalho de todas as telas operacionais do app e atualize o build de desenvolvimento no Expo Go!

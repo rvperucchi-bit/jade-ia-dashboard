@@ -1,0 +1,28 @@
+Olá! Preciso expandir nossa arquitetura de rotas baseada no 'expo-router' criando mais duas novas telas oficiais no ecossistema "Dark Premium". Essas telas farão parte de uma nova categoria principal chamada "⚙️ Conta" no menu lateral.
+
+Por favor, crie as estruturas de arquivos e execute as atualizações conforme as regras abaixo:
+
+1. DIRETÓRIOS DE ARQUIVOS (Criar na pasta app/):
+- Crie o arquivo: app/management/account-settings.tsx (Tela de Perfil e Cérebro da IA)
+- Crie o arquivo: app/management/subscription.tsx (Tela de Planos de Assinatura)
+
+2. REQUISITOS VIZUAIS DA IDENTITY DARK PREMIUM:
+Mantenha a alta fidelidade e consistência com o resto do app: Fundo geral #090A0F, Surfaces dos containers e inputs #161822, bordas finas invisíveis #242736 e os destaques/linhas de indicador em ciano neon #00E5FF. Os cabeçalhos de controle e ícones do topo devem ser 100% transparentes e integrados ao gesto de arrastar a tela cheia.
+
+3. REQUISITOS DA TELA DE CONFIGURAÇÕES (account-settings.tsx):
+- Use um seletor de abas horizontais minimalistas contendo: "Meu Perfil" e "Cérebro da IA (Empresa)".
+- Na aba Meu Perfil: inputs limpos para Nome do Executivo e E-mail.
+- Na aba Cérebro da IA: Adicione um aviso em destaque explicando que estes dados moldam o conhecimento autônomo da JADE nas abordagens de WhatsApp. Insira campos para Nome da Empresa, Segmento de Atuação, Campanha/Gatilho Ativo, e Localização (Cidade, Bairro, UF). 
+- Portfólio Dinâmico: Crie uma sub-seção com uma lista de produtos cadastrados e seus valores. Adicione campos de input e um botão de "+" para que o usuário possa anexar dinamicamente novos produtos com seus preços e ver a lista atualizar. No final, coloque o botão branco "Sincronizar Cérebro da IA 🚀" que simula o salvamento com um ActivityIndicator.
+
+4. REQUISITOS DA TELA DE ASSINATURA (subscription.tsx):
+- Apresente 3 cartões verticais elegantes para os planos: "Sleek Start" (R$ 199/mês), "Sleek Pro" (R$ 499/mês) e "Enterprise" (Sob Consulta).
+- Cada plano deve listar seus benefícios com marcadores de "✓". O plano ativo do usuário deve ganhar uma tag ciano brilhante escrito "✨ PLANO ATUAL". 
+- Os outros planos devem exibir um botão branco "Fazer Upgrade para este Plano". Ao clicar, dispare um Alert de confirmação nativo e, se confirmado, alterne o estado do plano ativo na tela dinamicamente.
+
+5. ATUALIZAÇÃO GLOBAL DA SIDEBAR DA JADE:
+Abra o layout da nossa Sidebar que ocupa 100% da tela. Logo abaixo do acordeão de 🛠️ Gestão, crie um novo acordeão retrátil (utilizando useState para controle de abertura) com o título "⚙️ Conta" em letras brancas puras. Dentro do seu submenu, insira as duas novas linhas de links direcionando para as rotas criadas:
+- 🧠 Meu Perfil & Cérebro IA (management/account-settings)
+- 💳 Planos de Assinatura (management/subscription)
+
+Gere os códigos estruturados sem quebras na pasta app/, salve as modificações e atualize o QR Code do Expo Go no terminal!
