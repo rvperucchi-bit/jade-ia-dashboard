@@ -27,6 +27,7 @@ import {
 const { width: SCREEN_W } = Dimensions.get("window");
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as Linking from "expo-linking";
+import { useRouter } from "expo-router";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 type Route = "Chat" | "Pipeline" | "Route" | "Prospecting" | "Meeting" | "Farmer" | "Reports" | "Marketing" | "Management" | "Kpis" | "CorporatePortfolio" | "Broadcast" | "Feedbacks" | "TeamPulse" | "PulseCheck" | "AccountSettings" | "Subscription" | "MyProfile" | "MyCompany" | "Usage" | "WhatsApp" | "Shop" | "Help" | "Privacy";
@@ -98,9 +99,10 @@ const COMERCIAL_ITEMS: { label: string; route: Route }[] = [
   { label: "Tráfego & Marketing IA", route: "Marketing"   },
 ];
 
-function Sidebar({ visible, onClose, currentRoute, onNavigate }: {
+function Sidebar({ visible, onClose, currentRoute, onNavigate, onLogout }: {
   visible: boolean; onClose: () => void;
   currentRoute: Route; onNavigate: (r: Route) => void;
+  onLogout: () => void;
 }) {
   const slideX = useRef(new Animated.Value(-SCREEN_W)).current;
   const insets = useSafeAreaInsets();
@@ -259,7 +261,7 @@ function Sidebar({ visible, onClose, currentRoute, onNavigate }: {
         <View style={S.drawerFooter}>
           <TouchableOpacity
             style={S.logoutBtn}
-            onPress={() => { onClose(); }}
+            onPress={() => { onClose(); onLogout(); }}
             activeOpacity={0.7}
           >
             <Ionicons name="log-out-outline" size={20} color="rgba(255,255,255,0.35)" />
@@ -272,26 +274,30 @@ function Sidebar({ visible, onClose, currentRoute, onNavigate }: {
 }
 
 // ─── Shared top bar ───────────────────────────────────────────────────────────
-function TopBar({ title, subtitle, onMenu }: { title: string; subtitle?: string; onMenu: () => void }) {
+function TopBar({ title, subtitle, onMenu, onBack }: { title: string; subtitle?: string; onMenu: () => void; onBack?: () => void }) {
   const insets = useSafeAreaInsets();
   return (
     <View style={[S.topBar, { paddingTop: insets.top + 10 }]}>
-      <TouchableOpacity style={S.iconBtn} onPress={onMenu} activeOpacity={0.6}>
-        <Text style={S.topIconText}>☰</Text>
-      </TouchableOpacity>
+      {onBack ? (
+        <TouchableOpacity style={S.iconBtn} onPress={onBack} activeOpacity={0.6}>
+          <Ionicons name="chevron-back" size={22} color="#FFFFFF" />
+        </TouchableOpacity>
+      ) : (
+        <View style={S.iconBtn} />
+      )}
       <View style={{ alignItems: "center" }}>
         {subtitle && <Text style={S.topSubtitle}>{subtitle}</Text>}
-        <Text style={S.topTitle}>{title}</Text>
+        {!!title && <Text style={S.topTitle}>{title}</Text>}
       </View>
-      <TouchableOpacity style={S.iconBtn} activeOpacity={0.6}>
-        <Text style={S.topIconText}>···</Text>
+      <TouchableOpacity style={S.iconBtn} onPress={onMenu} activeOpacity={0.6}>
+        <Text style={S.topIconText}>☰</Text>
       </TouchableOpacity>
     </View>
   );
 }
 
 // ─── Screen: Chat ─────────────────────────────────────────────────────────────
-function ChatView({ onMenu }: { onMenu: () => void }) {
+function ChatView({ onMenu, onBack }: { onMenu: () => void; onBack?: () => void }) {
   const insets   = useSafeAreaInsets();
   const [input,      setInput]      = useState("");
   const [messages,   setMessages]   = useState<ChatMsg[]>([]);
@@ -390,7 +396,7 @@ function ChatView({ onMenu }: { onMenu: () => void }) {
 
   return (
     <View style={{ flex: 1 }}>
-      <TopBar title="JADE" onMenu={onMenu} />
+      <TopBar title="" onMenu={onMenu} />
 
       <ScrollView
         ref={scrollRef}
@@ -438,7 +444,7 @@ function ChatView({ onMenu }: { onMenu: () => void }) {
                   multiline
                 />
                 <TouchableOpacity
-                  style={[S.sendButtonCircle, { backgroundColor: "#D36A9D", borderColor: "rgba(211,106,157,0.4)" }]}
+                  style={S.sendButtonCircle}
                   onPress={hasText ? send : toggleRecording}
                   activeOpacity={0.8}
                 >
@@ -457,7 +463,7 @@ function ChatView({ onMenu }: { onMenu: () => void }) {
                   ))}
                 </View>
                 <TouchableOpacity
-                  style={[S.sendButtonCircle, { backgroundColor: "#D36A9D", borderColor: "rgba(211,106,157,0.5)" }]}
+                  style={S.sendButtonCircle}
                   onPress={toggleRecording}
                   activeOpacity={0.8}
                 >
@@ -473,7 +479,7 @@ function ChatView({ onMenu }: { onMenu: () => void }) {
 }
 
 // ─── Screen: Pipeline ─────────────────────────────────────────────────────────
-function PipelineView({ onMenu }: { onMenu: () => void }) {
+function PipelineView({ onMenu, onBack }: { onMenu: () => void; onBack?: () => void }) {
   const [stage,        setStage]        = useState("Prospecção");
   const [selectedLead, setSelectedLead] = useState<PipelineLead | null>(null);
   const filtered = PIPELINE_LEADS.filter((l) => l.stage === stage);
@@ -481,7 +487,7 @@ function PipelineView({ onMenu }: { onMenu: () => void }) {
                            .toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
   return (
     <View style={{ flex: 1 }}>
-      <TopBar title={total} subtitle={stage.toUpperCase()} onMenu={onMenu} />
+      <TopBar title={total} subtitle={stage.toUpperCase()} onMenu={onMenu} onBack={onBack} />
       <View style={S.tabsWrapper}>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={S.tabsScroll}>
           {PIPELINE_STAGES.map((s) => {
@@ -536,13 +542,13 @@ function PipelineView({ onMenu }: { onMenu: () => void }) {
 }
 
 // ─── Screen: Route ────────────────────────────────────────────────────────────
-function RouteView({ onMenu }: { onMenu: () => void }) {
+function RouteView({ onMenu, onBack }: { onMenu: () => void; onBack?: () => void }) {
   const insets = useSafeAreaInsets();
   const [confirmed, setConfirmed] = useState(false);
 
   return (
     <View style={{ flex: 1 }}>
-      <TopBar title="Rota Otimizada" subtitle="PLANEJAMENTO DIÁRIO" onMenu={onMenu} />
+      <TopBar title="Rota Otimizada" subtitle="PLANEJAMENTO DIÁRIO" onMenu={onMenu} onBack={onBack} />
 
       {/* Map placeholder */}
       <View style={S.mapPreview}>
@@ -599,7 +605,7 @@ function RouteView({ onMenu }: { onMenu: () => void }) {
 }
 
 // ─── Screen: Prospecting ─────────────────────────────────────────────────────
-function ProspectingView({ onMenu }: { onMenu: () => void }) {
+function ProspectingView({ onMenu, onBack }: { onMenu: () => void; onBack?: () => void }) {
   const [tab,      setTab]      = useState<(typeof PROSPECT_TABS)[number]>("Busca Manual");
   const [segment,  setSegment]  = useState("");
   const [city,     setCity]     = useState("");
@@ -613,7 +619,7 @@ function ProspectingView({ onMenu }: { onMenu: () => void }) {
 
   return (
     <View style={{ flex: 1 }}>
-      <TopBar title="Maps Scraper" subtitle="AUTOMAÇÃO" onMenu={onMenu} />
+      <TopBar title="Maps Scraper" subtitle="AUTOMAÇÃO" onMenu={onMenu} onBack={onBack} />
       <View style={S.tabsWrapper}>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={S.tabsScroll}>
           {PROSPECT_TABS.map((t) => {
@@ -663,7 +669,7 @@ function ProspectingView({ onMenu }: { onMenu: () => void }) {
 // ─── Screen: Meeting ─────────────────────────────────────────────────────────
 const MEETING_VIEW_TABS = ["Próximas Reuniões", "Configurar Robô"] as const;
 
-function MeetingView({ onMenu }: { onMenu: () => void }) {
+function MeetingView({ onMenu, onBack }: { onMenu: () => void; onBack?: () => void }) {
   const [tab,          setTab]          = useState<(typeof MEETING_VIEW_TABS)[number]>("Próximas Reuniões");
   const [selected,     setSelected]     = useState<ScheduledMeeting | null>(null);
   const [aiActive,     setAiActive]     = useState(true);
@@ -674,7 +680,7 @@ function MeetingView({ onMenu }: { onMenu: () => void }) {
 
   return (
     <View style={{ flex: 1 }}>
-      <TopBar title="Reuniões da IA" subtitle="INTELIGÊNCIA DE VENDAS" onMenu={onMenu} />
+      <TopBar title="Reuniões da IA" subtitle="INTELIGÊNCIA DE VENDAS" onMenu={onMenu} onBack={onBack} />
 
       {/* Tabs */}
       <View style={S.tabsWrapper}>
@@ -804,7 +810,7 @@ function MeetingView({ onMenu }: { onMenu: () => void }) {
 }
 
 // ─── Screen: Farmer ──────────────────────────────────────────────────────────
-function FarmerView({ onMenu }: { onMenu: () => void }) {
+function FarmerView({ onMenu, onBack }: { onMenu: () => void; onBack?: () => void }) {
   const [tab,       setTab]       = useState<(typeof FARMER_TABS)[number]>("Minha Carteira");
   const [analyzing, setAnalyzing] = useState(false);
   const [report,    setReport]    = useState<{ healthScore: string; churnPrevented: string; expansionOpportunity: string } | null>(null);
@@ -812,7 +818,7 @@ function FarmerView({ onMenu }: { onMenu: () => void }) {
 
   return (
     <View style={{ flex: 1 }}>
-      <TopBar title="Carteira Ativa" subtitle="RETENÇÃO & FARMER" onMenu={onMenu} />
+      <TopBar title="Carteira Ativa" subtitle="RETENÇÃO & FARMER" onMenu={onMenu} onBack={onBack} />
       <View style={S.tabsWrapper}>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={S.tabsScroll}>
           {FARMER_TABS.map((t) => {
@@ -889,7 +895,7 @@ const WEEKLY_METRICS = [
   { name: "Volume Financeiro Fechado",progress: "R$ 65.500 / R$ 100k", pct: "65%", color: "#FFFFFF" },
 ];
 
-function ReportsView({ onMenu }: { onMenu: () => void }) {
+function ReportsView({ onMenu, onBack }: { onMenu: () => void; onBack?: () => void }) {
   const [tab,       setTab]       = useState<(typeof REPORT_TABS)[number]>("Produção Diária");
   const [loading,   setLoading]   = useState(false);
   const [aiReport,  setAiReport]  = useState<AiReport>({
@@ -915,7 +921,7 @@ function ReportsView({ onMenu }: { onMenu: () => void }) {
 
   return (
     <View style={{ flex: 1 }}>
-      <TopBar title="Relatórios IA" subtitle="PERFORMANCE & KPIs" onMenu={onMenu} />
+      <TopBar title="Relatórios IA" subtitle="PERFORMANCE & KPIs" onMenu={onMenu} onBack={onBack} />
       <View style={S.tabsWrapper}>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={S.tabsScroll}>
           {REPORT_TABS.map((t) => {
@@ -993,7 +999,7 @@ const IA_ESTRATEGIAS: Record<string, { canais: string[]; publico: string; dica: 
 const CREATIVE_HEADLINE = '"Cansado de perder leads na sua empresa?"';
 const CREATIVE_BODY = "Legenda sugerida: Deixar dinheiro na mesa dói. Enquanto você atende um cliente, nossa IA qualifica e agenda os próximos direto no seu WhatsApp comercial. Toque no link e mude o ritmo do seu negócio.";
 
-function MarketingView({ onMenu }: { onMenu: () => void }) {
+function MarketingView({ onMenu, onBack }: { onMenu: () => void; onBack?: () => void }) {
   const insets = useSafeAreaInsets();
   const [tab,         setTab]         = useState<(typeof MARKETING_TABS)[number]>("Campanhas Ativas");
   const [budgetOpen,  setBudgetOpen]  = useState(false);
@@ -1051,7 +1057,7 @@ function MarketingView({ onMenu }: { onMenu: () => void }) {
 
   return (
     <View style={{ flex: 1 }}>
-      <TopBar title="Marketing IA" subtitle="GROWTH & TRÁFEGO" onMenu={onMenu} />
+      <TopBar title="Marketing IA" subtitle="GROWTH & TRÁFEGO" onMenu={onMenu} onBack={onBack} />
 
       {/* Budget launcher */}
       <View style={{ paddingHorizontal: 20, marginBottom: 14 }}>
@@ -1181,7 +1187,7 @@ const INITIAL_TEAM: Executive[] = [
 ];
 
 // ─── Screen: Management ───────────────────────────────────────────────────────
-function ManagementView({ onMenu }: { onMenu: () => void }) {
+function ManagementView({ onMenu, onBack }: { onMenu: () => void; onBack?: () => void }) {
   const insets = useSafeAreaInsets();
   const [team,       setTeam]       = useState<Executive[]>(INITIAL_TEAM);
   const [modalOpen,  setModalOpen]  = useState(false);
@@ -1207,9 +1213,13 @@ function ManagementView({ onMenu }: { onMenu: () => void }) {
     <View style={{ flex: 1 }}>
       {/* Top bar manual — sem TopBar genérico para ter botão "+ Novo" */}
       <View style={[S.topBar, { paddingTop: (Platform.OS === "web" ? 24 : insets.top + 4) + 6 }]}>
-        <TouchableOpacity style={S.iconBtn} onPress={onMenu} activeOpacity={0.7}>
-          <Text style={S.topIconText}>☰</Text>
-        </TouchableOpacity>
+        {onBack ? (
+          <TouchableOpacity style={S.iconBtn} onPress={onBack} activeOpacity={0.6}>
+            <Ionicons name="chevron-back" size={22} color="#FFFFFF" />
+          </TouchableOpacity>
+        ) : (
+          <View style={S.iconBtn} />
+        )}
         <View style={{ flex: 1, marginHorizontal: 12 }}>
           <Text style={S.topSubtitle}>PAINEL DO DIRETOR</Text>
           <Text style={S.topTitle}>Gestão de Time</Text>
@@ -1331,7 +1341,7 @@ const CHART_HISTORY = [
 ];
 
 // ─── Screen: KPIs ─────────────────────────────────────────────────────────────
-function KpisView({ onMenu }: { onMenu: () => void }) {
+function KpisView({ onMenu, onBack }: { onMenu: () => void; onBack?: () => void }) {
   const [selectedExec, setSelectedExec] = useState<ExecPerf | null>(null);
   const [loadingAi,    setLoadingAi]    = useState(false);
 
@@ -1343,7 +1353,7 @@ function KpisView({ onMenu }: { onMenu: () => void }) {
 
   return (
     <View style={{ flex: 1 }}>
-      <TopBar title="Metas & KPIs" subtitle="PAINEL DO DIRETOR" onMenu={onMenu} />
+      <TopBar title="Metas & KPIs" subtitle="PAINEL DO DIRETOR" onMenu={onMenu} onBack={onBack} />
       <ScrollView style={S.form} showsVerticalScrollIndicator={false} keyboardDismissMode="on-drag">
         {/* Histórico global */}
         <Text style={S.sectionLabel}>HISTÓRICO DE PRODUÇÃO GLOBAL</Text>
@@ -1419,11 +1429,11 @@ const CORPORATE_ACCOUNTS: CorpAccount[] = [
 ];
 
 // ─── Screen: Corporate Portfolio ─────────────────────────────────────────────
-function CorporatePortfolioView({ onMenu }: { onMenu: () => void }) {
+function CorporatePortfolioView({ onMenu, onBack }: { onMenu: () => void; onBack?: () => void }) {
   return (
     <View style={{ flex: 1 }}>
-      <TopBar title="Carteira Corporativa" subtitle="VISÃO MACRO" onMenu={onMenu} />
-      <ScrollView showsVerticalScrollIndicator={false} keyboardDismissMode="on-drag">
+      <TopBar title="Carteira Corporativa" subtitle="VISÃO MACRO" onMenu={onMenu} onBack={onBack} />
+      <ScrollView showsVerticalScrollIndicator={false} keyboardDismissMode="on-drag" contentContainerStyle={{ paddingTop: 16 }}>
         {/* Macro grid */}
         <View style={S.corpMacroRow}>
           {[
@@ -1471,7 +1481,7 @@ function CorporatePortfolioView({ onMenu }: { onMenu: () => void }) {
 }
 
 // ─── Screen: Broadcast ───────────────────────────────────────────────────────
-function BroadcastView({ onMenu }: { onMenu: () => void }) {
+function BroadcastView({ onMenu, onBack }: { onMenu: () => void; onBack?: () => void }) {
   const [title,     setTitle]     = useState("");
   const [message,   setMessage]   = useState("");
   const [polishing, setPolishing] = useState(false);
@@ -1494,7 +1504,7 @@ function BroadcastView({ onMenu }: { onMenu: () => void }) {
 
   return (
     <View style={{ flex: 1 }}>
-      <TopBar title="Mural da Equipe" subtitle="CENTRAL DE AVISOS" onMenu={onMenu} />
+      <TopBar title="Mural da Equipe" subtitle="CENTRAL DE AVISOS" onMenu={onMenu} onBack={onBack} />
       <ScrollView style={S.form} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false} keyboardDismissMode="on-drag">
         <Text style={[S.cardSub, { marginBottom: 24, marginTop: -4 }]}>Envie avisos em massa com push direto na tela do time</Text>
 
@@ -1554,7 +1564,7 @@ const FEEDBACK_TEAM: TeamMember[] = [
 ];
 
 // ─── Screen: Feedbacks 1-on-1 ────────────────────────────────────────────────
-function FeedbacksView({ onMenu }: { onMenu: () => void }) {
+function FeedbacksView({ onMenu, onBack }: { onMenu: () => void; onBack?: () => void }) {
   const [selectedId,       setSelectedId]       = useState<string | null>(null);
   const [loadingAi,        setLoadingAi]        = useState(false);
   const [aiFeedbackText,   setAiFeedbackText]   = useState("");
@@ -1576,7 +1586,7 @@ function FeedbacksView({ onMenu }: { onMenu: () => void }) {
 
   return (
     <View style={{ flex: 1 }}>
-      <TopBar title="Feedbacks 1-on-1" subtitle="PAINEL DO DIRETOR" onMenu={onMenu} />
+      <TopBar title="Feedbacks 1-on-1" subtitle="PAINEL DO DIRETOR" onMenu={onMenu} onBack={onBack} />
       <ScrollView style={S.form} showsVerticalScrollIndicator={false} keyboardDismissMode="on-drag">
         <Text style={S.sectionLabel}>SELECIONE UM EXECUTIVO PARA ANÁLISE</Text>
 
@@ -1629,7 +1639,7 @@ function FeedbacksView({ onMenu }: { onMenu: () => void }) {
 }
 
 // ─── Screen: Team Pulse ───────────────────────────────────────────────────────
-function TeamPulseView({ onMenu }: { onMenu: () => void }) {
+function TeamPulseView({ onMenu, onBack }: { onMenu: () => void; onBack?: () => void }) {
   const [autoActive, setAutoActive] = useState(false);
 
   const PULSE_CARDS = [
@@ -1640,7 +1650,7 @@ function TeamPulseView({ onMenu }: { onMenu: () => void }) {
 
   return (
     <View style={{ flex: 1 }}>
-      <TopBar title="Clima Comercial" subtitle="SAÚDE DA EQUIPE" onMenu={onMenu} />
+      <TopBar title="Clima Comercial" subtitle="SAÚDE DA EQUIPE" onMenu={onMenu} onBack={onBack} />
       <ScrollView style={S.form} showsVerticalScrollIndicator={false} keyboardDismissMode="on-drag">
         <Text style={[S.cardSub, { marginBottom: 24, marginTop: -4 }]}>Acompanhe o sentimento interno e evite sobrecarga da equipe</Text>
 
@@ -1691,7 +1701,7 @@ const SENTIMENT_OPTIONS = [
 ] as const;
 
 // ─── Screen: Pulse Check ─────────────────────────────────────────────────────
-function PulseCheckView({ onMenu }: { onMenu: () => void }) {
+function PulseCheckView({ onMenu, onBack }: { onMenu: () => void; onBack?: () => void }) {
   const insets = useSafeAreaInsets();
   const [selected, setSelected] = useState<string | null>(null);
 
@@ -1705,10 +1715,17 @@ function PulseCheckView({ onMenu }: { onMenu: () => void }) {
     <View style={{ flex: 1 }}>
       {/* minimal top bar just for menu access */}
       <View style={[S.topBar, { paddingTop: Platform.OS === "web" ? 24 : insets.top + 4 }]}>
+        {onBack ? (
+          <TouchableOpacity style={S.iconBtn} onPress={onBack} activeOpacity={0.6}>
+            <Ionicons name="chevron-back" size={22} color="#FFFFFF" />
+          </TouchableOpacity>
+        ) : (
+          <View style={S.iconBtn} />
+        )}
+        <View style={{ flex: 1 }} />
         <TouchableOpacity style={S.iconBtn} onPress={onMenu} activeOpacity={0.6}>
           <Text style={S.topIconText}>☰</Text>
         </TouchableOpacity>
-        <View style={{ flex: 1 }} />
       </View>
 
       <ScrollView contentContainerStyle={S.pulseCheckWrapper} showsVerticalScrollIndicator={false} keyboardDismissMode="on-drag">
@@ -1750,7 +1767,7 @@ type Product = { id: number; name: string; value: string };
 const ACCT_TABS = ["Meu Perfil", "Cérebro da IA (Empresa)"];
 
 // ─── Screen: Account Settings ────────────────────────────────────────────────
-function AccountSettingsView({ onMenu }: { onMenu: () => void }) {
+function AccountSettingsView({ onMenu, onBack }: { onMenu: () => void; onBack?: () => void }) {
   const [activeTab,       setActiveTab]       = useState(ACCT_TABS[0]);
   const [isSaving,        setIsSaving]        = useState(false);
   const [userName,        setUserName]        = useState("Alexandre Silveira");
@@ -1784,7 +1801,7 @@ function AccountSettingsView({ onMenu }: { onMenu: () => void }) {
 
   return (
     <View style={{ flex: 1 }}>
-      <TopBar title="Configurações" onMenu={onMenu} />
+      <TopBar title="Configurações" onMenu={onMenu} onBack={onBack} />
 
       {/* Abas */}
       <View style={S.tabsWrapper}>
@@ -1885,7 +1902,7 @@ const TIERS: Tier[] = [
 ];
 
 // ─── Screen: Subscription ────────────────────────────────────────────────────
-function SubscriptionView({ onMenu }: { onMenu: () => void }) {
+function SubscriptionView({ onMenu, onBack }: { onMenu: () => void; onBack?: () => void }) {
   const [currentPlan, setCurrentPlan] = useState("start");
 
   const handleUpgrade = (tier: Tier) => {
@@ -1908,7 +1925,7 @@ function SubscriptionView({ onMenu }: { onMenu: () => void }) {
 
   return (
     <View style={{ flex: 1 }}>
-      <TopBar title="Planos & Upgrade" subtitle="ASSINATURA" onMenu={onMenu} />
+      <TopBar title="Planos & Upgrade" subtitle="ASSINATURA" onMenu={onMenu} onBack={onBack} />
       <ScrollView style={S.form} showsVerticalScrollIndicator={false} keyboardDismissMode="on-drag">
         <Text style={[S.cardSub, { marginBottom: 20, marginTop: -4 }]}>Evolua a infraestrutura tecnológica do seu time conforme sua operação cresce</Text>
 
@@ -1951,10 +1968,10 @@ function SubscriptionView({ onMenu }: { onMenu: () => void }) {
 }
 
 // ─── Screen: Privacy ─────────────────────────────────────────────────────────
-function PrivacyView({ onMenu }: { onMenu: () => void }) {
+function PrivacyView({ onMenu, onBack }: { onMenu: () => void; onBack?: () => void }) {
   return (
     <View style={{ flex: 1 }}>
-      <TopBar title="Privacidade" subtitle="CONTA" onMenu={onMenu} />
+      <TopBar title="Privacidade" subtitle="CONTA" onMenu={onMenu} onBack={onBack} />
       <ScrollView style={S.form} showsVerticalScrollIndicator={false} keyboardDismissMode="on-drag">
         <View style={S.privacySecBox}>
           <Text style={S.privacySecTitle}>Criptografia Ponta a Ponta Ativa</Text>
@@ -1982,7 +1999,7 @@ const SHOP_ITEMS = [
   { id: "3", title: "Agente Extra de Atendimento",      price: "R$ 79,00/mês", desc: "Adicione mais um número de WhatsApp conectado simultaneamente ao CRM." },
 ];
 
-function WhatsAppConfigView({ onMenu }: { onMenu: () => void }) {
+function WhatsAppConfigView({ onMenu, onBack }: { onMenu: () => void; onBack?: () => void }) {
   const [autoReply,    setAutoReply]    = useState(true);
   const [aiNegotiation, setAiNegotiation] = useState(true);
   const [delayTime,    setDelayTime]    = useState("25");
@@ -1990,7 +2007,7 @@ function WhatsAppConfigView({ onMenu }: { onMenu: () => void }) {
 
   return (
     <View style={{ flex: 1 }}>
-      <TopBar title="WhatsApp JADE" subtitle="CONVERSAS" onMenu={onMenu} />
+      <TopBar title="WhatsApp JADE" subtitle="CONVERSAS" onMenu={onMenu} onBack={onBack} />
       <ScrollView style={S.form} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false} keyboardDismissMode="on-drag">
 
         <View style={[S.insightBox, { marginBottom: 20 }]}>
@@ -2031,10 +2048,10 @@ function WhatsAppConfigView({ onMenu }: { onMenu: () => void }) {
 }
 
 // ─── Screen: Shop ─────────────────────────────────────────────────────────────
-function ShopView({ onMenu }: { onMenu: () => void }) {
+function ShopView({ onMenu, onBack }: { onMenu: () => void; onBack?: () => void }) {
   return (
     <View style={{ flex: 1 }}>
-      <TopBar title="Loja JADE" subtitle="CONTA" onMenu={onMenu} />
+      <TopBar title="Loja JADE" subtitle="CONTA" onMenu={onMenu} onBack={onBack} />
       <ScrollView style={S.form} showsVerticalScrollIndicator={false} keyboardDismissMode="on-drag">
         <Text style={[S.cardSub, { marginBottom: 20 }]}>Adicione recursos avulsos ou expanda os limites da sua operação instantaneamente.</Text>
 
@@ -2065,10 +2082,10 @@ const FAQ_ITEMS = [
   { q: "Posso conectar múltiplos números de WhatsApp?", a: "Sim. No plano Pro e Enterprise você pode adicionar agentes extras de atendimento diretamente pela Loja JADE." },
 ];
 
-function HelpView({ onMenu }: { onMenu: () => void }) {
+function HelpView({ onMenu, onBack }: { onMenu: () => void; onBack?: () => void }) {
   return (
     <View style={{ flex: 1 }}>
-      <TopBar title="Central de Ajuda" subtitle="CONTA" onMenu={onMenu} />
+      <TopBar title="Central de Ajuda" subtitle="CONTA" onMenu={onMenu} onBack={onBack} />
       <ScrollView style={S.form} showsVerticalScrollIndicator={false} keyboardDismissMode="on-drag">
 
         <Text style={[S.sectionLabel, { marginBottom: 12 }]}>DÚVIDAS FREQUENTES</Text>
@@ -2143,7 +2160,7 @@ function ResourceRow({ title, current, max, unit }: { title: string; current: nu
   );
 }
 
-function UsageView({ onMenu }: { onMenu: () => void }) {
+function UsageView({ onMenu, onBack }: { onMenu: () => void; onBack?: () => void }) {
   const [userPlan, setUserPlan] = useState<PlanKey>("start");
   const plan = PLAN_LIMITS_U[userPlan];
 
@@ -2156,7 +2173,7 @@ function UsageView({ onMenu }: { onMenu: () => void }) {
 
   return (
     <View style={{ flex: 1 }}>
-      <TopBar title="Consumo do Plano" subtitle="CONTA" onMenu={onMenu} />
+      <TopBar title="Consumo do Plano" subtitle="CONTA" onMenu={onMenu} onBack={onBack} />
       <ScrollView style={S.form} showsVerticalScrollIndicator={false} keyboardDismissMode="on-drag">
 
         <View style={S.usagePlanCard}>
@@ -2196,7 +2213,7 @@ function UsageView({ onMenu }: { onMenu: () => void }) {
 }
 
 // ─── Screen: My Company (Cérebro da JADE) ────────────────────────────────────
-function MyCompanyView({ onMenu }: { onMenu: () => void }) {
+function MyCompanyView({ onMenu, onBack }: { onMenu: () => void; onBack?: () => void }) {
   const [isSaving,       setIsSaving]       = useState(false);
   const [companyName,    setCompanyName]    = useState("JADE Automações");
   const [segment,        setSegment]        = useState("Tecnologia B2B");
@@ -2229,7 +2246,7 @@ function MyCompanyView({ onMenu }: { onMenu: () => void }) {
 
   return (
     <View style={{ flex: 1 }}>
-      <TopBar title="Minha Empresa" subtitle="CONTA" onMenu={onMenu} />
+      <TopBar title="Minha Empresa" subtitle="CONTA" onMenu={onMenu} onBack={onBack} />
       <ScrollView style={S.form} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false} keyboardDismissMode="on-drag">
 
         <View style={[S.insightBox, { marginBottom: 20 }]}>
@@ -2284,7 +2301,7 @@ function MyCompanyView({ onMenu }: { onMenu: () => void }) {
 }
 
 // ─── Screen: My Profile ──────────────────────────────────────────────────────
-function MyProfileView({ onMenu }: { onMenu: () => void }) {
+function MyProfileView({ onMenu, onBack }: { onMenu: () => void; onBack?: () => void }) {
   const [name,   setName]   = useState("Alexandre Silveira");
   const [email,  setEmail]  = useState("alexandre@jadeia.com.br");
   const [phone,  setPhone]  = useState("(48) 99999-9999");
@@ -2305,7 +2322,7 @@ function MyProfileView({ onMenu }: { onMenu: () => void }) {
 
   return (
     <View style={{ flex: 1 }}>
-      <TopBar title="Meu Perfil" subtitle="CONTA" onMenu={onMenu} />
+      <TopBar title="Meu Perfil" subtitle="CONTA" onMenu={onMenu} onBack={onBack} />
       <ScrollView style={S.form} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false} keyboardDismissMode="on-drag">
 
         {/* Avatar */}
@@ -2355,17 +2372,41 @@ function ProfileImage({ uri }: { uri: string }) {
 
 // ─── Root ─────────────────────────────────────────────────────────────────────
 export default function PreviewUnifiedScreen() {
+  const router     = useRouter();
   const [route,   setRoute]   = useState<Route>("Chat");
   const [sidebar, setSidebar] = useState(false);
+  const navHistory = useRef<Route[]>([]);
+  const startXRef  = useRef(0);
+
   const openMenu = () => setSidebar(true);
 
-  // Swipe-to-open sidebar: detecta arrasto da borda esquerda (x < 30) para a direita (dx > 80)
+  const navigate = (r: Route) => {
+    navHistory.current.push(route);
+    setRoute(r);
+  };
+
+  const goBack = () => {
+    if (navHistory.current.length === 0) return;
+    setRoute(navHistory.current.pop()!);
+  };
+
+  const handleLogout = () => {
+    navHistory.current = [];
+    router.replace("/login");
+  };
+
   const swipePan = useRef(
     PanResponder.create({
-      onMoveShouldSetPanResponder: (evt, gs) =>
-        !sidebar && evt.nativeEvent.pageX < 30 && gs.dx > 20 && Math.abs(gs.dy) < Math.abs(gs.dx) * 0.5,
+      onMoveShouldSetPanResponder: (evt, gs) => {
+        if (sidebar) return false;
+        startXRef.current = evt.nativeEvent.pageX - gs.dx;
+        return gs.dx > 20 && Math.abs(gs.dy) < Math.abs(gs.dx) * 0.5;
+      },
       onPanResponderRelease: (_evt, gs) => {
-        if (gs.dx > 80) setSidebar(true);
+        if (gs.dx > 80) {
+          if (startXRef.current < 30) setSidebar(true);
+          else goBack();
+        }
       },
     })
   ).current;
@@ -2374,32 +2415,32 @@ export default function PreviewUnifiedScreen() {
     <View style={S.root} {...swipePan.panHandlers}>
       <StatusBar barStyle="light-content" backgroundColor="#090A0F" />
 
-      {route === "Chat"              && <ChatView              onMenu={openMenu} />}
-      {route === "Pipeline"          && <PipelineView          onMenu={openMenu} />}
-      {route === "Route"             && <RouteView             onMenu={openMenu} />}
-      {route === "Prospecting"       && <ProspectingView       onMenu={openMenu} />}
-      {route === "Meeting"           && <MeetingView           onMenu={openMenu} />}
-      {route === "Farmer"            && <FarmerView            onMenu={openMenu} />}
-      {route === "Reports"           && <ReportsView           onMenu={openMenu} />}
-      {route === "Marketing"         && <MarketingView         onMenu={openMenu} />}
-      {route === "Management"        && <ManagementView        onMenu={openMenu} />}
-      {route === "Kpis"              && <KpisView              onMenu={openMenu} />}
-      {route === "CorporatePortfolio"&& <CorporatePortfolioView onMenu={openMenu} />}
-      {route === "Broadcast"         && <BroadcastView         onMenu={openMenu} />}
-      {route === "Feedbacks"         && <FeedbacksView         onMenu={openMenu} />}
-      {route === "TeamPulse"         && <TeamPulseView         onMenu={openMenu} />}
-      {route === "PulseCheck"        && <PulseCheckView        onMenu={openMenu} />}
-      {route === "AccountSettings"   && <AccountSettingsView   onMenu={openMenu} />}
-      {route === "Subscription"      && <SubscriptionView      onMenu={openMenu} />}
-      {route === "MyProfile"         && <MyProfileView         onMenu={openMenu} />}
-      {route === "MyCompany"         && <MyCompanyView         onMenu={openMenu} />}
-      {route === "Usage"             && <UsageView             onMenu={openMenu} />}
-      {route === "WhatsApp"          && <WhatsAppConfigView    onMenu={openMenu} />}
-      {route === "Shop"              && <ShopView              onMenu={openMenu} />}
-      {route === "Help"              && <HelpView              onMenu={openMenu} />}
-      {route === "Privacy"           && <PrivacyView           onMenu={openMenu} />}
+      {route === "Chat"               && <ChatView               onMenu={openMenu} />}
+      {route === "Pipeline"           && <PipelineView           onMenu={openMenu} onBack={goBack} />}
+      {route === "Route"              && <RouteView              onMenu={openMenu} onBack={goBack} />}
+      {route === "Prospecting"        && <ProspectingView        onMenu={openMenu} onBack={goBack} />}
+      {route === "Meeting"            && <MeetingView            onMenu={openMenu} onBack={goBack} />}
+      {route === "Farmer"             && <FarmerView             onMenu={openMenu} onBack={goBack} />}
+      {route === "Reports"            && <ReportsView            onMenu={openMenu} onBack={goBack} />}
+      {route === "Marketing"          && <MarketingView          onMenu={openMenu} onBack={goBack} />}
+      {route === "Management"         && <ManagementView         onMenu={openMenu} onBack={goBack} />}
+      {route === "Kpis"               && <KpisView               onMenu={openMenu} onBack={goBack} />}
+      {route === "CorporatePortfolio" && <CorporatePortfolioView onMenu={openMenu} onBack={goBack} />}
+      {route === "Broadcast"          && <BroadcastView          onMenu={openMenu} onBack={goBack} />}
+      {route === "Feedbacks"          && <FeedbacksView          onMenu={openMenu} onBack={goBack} />}
+      {route === "TeamPulse"          && <TeamPulseView          onMenu={openMenu} onBack={goBack} />}
+      {route === "PulseCheck"         && <PulseCheckView         onMenu={openMenu} onBack={goBack} />}
+      {route === "AccountSettings"    && <AccountSettingsView    onMenu={openMenu} onBack={goBack} />}
+      {route === "Subscription"       && <SubscriptionView       onMenu={openMenu} onBack={goBack} />}
+      {route === "MyProfile"          && <MyProfileView          onMenu={openMenu} onBack={goBack} />}
+      {route === "MyCompany"          && <MyCompanyView          onMenu={openMenu} onBack={goBack} />}
+      {route === "Usage"              && <UsageView              onMenu={openMenu} onBack={goBack} />}
+      {route === "WhatsApp"           && <WhatsAppConfigView     onMenu={openMenu} onBack={goBack} />}
+      {route === "Shop"               && <ShopView               onMenu={openMenu} onBack={goBack} />}
+      {route === "Help"               && <HelpView               onMenu={openMenu} onBack={goBack} />}
+      {route === "Privacy"            && <PrivacyView            onMenu={openMenu} onBack={goBack} />}
 
-      <Sidebar visible={sidebar} onClose={() => setSidebar(false)} currentRoute={route} onNavigate={setRoute} />
+      <Sidebar visible={sidebar} onClose={() => setSidebar(false)} currentRoute={route} onNavigate={navigate} onLogout={handleLogout} />
     </View>
   );
 }
@@ -2488,10 +2529,10 @@ const S = StyleSheet.create({
   bubbleTextAi:   { color: "#FFFFFF" },
   inputContainer: { paddingHorizontal: 16, paddingTop: 8, backgroundColor: "#090A0F" },
   inputRowInside: { flexDirection: "row", backgroundColor: "#1A1C26", borderRadius: 32, alignItems: "center", paddingHorizontal: 16, paddingVertical: 10, borderWidth: 1, borderColor: "#242736", minHeight: 58 },
-  innerBarButton:         { width: 36, height: 36, borderRadius: 18, backgroundColor: "transparent", alignItems: "center", justifyContent: "center" },
+  innerBarButton:         { width: 36, height: 36, borderRadius: 18, backgroundColor: "rgba(255,255,255,0.08)", borderWidth: 1, borderColor: "rgba(255,255,255,0.12)", alignItems: "center", justifyContent: "center" },
   barIcon:                { color: "#FFFFFF", fontSize: 20, fontWeight: "300" },
   textInputStyle:         { flex: 1, color: "#FFFFFF", fontSize: 15, paddingHorizontal: 10, maxHeight: 100 },
-  sendButtonCircle:       { width: 40, height: 40, borderRadius: 20, backgroundColor: "#D36A9D", alignItems: "center", justifyContent: "center", borderWidth: 0, overflow: "hidden" },
+  sendButtonCircle:       { width: 44, height: 44, borderRadius: 22, backgroundColor: "rgba(211,106,157,0.85)", alignItems: "center", justifyContent: "center", borderWidth: 0, overflow: "hidden" },
   sendIcon:               { color: "#FFFFFF", fontSize: 14, fontWeight: "700" },
   recordingWaveContainer: { flex: 1, flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: 4 },
   recordingLabel:         { color: "#8F94A8", fontSize: 14, fontWeight: "500" },
@@ -2554,7 +2595,7 @@ const S = StyleSheet.create({
   drawerDivider: { height: 1, backgroundColor: "#161822", marginVertical: 10 },
   drawerCloseBtn: { width: 36, height: 36, borderRadius: 10, backgroundColor: "rgba(255,255,255,0.04)", borderWidth: 1, borderColor: "rgba(255,255,255,0.06)", alignItems: "center", justifyContent: "center" },
   drawerCloseBtnText: { color: "#8F94A8", fontSize: 14, fontWeight: "600" },
-  drawerNotifBtn: { width: 38, height: 38, borderRadius: 12, backgroundColor: "rgba(255,255,255,0.07)", borderWidth: 1, borderColor: "rgba(255,255,255,0.10)", alignItems: "center", justifyContent: "center" },
+  drawerNotifBtn: { width: 38, height: 38, borderRadius: 12, alignItems: "center", justifyContent: "center" },
 
   // Reports screen
   reportBox: { backgroundColor: "#161822", borderRadius: 16, padding: 18, borderWidth: 1, borderColor: "#242736", marginBottom: 28 },
