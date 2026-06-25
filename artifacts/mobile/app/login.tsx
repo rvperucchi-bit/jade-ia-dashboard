@@ -118,7 +118,7 @@ export default function LoginScreen() {
           >
             {loading
               ? <ActivityIndicator color="#FFFFFF" />
-              : <Text style={S.loginBtnText}>Entrar no Sistema</Text>}
+              : <Text style={S.loginBtnText}>Entrar</Text>}
           </TouchableOpacity>
         </View>
 
@@ -151,7 +151,7 @@ export default function LoginScreen() {
         <TouchableOpacity style={S.createAccountBtn} activeOpacity={0.7}>
           <Text style={S.createAccountText}>
             Não tem uma conta?{" "}
-            <Text style={{ color: "#00E5FF" }}>Criar conta</Text>
+            <Text style={{ color: "#D36A9D" }}>Criar conta</Text>
           </Text>
         </TouchableOpacity>
 
@@ -184,7 +184,7 @@ const S = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     backgroundColor: "#FFFFFF",
-    height: 52,
+    height: 46,
     borderRadius: 12,
     marginBottom: 12,
     paddingHorizontal: 16,
@@ -207,7 +207,7 @@ const S = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     backgroundColor: "#000000",
-    height: 52,
+    height: 46,
     borderRadius: 12,
     marginBottom: 0,
     paddingHorizontal: 16,
