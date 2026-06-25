@@ -87,7 +87,7 @@ export default function LoginScreen() {
           >
             {loading
               ? <ActivityIndicator color="#090A0F" />
-              : <Text style={S.loginBtnText}>Entrar no Sistema 🚀</Text>}
+              : <Text style={S.loginBtnText}>Entrar no Sistema</Text>}
           </TouchableOpacity>
         </View>
 

@@ -339,7 +339,7 @@ function ChatView({ onMenu }: { onMenu: () => void }) {
     if (recording) {
       await recording.stopAndUnloadAsync();
       setRecording(null);
-      setMessages((p) => [...p, { id: Date.now().toString(), text: "🎙️ Mensagem de voz enviada", sender: "user" }]);
+      setMessages((p) => [...p, { id: Date.now().toString(), text: "Mensagem de voz enviada", sender: "user" }]);
     } else {
       try {
         await Audio.setAudioModeAsync({ allowsRecordingIOS: true, playsInSilentModeIOS: true });
@@ -406,7 +406,7 @@ function ChatView({ onMenu }: { onMenu: () => void }) {
                   onPress={hasText ? send : toggleRecording}
                   activeOpacity={0.8}
                 >
-                  <Text style={S.sendIcon}>{hasText ? "▲" : "🎙️"}</Text>
+                  <Text style={S.sendIcon}>{hasText ? "▲" : "●"}</Text>
                 </TouchableOpacity>
               </>
             ) : (
@@ -529,13 +529,13 @@ function RouteView({ onMenu }: { onMenu: () => void }) {
               <View style={S.eventCard}>
                 <View style={S.eventHead}>
                   <Text style={S.eventType}>{item.type}</Text>
-                  <Text style={S.travelTime}>🚗 {item.travelTime}</Text>
+                  <Text style={S.travelTime}>{item.travelTime}</Text>
                 </View>
                 <Text style={S.eventTitle}>{item.title}</Text>
                 <Text style={S.eventAddress}>{item.address}</Text>
                 {item.status === "Sugerido" && !confirmed && (
                   <View style={S.suggestionBadge}>
-                    <Text style={S.suggestionText}>✨ Sugestão da IA</Text>
+                    <Text style={S.suggestionText}>Sugestão da IA</Text>
                   </View>
                 )}
               </View>
@@ -549,7 +549,7 @@ function RouteView({ onMenu }: { onMenu: () => void }) {
       <View style={[S.fabContainer, { bottom: insets.bottom + 20 }]}>
         {!confirmed ? (
           <TouchableOpacity style={S.confirmBtn} onPress={() => setConfirmed(true)} activeOpacity={0.8}>
-            <Text style={S.confirmBtnText}>Confirmar Rota do Dia 🚀</Text>
+            <Text style={S.confirmBtnText}>Confirmar Rota do Dia</Text>
           </TouchableOpacity>
         ) : (
           <TouchableOpacity style={[S.confirmBtn, S.startBtn]} activeOpacity={0.8}>
@@ -597,7 +597,7 @@ function ProspectingView({ onMenu }: { onMenu: () => void }) {
           <Text style={S.label}>CIDADE</Text>
           <TextInput style={S.input} placeholder="Ex: São Paulo, Criciúma" placeholderTextColor="#4E5366" value={city} onChangeText={setCity} />
           <TouchableOpacity style={[S.primaryBtn, (!segment||!city) && S.primaryBtnDisabled]} onPress={scan} activeOpacity={0.8} disabled={scanning||!segment||!city}>
-            {scanning ? <ActivityIndicator color="#090A0F" /> : <Text style={S.primaryBtnText}>Ligar Agente Google Maps 🤖</Text>}
+            {scanning ? <ActivityIndicator color="#090A0F" /> : <Text style={S.primaryBtnText}>Ligar Agente Google Maps</Text>}
           </TouchableOpacity>
           <Text style={S.helperText}>O robô vai simular cliques no mapa para extrair telefones válidos.</Text>
         </ScrollView>
@@ -605,7 +605,7 @@ function ProspectingView({ onMenu }: { onMenu: () => void }) {
       {tab === "Agente IA" && (
         <FlatList data={AI_LEADS} keyExtractor={(i) => i.id} contentContainerStyle={S.list} renderItem={({ item }) => (
           <View style={S.card}>
-            <View style={S.cardHead}><Text style={S.cardName}>{item.name}</Text><View style={S.aiBadge}><Text style={S.aiBadgeText}>🤖 Maps IA</Text></View></View>
+            <View style={S.cardHead}><Text style={S.cardName}>{item.name}</Text><View style={S.aiBadge}><Text style={S.aiBadgeText}>Maps IA</Text></View></View>
             <Text style={S.cardSub}>{item.segment} • {item.address}</Text>
           </View>
         )} ListEmptyComponent={<View style={S.empty}><Text style={S.emptyText}>Ative o robô na busca manual primeiro</Text></View>} />
@@ -615,7 +615,7 @@ function ProspectingView({ onMenu }: { onMenu: () => void }) {
           <View style={S.card}>
             <View style={S.cardHead}><Text style={S.cardName}>{item.query}</Text><Text style={S.cardDate}>{item.date}</Text></View>
             <Text style={S.cardSub}>{item.location}</Text>
-            <Text style={S.histCount}>📈 {item.leadsCount} leads gerados</Text>
+            <Text style={S.histCount}>{item.leadsCount} leads gerados</Text>
           </View>
         )} />
       )}
@@ -670,7 +670,7 @@ function MeetingView({ onMenu }: { onMenu: () => void }) {
                 <View style={S.badge}><Text style={S.badgeText}>{item.time}</Text></View>
               </View>
               <View style={S.meetBriefPreview}>
-                <Text style={S.meetBriefLabel}>🤖 RESUMO DA IA:</Text>
+                <Text style={S.meetBriefLabel}>RESUMO DA IA:</Text>
                 <Text style={[S.cardSub, { marginBottom: 4 }]} numberOfLines={2}>{item.aiSummary}</Text>
               </View>
               <Text style={{ fontSize: 12, color: "#00E5FF", fontWeight: "500" }}>Toque para ver o Briefing de Preparação →</Text>
@@ -718,7 +718,7 @@ function MeetingView({ onMenu }: { onMenu: () => void }) {
           <Text style={[S.sectionLabel, { marginBottom: 14 }]}>JANELA HORÁRIA DISPONÍVEL</Text>
           <TouchableOpacity style={S.timeWindowBtn} activeOpacity={0.7}>
             <Text style={{ color: "#FFFFFF", fontSize: 16, fontWeight: "600" }}>09:00 às 18:00</Text>
-            <Text style={{ color: "#00E5FF", fontSize: 13, fontWeight: "500" }}>Editar Janela 🗓️</Text>
+            <Text style={{ color: "#00E5FF", fontSize: 13, fontWeight: "500" }}>Editar Janela</Text>
           </TouchableOpacity>
 
           <Text style={S.helperText}>
@@ -737,20 +737,20 @@ function MeetingView({ onMenu }: { onMenu: () => void }) {
               <>
                 <Text style={S.sheetCompany}>{selected.company}</Text>
                 <Text style={S.sheetName}>{selected.client}</Text>
-                <Text style={[S.cardSub, { marginBottom: 16 }]}>🕒 {selected.time}</Text>
+                <Text style={[S.cardSub, { marginBottom: 16 }]}>{selected.time}</Text>
 
                 <View style={S.briefingBox}>
-                  <Text style={S.briefingLabel}>🤖 HISTÓRICO DA CONVERSA NO WHATSAPP</Text>
+                  <Text style={S.briefingLabel}>HISTÓRICO DA CONVERSA NO WHATSAPP</Text>
                   <Text style={S.briefingText}>{selected.aiSummary}</Text>
                 </View>
 
                 <View style={[S.briefingBox, { borderColor: "rgba(233,62,62,0.3)", backgroundColor: "rgba(233,62,62,0.04)", marginTop: 10 }]}>
-                  <Text style={[S.briefingLabel, { color: "#E93E3E" }]}>🔥 DORES CRÍTICAS IDENTIFICADAS</Text>
+                  <Text style={[S.briefingLabel, { color: "#E93E3E" }]}>DORES CRÍTICAS IDENTIFICADAS</Text>
                   <Text style={S.briefingText}>{selected.painPoints}</Text>
                 </View>
 
                 <View style={[S.briefingBox, { borderColor: "rgba(56,161,105,0.3)", backgroundColor: "rgba(56,161,105,0.04)", marginTop: 10 }]}>
-                  <Text style={[S.briefingLabel, { color: "#38A169" }]}>🎯 DIRECIONAMENTO PARA FECHAMENTO</Text>
+                  <Text style={[S.briefingLabel, { color: "#38A169" }]}>DIRECIONAMENTO PARA FECHAMENTO</Text>
                   <Text style={S.briefingText}>{selected.prepTip}</Text>
                 </View>
 
@@ -814,7 +814,7 @@ function FarmerView({ onMenu }: { onMenu: () => void }) {
       {tab === "Monitoramento IA" && (
         <ScrollView style={S.form}>
           <View style={S.aiHeroCard}>
-            <Text style={S.aiHeroTitle}>Acompanhamento Pós-Venda Autônomo 🤖</Text>
+            <Text style={S.aiHeroTitle}>Acompanhamento Pós-Venda Autônomo</Text>
             <Text style={S.aiHeroDesc}>Nossa IA analisa histórico de conversas e prevê insatisfações antes do cancelamento.</Text>
             <TouchableOpacity style={[S.primaryBtn, analyzing && S.primaryBtnDisabled]} onPress={() => { setAnalyzing(true); setTimeout(() => { setAnalyzing(false); setReport({ healthScore: "92%", churnPrevented: "2 clientes salvos", expansionOpportunity: "R$ 4.300 em Up-sell detectado" }); }, 2500); }} disabled={analyzing} activeOpacity={0.8}>
               {analyzing ? <ActivityIndicator color="#090A0F" /> : <Text style={S.primaryBtnText}>Escanear Carteira com IA</Text>}
@@ -828,7 +828,7 @@ function FarmerView({ onMenu }: { onMenu: () => void }) {
                 <View style={[S.card, { flex: 1 }]}><Text style={S.label2}>EXPANSÃO</Text><Text style={[S.cardValue, { color: "#38A169", fontSize: 20 }]}>Up-sell</Text></View>
               </View>
               <View style={S.insightBox}>
-                <Text style={S.insightTitle}>⚡ Insights Prontos:</Text>
+                <Text style={S.insightTitle}>Insights Prontos:</Text>
                 <Text style={S.insightText}>• {report.churnPrevented} — mensagem de relacionamento agendada.</Text>
                 <Text style={S.insightText}>• {report.expansionOpportunity}.</Text>
               </View>
@@ -901,14 +901,14 @@ function ReportsView({ onMenu }: { onMenu: () => void }) {
           onPress={generateReport}
           disabled={loading}
         >
-          {loading ? <ActivityIndicator color="#090A0F" /> : <Text style={S.primaryBtnText}>⚡ Gerar Laudo IA na Hora</Text>}
+          {loading ? <ActivityIndicator color="#090A0F" /> : <Text style={S.primaryBtnText}>Gerar Laudo IA na Hora</Text>}
         </TouchableOpacity>
         <Text style={[S.helperText, { marginTop: -8, marginBottom: 20 }]}>Robô configurado para relatório automático às 18:00</Text>
 
         {/* AI Diagnostic box */}
         <View style={S.reportBox}>
           <View style={S.reportBoxHead}>
-            <Text style={S.reportBoxTitle}>🤖 Diagnóstico Consultivo IA</Text>
+            <Text style={S.reportBoxTitle}>Diagnóstico Consultivo IA</Text>
             <View style={[S.reportStatusChip, isGap ? S.chipRed : S.chipGreen]}>
               <Text style={[S.reportStatusText, { color: isGap ? "#E93E3E" : "#38A169" }]}>{aiReport.status}</Text>
             </View>
@@ -917,7 +917,7 @@ function ReportsView({ onMenu }: { onMenu: () => void }) {
           <Text style={S.reportMuted}>{aiReport.diagnostic}</Text>
           <View style={{ height: 1, backgroundColor: "#242736", marginVertical: 14 }} />
           <Text style={S.reportLabel}>PLANO DE AÇÃO CORRETIVO:</Text>
-          <Text style={S.reportWhite}>💡 {aiReport.actionPlan}</Text>
+          <Text style={S.reportWhite}>{aiReport.actionPlan}</Text>
         </View>
 
         {/* KPI metrics */}
@@ -986,7 +986,7 @@ function MarketingView({ onMenu }: { onMenu: () => void }) {
       {/* Budget launcher */}
       <View style={{ paddingHorizontal: 20, marginBottom: 14 }}>
         <TouchableOpacity style={S.mktLaunchBtn} onPress={() => setBudgetOpen(true)} activeOpacity={0.8}>
-          <Text style={S.mktLaunchText}>💰 Planejar Verba de Tráfego Pago →</Text>
+          <Text style={S.mktLaunchText}>Planejar Verba de Tráfego Pago →</Text>
         </TouchableOpacity>
       </View>
 
@@ -1036,15 +1036,15 @@ function MarketingView({ onMenu }: { onMenu: () => void }) {
           <Text style={[S.sectionLabel, { marginBottom: 16 }]}>CRIATIVOS RECENTES DA IA</Text>
           <View style={S.card}>
             <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 14 }}>
-              <Text style={{ fontSize: 11, color: "#00E5FF", fontWeight: "700", letterSpacing: 0.5 }}>📸 INSTAGRAM REELS / ADS</Text>
+              <Text style={{ fontSize: 11, color: "#00E5FF", fontWeight: "700", letterSpacing: 0.5 }}>INSTAGRAM REELS / ADS</Text>
               <TouchableOpacity onPress={shareCreative} activeOpacity={0.6}>
-                <Text style={{ color: "#8F94A8", fontSize: 12, fontWeight: "500" }}>Compartilhar 🚀</Text>
+                <Text style={{ color: "#8F94A8", fontSize: 12, fontWeight: "500" }}>Compartilhar</Text>
               </TouchableOpacity>
             </View>
             <Text style={{ fontSize: 16, fontWeight: "700", color: "#FFFFFF", marginBottom: 8 }}>{CREATIVE_HEADLINE}</Text>
             <Text style={[S.cardSub, { lineHeight: 20, marginBottom: 16 }]}>{CREATIVE_BODY}</Text>
             <View style={{ backgroundColor: "#090A0F", height: 48, borderRadius: 10, justifyContent: "center", paddingHorizontal: 14, borderWidth: 1, borderColor: "#242736" }}>
-              <Text style={{ color: "#4E5366", fontSize: 12, fontWeight: "500" }}>🎬 Prompt de vídeo gerado para o CapCut/Canva</Text>
+              <Text style={{ color: "#4E5366", fontSize: 12, fontWeight: "500" }}>Prompt de vídeo gerado para o CapCut/Canva</Text>
             </View>
           </View>
           <View style={{ height: 40 }} />
@@ -1071,21 +1071,21 @@ function MarketingView({ onMenu }: { onMenu: () => void }) {
             <TextInput style={S.input} placeholder="Ex: 10" placeholderTextColor="#4E5366" keyboardType="numeric" value={days} onChangeText={setDays} />
 
             <TouchableOpacity style={[S.primaryBtn, (!investment || !days) && S.primaryBtnDisabled]} activeOpacity={0.8} onPress={generate} disabled={calculating || !investment || !days}>
-              {calculating ? <ActivityIndicator color="#090A0F" /> : <Text style={S.primaryBtnText}>Otimizar Canais e Horários ✨</Text>}
+              {calculating ? <ActivityIndicator color="#090A0F" /> : <Text style={S.primaryBtnText}>Otimizar Canais e Horários</Text>}
             </TouchableOpacity>
 
             {strategy && (
               <View style={S.strategyBox}>
-                <Text style={{ fontSize: 15, fontWeight: "700", color: "#FFFFFF", marginBottom: 16 }}>🎯 Planejamento Recomendado</Text>
+                <Text style={{ fontSize: 15, fontWeight: "700", color: "#FFFFFF", marginBottom: 16 }}>Planejamento Recomendado</Text>
                 <Text style={S.label2}>ONDE POSTAR & QUANTO INVESTIR:</Text>
                 <Text style={S.mktOutputText}>• {strategy.meta}</Text>
                 <Text style={S.mktOutputText}>• {strategy.google}</Text>
                 <View style={{ height: 1, backgroundColor: "#242736", marginVertical: 12 }} />
                 <Text style={S.label2}>DIAS E HORÁRIOS CRÍTICOS (MAIOR CONVERSÃO):</Text>
-                <Text style={S.mktOutputText}>🕒 {strategy.bestTimes}</Text>
+                <Text style={S.mktOutputText}>{strategy.bestTimes}</Text>
                 <View style={{ height: 1, backgroundColor: "#242736", marginVertical: 12 }} />
                 <Text style={S.label2}>PREVISÃO DISPARADA PELO HISTÓRICO:</Text>
-                <Text style={[S.mktOutputText, { color: "#00E5FF", fontWeight: "700" }]}>📈 {strategy.expectedLeads}</Text>
+                <Text style={[S.mktOutputText, { color: "#00E5FF", fontWeight: "700" }]}>{strategy.expectedLeads}</Text>
               </View>
             )}
             <View style={{ height: 60 }} />
@@ -1179,7 +1179,7 @@ function ManagementView({ onMenu }: { onMenu: () => void }) {
             <View key={member.id} style={[S.card, { marginBottom: 14 }]}>
               <View style={S.mgmtExecRow}>
                 <View style={S.mgmtAvatar}>
-                  <Text style={{ fontSize: 20 }}>👤</Text>
+                  <Text style={{ fontSize: 14, color: "#8F94A8", fontWeight: "700" }}>{member.name.charAt(0)}</Text>
                 </View>
                 <View style={{ flex: 1, marginLeft: 14 }}>
                   <Text style={S.cardName}>{member.name}</Text>
@@ -1232,7 +1232,7 @@ function ManagementView({ onMenu }: { onMenu: () => void }) {
               onPress={handleCreate}
               disabled={!newName || !newRole || !newTarget}
             >
-              <Text style={S.primaryBtnText}>Confirmar Contratação 🚀</Text>
+              <Text style={S.primaryBtnText}>Confirmar Contratação</Text>
             </TouchableOpacity>
             <View style={{ height: 40 }} />
           </ScrollView>
@@ -1303,7 +1303,7 @@ function KpisView({ onMenu }: { onMenu: () => void }) {
         {/* Laudo IA */}
         {(loadingAi || selectedExec) && (
           <View style={S.kpiAiBox}>
-            <Text style={S.kpiAiTitle}>🤖 Laudo de Performance JADE</Text>
+            <Text style={S.kpiAiTitle}>Laudo de Performance JADE</Text>
             {loadingAi ? (
               <ActivityIndicator color="#00E5FF" style={{ marginTop: 16 }} />
             ) : selectedExec ? (
@@ -1323,7 +1323,7 @@ function KpisView({ onMenu }: { onMenu: () => void }) {
                 <Text style={S.mgmtGridLabel}>DIAGNÓSTICO DO GAP:</Text>
                 <Text style={[S.cardSub, { marginTop: 4, marginBottom: 12 }]}>{selectedExec.gap}</Text>
                 <Text style={S.mgmtGridLabel}>PLANO DE AÇÃO SUGERIDO:</Text>
-                <Text style={[S.cardName, { fontSize: 13, marginTop: 4, lineHeight: 20 }]}>💡 {selectedExec.plan}</Text>
+                <Text style={[S.cardName, { fontSize: 13, marginTop: 4, lineHeight: 20 }]}>{selectedExec.plan}</Text>
               </>
             ) : null}
           </View>
@@ -1413,7 +1413,7 @@ function BroadcastView({ onMenu }: { onMenu: () => void }) {
 
   const handleSend = () => {
     if (!title || !message) return;
-    Alert.alert("Enviado! 🚀", "Push Notification disparada para todos os executivos ativos!");
+    Alert.alert("Enviado!", "Push Notification disparada para todos os executivos ativos!");
     setTitle(""); setMessage("");
   };
 
@@ -1451,7 +1451,7 @@ function BroadcastView({ onMenu }: { onMenu: () => void }) {
         >
           {polishing
             ? <ActivityIndicator color="#00E5FF" />
-            : <Text style={S.broadcastAiBtnText}>✨ Otimizar Texto com Gatilhos JADE</Text>
+            : <Text style={S.broadcastAiBtnText}>Otimizar Texto com Gatilhos JADE</Text>
           }
         </TouchableOpacity>
 
@@ -1462,7 +1462,7 @@ function BroadcastView({ onMenu }: { onMenu: () => void }) {
           disabled={!title || !message}
           activeOpacity={0.8}
         >
-          <Text style={S.primaryBtnText}>Disparar Push Notification 🚀</Text>
+          <Text style={S.primaryBtnText}>Disparar Push Notification</Text>
         </TouchableOpacity>
         <View style={{ height: 40 }} />
       </ScrollView>
@@ -1494,7 +1494,7 @@ function FeedbacksView({ onMenu }: { onMenu: () => void }) {
         `Feedback Estruturado para ${member.name}:\n\n` +
         `• Ponto Forte: Excelente comprometimento com a rotina e dedicação na execução dos processos.\n` +
         `• Ponto de Melhoria: Identificamos um leve gargalo na transição de leads da etapa de proposta para o fechamento.\n\n` +
-        `💡 Sugestão de Abordagem:\n"Tenho visto seu esforço nas propostas, e seus números estão ótimos. Vamos sentar juntos nesta semana para analisar duas contas específicas e destravar o fechamento? Quero te ajudar a bater o topo da meta!"`
+        `Sugestão de Abordagem:\n"Tenho visto seu esforço nas propostas, e seus números estão ótimos. Vamos sentar juntos nesta semana para analisar duas contas específicas e destravar o fechamento? Quero te ajudar a bater o topo da meta!"`
       );
     }, 1500);
   };
@@ -1530,7 +1530,7 @@ function FeedbacksView({ onMenu }: { onMenu: () => void }) {
 
         {selectedId && (
           <View style={S.kpiAiBox}>
-            <Text style={S.kpiAiTitle}>🤖 Roteiro de Alinhamento 1-on-1 (JADE)</Text>
+            <Text style={S.kpiAiTitle}>Roteiro de Alinhamento 1-on-1 (JADE)</Text>
             {loadingAi ? (
               <ActivityIndicator color="#00E5FF" style={{ marginTop: 20 }} />
             ) : aiFeedbackText ? (
@@ -1541,7 +1541,7 @@ function FeedbacksView({ onMenu }: { onMenu: () => void }) {
                   onPress={() => Alert.alert("Copiado!", "Roteiro copiado para área de transferência.")}
                   activeOpacity={0.8}
                 >
-                  <Text style={S.primaryBtnText}>Copiar Roteiro para Reunião 📋</Text>
+                  <Text style={S.primaryBtnText}>Copiar Roteiro para Reunião</Text>
                 </TouchableOpacity>
               </>
             ) : null}
@@ -1558,9 +1558,9 @@ function TeamPulseView({ onMenu }: { onMenu: () => void }) {
   const [autoActive, setAutoActive] = useState(false);
 
   const PULSE_CARDS = [
-    { emoji: "🟢", count: "4 Executivos", label: "Super Bem",        border: "#38A169" },
-    { emoji: "🟡", count: "2 Executivos", label: "Com Dificuldade",  border: "#00E5FF" },
-    { emoji: "🔴", count: "0 Executivos", label: "Sobrecarga",       border: "#E93E3E" },
+    { count: "4 Executivos", label: "Super Bem",        border: "#38A169" },
+    { count: "2 Executivos", label: "Com Dificuldade",  border: "#00E5FF" },
+    { count: "0 Executivos", label: "Sobrecarga",       border: "#E93E3E" },
   ];
 
   return (
@@ -1573,7 +1573,7 @@ function TeamPulseView({ onMenu }: { onMenu: () => void }) {
         <View style={S.pulseGrid}>
           {PULSE_CARDS.map((c) => (
             <View key={c.label} style={[S.pulseCard, { borderColor: c.border }]}>
-              <Text style={{ fontSize: 22, marginBottom: 6 }}>{c.emoji}</Text>
+              <View style={{ width: 10, height: 10, borderRadius: 5, backgroundColor: c.border, marginBottom: 8 }} />
               <Text style={S.pulseCount}>{c.count}</Text>
               <Text style={S.pulseLabel}>{c.label}</Text>
             </View>
@@ -1599,7 +1599,7 @@ function TeamPulseView({ onMenu }: { onMenu: () => void }) {
           onPress={() => Alert.alert("Push Disparado", "O questionário de clima comercial foi enviado para o smartphone de toda a equipe de vendas.")}
           activeOpacity={0.8}
         >
-          <Text style={S.primaryBtnText}>Disparar Push de Sentimento Agora 🧠</Text>
+          <Text style={S.primaryBtnText}>Disparar Push de Sentimento Agora</Text>
         </TouchableOpacity>
         <View style={{ height: 40 }} />
       </ScrollView>
@@ -1609,10 +1609,10 @@ function TeamPulseView({ onMenu }: { onMenu: () => void }) {
 
 // ─── Data: Pulse Check ────────────────────────────────────────────────────────
 const SENTIMENT_OPTIONS = [
-  { id: "well",    text: "Estou super bem e performando",              marker: "🟢" },
-  { id: "stuck",   text: "Estou com dificuldades operacionais",        marker: "🟡" },
-  { id: "burnout", text: "Me sinto sobrecarregado / Preciso de suporte", marker: "🔴" },
-  { id: "skip",    text: "Prefiro não responder hoje / Pular",          marker: "⚪" },
+  { id: "well",    text: "Estou super bem e performando" },
+  { id: "stuck",   text: "Estou com dificuldades operacionais" },
+  { id: "burnout", text: "Me sinto sobrecarregado / Preciso de suporte" },
+  { id: "skip",    text: "Prefiro não responder hoje / Pular" },
 ] as const;
 
 // ─── Screen: Pulse Check ─────────────────────────────────────────────────────
@@ -1637,7 +1637,7 @@ function PulseCheckView({ onMenu }: { onMenu: () => void }) {
       </View>
 
       <ScrollView contentContainerStyle={S.pulseCheckWrapper} showsVerticalScrollIndicator={false}>
-        <Text style={S.pulseCheckBrand}>✨ JADE INSIGHTS</Text>
+        <Text style={S.pulseCheckBrand}>JADE INSIGHTS</Text>
         <Text style={S.pulseCheckTitle}>Como você se sente com a rotina comercial hoje?</Text>
         <Text style={[S.cardSub, { textAlign: "center", marginBottom: 32, paddingHorizontal: 12 }]}>
           Sua resposta ajuda a gestão a calibrar o volume de leads e metas da semana para evitar sobrecarga.
@@ -1652,7 +1652,6 @@ function PulseCheckView({ onMenu }: { onMenu: () => void }) {
               onPress={() => setSelected(opt.id)}
               activeOpacity={0.7}
             >
-              <Text style={{ fontSize: 18, marginRight: 14 }}>{opt.marker}</Text>
               <Text style={[S.pulseOptionText, active && S.pulseOptionTextActive]}>{opt.text}</Text>
             </TouchableOpacity>
           );
@@ -1664,7 +1663,7 @@ function PulseCheckView({ onMenu }: { onMenu: () => void }) {
           disabled={!selected}
           activeOpacity={0.8}
         >
-          <Text style={S.primaryBtnText}>Enviar Resposta Oficial 🚀</Text>
+          <Text style={S.primaryBtnText}>Enviar Resposta Oficial</Text>
         </TouchableOpacity>
       </ScrollView>
     </View>
@@ -1704,7 +1703,7 @@ function AccountSettingsView({ onMenu }: { onMenu: () => void }) {
     setIsSaving(true);
     setTimeout(() => {
       setIsSaving(false);
-      Alert.alert("Cérebro Atualizado 🧠", "A JADE assimilou as novas informações e já mudou o comportamento de abordagem no WhatsApp.");
+      Alert.alert("Cérebro Atualizado", "A JADE assimilou as novas informações e já mudou o comportamento de abordagem no WhatsApp.");
     }, 1500);
   };
 
@@ -1743,7 +1742,7 @@ function AccountSettingsView({ onMenu }: { onMenu: () => void }) {
         {activeTab === "Cérebro da IA (Empresa)" && (
           <View>
             <View style={[S.insightBox, { marginBottom: 20 }]}>
-              <Text style={[S.insightText, { color: "#00E5FF", marginBottom: 0 }]}>🧠 Estes dados moldam o conhecimento da JADE durante as conversas automatizadas com os clientes.</Text>
+              <Text style={[S.insightText, { color: "#00E5FF", marginBottom: 0 }]}>Estes dados moldam o conhecimento da JADE durante as conversas automatizadas com os clientes.</Text>
             </View>
 
             <Text style={S.label}>NOME DA EMPRESA</Text>
@@ -1792,7 +1791,7 @@ function AccountSettingsView({ onMenu }: { onMenu: () => void }) {
             </View>
 
             <TouchableOpacity style={[S.primaryBtn, { marginTop: 8 }]} onPress={save} disabled={isSaving} activeOpacity={0.8}>
-              {isSaving ? <ActivityIndicator color="#090A0F" /> : <Text style={S.primaryBtnText}>Sincronizar Cérebro da IA 🚀</Text>}
+              {isSaving ? <ActivityIndicator color="#090A0F" /> : <Text style={S.primaryBtnText}>Sincronizar Cérebro da IA</Text>}
             </TouchableOpacity>
           </View>
         )}
@@ -1847,7 +1846,7 @@ function SubscriptionView({ onMenu }: { onMenu: () => void }) {
               <View style={S.tierCardHeader}>
                 <View>
                   <Text style={S.tierName}>{tier.name}</Text>
-                  {active && <Text style={S.tierActiveLbl}>✨ PLANO ATUAL</Text>}
+                  {active && <Text style={S.tierActiveLbl}>PLANO ATUAL</Text>}
                 </View>
                 <Text style={S.tierPrice}>{tier.price}</Text>
               </View>
@@ -1883,7 +1882,7 @@ function PrivacyView({ onMenu }: { onMenu: () => void }) {
       <TopBar title="Privacidade" subtitle="CONTA" onMenu={onMenu} />
       <ScrollView style={S.form} showsVerticalScrollIndicator={false}>
         <View style={S.privacySecBox}>
-          <Text style={S.privacySecTitle}>🔒 Criptografia Ponta a Ponta Ativa</Text>
+          <Text style={S.privacySecTitle}>Criptografia Ponta a Ponta Ativa</Text>
           <Text style={S.privacySecText}>Todas as credenciais corporativas, tokens de comunicação e históricos de mensagens capturados pelo cérebro da JADE são blindados sob chaves de criptografia AES-256 em servidores isolados em nuvem.</Text>
         </View>
         <Text style={[S.sectionLabel, { marginBottom: 12 }]}>CONTRATOS E TERMOS</Text>
@@ -1920,7 +1919,7 @@ function WhatsAppConfigView({ onMenu }: { onMenu: () => void }) {
       <ScrollView style={S.form} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
 
         <View style={[S.insightBox, { marginBottom: 20 }]}>
-          <Text style={[S.insightText, { color: "#00E5FF", marginBottom: 0 }]}>⚙️ Calibre o comportamento dos gatilhos de mensagens e respostas da JADE no WhatsApp.</Text>
+          <Text style={[S.insightText, { color: "#00E5FF", marginBottom: 0 }]}>Calibre o comportamento dos gatilhos de mensagens e respostas da JADE no WhatsApp.</Text>
         </View>
 
         <View style={S.waConfigCard}>
@@ -1947,8 +1946,8 @@ function WhatsAppConfigView({ onMenu }: { onMenu: () => void }) {
         <TextInput style={[S.input, { height: 100, paddingTop: 12, textAlignVertical: "top" }]} value={welcomeMsg} onChangeText={setWelcomeMsg} multiline placeholderTextColor="#4E5366" />
 
         <TouchableOpacity style={[S.primaryBtn, { marginTop: 8 }]}
-          onPress={() => Alert.alert("Sucesso 🚀", "Configurações de WhatsApp integradas ao cérebro da JADE!")} activeOpacity={0.8}>
-          <Text style={S.primaryBtnText}>Salvar e Sincronizar Instância 🚀</Text>
+          onPress={() => Alert.alert("Sucesso", "Configurações de WhatsApp integradas ao cérebro da JADE!")} activeOpacity={0.8}>
+          <Text style={S.primaryBtnText}>Salvar e Sincronizar Instância</Text>
         </TouchableOpacity>
         <View style={{ height: 40 }} />
       </ScrollView>
@@ -1972,7 +1971,7 @@ function ShopView({ onMenu }: { onMenu: () => void }) {
             </View>
             <Text style={S.shopItemDesc}>{item.desc}</Text>
             <TouchableOpacity style={S.shopBuyBtn}
-              onPress={() => Alert.alert("Pix Gerado ⚡", "Copia e cola o código Pix enviado para o seu e-mail corporativo para liberar o recurso.")}
+              onPress={() => Alert.alert("Pix Gerado", "Copia e cola o código Pix enviado para o seu e-mail corporativo para liberar o recurso.")}
               activeOpacity={0.8}>
               <Text style={S.shopBuyBtnText}>Comprar via Pix Rápido</Text>
             </TouchableOpacity>
@@ -2008,7 +2007,7 @@ function HelpView({ onMenu }: { onMenu: () => void }) {
 
         <Text style={[S.sectionLabel, { marginBottom: 12, marginTop: 24 }]}>SUPORTE PRIORITÁRIO</Text>
         <TouchableOpacity style={S.supportBtn}
-          onPress={() => Alert.alert("Chamado Aberto ✉️", "Nossa equipe técnica entrará em contato via WhatsApp em até 15 minutos.")}
+          onPress={() => Alert.alert("Chamado Aberto", "Nossa equipe técnica entrará em contato via WhatsApp em até 15 minutos.")}
           activeOpacity={0.8}>
           <Text style={S.supportBtnText}>Falar com Engenheiro de Suporte</Text>
         </TouchableOpacity>
@@ -2021,7 +2020,7 @@ function HelpView({ onMenu }: { onMenu: () => void }) {
 // ─── Screen: Usage & Plan Limits ─────────────────────────────────────────────
 const PLAN_LIMITS_U = {
   start: {
-    name: "JADE Start 🟢",
+    name: "JADE Start",
     chat:   { max: 500,  label: "mensagens" },
     radar:  { max: 50,   label: "buscas"    },
     audio:  { max: 30,   label: "minutos"   },
@@ -2030,7 +2029,7 @@ const PLAN_LIMITS_U = {
     vision: { max: 20,   label: "imagens"   },
   },
   pro: {
-    name: "JADE Pro 🟣",
+    name: "JADE Pro",
     chat:   { max: 2000, label: "mensagens" },
     radar:  { max: 200,  label: "buscas"    },
     audio:  { max: 120,  label: "minutos"   },
@@ -2039,7 +2038,7 @@ const PLAN_LIMITS_U = {
     vision: { max: 100,  label: "imagens"   },
   },
   enterprise: {
-    name: "Enterprise 🔴",
+    name: "Enterprise",
     chat:   { max: 5000, label: "mensagens" },
     radar:  { max: 500,  label: "buscas"    },
     audio:  { max: 500,  label: "minutos"   },
@@ -2075,7 +2074,7 @@ function UsageView({ onMenu }: { onMenu: () => void }) {
 
   const handleBuyCredits = () =>
     Alert.alert(
-      "Créditos Avulsos ⚡",
+      "Créditos Avulsos",
       "Deseja recarregar seu saldo de mensagens ou buscas via Pix instantâneo?",
       [{ text: "Cancelar", style: "cancel" }, { text: "Ver Opções", onPress: () => {} }]
     );
@@ -2104,16 +2103,16 @@ function UsageView({ onMenu }: { onMenu: () => void }) {
         <Text style={[S.sectionLabel, { marginBottom: 14 }]}>MÉTRICAS DE USO DOS RECURSOS</Text>
 
         <View style={S.usageWrapper}>
-          <ResourceRow title="💬 Chat IA"                current={CURRENT_USAGE.chat}   max={plan.chat.max}   unit={plan.chat.label}   />
-          <ResourceRow title="🔍 Radar de Prospecção"   current={CURRENT_USAGE.radar}  max={plan.radar.max}  unit={plan.radar.label}  />
-          <ResourceRow title="🎙️ Transcrição de Áudio" current={CURRENT_USAGE.audio}  max={plan.audio.max}  unit={plan.audio.label}  />
-          <ResourceRow title="🎨 Imagens IA"            current={CURRENT_USAGE.images} max={plan.images.max} unit={plan.images.label} />
-          <ResourceRow title="📄 Análise de Documentos" current={CURRENT_USAGE.docs}   max={plan.docs.max}   unit={plan.docs.label}   />
-          <ResourceRow title="👁️ Vision"               current={CURRENT_USAGE.vision} max={plan.vision.max} unit={plan.vision.label} />
+          <ResourceRow title="Chat IA"                current={CURRENT_USAGE.chat}   max={plan.chat.max}   unit={plan.chat.label}   />
+          <ResourceRow title="Radar de Prospecção"   current={CURRENT_USAGE.radar}  max={plan.radar.max}  unit={plan.radar.label}  />
+          <ResourceRow title="Transcrição de Áudio"  current={CURRENT_USAGE.audio}  max={plan.audio.max}  unit={plan.audio.label}  />
+          <ResourceRow title="Imagens IA"            current={CURRENT_USAGE.images} max={plan.images.max} unit={plan.images.label} />
+          <ResourceRow title="Análise de Documentos" current={CURRENT_USAGE.docs}   max={plan.docs.max}   unit={plan.docs.label}   />
+          <ResourceRow title="Vision"                current={CURRENT_USAGE.vision} max={plan.vision.max} unit={plan.vision.label} />
         </View>
 
         <TouchableOpacity style={[S.primaryBtn, { marginTop: 24, marginBottom: 0 }]} onPress={handleBuyCredits} activeOpacity={0.8}>
-          <Text style={S.primaryBtnText}>Comprar mais créditos ⚡</Text>
+          <Text style={S.primaryBtnText}>Comprar mais créditos</Text>
         </TouchableOpacity>
         <View style={{ height: 40 }} />
       </ScrollView>
@@ -2149,7 +2148,7 @@ function MyCompanyView({ onMenu }: { onMenu: () => void }) {
     setIsSaving(true);
     setTimeout(() => {
       setIsSaving(false);
-      Alert.alert("Cérebro Atualizado 🧠", "A JADE assimilou as novas informações e já está usando nos atendimentos.");
+      Alert.alert("Cérebro Atualizado", "A JADE assimilou as novas informações e já está usando nos atendimentos.");
     }, 1500);
   };
 
@@ -2159,7 +2158,7 @@ function MyCompanyView({ onMenu }: { onMenu: () => void }) {
       <ScrollView style={S.form} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
 
         <View style={[S.insightBox, { marginBottom: 20 }]}>
-          <Text style={[S.insightText, { color: "#00E5FF", marginBottom: 0 }]}>🧠 Cérebro da JADE: As informações abaixo alimentam o conhecimento contextual do robô para negociar com leads no WhatsApp.</Text>
+          <Text style={[S.insightText, { color: "#00E5FF", marginBottom: 0 }]}>Cérebro da JADE: As informações abaixo alimentam o conhecimento contextual do robô para negociar com leads no WhatsApp.</Text>
         </View>
 
         <Text style={S.label}>NOME INSTITUCIONAL</Text>
@@ -2201,7 +2200,7 @@ function MyCompanyView({ onMenu }: { onMenu: () => void }) {
         </View>
 
         <TouchableOpacity style={[S.primaryBtn, { marginTop: 8 }]} onPress={save} disabled={isSaving} activeOpacity={0.8}>
-          {isSaving ? <ActivityIndicator color="#090A0F" /> : <Text style={S.primaryBtnText}>Sincronizar Cérebro da JADE 🚀</Text>}
+          {isSaving ? <ActivityIndicator color="#090A0F" /> : <Text style={S.primaryBtnText}>Sincronizar Cérebro da JADE</Text>}
         </TouchableOpacity>
         <View style={{ height: 40 }} />
       </ScrollView>
@@ -2241,12 +2240,12 @@ function MyProfileView({ onMenu }: { onMenu: () => void }) {
               <ProfileImage uri={avatar} />
             ) : (
               <View style={S.profileAvatarPlaceholder}>
-                <Text style={{ fontSize: 36 }}>👤</Text>
+                <Text style={{ fontSize: 28, color: "#8F94A8", fontWeight: "700" }}>A</Text>
               </View>
             )}
           </View>
           <TouchableOpacity style={S.profileUploadBtn} onPress={pickAvatar} activeOpacity={0.7}>
-            <Text style={S.profileUploadBtnText}>Alterar Foto de Perfil 📸</Text>
+            <Text style={S.profileUploadBtnText}>Alterar Foto de Perfil</Text>
           </TouchableOpacity>
         </View>
 

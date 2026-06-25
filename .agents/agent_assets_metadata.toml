@@ -269,3 +269,9 @@ id = "gZD-ppDod4bu1ICMBjM6v"
 uri = "file://exports/exports/resumo-rebrand-jade.pdf"
 type = "pdf"
 title = "Rebrand Concluído — Sleek → JADE"
+
+[[outputs]]
+id = "cFVC2w--upkI54FgJVvll"
+uri = "file://exports/emoji-removal-2026-06-25.pdf"
+type = "pdf"
+title = "Relatório — Remoção de Emojis Coloridos"
