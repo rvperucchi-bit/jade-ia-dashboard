@@ -20,12 +20,14 @@ import * as Linking from "expo-linking";
 import { useRouter } from "expo-router";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
-type Route = "Chat" | "Pipeline" | "Prospecting" | "Farmer";
-type PipelineLead = { id: string; name: string; company: string; value: string; stage: string; daysIdle: number; phone: string };
-type AiLead      = { id: string; name: string; segment: string; address: string };
-type HistoryItem = { id: string; query: string; location: string; date: string; leadsCount: number };
-type Client      = { id: string; name: string; company: string; health: string; lastContact: string; valueMRR: string; status: string };
-type ChatMsg     = { id: string; text: string; sender: "user" | "ai" };
+type Route = "Chat" | "Pipeline" | "Route" | "Prospecting" | "Meeting" | "Farmer";
+type PipelineLead  = { id: string; name: string; company: string; value: string; stage: string; daysIdle: number; phone: string };
+type AiLead        = { id: string; name: string; segment: string; address: string };
+type HistoryItem   = { id: string; query: string; location: string; date: string; leadsCount: number };
+type Client        = { id: string; name: string; company: string; health: string; lastContact: string; valueMRR: string; status: string };
+type ChatMsg       = { id: string; text: string; sender: "user" | "ai" };
+type RouteStop     = { id: string; type: string; title: string; time: string; address: string; status: string; travelTime: string };
+type MeetingItem   = { id: string; time: string; title: string; company: string; type: string; prep: string; status: string };
 
 // ─── Data ─────────────────────────────────────────────────────────────────────
 const PIPELINE_LEADS: PipelineLead[] = [
@@ -42,8 +44,8 @@ const AI_LEADS: AiLead[] = [
   { id: "2", name: "Padaria Pão Quente",     segment: "Panificadora",address: "Próspera, Criciúma" },
 ];
 const HISTORY_ITEMS: HistoryItem[] = [
-  { id: "h1", query: "Restaurantes",     location: "Centro, Criciúma",     date: "Hoje, 14:30",   leadsCount: 42 },
-  { id: "h2", query: "Salões de Beleza", location: "Pio Correa, Criciúma", date: "Ontem, 09:15",  leadsCount: 18 },
+  { id: "h1", query: "Restaurantes",     location: "Centro, Criciúma",     date: "Hoje, 14:30",  leadsCount: 42 },
+  { id: "h2", query: "Salões de Beleza", location: "Pio Correa, Criciúma", date: "Ontem, 09:15", leadsCount: 18 },
 ];
 const PROSPECT_TABS = ["Busca Manual", "Agente IA", "Histórico"] as const;
 
@@ -55,14 +57,30 @@ const CLIENTS: Client[] = [
 ];
 const FARMER_TABS = ["Minha Carteira", "Monitoramento IA", "Alertas"] as const;
 
+const DAILY_ROUTE: RouteStop[] = [
+  { id: "1", type: "Reunião",    title: "Diretriz Comercial",    time: "09:00", address: "Av. Paulista, 1000",                    status: "Confirmado", travelTime: "15 min" },
+  { id: "2", type: "Visita",     title: "Lotus Cosméticos",      time: "11:30", address: "Rua Augusta, 500",                      status: "Sugerido",   travelTime: "10 min" },
+  { id: "3", type: "Almoço",     title: "Restaurante Spot",      time: "13:00", address: "Alameda Ministro Rocha Azevedo",         status: "Sugerido",   travelTime: "5 min"  },
+  { id: "4", type: "Prospecção", title: "Shopping Cidade SP",    time: "15:00", address: "Av. Paulista, 1230",                    status: "Opcional",   travelTime: "8 min"  },
+];
+
+const MEETINGS: MeetingItem[] = [
+  { id: "1", time: "09:00", title: "Diretriz Comercial Q3",   company: "Interno",          type: "Reunião",    prep: "Revisar metas do trimestre e pipeline atual.",                 status: "Confirmado" },
+  { id: "2", time: "11:30", title: "Demo — CRM Enterprise",   company: "Lotus Cosméticos", type: "Demo",       prep: "Destacar integração WhatsApp e automação de follow-up.",       status: "Confirmado" },
+  { id: "3", time: "14:00", title: "Proposta — Plano Anual",  company: "Wayne Enterprises",type: "Proposta",   prep: "Levar deck de ROI. Cliente comparou com concorrente X.",       status: "Pendente"   },
+  { id: "4", time: "16:30", title: "Check-in Pós-implantação",company: "Stark Labs",       type: "Pós-venda",  prep: "Perguntar sobre adoção. Oportunidade de up-sell módulo IA.",   status: "Sugerido"   },
+];
+
 const SIDEBAR_W = 280;
 
 // ─── Sidebar ──────────────────────────────────────────────────────────────────
-const MENU_ITEMS: { label: string; route: Route }[] = [
-  { label: "💬 Chat Central IA",      route: "Chat"        },
-  { label: "📊 Pipeline Comercial",   route: "Pipeline"    },
-  { label: "🔍 Prospecção Maps IA",   route: "Prospecting" },
-  { label: "🌱 Carteira & Farmer",    route: "Farmer"      },
+const MENU_ITEMS: { label: string; icon: string; route: Route }[] = [
+  { label: "Chat IA",          icon: "💬", route: "Chat"        },
+  { label: "Pipeline",         icon: "📊", route: "Pipeline"    },
+  { label: "Rota do Dia",      icon: "📍", route: "Route"       },
+  { label: "Prospecção",       icon: "🔍", route: "Prospecting" },
+  { label: "Agenda & Briefing",icon: "📅", route: "Meeting"     },
+  { label: "Farmer & Carteira",icon: "🌱", route: "Farmer"      },
 ];
 
 function Sidebar({ visible, onClose, currentRoute, onNavigate }: {
@@ -88,7 +106,7 @@ function Sidebar({ visible, onClose, currentRoute, onNavigate }: {
       <Animated.View style={[S.sidebar, { paddingTop: insets.top + 20, transform: [{ translateX: slideX }] }]}>
         <View style={S.drawerHeader}>
           <Text style={S.drawerBrand}>Sleek CRM</Text>
-          <Text style={S.drawerUser}>Agente Autônomo Ativo</Text>
+          <Text style={S.drawerUser}>Vendas Autônomas</Text>
         </View>
         <ScrollView showsVerticalScrollIndicator={false}>
           {MENU_ITEMS.map((item) => {
@@ -100,6 +118,7 @@ function Sidebar({ visible, onClose, currentRoute, onNavigate }: {
                 activeOpacity={0.7}
                 onPress={() => { onClose(); onNavigate(item.route); }}
               >
+                <Text style={S.drawerItemIcon}>{item.icon}</Text>
                 <Text style={[S.drawerItemText, active && S.drawerItemTextActive]}>{item.label}</Text>
               </TouchableOpacity>
             );
@@ -240,12 +259,75 @@ function PipelineView({ onMenu }: { onMenu: () => void }) {
   );
 }
 
+// ─── Screen: Route ────────────────────────────────────────────────────────────
+function RouteView({ onMenu }: { onMenu: () => void }) {
+  const insets = useSafeAreaInsets();
+  const [confirmed, setConfirmed] = useState(false);
+
+  return (
+    <View style={{ flex: 1 }}>
+      <TopBar title="Rota Otimizada 📍" subtitle="PLANEJAMENTO DIÁRIO" onMenu={onMenu} />
+
+      {/* Map placeholder */}
+      <View style={S.mapPreview}>
+        <Text style={S.mapText}>Visualização do Trajeto no Mapa</Text>
+        <Text style={S.mapSubText}>4 paradas • 32 min total de deslocamento</Text>
+      </View>
+
+      <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
+        <Text style={[S.sectionLabel, { paddingHorizontal: 20, marginBottom: 16 }]}>CRONOGRAMA DO DIA</Text>
+        {DAILY_ROUTE.map((item, index) => {
+          const isLast = index === DAILY_ROUTE.length - 1;
+          return (
+            <View key={item.id} style={S.timelineRow}>
+              {/* Timeline sidebar */}
+              <View style={S.timelineSide}>
+                <Text style={S.timelineTime}>{item.time}</Text>
+                <View style={[S.timelineDot, item.status === "Confirmado" ? S.dotConfirmed : S.dotSuggested]} />
+                {!isLast && <View style={S.timelineLine} />}
+              </View>
+              {/* Event card */}
+              <View style={S.eventCard}>
+                <View style={S.eventHead}>
+                  <Text style={S.eventType}>{item.type}</Text>
+                  <Text style={S.travelTime}>🚗 {item.travelTime}</Text>
+                </View>
+                <Text style={S.eventTitle}>{item.title}</Text>
+                <Text style={S.eventAddress}>{item.address}</Text>
+                {item.status === "Sugerido" && !confirmed && (
+                  <View style={S.suggestionBadge}>
+                    <Text style={S.suggestionText}>✨ Sugestão da IA</Text>
+                  </View>
+                )}
+              </View>
+            </View>
+          );
+        })}
+        <View style={{ height: 100 }} />
+      </ScrollView>
+
+      {/* FAB */}
+      <View style={[S.fabContainer, { bottom: insets.bottom + 20 }]}>
+        {!confirmed ? (
+          <TouchableOpacity style={S.confirmBtn} onPress={() => setConfirmed(true)} activeOpacity={0.8}>
+            <Text style={S.confirmBtnText}>Confirmar Rota do Dia 🚀</Text>
+          </TouchableOpacity>
+        ) : (
+          <TouchableOpacity style={[S.confirmBtn, S.startBtn]} activeOpacity={0.8}>
+            <Text style={[S.confirmBtnText, { color: "#090A0F" }]}>Iniciar Navegação Waze/Maps</Text>
+          </TouchableOpacity>
+        )}
+      </View>
+    </View>
+  );
+}
+
 // ─── Screen: Prospecting ─────────────────────────────────────────────────────
 function ProspectingView({ onMenu }: { onMenu: () => void }) {
-  const [tab,        setTab]        = useState<(typeof PROSPECT_TABS)[number]>("Busca Manual");
-  const [segment,    setSegment]    = useState("");
-  const [city,       setCity]       = useState("");
-  const [scanning,   setScanning]   = useState(false);
+  const [tab,      setTab]      = useState<(typeof PROSPECT_TABS)[number]>("Busca Manual");
+  const [segment,  setSegment]  = useState("");
+  const [city,     setCity]     = useState("");
+  const [scanning, setScanning] = useState(false);
 
   const scan = () => {
     if (!segment || !city) return;
@@ -302,11 +384,85 @@ function ProspectingView({ onMenu }: { onMenu: () => void }) {
   );
 }
 
+// ─── Screen: Meeting ─────────────────────────────────────────────────────────
+function MeetingView({ onMenu }: { onMenu: () => void }) {
+  const [selected, setSelected] = useState<MeetingItem | null>(null);
+
+  const statusColor = (s: string) =>
+    s === "Confirmado" ? "#38A169" : s === "Pendente" ? "#00E5FF" : "#4E5366";
+
+  return (
+    <View style={{ flex: 1 }}>
+      <TopBar title="Agenda & Briefing" subtitle="HOJE" onMenu={onMenu} />
+
+      {/* Date strip */}
+      <View style={S.dateStrip}>
+        {["Seg 21","Ter 22","Qua 23","Qui 24","Sex 25"].map((d) => {
+          const active = d === "Sex 25";
+          return (
+            <TouchableOpacity key={d} style={[S.dateChip, active && S.dateChipActive]} activeOpacity={0.7}>
+              <Text style={[S.dateChipText, active && S.dateChipTextActive]}>{d}</Text>
+            </TouchableOpacity>
+          );
+        })}
+      </View>
+
+      <FlatList
+        data={MEETINGS}
+        keyExtractor={(i) => i.id}
+        contentContainerStyle={S.list}
+        renderItem={({ item }) => (
+          <TouchableOpacity style={S.meetCard} onPress={() => setSelected(item)} activeOpacity={0.7}>
+            <View style={S.meetTimeCol}>
+              <Text style={S.meetTime}>{item.time}</Text>
+              <View style={[S.meetDot, { backgroundColor: statusColor(item.status) }]} />
+            </View>
+            <View style={{ flex: 1 }}>
+              <View style={S.cardHead}>
+                <Text style={[S.cardName, { flex: 1 }]} numberOfLines={1}>{item.title}</Text>
+                <View style={[S.statusChip, { borderColor: statusColor(item.status) + "44", backgroundColor: statusColor(item.status) + "11" }]}>
+                  <Text style={[S.statusChipText, { color: statusColor(item.status) }]}>{item.status}</Text>
+                </View>
+              </View>
+              <Text style={S.cardSub}>{item.company} · {item.type}</Text>
+            </View>
+          </TouchableOpacity>
+        )}
+      />
+
+      {/* Briefing bottom sheet */}
+      <Modal visible={selected !== null} animationType="slide" transparent onRequestClose={() => setSelected(null)}>
+        <TouchableOpacity style={S.overlay} activeOpacity={1} onPress={() => setSelected(null)}>
+          <View style={S.sheet}>
+            <View style={S.handle} />
+            {selected && (
+              <>
+                <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 4 }}>
+                  <Text style={[S.sheetCompany, { flex: 1 }]}>{selected.company} · {selected.time}</Text>
+                </View>
+                <Text style={S.sheetName}>{selected.title}</Text>
+                <View style={S.briefingBox}>
+                  <Text style={S.briefingLabel}>📋 BRIEFING DA IA</Text>
+                  <Text style={S.briefingText}>{selected.prep}</Text>
+                </View>
+                <View style={S.actionRow}>
+                  <TouchableOpacity style={S.actionBtn}><Text style={S.actionBtnText}>Iniciar Reunião</Text></TouchableOpacity>
+                  <TouchableOpacity style={[S.actionBtn, S.actionBtnSec]}><Text style={S.actionBtnSecText}>Reagendar</Text></TouchableOpacity>
+                </View>
+              </>
+            )}
+          </View>
+        </TouchableOpacity>
+      </Modal>
+    </View>
+  );
+}
+
 // ─── Screen: Farmer ──────────────────────────────────────────────────────────
 function FarmerView({ onMenu }: { onMenu: () => void }) {
-  const [tab,         setTab]         = useState<(typeof FARMER_TABS)[number]>("Minha Carteira");
-  const [analyzing,   setAnalyzing]   = useState(false);
-  const [report,      setReport]      = useState<{ healthScore: string; churnPrevented: string; expansionOpportunity: string } | null>(null);
+  const [tab,       setTab]       = useState<(typeof FARMER_TABS)[number]>("Minha Carteira");
+  const [analyzing, setAnalyzing] = useState(false);
+  const [report,    setReport]    = useState<{ healthScore: string; churnPrevented: string; expansionOpportunity: string } | null>(null);
   const displayed = tab === "Alertas" ? CLIENTS.filter((c) => c.status === "Atenção") : CLIENTS;
 
   return (
@@ -376,31 +532,28 @@ function FarmerView({ onMenu }: { onMenu: () => void }) {
   );
 }
 
-// ─── Root (unified app) ───────────────────────────────────────────────────────
+// ─── Root ─────────────────────────────────────────────────────────────────────
 export default function PreviewUnifiedScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const [route,   setRoute]   = useState<Route>("Chat");
   const [sidebar, setSidebar] = useState(false);
-
   const openMenu = () => setSidebar(true);
 
   return (
     <View style={S.root}>
       <StatusBar barStyle="light-content" backgroundColor="#090A0F" />
-
-      {/* Back button */}
       <TouchableOpacity style={[S.backAbsolute, { top: insets.top + 8 }]} onPress={() => router.back()} activeOpacity={0.7}>
         <Text style={{ color: "#8F94A8", fontSize: 12 }}>✕ Voltar</Text>
       </TouchableOpacity>
 
-      {/* Active screen */}
       {route === "Chat"        && <ChatView        onMenu={openMenu} />}
       {route === "Pipeline"    && <PipelineView    onMenu={openMenu} />}
+      {route === "Route"       && <RouteView       onMenu={openMenu} />}
       {route === "Prospecting" && <ProspectingView onMenu={openMenu} />}
+      {route === "Meeting"     && <MeetingView     onMenu={openMenu} />}
       {route === "Farmer"      && <FarmerView      onMenu={openMenu} />}
 
-      {/* Sidebar */}
       <Sidebar visible={sidebar} onClose={() => setSidebar(false)} currentRoute={route} onNavigate={setRoute} />
     </View>
   );
@@ -412,14 +565,12 @@ const S = StyleSheet.create({
 
   backAbsolute: { position: "absolute", right: 16, zIndex: 30, backgroundColor: "rgba(255,255,255,0.04)", borderRadius: 10, borderWidth: 1, borderColor: "rgba(255,255,255,0.06)", paddingHorizontal: 12, paddingVertical: 6 },
 
-  // Top bar
   topBar: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", paddingHorizontal: 16, paddingBottom: 14 },
   iconBtn: { width: 42, height: 42, borderRadius: 12, backgroundColor: "rgba(255,255,255,0.03)", borderWidth: 1, borderColor: "rgba(255,255,255,0.05)", alignItems: "center", justifyContent: "center" },
   topIconText: { color: "#FFFFFF", fontSize: 18 },
   topSubtitle: { fontSize: 11, color: "#8F94A8", fontWeight: "600", letterSpacing: 0.5, textTransform: "uppercase" },
   topTitle: { fontSize: 22, fontWeight: "700", color: "#FFFFFF", letterSpacing: -0.5 },
 
-  // Tabs
   tabsWrapper: { borderBottomWidth: 1, borderColor: "#161822" },
   tabsScroll: { paddingHorizontal: 20, paddingBottom: 12 },
   tabBtn: { marginRight: 24, paddingBottom: 6, position: "relative" },
@@ -427,7 +578,6 @@ const S = StyleSheet.create({
   tabTextActive: { color: "#FFFFFF", fontWeight: "700" },
   tabLine: { position: "absolute", bottom: -13, left: 0, right: 0, height: 2, backgroundColor: "#00E5FF", borderRadius: 1 },
 
-  // Cards
   list: { padding: 20 },
   card: { backgroundColor: "#161822", borderRadius: 16, padding: 18, marginBottom: 14, borderWidth: 1, borderColor: "#242736" },
   cardHead: { flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 4 },
@@ -448,10 +598,10 @@ const S = StyleSheet.create({
   healthText: { fontSize: 11, color: "#38A169", fontWeight: "600" },
   healthTextRisk: { color: "#E93E3E" },
 
-  // Form
   form: { padding: 20 },
   label: { fontSize: 11, color: "#8F94A8", fontWeight: "600", letterSpacing: 0.8, marginBottom: 8 },
   label2: { fontSize: 9, color: "#4E5366", fontWeight: "700", letterSpacing: 0.5, marginBottom: 4 },
+  sectionLabel: { fontSize: 12, color: "#8F94A8", fontWeight: "700", letterSpacing: 0.8 },
   input: { backgroundColor: "#161822", height: 54, borderRadius: 12, paddingHorizontal: 16, color: "#FFFFFF", fontSize: 15, borderWidth: 1, borderColor: "#242736", marginBottom: 20 },
   primaryBtn: { backgroundColor: "#FFFFFF", height: 56, borderRadius: 14, alignItems: "center", justifyContent: "center", marginBottom: 16 },
   primaryBtnDisabled: { backgroundColor: "#161822", borderWidth: 1, borderColor: "#242736", opacity: 0.5 },
@@ -460,7 +610,6 @@ const S = StyleSheet.create({
   empty: { alignItems: "center", justifyContent: "center", paddingVertical: 60 },
   emptyText: { color: "#4E5366", fontSize: 14 },
 
-  // Farmer AI
   aiHeroCard: { backgroundColor: "#161822", borderRadius: 20, padding: 22, borderWidth: 1, borderColor: "#242736", marginBottom: 20 },
   aiHeroTitle: { fontSize: 18, fontWeight: "700", color: "#FFFFFF", marginBottom: 8 },
   aiHeroDesc: { fontSize: 13, color: "#8F94A8", lineHeight: 20, marginBottom: 24 },
@@ -468,20 +617,18 @@ const S = StyleSheet.create({
   insightTitle: { fontSize: 14, fontWeight: "600", color: "#FFFFFF", marginBottom: 10 },
   insightText: { fontSize: 13, color: "#8F94A8", lineHeight: 18, marginBottom: 6 },
 
-  // Bottom sheet
   overlay: { flex: 1, backgroundColor: "rgba(0,0,0,0.6)", justifyContent: "flex-end" },
   sheet: { backgroundColor: "#11131A", borderTopLeftRadius: 24, borderTopRightRadius: 24, paddingHorizontal: 24, paddingTop: 12, paddingBottom: 40, borderTopWidth: 1, borderColor: "#242736" },
   handle: { width: 36, height: 4, backgroundColor: "#242736", borderRadius: 2, alignSelf: "center", marginBottom: 24 },
   sheetCompany: { fontSize: 13, color: "#00E5FF", fontWeight: "600", textTransform: "uppercase", letterSpacing: 1, marginBottom: 4 },
   sheetName: { fontSize: 24, fontWeight: "700", color: "#FFFFFF" },
   sheetValue: { fontSize: 32, fontWeight: "800", color: "#FFFFFF", marginTop: 12, marginBottom: 30 },
-  actionRow: { flexDirection: "row", gap: 12 },
+  actionRow: { flexDirection: "row", gap: 12, marginTop: 20 },
   actionBtn: { flex: 1, backgroundColor: "#FFFFFF", height: 52, borderRadius: 14, alignItems: "center", justifyContent: "center" },
   actionBtnText: { color: "#090A0F", fontWeight: "600", fontSize: 15 },
   actionBtnSec: { backgroundColor: "transparent", borderWidth: 1, borderColor: "#242736" },
   actionBtnSecText: { color: "#FFFFFF", fontWeight: "600", fontSize: 15 },
 
-  // Chat
   chatArea: { padding: 20, paddingBottom: 10 },
   chatAreaCenter: { flex: 1, justifyContent: "center", alignItems: "center" },
   welcomeWrap: { alignItems: "center" },
@@ -501,14 +648,55 @@ const S = StyleSheet.create({
   sendBtn: { width: 38, height: 38, borderRadius: 19, backgroundColor: "#FFFFFF", alignItems: "center", justifyContent: "center" },
   sendIcon: { color: "#090A0F", fontSize: 14, fontWeight: "700" },
 
+  // Route screen
+  mapPreview: { height: 160, marginHorizontal: 20, borderRadius: 16, backgroundColor: "#161822", marginBottom: 20, alignItems: "center", justifyContent: "center", borderWidth: 1, borderColor: "#242736" },
+  mapText: { color: "#4E5366", fontWeight: "600", fontSize: 14 },
+  mapSubText: { color: "#00E5FF", fontSize: 12, marginTop: 4, fontWeight: "500" },
+  timelineRow: { flexDirection: "row", paddingHorizontal: 20, marginBottom: 4 },
+  timelineSide: { width: 50, alignItems: "center", marginRight: 12 },
+  timelineTime: { fontSize: 12, color: "#FFFFFF", fontWeight: "600", marginBottom: 4 },
+  timelineDot: { width: 12, height: 12, borderRadius: 6, borderWidth: 2, borderColor: "#090A0F", zIndex: 2 },
+  dotConfirmed: { backgroundColor: "#38A169" },
+  dotSuggested: { backgroundColor: "#00E5FF" },
+  timelineLine: { width: 2, backgroundColor: "#242736", flex: 1, marginTop: -2, marginBottom: -4 },
+  eventCard: { flex: 1, backgroundColor: "#161822", borderRadius: 14, padding: 16, marginBottom: 16, borderWidth: 1, borderColor: "#242736" },
+  eventHead: { flexDirection: "row", justifyContent: "space-between", marginBottom: 6 },
+  eventType: { fontSize: 11, color: "#8F94A8", fontWeight: "600", textTransform: "uppercase", letterSpacing: 0.5 },
+  travelTime: { fontSize: 11, color: "#4E5366", fontWeight: "500" },
+  eventTitle: { fontSize: 16, color: "#FFFFFF", fontWeight: "600", marginBottom: 2 },
+  eventAddress: { fontSize: 13, color: "#8F94A8" },
+  suggestionBadge: { marginTop: 10, alignSelf: "flex-start", backgroundColor: "rgba(0,229,255,0.1)", paddingHorizontal: 8, paddingVertical: 4, borderRadius: 6 },
+  suggestionText: { color: "#00E5FF", fontSize: 11, fontWeight: "600" },
+  fabContainer: { position: "absolute", left: 20, right: 20, zIndex: 10 },
+  confirmBtn: { backgroundColor: "#161822", height: 56, borderRadius: 16, alignItems: "center", justifyContent: "center", borderWidth: 1, borderColor: "#00E5FF", shadowColor: "#00E5FF", shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.2, shadowRadius: 8, elevation: 6 },
+  confirmBtnText: { color: "#FFFFFF", fontSize: 16, fontWeight: "700" },
+  startBtn: { backgroundColor: "#FFFFFF", borderColor: "#FFFFFF" },
+
+  // Meeting screen
+  dateStrip: { flexDirection: "row", justifyContent: "space-between", paddingHorizontal: 20, paddingBottom: 16 },
+  dateChip: { paddingHorizontal: 12, paddingVertical: 8, borderRadius: 12, backgroundColor: "#161822", borderWidth: 1, borderColor: "#242736" },
+  dateChipActive: { backgroundColor: "#00E5FF22", borderColor: "#00E5FF" },
+  dateChipText: { fontSize: 12, color: "#4E5366", fontWeight: "600" },
+  dateChipTextActive: { color: "#00E5FF" },
+  meetCard: { flexDirection: "row", backgroundColor: "#161822", borderRadius: 16, padding: 16, marginBottom: 12, borderWidth: 1, borderColor: "#242736" },
+  meetTimeCol: { width: 44, alignItems: "center", marginRight: 14, gap: 6 },
+  meetTime: { fontSize: 13, color: "#FFFFFF", fontWeight: "700" },
+  meetDot: { width: 8, height: 8, borderRadius: 4 },
+  statusChip: { paddingHorizontal: 8, paddingVertical: 3, borderRadius: 6, borderWidth: 1 },
+  statusChipText: { fontSize: 10, fontWeight: "700" },
+  briefingBox: { backgroundColor: "rgba(0,229,255,0.04)", borderRadius: 12, padding: 16, borderWidth: 1, borderColor: "rgba(0,229,255,0.15)", marginTop: 16, marginBottom: 4 },
+  briefingLabel: { fontSize: 10, color: "#00E5FF", fontWeight: "700", letterSpacing: 1, marginBottom: 8 },
+  briefingText: { fontSize: 14, color: "#E2E8F0", lineHeight: 22 },
+
   // Sidebar
   sidebarOverlay: { ...StyleSheet.absoluteFillObject, backgroundColor: "rgba(0,0,0,0.6)", zIndex: 10 },
-  sidebar: { position: "absolute", top: 0, left: 0, bottom: 0, width: SIDEBAR_W, backgroundColor: "#11131A", borderRightWidth: 1, borderColor: "#242736", paddingHorizontal: 16, zIndex: 20 },
-  drawerHeader: { paddingBottom: 20, borderBottomWidth: 1, borderColor: "#242736", marginBottom: 16 },
-  drawerBrand: { color: "#FFFFFF", fontSize: 20, fontWeight: "700", letterSpacing: -0.5 },
-  drawerUser: { color: "#00E5FF", fontSize: 12, fontWeight: "500", marginTop: 4 },
-  drawerItem: { height: 52, borderRadius: 12, justifyContent: "center", paddingHorizontal: 16, marginBottom: 8, backgroundColor: "rgba(255,255,255,0.02)", borderWidth: 1, borderColor: "rgba(255,255,255,0.03)" },
-  drawerItemActive: { backgroundColor: "rgba(255,255,255,0.06)", borderColor: "rgba(255,255,255,0.08)" },
+  sidebar: { position: "absolute", top: 0, left: 0, bottom: 0, width: SIDEBAR_W, backgroundColor: "#11131A", borderRightWidth: 1, borderColor: "#242736", paddingHorizontal: 12, zIndex: 20 },
+  drawerHeader: { paddingVertical: 28, paddingHorizontal: 10, borderBottomWidth: 1, borderColor: "#242736", marginBottom: 10 },
+  drawerBrand: { color: "#FFFFFF", fontSize: 22, fontWeight: "800", letterSpacing: -0.5 },
+  drawerUser: { color: "#00E5FF", fontSize: 12, fontWeight: "600", marginTop: 4, letterSpacing: 0.5 },
+  drawerItem: { flexDirection: "row", alignItems: "center", height: 50, borderRadius: 12, paddingHorizontal: 14, marginBottom: 6 },
+  drawerItemActive: { backgroundColor: "rgba(255,255,255,0.06)" },
+  drawerItemIcon: { fontSize: 16, marginRight: 12 },
   drawerItemText: { color: "#8F94A8", fontSize: 15, fontWeight: "500" },
   drawerItemTextActive: { color: "#FFFFFF", fontWeight: "700" },
 });

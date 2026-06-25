@@ -1,0 +1,143 @@
+import React, { useState } from 'react';
+import { 
+  StyleSheet, 
+  Text, 
+  View, 
+  FlatList, 
+  TouchableOpacity, 
+  SafeAreaView, 
+  ScrollView
+} from 'react-native';
+
+const DAILY_ROUTE = [
+  { id: '1', type: 'Reunião', title: 'Diretriz Comercial', time: '09:00', address: 'Av. Paulista, 1000', status: 'Confirmado', travelTime: '15 min' },
+  { id: '2', type: 'Visita', title: 'Lotus Cosméticos', time: '11:30', address: 'Rua Augusta, 500', status: 'Sugerido', travelTime: '10 min' },
+  { id: '3', type: 'Almoço', title: 'Restaurante Spot', time: '13:00', address: 'Alameda Ministro Rocha Azevedo', status: 'Sugerido', travelTime: '5 min' },
+  { id: '4', type: 'Prospecção', title: 'Shopping Cidade SP', time: '15:00', address: 'Av. Paulista, 1230', status: 'Opcional', travelTime: '8 min' },
+];
+
+export default function RouteScreen() {
+  const [routeConfirmed, setRouteConfirmed] = useState(false);
+
+  const renderRouteItem = ({ item, index }) => {
+    const isFirst = index === 0;
+    const isLast = index === DAILY_ROUTE.length - 1;
+
+    return (
+      <View style={styles.timelineRow}>
+        {/* LINHA DO TEMPO VISUAL */}
+        <View style={styles.timelineSidebar}>
+          <Text style={styles.timelineTime}>{item.time}</Text>
+          <View style={[styles.timelineDot, item.status === 'Confirmado' ? styles.dotConfirmed : styles.dotSuggested]} />
+          {!isLast && <View style={styles.timelineLine} />}
+        </View>
+
+        {/* CARD DO EVENTO */}
+        <View style={styles.eventCard}>
+          <View style={styles.cardHeader}>
+            <Text style={styles.eventType}>{item.type}</Text>
+            <Text style={styles.travelTime}>🚗 {item.travelTime}</Text>
+          </View>
+          <Text style={styles.eventTitle}>{item.title}</Text>
+          <Text style={styles.eventAddress}>{item.address}</Text>
+          
+          {item.status === 'Sugerido' && !routeConfirmed && (
+            <View style={styles.suggestionBadge}>
+              <Text style={styles.suggestionText}>✨ Sugestão da IA</Text>
+            </View>
+          )}
+        </View>
+      </View>
+    );
+  };
+
+  return (
+    <SafeAreaView style={styles.container}>
+      {/* HEADER */}
+      <View style={styles.header}>
+        <Text style={styles.greeting}>Planejamento Diário</Text>
+        <Text style={styles.stageTotal}>Rota Otimizada 📍</Text>
+      </View>
+
+      {/* MAPA SIMULADO (VISUAL PLACEHOLDER) */}
+      <View style={styles.mapPreview}>
+        <View style={styles.mapOverlay}>
+          <Text style={styles.mapText}>Visualização do Trajeto no Mapa</Text>
+          <Text style={styles.mapSubText}>4 paradas • 32 min total de deslocamento</Text>
+        </View>
+      </View>
+
+      {/* LISTA DA ROTA */}
+      <ScrollView style={styles.scrollContainer}>
+        <Text style={styles.sectionTitle}>CRONOGRAMA DO DIA</Text>
+        <FlatList
+          data={DAILY_ROUTE}
+          keyExtractor={(item) => item.id}
+          renderItem={renderRouteItem}
+          scrollEnabled={false} // Rola com o ScrollView pai
+          contentContainerStyle={styles.listContent}
+        />
+        
+        <View style={{ height: 100 }} /> 
+      </ScrollView>
+
+      {/* FAB: BOTÃO FLUTUANTE DE CONFIRMAÇÃO */}
+      {!routeConfirmed ? (
+        <View style={styles.fabContainer}>
+          <TouchableOpacity 
+            style={styles.confirmButton} 
+            activeOpacity={0.8}
+            onPress={() => setRouteConfirmed(true)}
+          >
+            <Text style={styles.confirmButtonText}>Confirmar Rota do Dia 🚀</Text>
+          </TouchableOpacity>
+        </View>
+      ) : (
+        <View style={styles.fabContainer}>
+          <TouchableOpacity style={[styles.confirmButton, styles.startButton]} activeOpacity={0.8}>
+            <Text style={[styles.confirmButtonText, { color: '#090A0F' }]}>Iniciar Navegação Waze/Maps</Text>
+          </TouchableOpacity>
+        </View>
+      )}
+    </SafeAreaView>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: { flex: 1, backgroundColor: '#090A0F' },
+  header: { paddingHorizontal: 20, paddingTop: 20, paddingBottom: 15 },
+  greeting: { fontSize: 14, color: '#8F94A8', fontWeight: '500', letterSpacing: 0.5, textTransform: 'uppercase' },
+  stageTotal: { fontSize: 28, fontWeight: '700', color: '#FFFFFF', letterSpacing: -0.5, marginTop: 4 },
+  
+  mapPreview: { height: 160, marginHorizontal: 20, borderRadius: 16, backgroundColor: '#161822', marginBottom: 20, justifyContent: 'center', alignItems: 'center', borderWidth: 1, borderColor: '#242736', overflow: 'hidden' },
+  mapOverlay: { alignItems: 'center' },
+  mapText: { color: '#4E5366', fontWeight: '600', fontSize: 14 },
+  mapSubText: { color: '#00E5FF', fontSize: 12, marginTop: 4, fontWeight: '500' },
+
+  scrollContainer: { flex: 1 },
+  sectionTitle: { paddingHorizontal: 20, fontSize: 12, color: '#8F94A8', fontWeight: '700', letterSpacing: 0.8, marginBottom: 16 },
+  listContent: { paddingHorizontal: 20 },
+  
+  timelineRow: { flexDirection: 'row', marginBottom: 4 },
+  timelineSidebar: { width: 50, alignItems: 'center', marginRight: 12 },
+  timelineTime: { fontSize: 12, color: '#FFFFFF', fontWeight: '600', marginBottom: 4 },
+  timelineDot: { width: 12, height: 12, borderRadius: 6, borderWidth: 2, borderColor: '#090A0F', zIndex: 2 },
+  dotConfirmed: { backgroundColor: '#38A169' },
+  dotSuggested: { backgroundColor: '#00E5FF' },
+  timelineLine: { width: 2, backgroundColor: '#242736', flex: 1, marginTop: -2, marginBottom: -4 },
+  
+  eventCard: { flex: 1, backgroundColor: '#161822', borderRadius: 14, padding: 16, marginBottom: 16, borderWidth: 1, borderColor: '#242736' },
+  cardHeader: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 6 },
+  eventType: { fontSize: 11, color: '#8F94A8', fontWeight: '600', textTransform: 'uppercase', letterSpacing: 0.5 },
+  travelTime: { fontSize: 11, color: '#4E5366', fontWeight: '500' },
+  eventTitle: { fontSize: 16, color: '#FFFFFF', fontWeight: '600', marginBottom: 2 },
+  eventAddress: { fontSize: 13, color: '#8F94A8' },
+  
+  suggestionBadge: { marginTop: 10, alignSelf: 'flex-start', backgroundColor: 'rgba(0, 229, 255, 0.1)', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 6 },
+  suggestionText: { color: '#00E5FF', fontSize: 11, fontWeight: '600' },
+
+  fabContainer: { position: 'absolute', bottom: 30, left: 20, right: 20 },
+  confirmButton: { backgroundColor: '#161822', height: 56, borderRadius: 16, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: '#00E5FF', shadowColor: "#00E5FF", shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.2, shadowRadius: 8, elevation: 6 },
+  startButton: { backgroundColor: '#FFFFFF', borderColor: '#FFFFFF' },
+  confirmButtonText: { color: '#FFFFFF', fontSize: 16, fontWeight: '700' }
+});

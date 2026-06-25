@@ -1,0 +1,83 @@
+import 'react-native-gesture-handler';
+import React from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, StatusBar } from 'react-native';
+import { createDrawerNavigator, DrawerContentScrollView } from '@react-navigation/drawer';
+import { NavigationContainer } from '@react-navigation/native';
+
+// IMPORTAÇÃO DAS TELAS QUE CRIAMOS (Certifique-se que os arquivos existem no Replit)
+import PipelineScreen from './PipelineScreen';     // O arquivo do CRM/Kanban
+import ProspectingScreen from './ProspectingScreen'; // O arquivo do Maps/Robô
+import FarmerScreen from './FarmerScreen';         // O arquivo da Carteira/Pós-venda
+import MeetingScreen from './MeetingScreen';       // O arquivo da Agenda/Briefing
+import RouteScreen from './RouteScreen';           // O arquivo da Rota Inteligente que acabamos de criar
+
+// TELA DO CHAT (Mantida aqui por ser a Home principal)
+import ChatScreen from './ChatScreen'; // (Se você separou o chat, importe. Se não, mantenha o código do Chat aqui)
+
+const Drawer = createDrawerNavigator();
+
+// CUSTOM DRAWER (MENU LATERAL)
+function CustomDrawerContent(props) {
+  const menuItems = [
+    { label: '💬 Chat IA', route: 'Chat', icon: '✨' },
+    { label: '📊 Pipeline', route: 'Pipeline', icon: '💼' },
+    { label: '📍 Rota do Dia', route: 'Route', icon: '🗺️' },
+    { label: '🔍 Prospecção', route: 'Prospecting', icon: '🤖' },
+    { label: '📅 Agenda & Briefing', route: 'Meeting', icon: '🗓️' },
+    { label: '🌱 Farmer & Carteira', route: 'Farmer', icon: '📈' },
+  ];
+
+  return (
+    <DrawerContentScrollView {...props} style={styles.drawerContainer}>
+      <View style={styles.drawerHeader}>
+        <Text style={styles.drawerBrand}>Sleek CRM</Text>
+        <Text style={styles.drawerUser}>Vendas Autônomas</Text>
+      </View>
+      {menuItems.map((item, index) => (
+        <TouchableOpacity 
+          key={index} 
+          style={styles.drawerItem} 
+          onPress={() => props.navigation.navigate(item.route)}
+        >
+          <Text style={styles.drawerItemIcon}>{item.icon}</Text>
+          <Text style={styles.drawerItemText}>{item.label}</Text>
+        </TouchableOpacity>
+      ))}
+    </DrawerContentScrollView>
+  );
+}
+
+export default function App() {
+  return (
+    <NavigationContainer>
+      <StatusBar barStyle="light-content" backgroundColor="#090A0F" />
+      <Drawer.Navigator
+        initialRouteName="Chat"
+        drawerContent={(props) => <CustomDrawerContent {...props} />}
+        screenOptions={{
+          headerShown: false, // Removemos o header padrão para usar os nossos customizados
+          drawerStyle: { backgroundColor: '#11131A', width: 280 },
+          swipeEnabled: true,
+          drawerType: 'front',
+        }}
+      >
+        <Drawer.Screen name="Chat" component={ChatScreen} />
+        <Drawer.Screen name="Pipeline" component={PipelineScreen} />
+        <Drawer.Screen name="Route" component={RouteScreen} />
+        <Drawer.Screen name="Prospecting" component={ProspectingScreen} />
+        <Drawer.Screen name="Meeting" component={MeetingScreen} />
+        <Drawer.Screen name="Farmer" component={FarmerScreen} />
+      </Drawer.Navigator>
+    </NavigationContainer>
+  );
+}
+
+const styles = StyleSheet.create({
+  drawerContainer: { flex: 1, backgroundColor: '#11131A', paddingHorizontal: 12 },
+  drawerHeader: { paddingVertical: 40, paddingHorizontal: 10, borderBottomWidth: 1, borderColor: '#242736', marginBottom: 10 },
+  drawerBrand: { color: '#FFFFFF', fontSize: 22, fontWeight: '800', letterSpacing: -0.5 },
+  drawerUser: { color: '#00E5FF', fontSize: 12, fontWeight: '600', marginTop: 4, letterSpacing: 0.5 },
+  drawerItem: { flexDirection: 'row', alignItems: 'center', height: 50, borderRadius: 12, paddingHorizontal: 14, marginBottom: 6 },
+  drawerItemIcon: { fontSize: 16, marginRight: 12 },
+  drawerItemText: { color: '#E2E8F0', fontSize: 15, fontWeight: '500' },
+});

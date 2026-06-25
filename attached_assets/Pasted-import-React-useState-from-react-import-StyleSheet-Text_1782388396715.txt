@@ -1,0 +1,195 @@
+import React, { useState } from 'react';
+import { 
+  StyleSheet, 
+  Text, 
+  View, 
+  FlatList, 
+  ScrollView, 
+  TouchableOpacity, 
+  SafeAreaView, 
+  Modal,
+  Switch
+} from 'react-native';
+
+const SCHEDULED_MEETINGS = [
+  { 
+    id: '1', 
+    client: 'Roberto Shinyashiki', 
+    company: 'Diretriz Comercial', 
+    time: 'Hoje, 14:00', 
+    aiSummary: 'O cliente demonstrou forte interesse em automação de funil. Ele reclamou que a equipe atual perde muitas mensagens no WhatsApp. Tem orçamento aprovado.',
+    painPoints: 'Perda de leads, falta de processos',
+    prepTip: 'Foques na nossa feature de Agente Autónomo que roda 24/7.'
+  },
+  { 
+    id: '2', 
+    client: 'Ananda Silveira', 
+    company: 'Lotus Cosméticos', 
+    time: 'Amanhã, 10:30', 
+    aiSummary: 'Abordagem fria feita pela IA no Maps. Ela aceitou a reunião apenas para entender o custo-benefício. Receptiva, mas focado em preço.',
+    painPoints: 'Precisa reduzir custo operacional',
+    prepTip: 'Demonstre o ROI rápido e o plano de entrada do nosso software.'
+  }
+];
+
+const MEETING_TABS = ['Próximas Reuniões', 'Configurar Robô'];
+
+export default function MeetingScreen() {
+  const [activeTab, setActiveTab] = useState('Próximas Reuniões');
+  const [selectedMeeting, setSelectedMeeting] = useState(null);
+
+  // Estados de Configuração da IA
+  const [aiActive, setAiActive] = useState(true);
+  const [selectedDays, setSelectedDays] = useState(['Seg', 'Ter', 'Qua', 'Qui', 'Sex']);
+  const [workHours, setWorkHours] = useState('09:00 às 18:00');
+
+  const toggleDay = (day) => {
+    if (selectedDays.includes(day)) {
+      setSelectedDays(selectedDays.filter(d => d !== day));
+    } else {
+      setSelectedDays([...selectedDays, day]);
+    }
+  };
+
+  const renderMeetingCard = ({ item }) => (
+    <TouchableOpacity 
+      activeOpacity={0.7} 
+      style={styles.card}
+      onPress={() => setSelectedMeeting(item)}
+    >
+      <View style={styles.cardHeader}>
+        <View>
+          <Text style={styles.clientName}>{item.client}</Text>
+          <Text style={styles.companyName}>{item.company}</Text>
+        </View>
+        <View style={styles.timeBadge}>
+          <Text style={styles.timeBadgeText}>{item.time}</Text>
+        </View>
+      </View>
+      
+      <View style={styles.aiBriefingPreview}>
+        <Text style={styles.briefingLabel}>🤖 RESUMO DA IA:</Text>
+        <Text style={styles.briefingText} numberOfLines={2}>
+          {item.aiSummary}
+        </Text>
+      </View>
+
+      <Text style={styles.tapPrompt}>Toque para ver o Briefing de Preparação →</Text>
+    </TouchableOpacity>
+  );
+
+  return (
+    <SafeAreaView style={styles.container}>
+      {/* HEADER DA TELA */}
+      <View style={styles.header}>
+        <Text style={styles.greeting}>Inteligência de Vendas</Text>
+        <Text style={styles.stageTotal}>Reuniões da IA</Text>
+      </View>
+
+      {/* ABAS DESIGN SYSTEM */}
+      <View style={styles.tabsWrapper}>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.tabsScroll}>
+          {MEETING_TABS.map((tab) => {
+            const isActive = activeTab === tab;
+            return (
+              <TouchableOpacity key={tab} activeOpacity={0.8} onPress={() => setActiveTab(tab)} style={styles.tabButton}>
+                <Text style={[styles.tabText, isActive && styles.activeTabText]}>{tab}</Text>
+                {isActive && <View style={styles.tabIndicator} />}
+              </TouchableOpacity>
+            );
+          })}
+        </ScrollView>
+      </View>
+
+      {/* ABA 1: LISTAGEM DE REUNIÕES AGENDADAS */}
+      {activeTab === 'Próximas Reuniões' && (
+        <FlatList
+          data={SCHEDULED_MEETINGS}
+          keyExtractor={(item) => item.id}
+          renderItem={renderMeetingCard}
+          contentContainerStyle={styles.listContent}
+        />
+      )}
+
+      {/* ABA 2: CONFIGURAÇÕES DA IA */}
+      {activeTab === 'Configurar Robô' && (
+        <ScrollView style={styles.configContainer}>
+          <View style={styles.configRow}>
+            <View>
+              <Text style={styles.configTitle}>Agendamento Autónomo</Text>
+              <Text style={styles.configSubtitle}>Permitir que a IA marque reuniões direto no Whats</Text>
+            </View>
+            <Switch 
+              value={aiActive} 
+              onValueChange={setAiActive}
+              trackColor={{ false: '#161822', true: '#00E5FF' }}
+              thumbColor={aiActive ? '#FFFFFF' : '#8F94A8'}
+            />
+          </View>
+
+          <Text style={styles.sectionLabel}>DIAS DISPONÍVEIS DA IA</Text>
+          <View style={styles.daysGrid}>
+            {['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'].map((day) => {
+              const isChosen = selectedDays.includes(day);
+              return (
+                <TouchableOpacity 
+                  key={day} 
+                  style={[styles.dayButton, isChosen && styles.dayButtonActive]}
+                  onPress={() => toggleDay(day)}
+                  activeOpacity={0.7}
+                >
+                  <Text style={[styles.dayButtonText, isChosen && styles.dayButtonTextActive]}>{day}</Text>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+
+          <Text style={styles.sectionLabel}>JANELA HORÁRIA DISPONÍVEL</Text>
+          <TouchableOpacity style={styles.timePickerButton} activeOpacity={0.7}>
+            <Text style={styles.timePickerText}>{workHours}</Text>
+            <Text style={styles.timePickerEdit}>Editar Janela 🗓️</Text>
+          </TouchableOpacity>
+
+          <Text style={styles.helperText}>
+            A IA analisará os intervalos ocupados na sua agenda nativa e oferecerá apenas os espaços livres dentro destas configurações.
+          </Text>
+        </ScrollView>
+      )}
+
+      {/* MODAL BOTTOM SHEET: BRIEFING COMPLETO PARA PREPARAÇÃO DE REUNIÃO */}
+      <Modal visible={selectedMeeting !== null} animationType="slide" transparent={true} onRequestClose={() => setSelectedMeeting(null)}>
+        <TouchableOpacity style={styles.modalOverlay} activeOpacity={1} onPress={() => setSelectedMeeting(null)}>
+          <View style={styles.bottomSheet} onStartShouldSetResponder={() => true}>
+            <View style={styles.dragIndicator} />
+            {selectedMeeting && (
+              <>
+                <Text style={styles.modalCompany}>{selectedMeeting.company}</Text>
+                <Text style={styles.modalClient}>{selectedMeeting.client}</Text>
+                <Text style={styles.modalTime}>🕒 {selectedMeeting.time}</Text>
+
+                <View style={styles.insightBox}>
+                  <Text style={styles.boxTitle}>🤖 Histórico da Conversa no WhatsApp</Text>
+                  <Text style={styles.boxContent}>{selectedMeeting.aiSummary}</Text>
+                </View>
+
+                <View style={styles.dangerBox}>
+                  <Text style={styles.dangerTitle}>🔥 Dores Críticas Identificadas</Text>
+                  <Text style={styles.boxContent}>{selectedMeeting.painPoints}</Text>
+                </View>
+
+                <View style={styles.guideBox}>
+                  <Text style={styles.guideTitle}>🎯 Direcionamento para Fechamento</Text>
+                  <Text style={styles.boxContent}>{selectedMeeting.prepTip}</Text>
+                </View>
+
+                <TouchableOpacity style={styles.closeButton} onPress={() => setSelectedMeeting(null)}>
+                  <Text style={styles.closeButtonText}>Fechar Preparação</Text>
+                </TouchableOpacity>
+              </>
+            )}
+          </View>
+        </TouchableOpacity>
+      </Modal>
+    </SafeAreaView>
+  );
+}
