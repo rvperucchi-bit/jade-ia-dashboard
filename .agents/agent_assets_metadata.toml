@@ -221,3 +221,9 @@ id = "dsD5mmSi38uP129Vxt0BJ"
 uri = "file://exports/relatorio-comercial-jade-2026-06-25.pdf"
 type = "pdf"
 title = "Relatório — Módulo Comercial JADE IA (25/06/2026)"
+
+[[outputs]]
+id = "Y2yLtI9Rcg0yK9A6gkQo1"
+uri = "file://exports/redesign-radar-buscar-leads.pdf"
+type = "pdf"
+title = "Resumo — Redesign Radar (Buscar Leads)"

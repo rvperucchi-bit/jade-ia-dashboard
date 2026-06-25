@@ -1,0 +1,50 @@
+{
+  "title": "Redesign da Tela Radar — \"Buscar Leads\"",
+  "subtitle": "App mobile JADE IA · Reescrita completa da tela de busca de empresas",
+  "date": "25/06/2026",
+  "output": "redesign-radar-buscar-leads.pdf",
+  "sections": [
+    {
+      "heading": "Objetivo",
+      "body": [
+        "Redesenhar a tela do Radar (Scanner) do app mobile seguindo a imagem de referência, com um visual mais limpo e premium, e incorporando os ajustes solicitados verbalmente pelo usuário."
+      ]
+    },
+    {
+      "heading": "O que foi feito",
+      "bullets": [
+        "Novo cabeçalho: botão voltar transparente (chevron), título \"Buscar leads\" e subtítulo \"Encontre empresas e estabelecimentos\".",
+        "Lupa no canto superior direito que abre/fecha uma barra de busca para filtrar resultados e histórico.",
+        "Abas \"Buscar\" e \"Histórico\" com sublinhado rosa na aba ativa e contador de buscas salvas.",
+        "Card \"O que você quer procurar hoje?\" com Segmento (lista), Cidade (seletor único cidade + UF com filtro de digitação) e Bairro opcional.",
+        "Seletor de raio/km removido da interface (mantido raio padrão de 5 km internamente para a busca).",
+        "Botão \"Buscar empresas\" e card informando as buscas restantes no mês, com atalho para a loja de pacotes.",
+        "Menu Comercial atualizado: item \"Radar\" renomeado para \"Buscar leads\" (rota inalterada)."
+      ]
+    },
+    {
+      "heading": "Histórico de buscas",
+      "bullets": [
+        "Cada busca com resultados é salva localmente (AsyncStorage), guardando segmento, cidade, bairro, quantidade de leads e horário.",
+        "Toque em um item do histórico re-executa a mesma busca automaticamente.",
+        "É possível remover itens individualmente ou limpar todo o histórico.",
+        "Estado vazio amigável com atalho para a primeira busca; limite de 30 buscas mais recentes."
+      ]
+    },
+    {
+      "heading": "Qualidade e validação",
+      "bullets": [
+        "Typecheck do pacote mobile executado com sucesso (sem erros).",
+        "Revisão de código (architect) aprovada com ressalvas; código morto da reescrita foi removido (imports, tipos e estados não usados).",
+        "Fluxos preservados: chamada à API /api/places/radar, adição de leads ao CRM e modais de limite e compra de buscas.",
+        "Tema escuro premium e identidade visual rosa mantidos."
+      ]
+    },
+    {
+      "heading": "Observações",
+      "body": [
+        "A geolocalização (GPS) foi retirada da interface conforme solicitado; a busca usa segmento, cidade e bairro. O item \"Scanner\" no menu de Operação foi mantido por estar fora do escopo desta tarefa."
+      ]
+    }
+  ]
+}

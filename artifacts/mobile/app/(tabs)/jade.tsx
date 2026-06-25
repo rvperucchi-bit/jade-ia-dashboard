@@ -61,7 +61,7 @@ const ACCORDION_SECTIONS: AccordionSection[] = [
     title: "Comercial",
     icon: "trending-up",
     items: [
-      { label: "Radar",         route: "/scanner" },
+      { label: "Buscar leads",  route: "/scanner" },
       { label: "Leads",         route: "/(tabs)/leads" },
       { label: "CRM",           route: "/crm" },
       { label: "Pipeline",      route: "/pipeline" },
