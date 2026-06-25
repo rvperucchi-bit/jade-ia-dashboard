@@ -1,0 +1,51 @@
+Olá! Preciso atualizar e reestruturar completamente a arquitetura de arquivos do meu aplicativo React Native (Expo Go) para que todas as telas antigas sejam substituídas pelas novas oficiais. Toda a interface visual deve seguir estritamente o guia de estilo unificado "Dark Premium" (modo escuro de alta fidelidade).
+
+Por favor, execute as configurações ambientais e reescreva os arquivos conforme as especificações detalhadas abaixo:
+
+1. CONFIGURAÇÃO DE DEPENDÊNCIAS DO EXPO:
+Garante que os seguintes pacotes estejam instalados e estáveis no package.json:
+- @react-navigation/native
+- @react-navigation/drawer
+- react-native-gesture-handler
+- react-native-reanimated
+- expo-linking
+No arquivo 'babel.config.js', certifique-se de incluir a linha obrigatória:
+plugins: ['react-native-reanimated/plugin']
+
+2. SISTEMA DE DESIGN KIT E TOKENS DE CORES DARK PREMIUM:
+Aplique estes padrões exatos de estilização (StyleSheet) em todos os novos componentes:
+- Background Geral (Fundo das telas): #090A0F
+- Surface (Fundo de cards, inputs e menus): #161822
+- Border (Bordas ultrafinas de contorno): #242736
+- Destaque Neon Principal (Linhas e seletores): #00E5FF
+- Texto Primário (Branco puro para escrita do menu e títulos): #FFFFFF
+- Texto Secundário (Tons de cinza azulado para apoio): #8F94A8
+
+3. ESTRUTURAÇÃO DO ARQUIVO CENTRAL (App.js):
+Substitua o arquivo App.js antigo. Ele deve configurar o NavigationContainer e o Drawer.Navigator.
+- Regra de Ocupação de Tela: O menu lateral deve ocupar 100% da largura da tela do smartphone (width lido do Dimensions).
+- Header do Menu Lateral: Deve exibir alinhado à esquerda em letras brancas puras o nome "JADE" (Nome da IA), e no canto superior direito deve conter um botão transparente "✕" para fechar o menu nativamente, posicionado ao lado da foto de perfil redonda média do executivo.
+- Organização por Menu Acordeão (Collapsible): O menu do App.js deve ser dividido em 3 categorias retráteis acionadas por estados (useState):
+  * ✉️ Conversas: Abre os submenus "✨ Novo Chat" e "🕒 Histórico de Chats" (ambos direcionam para a ChatScreen).
+  * 📊 Comercial: Abre os submenus para as telas operacionais: Pipeline, Rota do Dia, Prospecção, Agenda & Briefings, Farmer, e KPIs & Relatórios.
+  * 🛠️ Gestão: Abre o submenu "👥 Controle de Time & Metas" (direciona para a ManagementScreen).
+
+4. CRIAÇÃO E INTEGRAÇÃO DAS 7 TELAS OFICIAIS (Substituir as antigas por estes novos arquivos):
+
+- ChatScreen.js: Tela de abertura principal e limpa de chat no estilo ChatGPT/Gemini. Fundo escuro espacial com uma área de conversa limpa exibindo o logo "🤖" centralizado. Na base fixa, um KeyboardAvoidingView envelopa a barra de digitação totalmente arredondada com botão interno (+) para anexo de imagens e um botão de envio circular branco que muda dinamicamente entre um ícone de envio (▲) se houver texto ou microfone (🎙️) se estiver vazio. No topo flutuante, dois botões translúcidos: o esquerdo (☰) abre o Drawer e o direito (⚙️) abre configurações.
+
+- PipelineScreen.js: Dashboard de funil de vendas. No topo, exibe o valor financeiro total acumulado de forma dinâmica. Usa um seletor de abas horizontais minimalistas por etapa do funil (Prospecção, Contato, Proposta, Fechados) e exibe os leads em uma FlatList vertical. Ao tocar em um card de cliente, abre um modal BottomSheet deslizante contendo dados profundos do negócio e dois botões de ação integrados nativamente com o 'expo-linking' para disparar chamadas telefônicas ou mensagens diretas de WhatsApp.
+
+- RouteScreen.js: Planejamento geoespacial do dia do executivo. Apresenta uma simulação visual de mapa no topo com o tempo estimado de trajeto e uma linha do tempo vertical (Timeline) das paradas otimizadas por proximidade física com tags em ciano "✨ Sugestão da IA". Na base da tela, exibe um botão flutuante inteligente de alto contraste para "Confirmar Rota do Dia" que transiciona para "Iniciar Navegação Waze/Maps" após o clique.
+
+- ProspectingScreen.js: Tela de captação de leads via robô raspador do Google Maps. A primeira aba traz um formulário completo de busca manual composto por inputs customizados (Segmento, Cidade, Bairro) e um botão branco de alto impacto para "Ligar Agente Google Maps 🤖". As outras abas exibem em formato FlatList os leads extraídos em tempo real e o Histórico de pesquisas antigas efetuadas pela inteligência artificial.
+
+- MeetingScreen.js: Agenda de reuniões com inteligência de vendas. A primeira aba exibe os horários marcados pela IA acompanhados por um box de "Resumo de WhatsApp e Dores Clínicas" para o executivo se preparar. A segunda aba apresenta interruptores (Switch) e grids selecionáveis de dias e horários para o executivo configurar a janela permitida para o robô agendar os compromissos de forma autônoma.
+
+- FarmerScreen.js: Painel pós-venda para retenção e up-sell de clientes ativos. Divide os clientes usando tags automáticas de Health Score baseadas na frequência de contatos. Clientes sob perigo de cancelamento recebem um destaque em vermelho translúcido ("Risco de Churn"). Contém um painel de "Monitoramento IA" com uma barra de carregamento e caixa de insights neon gerada após a varredura da carteira.
+
+- ReportsScreen.js: Dashboard de produção analítica diária e semanal. Exibe barras de progresso horizontais elegantes medindo o cumprimento de metas e KPIs comerciais contra gaps de desempenho. No topo, contém o botão principal de destaque "⚡ Gerar Laudo IA na Hora", que aciona um ActivityIndicator e atualiza dinamicamente um box de texto contendo o diagnóstico consultivo e o plano de ação corretivo elaborado pelo robô.
+
+- ManagementScreen.js: Tela de controle do diretor para gestão de equipe. No topo direito do header, exibe um botão de contorno limpo "＋ Novo" para cadastrar novos executivos no time através de um formulário em formato Modal (Nome, Cargo, Meta). O corpo da tela apresenta métricas consolidadas de toda a equipe (Total de colaboradores, leads ativos, soma das metas do mês e faturamento total vendido pelo time). Abaixo, renderiza uma FlatList de performance individual com foto de perfil do executivo, cargo, valor vendido em tempo real e uma barra de progresso individual que muda de cor (Ciano para verde) ao bater 100% da meta.
+
+Crie os arquivos modularizados de forma limpa na pasta raiz do Replit, resolva os mapeamentos de importação dentro do App.js e inicialize o servidor do Expo gerando o QR Code de visualização no terminal.

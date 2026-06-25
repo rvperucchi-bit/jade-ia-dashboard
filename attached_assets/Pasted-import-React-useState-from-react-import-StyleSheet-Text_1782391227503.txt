@@ -1,0 +1,185 @@
+import React, { useState } from 'react';
+import { 
+  StyleSheet, 
+  Text, 
+  View, 
+  FlatList, 
+  ScrollView, 
+  TouchableOpacity, 
+  SafeAreaView, 
+  TextInput,
+  Modal,
+  Image
+} from 'react-native';
+
+// DADOS INICIAIS DOS EXECUTIVOS DO TIME
+const INITIAL_TEAM = [
+  { id: '1', name: 'Lucas Santana', role: 'Enterprise Sales', sold: 45000, target: 60000, avatar: 'https://unsplash.com' },
+  { id: '2', name: 'Mariana Rios', role: 'Inside Sales', sold: 62000, target: 50000, avatar: 'https://unsplash.com' },
+  { id: '3', name: 'Thiago Martins', role: 'SDR / Hunter', sold: 18000, target: 40000, avatar: 'https://unsplash.com' },
+];
+
+export default function ManagementScreen() {
+  const [team, setTeam] = useState(INITIAL_TEAM);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  
+  // Estados para o formulário de novo executivo
+  const [newName, setNewName] = useState('');
+  const [newRole, setNewRole] = useState('');
+  const [newTarget, setNewTarget] = useState('');
+
+  // CÁLCULOS DAS MÉTRICAS GERAIS DA EQUIPE
+  const totalCollaborators = team.length;
+  const activeLeadsGeneral = 248; // Dado consolidado do sistema
+  const generalMonthlyTarget = team.reduce((acc, member) => acc + member.target, 0);
+  const totalTeamSold = team.reduce((acc, member) => acc + member.sold, 0);
+
+  // Função para cadastrar novo executivo no time
+  const handleCreateExecutive = () => {
+    if (!newName || !newRole || !newTarget) return;
+    
+    const newMember = {
+      id: String(team.length + 1),
+      name: newName,
+      role: newRole,
+      sold: 0, // Inicia sem vendas
+      target: parseFloat(newTarget),
+      avatar: 'https://unsplash.com' // Avatar padrão masculino/neutro
+    };
+
+    setTeam([...team, newMember]);
+    setNewName('');
+    setNewRole('');
+    setNewTarget('');
+    setIsModalOpen(false);
+  };
+
+  // Renderizador dos cards individuais de desempenho dos executivos
+  const renderExecutiveCard = ({ item }) => {
+    const progressPercent = Math.min((item.sold / item.target) * 100, 100);
+    const isTargetHit = item.sold >= item.target;
+
+    return (
+      <View style={styles.execCard}>
+        <View style={styles.execInfoRow}>
+          <Image source={{ uri: item.avatar }} style={styles.execAvatar} />
+          <View style={styles.execMetaText}>
+            <Text style={styles.execName}>{item.name}</Text>
+            <Text style={styles.execRole}>{item.role}</Text>
+          </View>
+          <View style={styles.execValues}>
+            <Text style={styles.labelMini}>VENDIDO</Text>
+            <Text style={[styles.execValueSold, isTargetHit && { color: '#38A169' }]}>
+              {item.sold.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+            </Text>
+          </View>
+        </View>
+
+        {/* BARRA DE PROGRESSO DE METAS INDIVIDUAL */}
+        <View style={styles.progressSection}>
+          <View style={styles.progressInfo}>
+            <Text style={styles.progressLabel}>Meta: {item.target.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</Text>
+            <Text style={styles.progressPercentText}>{progressPercent.toFixed(0)}%</Text>
+          </View>
+          <View style={styles.trackBar}>
+            <View style={[styles.fillBar, { width: `${progressPercent}%`, backgroundColor: isTargetHit ? '#38A169' : '#00E5FF' }]} />
+          </View>
+        </View>
+      </View>
+    );
+  };
+
+  return (
+    <SafeAreaView style={styles.container}>
+      {/* HEADER COM BOTÃO DE CADASTRO NA DIREITA */}
+      <View style={styles.header}>
+        <View>
+          <Text style={styles.greeting}>Painel do Diretor</Text>
+          <Text style={styles.stageTotal}>Gestão de Time</Text>
+        </View>
+        <TouchableOpacity 
+          style={styles.addExecButton} 
+          activeOpacity={0.8}
+          onPress={() => setIsModalOpen(true)}
+        >
+          <Text style={styles.addExecButtonText}>＋ Novo</Text>
+        </TouchableOpacity>
+      </View>
+
+      <ScrollView style={styles.scrollContainer} showsVerticalScrollIndicator={false}>
+        
+        {/* DASHBOARD DE MÉTRICAS GERAIS DA EQUIPE */}
+        <Text style={styles.sectionLabel}>MÉTRICAS CONSOLIDADAS DO TIME</Text>
+        
+        <View style={styles.metricsGridContainer}>
+          <View style={styles.metricGridRow}>
+            <View style={styles.gridCard}>
+              <Text style={styles.gridLabel}>COLABORADORES</Text>
+              <Text style={styles.gridValue}>{totalCollaborators}</Text>
+            </View>
+            <View style={styles.gridCard}>
+              <Text style={styles.gridLabel}>LEADS ATIVOS</Text>
+              <Text style={styles.gridValue}>{activeLeadsGeneral}</Text>
+            </View>
+          </View>
+
+          <View style={styles.metricGridRow}>
+            <View style={styles.gridCard}>
+              <Text style={styles.gridLabel}>META DO MÊS (TOTAL)</Text>
+              <Text style={[styles.gridValue, { fontSize: 18, color: '#FFFFFF' }]}>
+                {generalMonthlyTarget.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+              </Text>
+            </View>
+            <View style={styles.gridCard}>
+              <Text style={styles.gridLabel}>TOTAL VENDIDO</Text>
+              <Text style={[styles.gridValue, { fontSize: 18, color: '#38A169' }]}>
+                {totalTeamSold.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+              </Text>
+            </View>
+          </View>
+        </View>
+
+        {/* LISTAGEM DOS EXECUTIVOS DO TIME */}
+        <Text style={styles.sectionLabel}>PERFIL E PERFORMANCE INDIVIDUAL</Text>
+        <FlatList
+          data={team}
+          keyExtractor={(item) => item.id}
+          renderItem={renderExecutiveCard}
+          scrollEnabled={false} // Rola através do ScrollView pai
+          contentContainerStyle={styles.listContainer}
+        />
+
+        <View style={{ height: 40 }} />
+      </ScrollView>
+
+      {/* MODAL DE CADASTRO DE NOVO EXECUTIVO */}
+      <Modal visible={isModalOpen} animationType="slide" onRequestClose={() => setIsModalOpen(false)}>
+        <SafeAreaView style={styles.modalContainer}>
+          <View style={styles.modalHeader}>
+            <TouchableOpacity onPress={() => setIsModalOpen(false)} style={styles.backButton}>
+              <Text style={styles.backButtonText}>← Cancelar</Text>
+            </TouchableOpacity>
+            <Text style={styles.modalTitleHeader}>Novo Integrante</Text>
+          </View>
+
+          <ScrollView style={styles.modalForm} keyboardShouldPersistTaps="handled">
+            <Text style={styles.formMainTitle}>Cadastrar Executivo</Text>
+
+            <Text style={styles.inputLabel}>NOME COMPLETO</Text>
+            <TextInput style={styles.inputStyle} placeholder="Ex: João da Silva" placeholderTextColor="#4E5366" value={newName} onChangeText={setNewName} />
+
+            <Text style={styles.inputLabel}>CARGO / POSIÇÃO comercial</Text>
+            <TextInput style={styles.inputStyle} placeholder="Ex: Inside Sales, SDR, Closser" placeholderTextColor="#4E5366" value={newRole} onChangeText={setNewRole} />
+
+            <Text style={styles.inputLabel}>META INDIVIDUAL MENSAL (R$)</Text>
+            <TextInput style={styles.inputStyle} placeholder="Ex: 50000" placeholderTextColor="#4E5366" keyboardType="numeric" value={newTarget} onChangeText={setNewTarget} />
+
+            <TouchableOpacity style={[styles.submitButton, (!newName || !newRole || !newTarget) && styles.disabledButton]} activeOpacity={0.8} onPress={handleCreateExecutive} disabled={!newName || !newRole || !newTarget}>
+              <Text style={styles.submitButtonText}>Confirmar Contratação 🚀</Text>
+            </TouchableOpacity>
+          </ScrollView>
+        </SafeAreaView>
+      </Modal>
+    </SafeAreaView>
+  );
+}

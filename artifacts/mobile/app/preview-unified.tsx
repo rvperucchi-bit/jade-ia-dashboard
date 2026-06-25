@@ -26,7 +26,7 @@ import * as Linking from "expo-linking";
 import { useRouter } from "expo-router";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
-type Route = "Chat" | "Pipeline" | "Route" | "Prospecting" | "Meeting" | "Farmer" | "Reports" | "Marketing";
+type Route = "Chat" | "Pipeline" | "Route" | "Prospecting" | "Meeting" | "Farmer" | "Reports" | "Marketing" | "Management";
 type PipelineLead  = { id: string; name: string; company: string; value: string; stage: string; daysIdle: number; phone: string };
 type AiLead        = { id: string; name: string; segment: string; address: string };
 type HistoryItem   = { id: string; query: string; location: string; date: string; leadsCount: number };
@@ -103,6 +103,7 @@ function Sidebar({ visible, onClose, currentRoute, onNavigate }: {
   const insets = useSafeAreaInsets();
   const [conversasOpen, setConversasOpen] = useState(true);
   const [comercialOpen, setComercialOpen] = useState(false);
+  const [gestaoOpen,    setGestaoOpen]    = useState(false);
 
   React.useEffect(() => {
     Animated.timing(slideX, {
@@ -163,6 +164,22 @@ function Sidebar({ visible, onClose, currentRoute, onNavigate }: {
                   <Text style={[S.drawerSubText, currentRoute === item.route && S.drawerSubTextActive]}>{item.label}</Text>
                 </TouchableOpacity>
               ))}
+            </View>
+          )}
+
+          <View style={S.drawerDivider} />
+
+          {/* ── Gestão ── */}
+          <TouchableOpacity style={S.drawerSection} onPress={() => setGestaoOpen((v) => !v)} activeOpacity={0.7}>
+            <Text style={S.drawerSectionTitle}>🛠️ Gestão</Text>
+            <Text style={S.drawerArrow}>{gestaoOpen ? "▼" : "►"}</Text>
+          </TouchableOpacity>
+
+          {gestaoOpen && (
+            <View style={S.drawerSubMenu}>
+              <TouchableOpacity style={S.drawerSubItem} onPress={() => go("Management")} activeOpacity={0.7}>
+                <Text style={[S.drawerSubText, currentRoute === "Management" && S.drawerSubTextActive]}>👥 Controle de Time & Metas</Text>
+              </TouchableOpacity>
             </View>
           )}
         </ScrollView>
@@ -899,6 +916,152 @@ function MarketingView({ onMenu }: { onMenu: () => void }) {
   );
 }
 
+// ─── Data: Management ────────────────────────────────────────────────────────
+type Executive = { id: string; name: string; role: string; sold: number; target: number };
+
+const INITIAL_TEAM: Executive[] = [
+  { id: "1", name: "Lucas Santana",  role: "Enterprise Sales", sold: 45000, target: 60000 },
+  { id: "2", name: "Mariana Rios",   role: "Inside Sales",     sold: 62000, target: 50000 },
+  { id: "3", name: "Thiago Martins", role: "SDR / Hunter",     sold: 18000, target: 40000 },
+];
+
+// ─── Screen: Management ───────────────────────────────────────────────────────
+function ManagementView({ onMenu }: { onMenu: () => void }) {
+  const insets = useSafeAreaInsets();
+  const [team,       setTeam]       = useState<Executive[]>(INITIAL_TEAM);
+  const [modalOpen,  setModalOpen]  = useState(false);
+  const [newName,    setNewName]    = useState("");
+  const [newRole,    setNewRole]    = useState("");
+  const [newTarget,  setNewTarget]  = useState("");
+
+  const totalSold   = team.reduce((a, m) => a + m.sold,   0);
+  const totalTarget = team.reduce((a, m) => a + m.target, 0);
+
+  const handleCreate = () => {
+    if (!newName || !newRole || !newTarget) return;
+    setTeam((prev) => [
+      ...prev,
+      { id: String(Date.now()), name: newName, role: newRole, sold: 0, target: parseFloat(newTarget) || 0 },
+    ]);
+    setNewName(""); setNewRole(""); setNewTarget(""); setModalOpen(false);
+  };
+
+  const brl = (v: number) => v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+
+  return (
+    <View style={{ flex: 1 }}>
+      {/* Top bar manual — sem TopBar genérico para ter botão "+ Novo" */}
+      <View style={[S.topBar, { paddingTop: (Platform.OS === "web" ? 24 : insets.top + 4) + 6 }]}>
+        <TouchableOpacity style={S.iconBtn} onPress={onMenu} activeOpacity={0.7}>
+          <Text style={S.topIconText}>☰</Text>
+        </TouchableOpacity>
+        <View style={{ flex: 1, marginHorizontal: 12 }}>
+          <Text style={S.topSubtitle}>PAINEL DO DIRETOR</Text>
+          <Text style={S.topTitle}>Gestão de Time</Text>
+        </View>
+        <TouchableOpacity style={S.mgmtAddBtn} onPress={() => setModalOpen(true)} activeOpacity={0.8}>
+          <Text style={S.mgmtAddBtnText}>＋ Novo</Text>
+        </TouchableOpacity>
+      </View>
+
+      <ScrollView style={S.form} showsVerticalScrollIndicator={false}>
+        {/* Metrics grid */}
+        <Text style={S.sectionLabel}>MÉTRICAS CONSOLIDADAS DO TIME</Text>
+        <View style={S.mgmtGrid}>
+          <View style={S.mgmtGridRow}>
+            <View style={S.mgmtGridCard}>
+              <Text style={S.mgmtGridLabel}>COLABORADORES</Text>
+              <Text style={S.mgmtGridValue}>{team.length}</Text>
+            </View>
+            <View style={S.mgmtGridCard}>
+              <Text style={S.mgmtGridLabel}>LEADS ATIVOS</Text>
+              <Text style={S.mgmtGridValue}>248</Text>
+            </View>
+          </View>
+          <View style={S.mgmtGridRow}>
+            <View style={S.mgmtGridCard}>
+              <Text style={S.mgmtGridLabel}>META DO MÊS (TOTAL)</Text>
+              <Text style={[S.mgmtGridValue, { fontSize: 18, color: "#FFFFFF" }]}>{brl(totalTarget)}</Text>
+            </View>
+            <View style={S.mgmtGridCard}>
+              <Text style={S.mgmtGridLabel}>TOTAL VENDIDO</Text>
+              <Text style={[S.mgmtGridValue, { fontSize: 18, color: "#38A169" }]}>{brl(totalSold)}</Text>
+            </View>
+          </View>
+        </View>
+
+        {/* Individual cards */}
+        <Text style={S.sectionLabel}>PERFIL E PERFORMANCE INDIVIDUAL</Text>
+        {team.map((member) => {
+          const pct       = Math.min((member.sold / member.target) * 100, 100);
+          const onTarget  = member.sold >= member.target;
+          return (
+            <View key={member.id} style={[S.card, { marginBottom: 14 }]}>
+              <View style={S.mgmtExecRow}>
+                <View style={S.mgmtAvatar}>
+                  <Text style={{ fontSize: 20 }}>👤</Text>
+                </View>
+                <View style={{ flex: 1, marginLeft: 14 }}>
+                  <Text style={S.cardName}>{member.name}</Text>
+                  <Text style={S.cardSub2}>{member.role}</Text>
+                </View>
+                <View style={{ alignItems: "flex-end" }}>
+                  <Text style={S.mgmtGridLabel}>VENDIDO</Text>
+                  <Text style={[S.cardName, { color: onTarget ? "#38A169" : "#FFFFFF", marginTop: 2 }]}>{brl(member.sold)}</Text>
+                </View>
+              </View>
+              <View style={{ marginTop: 16 }}>
+                <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 6 }}>
+                  <Text style={[S.cardSub, { marginBottom: 0 }]}>Meta: {brl(member.target)}</Text>
+                  <Text style={{ fontSize: 12, color: "#FFFFFF", fontWeight: "600" }}>{pct.toFixed(0)}%</Text>
+                </View>
+                <View style={S.progressTrack}>
+                  <View style={[S.progressBar, { width: `${pct}%` as any, backgroundColor: onTarget ? "#38A169" : "#00E5FF" }]} />
+                </View>
+              </View>
+            </View>
+          );
+        })}
+        <View style={{ height: 40 }} />
+      </ScrollView>
+
+      {/* Modal: novo executivo */}
+      <Modal visible={modalOpen} animationType="slide" onRequestClose={() => setModalOpen(false)}>
+        <View style={[S.root, { paddingTop: insets.top }]}>
+          <View style={S.mktModalHeader}>
+            <TouchableOpacity onPress={() => setModalOpen(false)} style={{ paddingRight: 16 }} activeOpacity={0.7}>
+              <Text style={{ color: "#8F94A8", fontSize: 15, fontWeight: "600" }}>← Cancelar</Text>
+            </TouchableOpacity>
+            <Text style={{ color: "#FFFFFF", fontSize: 16, fontWeight: "700" }}>Novo Integrante</Text>
+          </View>
+          <ScrollView style={S.form} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
+            <Text style={{ fontSize: 22, fontWeight: "700", color: "#FFFFFF", marginBottom: 24, letterSpacing: -0.5 }}>Cadastrar Executivo</Text>
+
+            <Text style={S.label}>NOME COMPLETO</Text>
+            <TextInput style={S.input} placeholder="Ex: João da Silva" placeholderTextColor="#4E5366" value={newName} onChangeText={setNewName} />
+
+            <Text style={S.label}>CARGO / POSIÇÃO</Text>
+            <TextInput style={S.input} placeholder="Ex: Inside Sales, SDR, Closer" placeholderTextColor="#4E5366" value={newRole} onChangeText={setNewRole} />
+
+            <Text style={S.label}>META INDIVIDUAL MENSAL (R$)</Text>
+            <TextInput style={S.input} placeholder="Ex: 50000" placeholderTextColor="#4E5366" keyboardType="numeric" value={newTarget} onChangeText={setNewTarget} />
+
+            <TouchableOpacity
+              style={[S.primaryBtn, (!newName || !newRole || !newTarget) && S.primaryBtnDisabled]}
+              activeOpacity={0.8}
+              onPress={handleCreate}
+              disabled={!newName || !newRole || !newTarget}
+            >
+              <Text style={S.primaryBtnText}>Confirmar Contratação 🚀</Text>
+            </TouchableOpacity>
+            <View style={{ height: 40 }} />
+          </ScrollView>
+        </View>
+      </Modal>
+    </View>
+  );
+}
+
 // ─── Root ─────────────────────────────────────────────────────────────────────
 export default function PreviewUnifiedScreen() {
   const router = useRouter();
@@ -922,6 +1085,7 @@ export default function PreviewUnifiedScreen() {
       {route === "Farmer"      && <FarmerView      onMenu={openMenu} />}
       {route === "Reports"     && <ReportsView     onMenu={openMenu} />}
       {route === "Marketing"   && <MarketingView   onMenu={openMenu} />}
+      {route === "Management"  && <ManagementView  onMenu={openMenu} />}
 
       <Sidebar visible={sidebar} onClose={() => setSidebar(false)} currentRoute={route} onNavigate={setRoute} />
     </View>
@@ -1098,6 +1262,17 @@ const S = StyleSheet.create({
   dayChipText: { fontSize: 13, color: "#4E5366", fontWeight: "600" },
   dayChipTextActive: { color: "#00E5FF" },
   timeWindowBtn: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", backgroundColor: "#161822", borderRadius: 14, padding: 18, borderWidth: 1, borderColor: "#242736", marginBottom: 20 },
+
+  // Management screen
+  mgmtAddBtn: { backgroundColor: "#161822", borderWidth: 1, borderColor: "#242736", paddingHorizontal: 16, height: 40, borderRadius: 10, justifyContent: "center", alignItems: "center" },
+  mgmtAddBtnText: { color: "#FFFFFF", fontSize: 14, fontWeight: "600" },
+  mgmtGrid: { marginBottom: 16 },
+  mgmtGridRow: { flexDirection: "row", justifyContent: "space-between", marginBottom: 12 },
+  mgmtGridCard: { flex: 1, backgroundColor: "#161822", borderRadius: 14, padding: 16, borderWidth: 1, borderColor: "#242736", marginRight: 10 },
+  mgmtGridLabel: { fontSize: 9, color: "#4E5366", fontWeight: "700", letterSpacing: 0.5 },
+  mgmtGridValue: { fontSize: 24, fontWeight: "700", color: "#00E5FF", marginTop: 4 },
+  mgmtExecRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
+  mgmtAvatar: { width: 44, height: 44, borderRadius: 22, backgroundColor: "#090A0F", borderWidth: 1, borderColor: "#242736", alignItems: "center", justifyContent: "center" },
 
   // Marketing screen
   mktLaunchBtn: { backgroundColor: "#161822", height: 50, borderRadius: 12, borderWidth: 1, borderColor: "#242736", justifyContent: "center", paddingHorizontal: 16 },
