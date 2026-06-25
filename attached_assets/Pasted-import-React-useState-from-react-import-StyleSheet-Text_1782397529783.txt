@@ -1,0 +1,101 @@
+import React, { useState } from 'react';
+import { StyleSheet, Text, View, TextInput, TouchableOpacity, SafeAreaView, KeyboardAvoidingView, Platform } from 'react-native';
+import { useRouter } from 'expo-router';
+
+export default function LoginScreen() {
+  const router = useRouter();
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+
+  const handleLogin = () => {
+    router.replace('/chat');
+  };
+
+  return (
+    <SafeAreaView style={styles.container}>
+      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.wrapper}>
+        
+        {/* TOPO DA TELA TOTALMENTE LIMPO COM "LOGIN" EM BRANCO PURO */}
+        <View style={styles.headerBlock}>
+          <Text style={styles.logoText}>Login</Text>
+        </View>
+
+        <View style={styles.form}>
+          <Text style={styles.label}>E-MAIL DE ACESSO</Text>
+          <TextInput 
+            style={styles.input} 
+            placeholder="seu@email.com" 
+            placeholderTextColor="#4E5366" 
+            value={email}
+            onChangeText={setEmail}
+            keyboardType="email-address"
+            autoCapitalize="none"
+          />
+
+          <Text style={styles.label}>SENHA CORPORATIVA</Text>
+          <TextInput 
+            style={styles.input} 
+            placeholder="••••••••" 
+            placeholderTextColor="#4E5366" 
+            secureTextEntry
+            value={password}
+            onChangeText={setPassword}
+          />
+
+          {/* ESQUECI MINHA SENHA */}
+          <TouchableOpacity style={styles.forgotBtn} activeOpacity={0.6}>
+            <Text style={styles.forgotText}>Esqueceu sua senha?</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity style={styles.loginBtn} onPress={handleLogin} activeOpacity={0.8}>
+            <Text style={styles.loginBtnText}>Entrar no Sistema 🚀</Text>
+          </TouchableOpacity>
+        </View>
+
+        <View style={styles.dividerRow}>
+          <View style={styles.line} />
+          <Text style={styles.dividerText}>OU ENTRAR COM</Text>
+          <View style={styles.line} />
+        </View>
+
+        {/* BOTOES DE AUTENTICAÇÃO SOCIAL DISCRETA */}
+        <View style={styles.socialRow}>
+          <TouchableOpacity style={styles.socialCard} activeOpacity={0.7}>
+            <Text style={styles.socialBtnText}>🌐 Google</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.socialCard} activeOpacity={0.7}>
+            <Text style={styles.socialBtnText}>🍏 Apple ID</Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* CRIAR CONTA */}
+        <TouchableOpacity style={styles.createAccountBtn} activeOpacity={0.7}>
+          <Text style={styles.createAccountText}>Não tem uma conta? <Text style={{ color: '#00E5FF' }}>Criar conta</Text></Text>
+        </TouchableOpacity>
+
+      </KeyboardAvoidingView>
+    </SafeAreaView>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: { flex: 1, backgroundColor: '#090A0F', justifyContent: 'center' },
+  wrapper: { paddingHorizontal: 24 },
+  headerBlock: { alignItems: 'flex-start', marginBottom: 28 },
+  logoText: { fontSize: 32, fontWeight: '700', color: '#FFFFFF', letterSpacing: -0.5 },
+  form: { marginTop: 10 },
+  label: { fontSize: 11, color: '#8F94A8', fontWeight: '700', letterSpacing: 0.8, marginBottom: 8 },
+  input: { backgroundColor: '#161822', height: 54, borderRadius: 12, paddingHorizontal: 16, color: '#FFFFFF', fontSize: 15, borderWidth: 1, borderColor: '#242736', marginBottom: 12 },
+  forgotBtn: { alignSelf: 'flex-end', paddingVertical: 4 },
+  forgotText: { color: '#8F94A8', fontSize: 13, fontWeight: '500' },
+  loginBtn: { backgroundColor: '#FFFFFF', height: 54, borderRadius: 12, alignItems: 'center', justifyContent: 'center', marginTop: 24 },
+  loginBtnText: { color: '#090A0F', fontWeight: '700', fontSize: 15 },
+  dividerRow: { flexDirection: 'row', alignItems: 'center', marginVertical: 32 },
+  line: { flex: 1, height: 1, backgroundColor: '#161822' },
+  dividerText: { color: '#4E5366', fontSize: 11, fontWeight: '700', paddingHorizontal: 12, letterSpacing: 0.5 },
+  socialRow: { flexDirection: 'row', justifyContent: 'space-between' },
+  socialCard: { flex: 1, backgroundColor: '#161822', height: 52, borderRadius: 12, borderWidth: 1, borderColor: '#242736', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginRight: 10 },
+  socialBtnText: { color: '#FFFFFF', fontSize: 14, fontWeight: '600' },
+  createAccountBtn: { marginTop: 32, alignItems: 'center' },
+  createAccountText: { color: '#8F94A8', fontSize: 14, fontWeight: '500' }
+});

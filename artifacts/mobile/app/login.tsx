@@ -1,51 +1,34 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useState } from "react";
 import {
-  ActivityIndicator,
-  Alert,
-  Animated,
-  Easing,
   KeyboardAvoidingView,
   Platform,
+  SafeAreaView,
   StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
   View,
+  ActivityIndicator,
+  Alert,
 } from "react-native";
 import { useRouter } from "expo-router";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function LoginScreen() {
-  const router  = useRouter();
-  const insets  = useSafeAreaInsets();
-
+  const router = useRouter();
   const [email,    setEmail]    = useState("");
   const [password, setPassword] = useState("");
-  const [showPw,   setShowPw]   = useState(false);
   const [loading,  setLoading]  = useState(false);
-  const [error,    setError]    = useState("");
-
-  const opacity = useRef(new Animated.Value(0)).current;
-  const slideY  = useRef(new Animated.Value(24)).current;
-
-  useEffect(() => {
-    Animated.parallel([
-      Animated.timing(opacity, { toValue: 1, duration: 480, easing: Easing.out(Easing.cubic), useNativeDriver: true }),
-      Animated.timing(slideY,  { toValue: 0, duration: 480, easing: Easing.out(Easing.cubic), useNativeDriver: true }),
-    ]).start();
-  }, []);
 
   const handleLogin = () => {
     if (!email.trim() || !password) {
-      setError("Preencha e-mail e senha.");
+      Alert.alert("Atenção", "Preencha e-mail e senha para continuar.");
       return;
     }
-    setError("");
     setLoading(true);
     setTimeout(() => {
       setLoading(false);
       router.replace("/preview-unified");
-    }, 1200);
+    }, 1100);
   };
 
   const handleForgot = () =>
@@ -58,28 +41,22 @@ export default function LoginScreen() {
     );
 
   return (
-    <KeyboardAvoidingView
-      style={[S.root, { paddingTop: insets.top, paddingBottom: insets.bottom }]}
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
-    >
-      <Animated.View style={[S.inner, { opacity, transform: [{ translateY: slideY }] }]}>
-
-        {/* ── Logo ── */}
+    <SafeAreaView style={S.container}>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        style={S.wrapper}
+      >
+        {/* ── Título ── */}
         <View style={S.headerBlock}>
-          <View style={S.logoRing}>
-            <Text style={S.logoEmoji}>⚡</Text>
-          </View>
-          <Text style={S.logoText}>JADE</Text>
-          <Text style={S.subTitle}>Ecossistema Comercial Autônomo</Text>
+          <Text style={S.logoText}>Login</Text>
         </View>
 
-        {/* ── E-mail ── */}
-        <Text style={S.label}>E-MAIL DE ACESSO</Text>
-        <View style={S.inputRow}>
-          <Text style={S.inputIcon}>✉️</Text>
+        {/* ── Formulário ── */}
+        <View style={S.form}>
+          <Text style={S.label}>E-MAIL DE ACESSO</Text>
           <TextInput
             style={S.input}
-            placeholder="seu@empresa.com"
+            placeholder="seu@email.com"
             placeholderTextColor="#4E5366"
             value={email}
             onChangeText={setEmail}
@@ -87,76 +64,89 @@ export default function LoginScreen() {
             autoCapitalize="none"
             autoCorrect={false}
           />
-        </View>
 
-        {/* ── Senha ── */}
-        <Text style={S.label}>SENHA CORPORATIVA</Text>
-        <View style={S.inputRow}>
-          <Text style={S.inputIcon}>🔒</Text>
+          <Text style={S.label}>SENHA CORPORATIVA</Text>
           <TextInput
             style={S.input}
             placeholder="••••••••"
             placeholderTextColor="#4E5366"
-            secureTextEntry={!showPw}
+            secureTextEntry
             value={password}
             onChangeText={setPassword}
-            autoCapitalize="none"
           />
-          <TouchableOpacity onPress={() => setShowPw((v) => !v)} activeOpacity={0.7} style={S.eyeBtn}>
-            <Text style={{ fontSize: 16 }}>{showPw ? "🙈" : "👁️"}</Text>
+
+          <TouchableOpacity style={S.forgotBtn} onPress={handleForgot} activeOpacity={0.6}>
+            <Text style={S.forgotText}>Esqueceu sua senha?</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[S.loginBtn, (!email || !password) && S.loginBtnDisabled]}
+            onPress={handleLogin}
+            activeOpacity={0.8}
+            disabled={loading || !email || !password}
+          >
+            {loading
+              ? <ActivityIndicator color="#090A0F" />
+              : <Text style={S.loginBtnText}>Entrar no Sistema 🚀</Text>}
           </TouchableOpacity>
         </View>
 
-        {!!error && <Text style={S.error}>{error}</Text>}
+        {/* ── Divisor ── */}
+        <View style={S.dividerRow}>
+          <View style={S.line} />
+          <Text style={S.dividerText}>OU ENTRAR COM</Text>
+          <View style={S.line} />
+        </View>
 
-        {/* ── CTA Principal ── */}
-        <TouchableOpacity
-          style={[S.loginBtn, (!email || !password) && S.loginBtnDisabled]}
-          onPress={handleLogin}
-          activeOpacity={0.85}
-          disabled={loading || !email || !password}
-        >
-          {loading
-            ? <ActivityIndicator color="#090A0F" />
-            : <Text style={S.loginBtnText}>Entrar no Sistema 🚀</Text>}
+        {/* ── Social ── */}
+        <View style={S.socialRow}>
+          <TouchableOpacity style={S.socialCard} activeOpacity={0.7}
+            onPress={() => Alert.alert("Google", "Login com Google em breve.")}>
+            <Text style={S.socialBtnText}>🌐 Google</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={[S.socialCard, { marginRight: 0 }]} activeOpacity={0.7}
+            onPress={() => Alert.alert("Apple", "Login com Apple em breve.")}>
+            <Text style={S.socialBtnText}>🍏 Apple ID</Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* ── Criar conta ── */}
+        <TouchableOpacity style={S.createAccountBtn} activeOpacity={0.7}>
+          <Text style={S.createAccountText}>
+            Não tem uma conta?{" "}
+            <Text style={{ color: "#00E5FF" }}>Criar conta</Text>
+          </Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={S.forgotBtn} onPress={handleForgot} activeOpacity={0.7}>
-          <Text style={S.forgotText}>Esqueci minha senha</Text>
-        </TouchableOpacity>
-
-        {/* ── Rodapé ── */}
-        <Text style={S.footerText}>Powered by Sleek Automações</Text>
-
-      </Animated.View>
-    </KeyboardAvoidingView>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 }
 
 const S = StyleSheet.create({
-  root:            { flex: 1, backgroundColor: "#090A0F", justifyContent: "center" },
-  inner:           { paddingHorizontal: 28 },
+  container:          { flex: 1, backgroundColor: "#090A0F", justifyContent: "center" },
+  wrapper:            { paddingHorizontal: 28 },
 
-  headerBlock:     { alignItems: "center", marginBottom: 40 },
-  logoRing:        { width: 76, height: 76, borderRadius: 38, borderWidth: 1.5, borderColor: "#00E5FF", backgroundColor: "rgba(0,229,255,0.06)", alignItems: "center", justifyContent: "center", marginBottom: 18 },
-  logoEmoji:       { fontSize: 30 },
-  logoText:        { fontSize: 36, fontWeight: "900", color: "#FFFFFF", letterSpacing: 3 },
-  subTitle:        { fontSize: 13, color: "#8F94A8", marginTop: 6, fontWeight: "500", textAlign: "center" },
+  headerBlock:        { alignItems: "flex-start", marginBottom: 32 },
+  logoText:           { fontSize: 32, fontWeight: "700", color: "#FFFFFF", letterSpacing: -0.5 },
 
-  label:           { fontSize: 11, color: "#8F94A8", fontWeight: "700", letterSpacing: 0.8, marginBottom: 8, marginTop: 18 },
-  inputRow:        { flexDirection: "row", alignItems: "center", backgroundColor: "#161822", height: 54, borderRadius: 12, paddingHorizontal: 14, borderWidth: 1, borderColor: "#242736", gap: 10 },
-  inputIcon:       { fontSize: 15 },
-  input:           { flex: 1, color: "#FFFFFF", fontSize: 15 },
-  eyeBtn:          { padding: 4 },
+  form:               { marginTop: 4 },
+  label:              { fontSize: 11, color: "#8F94A8", fontWeight: "700", letterSpacing: 0.8, marginBottom: 8, marginTop: 16 },
+  input:              { backgroundColor: "#161822", height: 54, borderRadius: 12, paddingHorizontal: 16, color: "#FFFFFF", fontSize: 15, borderWidth: 1, borderColor: "#242736" },
+  forgotBtn:          { alignSelf: "flex-end", paddingVertical: 6, marginTop: 8 },
+  forgotText:         { color: "#8F94A8", fontSize: 13, fontWeight: "500" },
+  loginBtn:           { backgroundColor: "#FFFFFF", height: 54, borderRadius: 12, alignItems: "center", justifyContent: "center", marginTop: 24 },
+  loginBtnDisabled:   { opacity: 0.35 },
+  loginBtnText:       { color: "#090A0F", fontWeight: "700", fontSize: 15 },
 
-  error:           { color: "#E93E3E", fontSize: 12, marginTop: 6, fontWeight: "600" },
+  dividerRow:         { flexDirection: "row", alignItems: "center", marginVertical: 32 },
+  line:               { flex: 1, height: 1, backgroundColor: "#161822" },
+  dividerText:        { color: "#4E5366", fontSize: 11, fontWeight: "700", paddingHorizontal: 12, letterSpacing: 0.5 },
 
-  loginBtn:        { backgroundColor: "#FFFFFF", height: 54, borderRadius: 12, alignItems: "center", justifyContent: "center", marginTop: 28 },
-  loginBtnDisabled:{ opacity: 0.35 },
-  loginBtnText:    { color: "#090A0F", fontWeight: "700", fontSize: 15 },
+  socialRow:          { flexDirection: "row", justifyContent: "space-between", gap: 10 },
+  socialCard:         { flex: 1, backgroundColor: "#161822", height: 52, borderRadius: 12, borderWidth: 1, borderColor: "#242736", alignItems: "center", justifyContent: "center" },
+  socialBtnText:      { color: "#FFFFFF", fontSize: 14, fontWeight: "600" },
 
-  forgotBtn:       { alignItems: "center", marginTop: 16, paddingVertical: 4 },
-  forgotText:      { color: "#4E5366", fontSize: 13, fontWeight: "500" },
-
-  footerText:      { textAlign: "center", color: "#242736", fontSize: 11, fontWeight: "500", marginTop: 40 },
+  createAccountBtn:   { marginTop: 32, alignItems: "center" },
+  createAccountText:  { color: "#8F94A8", fontSize: 14, fontWeight: "500" },
 });
