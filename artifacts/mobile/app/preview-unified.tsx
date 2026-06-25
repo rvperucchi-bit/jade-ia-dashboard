@@ -125,9 +125,13 @@ function Sidebar({ visible, onClose, currentRoute, onNavigate }: {
         {/* Header */}
         <View style={S.drawerHeader}>
           <Text style={S.drawerBrand}>JADE</Text>
-          {/* Avatar placeholder */}
-          <View style={S.drawerAvatar}>
-            <Text style={{ fontSize: 18 }}>👤</Text>
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
+            <View style={S.drawerAvatar}>
+              <Text style={{ fontSize: 18 }}>👤</Text>
+            </View>
+            <TouchableOpacity onPress={onClose} activeOpacity={0.7} style={S.drawerCloseBtn}>
+              <Text style={S.drawerCloseBtnText}>✕</Text>
+            </TouchableOpacity>
           </View>
         </View>
 
@@ -1235,6 +1239,8 @@ const S = StyleSheet.create({
   drawerSubText: { color: "#8F94A8", fontSize: 14, fontWeight: "500" },
   drawerSubTextActive: { color: "#FFFFFF", fontWeight: "700" },
   drawerDivider: { height: 1, backgroundColor: "#161822", marginVertical: 10 },
+  drawerCloseBtn: { width: 36, height: 36, borderRadius: 10, backgroundColor: "rgba(255,255,255,0.04)", borderWidth: 1, borderColor: "rgba(255,255,255,0.06)", alignItems: "center", justifyContent: "center" },
+  drawerCloseBtnText: { color: "#8F94A8", fontSize: 14, fontWeight: "600" },
 
   // Reports screen
   reportBox: { backgroundColor: "#161822", borderRadius: 16, padding: 18, borderWidth: 1, borderColor: "#242736", marginBottom: 28 },
