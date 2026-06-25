@@ -138,7 +138,7 @@ function Sidebar({ visible, onClose, currentRoute, onNavigate }: {
           </View>
         </View>
 
-        <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 60 }}>
+        <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false} keyboardDismissMode="on-drag" contentContainerStyle={{ paddingBottom: 60 }}>
           {/* ── Conversas ── */}
           <TouchableOpacity style={S.drawerSection} onPress={() => setConversasOpen((v) => !v)} activeOpacity={0.7}>
             <Text style={S.drawerSectionTitle}>Conversas</Text>
@@ -363,6 +363,7 @@ function ChatView({ onMenu }: { onMenu: () => void }) {
         contentContainerStyle={[S.chatArea, messages.length === 0 && S.chatAreaCenter]}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
+        keyboardDismissMode="on-drag"
       >
         {messages.length === 0 ? (
           <View style={S.welcomeWrap}>
@@ -513,7 +514,7 @@ function RouteView({ onMenu }: { onMenu: () => void }) {
         <Text style={S.mapSubText}>4 paradas • 32 min total de deslocamento</Text>
       </View>
 
-      <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
+      <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false} keyboardDismissMode="on-drag">
         <Text style={[S.sectionLabel, { paddingHorizontal: 20, marginBottom: 16 }]}>CRONOGRAMA DO DIA</Text>
         {DAILY_ROUTE.map((item, index) => {
           const isLast = index === DAILY_ROUTE.length - 1;
@@ -553,7 +554,7 @@ function RouteView({ onMenu }: { onMenu: () => void }) {
           </TouchableOpacity>
         ) : (
           <TouchableOpacity style={[S.confirmBtn, S.startBtn]} activeOpacity={0.8}>
-            <Text style={[S.confirmBtnText, { color: "#090A0F" }]}>Iniciar Navegação Waze/Maps</Text>
+            <Text style={S.confirmBtnText}>Iniciar Navegação Waze/Maps</Text>
           </TouchableOpacity>
         )}
       </View>
@@ -591,13 +592,13 @@ function ProspectingView({ onMenu }: { onMenu: () => void }) {
         </ScrollView>
       </View>
       {tab === "Busca Manual" && (
-        <ScrollView style={S.form} keyboardShouldPersistTaps="handled">
+        <ScrollView style={S.form} keyboardShouldPersistTaps="handled" keyboardDismissMode="on-drag">
           <Text style={S.label}>SEGMENTO</Text>
           <TextInput style={S.input} placeholder="Ex: Clínicas, Auto peças" placeholderTextColor="#4E5366" value={segment} onChangeText={setSegment} />
           <Text style={S.label}>CIDADE</Text>
           <TextInput style={S.input} placeholder="Ex: São Paulo, Criciúma" placeholderTextColor="#4E5366" value={city} onChangeText={setCity} />
           <TouchableOpacity style={[S.primaryBtn, (!segment||!city) && S.primaryBtnDisabled]} onPress={scan} activeOpacity={0.8} disabled={scanning||!segment||!city}>
-            {scanning ? <ActivityIndicator color="#090A0F" /> : <Text style={S.primaryBtnText}>Ligar Agente Google Maps</Text>}
+            {scanning ? <ActivityIndicator color="#FFFFFF" /> : <Text style={S.primaryBtnText}>Ligar Agente Google Maps</Text>}
           </TouchableOpacity>
           <Text style={S.helperText}>O robô vai simular cliques no mapa para extrair telefones válidos.</Text>
         </ScrollView>
@@ -681,7 +682,7 @@ function MeetingView({ onMenu }: { onMenu: () => void }) {
 
       {/* Aba 2: Configurar Robô */}
       {tab === "Configurar Robô" && (
-        <ScrollView style={S.form} showsVerticalScrollIndicator={false}>
+        <ScrollView style={S.form} showsVerticalScrollIndicator={false} keyboardDismissMode="on-drag">
           {/* AI toggle */}
           <View style={S.configRow}>
             <View style={{ flex: 1, marginRight: 16 }}>
@@ -812,12 +813,12 @@ function FarmerView({ onMenu }: { onMenu: () => void }) {
         />
       )}
       {tab === "Monitoramento IA" && (
-        <ScrollView style={S.form}>
+        <ScrollView style={S.form} keyboardDismissMode="on-drag">
           <View style={S.aiHeroCard}>
             <Text style={S.aiHeroTitle}>Acompanhamento Pós-Venda Autônomo</Text>
             <Text style={S.aiHeroDesc}>Nossa IA analisa histórico de conversas e prevê insatisfações antes do cancelamento.</Text>
             <TouchableOpacity style={[S.primaryBtn, analyzing && S.primaryBtnDisabled]} onPress={() => { setAnalyzing(true); setTimeout(() => { setAnalyzing(false); setReport({ healthScore: "92%", churnPrevented: "2 clientes salvos", expansionOpportunity: "R$ 4.300 em Up-sell detectado" }); }, 2500); }} disabled={analyzing} activeOpacity={0.8}>
-              {analyzing ? <ActivityIndicator color="#090A0F" /> : <Text style={S.primaryBtnText}>Escanear Carteira com IA</Text>}
+              {analyzing ? <ActivityIndicator color="#FFFFFF" /> : <Text style={S.primaryBtnText}>Escanear Carteira com IA</Text>}
             </TouchableOpacity>
           </View>
           {report && (
@@ -893,7 +894,7 @@ function ReportsView({ onMenu }: { onMenu: () => void }) {
         </ScrollView>
       </View>
 
-      <ScrollView style={S.form} showsVerticalScrollIndicator={false}>
+      <ScrollView style={S.form} showsVerticalScrollIndicator={false} keyboardDismissMode="on-drag">
         {/* Live trigger */}
         <TouchableOpacity
           style={[S.primaryBtn, loading && S.primaryBtnDisabled]}
@@ -901,7 +902,7 @@ function ReportsView({ onMenu }: { onMenu: () => void }) {
           onPress={generateReport}
           disabled={loading}
         >
-          {loading ? <ActivityIndicator color="#090A0F" /> : <Text style={S.primaryBtnText}>Gerar Laudo IA na Hora</Text>}
+          {loading ? <ActivityIndicator color="#FFFFFF" /> : <Text style={S.primaryBtnText}>Gerar Laudo IA na Hora</Text>}
         </TouchableOpacity>
         <Text style={[S.helperText, { marginTop: -8, marginBottom: 20 }]}>Robô configurado para relatório automático às 18:00</Text>
 
@@ -1007,7 +1008,7 @@ function MarketingView({ onMenu }: { onMenu: () => void }) {
 
       {/* Campanhas */}
       {tab === "Campanhas Ativas" && (
-        <ScrollView style={S.form} showsVerticalScrollIndicator={false}>
+        <ScrollView style={S.form} showsVerticalScrollIndicator={false} keyboardDismissMode="on-drag">
           <Text style={[S.sectionLabel, { marginBottom: 16 }]}>MÉTRICAS DE TRÁFEGO ATUAIS</Text>
           <View style={S.card}>
             <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
@@ -1032,7 +1033,7 @@ function MarketingView({ onMenu }: { onMenu: () => void }) {
 
       {/* Criativos */}
       {tab === "Criativos Redes" && (
-        <ScrollView style={S.form} showsVerticalScrollIndicator={false}>
+        <ScrollView style={S.form} showsVerticalScrollIndicator={false} keyboardDismissMode="on-drag">
           <Text style={[S.sectionLabel, { marginBottom: 16 }]}>CRIATIVOS RECENTES DA IA</Text>
           <View style={S.card}>
             <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 14 }}>
@@ -1061,7 +1062,7 @@ function MarketingView({ onMenu }: { onMenu: () => void }) {
             <Text style={{ color: "#FFFFFF", fontSize: 16, fontWeight: "700" }}>Distribuição Inteligente</Text>
           </View>
 
-          <ScrollView style={S.form} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
+          <ScrollView style={S.form} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false} keyboardDismissMode="on-drag">
             <Text style={{ fontSize: 22, fontWeight: "700", color: "#FFFFFF", marginBottom: 24, letterSpacing: -0.5 }}>Calculadora de Mídia IA</Text>
 
             <Text style={S.label}>QUANTO DESEJA INVESTIR? (R$ TOTAL)</Text>
@@ -1071,7 +1072,7 @@ function MarketingView({ onMenu }: { onMenu: () => void }) {
             <TextInput style={S.input} placeholder="Ex: 10" placeholderTextColor="#4E5366" keyboardType="numeric" value={days} onChangeText={setDays} />
 
             <TouchableOpacity style={[S.primaryBtn, (!investment || !days) && S.primaryBtnDisabled]} activeOpacity={0.8} onPress={generate} disabled={calculating || !investment || !days}>
-              {calculating ? <ActivityIndicator color="#090A0F" /> : <Text style={S.primaryBtnText}>Otimizar Canais e Horários</Text>}
+              {calculating ? <ActivityIndicator color="#FFFFFF" /> : <Text style={S.primaryBtnText}>Otimizar Canais e Horários</Text>}
             </TouchableOpacity>
 
             {strategy && (
@@ -1144,7 +1145,7 @@ function ManagementView({ onMenu }: { onMenu: () => void }) {
         </TouchableOpacity>
       </View>
 
-      <ScrollView style={S.form} showsVerticalScrollIndicator={false}>
+      <ScrollView style={S.form} showsVerticalScrollIndicator={false} keyboardDismissMode="on-drag">
         {/* Metrics grid */}
         <Text style={S.sectionLabel}>MÉTRICAS CONSOLIDADAS DO TIME</Text>
         <View style={S.mgmtGrid}>
@@ -1214,7 +1215,7 @@ function ManagementView({ onMenu }: { onMenu: () => void }) {
             </TouchableOpacity>
             <Text style={{ color: "#FFFFFF", fontSize: 16, fontWeight: "700" }}>Novo Integrante</Text>
           </View>
-          <ScrollView style={S.form} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
+          <ScrollView style={S.form} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false} keyboardDismissMode="on-drag">
             <Text style={{ fontSize: 22, fontWeight: "700", color: "#FFFFFF", marginBottom: 24, letterSpacing: -0.5 }}>Cadastrar Executivo</Text>
 
             <Text style={S.label}>NOME COMPLETO</Text>
@@ -1269,7 +1270,7 @@ function KpisView({ onMenu }: { onMenu: () => void }) {
   return (
     <View style={{ flex: 1 }}>
       <TopBar title="Metas & KPIs" subtitle="PAINEL DO DIRETOR" onMenu={onMenu} />
-      <ScrollView style={S.form} showsVerticalScrollIndicator={false}>
+      <ScrollView style={S.form} showsVerticalScrollIndicator={false} keyboardDismissMode="on-drag">
         {/* Histórico global */}
         <Text style={S.sectionLabel}>HISTÓRICO DE PRODUÇÃO GLOBAL</Text>
         <View style={S.card}>
@@ -1348,7 +1349,7 @@ function CorporatePortfolioView({ onMenu }: { onMenu: () => void }) {
   return (
     <View style={{ flex: 1 }}>
       <TopBar title="Carteira Corporativa" subtitle="VISÃO MACRO" onMenu={onMenu} />
-      <ScrollView showsVerticalScrollIndicator={false}>
+      <ScrollView showsVerticalScrollIndicator={false} keyboardDismissMode="on-drag">
         {/* Macro grid */}
         <View style={S.corpMacroRow}>
           {[
@@ -1420,7 +1421,7 @@ function BroadcastView({ onMenu }: { onMenu: () => void }) {
   return (
     <View style={{ flex: 1 }}>
       <TopBar title="Mural da Equipe" subtitle="CENTRAL DE AVISOS" onMenu={onMenu} />
-      <ScrollView style={S.form} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
+      <ScrollView style={S.form} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false} keyboardDismissMode="on-drag">
         <Text style={[S.cardSub, { marginBottom: 24, marginTop: -4 }]}>Envie avisos em massa com push direto na tela do time</Text>
 
         <Text style={S.label}>TÍTULO DO ALERTA</Text>
@@ -1502,7 +1503,7 @@ function FeedbacksView({ onMenu }: { onMenu: () => void }) {
   return (
     <View style={{ flex: 1 }}>
       <TopBar title="Feedbacks 1-on-1" subtitle="PAINEL DO DIRETOR" onMenu={onMenu} />
-      <ScrollView style={S.form} showsVerticalScrollIndicator={false}>
+      <ScrollView style={S.form} showsVerticalScrollIndicator={false} keyboardDismissMode="on-drag">
         <Text style={S.sectionLabel}>SELECIONE UM EXECUTIVO PARA ANÁLISE</Text>
 
         <View style={[S.card, { paddingHorizontal: 0, paddingVertical: 0, overflow: "hidden", marginBottom: 24 }]}>
@@ -1566,7 +1567,7 @@ function TeamPulseView({ onMenu }: { onMenu: () => void }) {
   return (
     <View style={{ flex: 1 }}>
       <TopBar title="Clima Comercial" subtitle="SAÚDE DA EQUIPE" onMenu={onMenu} />
-      <ScrollView style={S.form} showsVerticalScrollIndicator={false}>
+      <ScrollView style={S.form} showsVerticalScrollIndicator={false} keyboardDismissMode="on-drag">
         <Text style={[S.cardSub, { marginBottom: 24, marginTop: -4 }]}>Acompanhe o sentimento interno e evite sobrecarga da equipe</Text>
 
         <Text style={S.sectionLabel}>TERMÔMETRO CONSOLIDADO (HOJE)</Text>
@@ -1636,7 +1637,7 @@ function PulseCheckView({ onMenu }: { onMenu: () => void }) {
         <View style={{ flex: 1 }} />
       </View>
 
-      <ScrollView contentContainerStyle={S.pulseCheckWrapper} showsVerticalScrollIndicator={false}>
+      <ScrollView contentContainerStyle={S.pulseCheckWrapper} showsVerticalScrollIndicator={false} keyboardDismissMode="on-drag">
         <Text style={S.pulseCheckBrand}>JADE INSIGHTS</Text>
         <Text style={S.pulseCheckTitle}>Como você se sente com a rotina comercial hoje?</Text>
         <Text style={[S.cardSub, { textAlign: "center", marginBottom: 32, paddingHorizontal: 12 }]}>
@@ -1726,7 +1727,7 @@ function AccountSettingsView({ onMenu }: { onMenu: () => void }) {
         </ScrollView>
       </View>
 
-      <ScrollView style={S.form} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
+      <ScrollView style={S.form} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled" keyboardDismissMode="on-drag">
         {activeTab === "Meu Perfil" && (
           <View>
             <Text style={S.label}>NOME DO EXECUTIVO</Text>
@@ -1791,7 +1792,7 @@ function AccountSettingsView({ onMenu }: { onMenu: () => void }) {
             </View>
 
             <TouchableOpacity style={[S.primaryBtn, { marginTop: 8 }]} onPress={save} disabled={isSaving} activeOpacity={0.8}>
-              {isSaving ? <ActivityIndicator color="#090A0F" /> : <Text style={S.primaryBtnText}>Sincronizar Cérebro da IA</Text>}
+              {isSaving ? <ActivityIndicator color="#FFFFFF" /> : <Text style={S.primaryBtnText}>Sincronizar Cérebro da IA</Text>}
             </TouchableOpacity>
           </View>
         )}
@@ -1834,7 +1835,7 @@ function SubscriptionView({ onMenu }: { onMenu: () => void }) {
   return (
     <View style={{ flex: 1 }}>
       <TopBar title="Planos & Upgrade" subtitle="ASSINATURA" onMenu={onMenu} />
-      <ScrollView style={S.form} showsVerticalScrollIndicator={false}>
+      <ScrollView style={S.form} showsVerticalScrollIndicator={false} keyboardDismissMode="on-drag">
         <Text style={[S.cardSub, { marginBottom: 20, marginTop: -4 }]}>Evolua a infraestrutura tecnológica do seu time conforme sua operação cresce</Text>
 
         <Text style={S.sectionLabel}>ESCOLHA SEU PLANO DE CRESCIMENTO</Text>
@@ -1880,7 +1881,7 @@ function PrivacyView({ onMenu }: { onMenu: () => void }) {
   return (
     <View style={{ flex: 1 }}>
       <TopBar title="Privacidade" subtitle="CONTA" onMenu={onMenu} />
-      <ScrollView style={S.form} showsVerticalScrollIndicator={false}>
+      <ScrollView style={S.form} showsVerticalScrollIndicator={false} keyboardDismissMode="on-drag">
         <View style={S.privacySecBox}>
           <Text style={S.privacySecTitle}>Criptografia Ponta a Ponta Ativa</Text>
           <Text style={S.privacySecText}>Todas as credenciais corporativas, tokens de comunicação e históricos de mensagens capturados pelo cérebro da JADE são blindados sob chaves de criptografia AES-256 em servidores isolados em nuvem.</Text>
@@ -1916,7 +1917,7 @@ function WhatsAppConfigView({ onMenu }: { onMenu: () => void }) {
   return (
     <View style={{ flex: 1 }}>
       <TopBar title="WhatsApp JADE" subtitle="CONVERSAS" onMenu={onMenu} />
-      <ScrollView style={S.form} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
+      <ScrollView style={S.form} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false} keyboardDismissMode="on-drag">
 
         <View style={[S.insightBox, { marginBottom: 20 }]}>
           <Text style={[S.insightText, { color: "#00E5FF", marginBottom: 0 }]}>Calibre o comportamento dos gatilhos de mensagens e respostas da JADE no WhatsApp.</Text>
@@ -1960,7 +1961,7 @@ function ShopView({ onMenu }: { onMenu: () => void }) {
   return (
     <View style={{ flex: 1 }}>
       <TopBar title="Loja JADE" subtitle="CONTA" onMenu={onMenu} />
-      <ScrollView style={S.form} showsVerticalScrollIndicator={false}>
+      <ScrollView style={S.form} showsVerticalScrollIndicator={false} keyboardDismissMode="on-drag">
         <Text style={[S.cardSub, { marginBottom: 20 }]}>Adicione recursos avulsos ou expanda os limites da sua operação instantaneamente.</Text>
 
         {SHOP_ITEMS.map((item) => (
@@ -1994,7 +1995,7 @@ function HelpView({ onMenu }: { onMenu: () => void }) {
   return (
     <View style={{ flex: 1 }}>
       <TopBar title="Central de Ajuda" subtitle="CONTA" onMenu={onMenu} />
-      <ScrollView style={S.form} showsVerticalScrollIndicator={false}>
+      <ScrollView style={S.form} showsVerticalScrollIndicator={false} keyboardDismissMode="on-drag">
 
         <Text style={[S.sectionLabel, { marginBottom: 12 }]}>DÚVIDAS FREQUENTES</Text>
 
@@ -2082,7 +2083,7 @@ function UsageView({ onMenu }: { onMenu: () => void }) {
   return (
     <View style={{ flex: 1 }}>
       <TopBar title="Consumo do Plano" subtitle="CONTA" onMenu={onMenu} />
-      <ScrollView style={S.form} showsVerticalScrollIndicator={false}>
+      <ScrollView style={S.form} showsVerticalScrollIndicator={false} keyboardDismissMode="on-drag">
 
         <View style={S.usagePlanCard}>
           <Text style={S.usagePlanLabel}>PLANO CONTRATADO</Text>
@@ -2155,7 +2156,7 @@ function MyCompanyView({ onMenu }: { onMenu: () => void }) {
   return (
     <View style={{ flex: 1 }}>
       <TopBar title="Minha Empresa" subtitle="CONTA" onMenu={onMenu} />
-      <ScrollView style={S.form} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
+      <ScrollView style={S.form} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false} keyboardDismissMode="on-drag">
 
         <View style={[S.insightBox, { marginBottom: 20 }]}>
           <Text style={[S.insightText, { color: "#00E5FF", marginBottom: 0 }]}>Cérebro da JADE: As informações abaixo alimentam o conhecimento contextual do robô para negociar com leads no WhatsApp.</Text>
@@ -2200,7 +2201,7 @@ function MyCompanyView({ onMenu }: { onMenu: () => void }) {
         </View>
 
         <TouchableOpacity style={[S.primaryBtn, { marginTop: 8 }]} onPress={save} disabled={isSaving} activeOpacity={0.8}>
-          {isSaving ? <ActivityIndicator color="#090A0F" /> : <Text style={S.primaryBtnText}>Sincronizar Cérebro da JADE</Text>}
+          {isSaving ? <ActivityIndicator color="#FFFFFF" /> : <Text style={S.primaryBtnText}>Sincronizar Cérebro da JADE</Text>}
         </TouchableOpacity>
         <View style={{ height: 40 }} />
       </ScrollView>
@@ -2231,7 +2232,7 @@ function MyProfileView({ onMenu }: { onMenu: () => void }) {
   return (
     <View style={{ flex: 1 }}>
       <TopBar title="Meu Perfil" subtitle="CONTA" onMenu={onMenu} />
-      <ScrollView style={S.form} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
+      <ScrollView style={S.form} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false} keyboardDismissMode="on-drag">
 
         {/* Avatar */}
         <View style={S.profileAvatarBox}>
@@ -2373,9 +2374,9 @@ const S = StyleSheet.create({
   label2: { fontSize: 9, color: "#4E5366", fontWeight: "700", letterSpacing: 0.5, marginBottom: 4 },
   sectionLabel: { fontSize: 12, color: "#8F94A8", fontWeight: "700", letterSpacing: 0.8 },
   input: { backgroundColor: "#161822", height: 54, borderRadius: 12, paddingHorizontal: 16, color: "#FFFFFF", fontSize: 15, borderWidth: 1, borderColor: "#242736", marginBottom: 20 },
-  primaryBtn: { backgroundColor: "#FFFFFF", height: 56, borderRadius: 14, alignItems: "center", justifyContent: "center", marginBottom: 16 },
-  primaryBtnDisabled: { backgroundColor: "#161822", borderWidth: 1, borderColor: "#242736", opacity: 0.5 },
-  primaryBtnText: { color: "#090A0F", fontWeight: "700", fontSize: 15 },
+  primaryBtn: { height: 56, borderRadius: 14, alignItems: "center", justifyContent: "center", marginBottom: 16, backgroundColor: "rgba(255,255,255,0.13)", borderWidth: 1, borderColor: "rgba(255,255,255,0.22)", overflow: "hidden", ...Platform.select({ web: { backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)" } as any, default: {} }) } as any,
+  primaryBtnDisabled: { opacity: 0.35, backgroundColor: "rgba(255,255,255,0.05)", borderColor: "rgba(255,255,255,0.08)" },
+  primaryBtnText: { color: "#FFFFFF", fontWeight: "700", fontSize: 15 },
   helperText: { color: "#4E5366", fontSize: 12, textAlign: "center", lineHeight: 18 },
   empty: { alignItems: "center", justifyContent: "center", paddingVertical: 60 },
   emptyText: { color: "#4E5366", fontSize: 14 },
@@ -2394,8 +2395,8 @@ const S = StyleSheet.create({
   sheetName: { fontSize: 24, fontWeight: "700", color: "#FFFFFF" },
   sheetValue: { fontSize: 20, fontWeight: "800", color: "#FFFFFF", marginTop: 12, marginBottom: 30, paddingHorizontal: 12 },
   actionRow: { flexDirection: "row", gap: 12, marginTop: 20 },
-  actionBtn: { flex: 1, backgroundColor: "#FFFFFF", height: 52, borderRadius: 14, alignItems: "center", justifyContent: "center" },
-  actionBtnText: { color: "#090A0F", fontWeight: "600", fontSize: 15 },
+  actionBtn: { flex: 1, height: 52, borderRadius: 14, alignItems: "center", justifyContent: "center", backgroundColor: "rgba(255,255,255,0.13)", borderWidth: 1, borderColor: "rgba(255,255,255,0.22)", overflow: "hidden", ...Platform.select({ web: { backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)" } as any, default: {} }) } as any,
+  actionBtnText: { color: "#FFFFFF", fontWeight: "600", fontSize: 15 },
   actionBtnSec: { backgroundColor: "transparent", borderWidth: 1, borderColor: "#242736" },
   actionBtnSecText: { color: "#FFFFFF", fontWeight: "600", fontSize: 15 },
 
@@ -2415,8 +2416,8 @@ const S = StyleSheet.create({
   innerBarButton:         { width: 36, height: 36, borderRadius: 18, backgroundColor: "transparent", alignItems: "center", justifyContent: "center" },
   barIcon:                { color: "#FFFFFF", fontSize: 20, fontWeight: "300" },
   textInputStyle:         { flex: 1, color: "#FFFFFF", fontSize: 15, paddingHorizontal: 10, maxHeight: 100 },
-  sendButtonCircle:       { width: 36, height: 36, borderRadius: 18, backgroundColor: "#FFFFFF", alignItems: "center", justifyContent: "center" },
-  sendIcon:               { color: "#090A0F", fontSize: 14, fontWeight: "700" },
+  sendButtonCircle:       { width: 36, height: 36, borderRadius: 18, backgroundColor: "rgba(255,255,255,0.18)", alignItems: "center", justifyContent: "center", borderWidth: 1, borderColor: "rgba(255,255,255,0.3)", overflow: "hidden", ...Platform.select({ web: { backdropFilter: "blur(10px)", WebkitBackdropFilter: "blur(10px)" } as any, default: {} }) } as any,
+  sendIcon:               { color: "#FFFFFF", fontSize: 14, fontWeight: "700" },
   recordingWaveContainer: { flex: 1, flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: 4 },
   recordingLabel:         { color: "#8F94A8", fontSize: 14, fontWeight: "500" },
   waveRow:                { flexDirection: "row", alignItems: "center", justifyContent: "center", height: 30 },
@@ -2442,9 +2443,9 @@ const S = StyleSheet.create({
   suggestionBadge: { marginTop: 10, alignSelf: "flex-start", backgroundColor: "rgba(0,229,255,0.1)", paddingHorizontal: 8, paddingVertical: 4, borderRadius: 6 },
   suggestionText: { color: "#00E5FF", fontSize: 11, fontWeight: "600" },
   fabContainer: { position: "absolute", left: 20, right: 20, zIndex: 10 },
-  confirmBtn: { backgroundColor: "#161822", height: 56, borderRadius: 16, alignItems: "center", justifyContent: "center", borderWidth: 1, borderColor: "#00E5FF", shadowColor: "#00E5FF", shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.2, shadowRadius: 8, elevation: 6 },
+  confirmBtn: { height: 56, borderRadius: 16, alignItems: "center", justifyContent: "center", borderWidth: 1, borderColor: "#00E5FF", backgroundColor: "rgba(0,229,255,0.12)", shadowColor: "#00E5FF", shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.25, shadowRadius: 10, elevation: 6, overflow: "hidden", ...Platform.select({ web: { backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)" } as any, default: {} }) } as any,
   confirmBtnText: { color: "#FFFFFF", fontSize: 16, fontWeight: "700" },
-  startBtn: { backgroundColor: "#FFFFFF", borderColor: "#FFFFFF" },
+  startBtn: { backgroundColor: "rgba(255,255,255,0.18)", borderColor: "rgba(255,255,255,0.4)" },
 
   // Meeting screen
   dateStrip: { flexDirection: "row", justifyContent: "space-between", paddingHorizontal: 20, paddingBottom: 16 },
@@ -2535,12 +2536,12 @@ const S = StyleSheet.create({
   profileUploadBtnText:     { color: "#00E5FF", fontSize: 13, fontWeight: "600" },
 
   // Account Settings screen
-  acctSecBtn:        { backgroundColor: "#161822", height: 54, borderRadius: 12, alignItems: "center", justifyContent: "center", borderWidth: 1, borderColor: "#242736", marginTop: 12 },
+  acctSecBtn:        { height: 54, borderRadius: 12, alignItems: "center", justifyContent: "center", borderWidth: 1, borderColor: "rgba(255,255,255,0.15)", marginTop: 12, backgroundColor: "rgba(255,255,255,0.08)", overflow: "hidden", ...Platform.select({ web: { backdropFilter: "blur(10px)", WebkitBackdropFilter: "blur(10px)" } as any, default: {} }) } as any,
   acctSecBtnText:    { color: "#FFFFFF", fontWeight: "700", fontSize: 15 },
   acctProductList:   { backgroundColor: "#161822", borderRadius: 12, padding: 14, borderWidth: 1, borderColor: "#242736", marginBottom: 12 },
   acctProductRow:    { flexDirection: "row", justifyContent: "space-between", paddingVertical: 6 },
   acctAddRow:        { flexDirection: "row", alignItems: "center", marginBottom: 20 },
-  acctMiniBtn:       { backgroundColor: "#161822", width: 54, height: 54, borderRadius: 12, borderWidth: 1, borderColor: "#00E5FF", justifyContent: "center", alignItems: "center" },
+  acctMiniBtn:       { width: 54, height: 54, borderRadius: 12, borderWidth: 1, borderColor: "#00E5FF", justifyContent: "center", alignItems: "center", backgroundColor: "rgba(0,229,255,0.1)", overflow: "hidden", ...Platform.select({ web: { backdropFilter: "blur(10px)", WebkitBackdropFilter: "blur(10px)" } as any, default: {} }) } as any,
   acctMiniBtnText:   { color: "#00E5FF", fontSize: 20, fontWeight: "600" },
 
   // Subscription screen
@@ -2551,10 +2552,10 @@ const S = StyleSheet.create({
   tierActiveLbl:   { color: "#00E5FF", fontSize: 11, fontWeight: "700", marginTop: 4, letterSpacing: 0.5 },
   tierPrice:       { color: "#FFFFFF", fontSize: 16, fontWeight: "700" },
   tierFeatureText: { color: "#8F94A8", fontSize: 13, paddingVertical: 4, lineHeight: 18 },
-  tierActionBtn:   { height: 48, borderRadius: 12, alignItems: "center", justifyContent: "center" },
-  tierBtnActive:   { backgroundColor: "transparent", borderWidth: 1, borderColor: "rgba(0,229,255,0.2)" },
-  tierBtnInactive: { backgroundColor: "#FFFFFF" },
-  tierBtnText:     { color: "#090A0F", fontWeight: "700", fontSize: 14 },
+  tierActionBtn:   { height: 48, borderRadius: 12, alignItems: "center", justifyContent: "center", overflow: "hidden" },
+  tierBtnActive:   { backgroundColor: "rgba(0,229,255,0.1)", borderWidth: 1, borderColor: "rgba(0,229,255,0.3)", ...Platform.select({ web: { backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)" } as any, default: {} }) } as any,
+  tierBtnInactive: { backgroundColor: "rgba(255,255,255,0.13)", borderWidth: 1, borderColor: "rgba(255,255,255,0.22)", ...Platform.select({ web: { backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)" } as any, default: {} }) } as any,
+  tierBtnText:     { color: "#FFFFFF", fontWeight: "700", fontSize: 14 },
 
   // Feedbacks screen
   fbScoreBadge: { backgroundColor: "rgba(0,229,255,0.10)", paddingHorizontal: 10, paddingVertical: 6, borderRadius: 8 },
@@ -2576,11 +2577,11 @@ const S = StyleSheet.create({
   pulseOptionTextActive:{ color: "#FFFFFF", fontWeight: "600" },
 
   // Broadcast screen
-  broadcastAiBtn:     { height: 48, borderRadius: 12, alignItems: "center", justifyContent: "center", borderWidth: 1, borderColor: "#00E5FF", marginBottom: 16 },
+  broadcastAiBtn:     { height: 48, borderRadius: 12, alignItems: "center", justifyContent: "center", borderWidth: 1, borderColor: "#00E5FF", marginBottom: 16, backgroundColor: "rgba(0,229,255,0.08)", overflow: "hidden", ...Platform.select({ web: { backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)" } as any, default: {} }) } as any,
   broadcastAiBtnText: { color: "#00E5FF", fontSize: 14, fontWeight: "600" },
 
   // Management screen
-  mgmtAddBtn: { backgroundColor: "#161822", borderWidth: 1, borderColor: "#242736", paddingHorizontal: 16, height: 40, borderRadius: 10, justifyContent: "center", alignItems: "center" },
+  mgmtAddBtn: { backgroundColor: "rgba(255,255,255,0.1)", borderWidth: 1, borderColor: "rgba(255,255,255,0.18)", paddingHorizontal: 16, height: 40, borderRadius: 10, justifyContent: "center", alignItems: "center", overflow: "hidden", ...Platform.select({ web: { backdropFilter: "blur(10px)", WebkitBackdropFilter: "blur(10px)" } as any, default: {} }) } as any,
   mgmtAddBtnText: { color: "#FFFFFF", fontSize: 14, fontWeight: "600" },
   mgmtGrid: { marginBottom: 16 },
   mgmtGridRow: { flexDirection: "row", justifyContent: "space-between", marginBottom: 12 },
@@ -2591,7 +2592,7 @@ const S = StyleSheet.create({
   mgmtAvatar: { width: 44, height: 44, borderRadius: 22, backgroundColor: "#090A0F", borderWidth: 1, borderColor: "#242736", alignItems: "center", justifyContent: "center" },
 
   // Marketing screen
-  mktLaunchBtn: { backgroundColor: "#161822", height: 50, borderRadius: 12, borderWidth: 1, borderColor: "#242736", justifyContent: "center", paddingHorizontal: 16 },
+  mktLaunchBtn: { backgroundColor: "rgba(255,255,255,0.08)", height: 50, borderRadius: 12, borderWidth: 1, borderColor: "rgba(255,255,255,0.15)", justifyContent: "center", paddingHorizontal: 16, overflow: "hidden", ...Platform.select({ web: { backdropFilter: "blur(10px)", WebkitBackdropFilter: "blur(10px)" } as any, default: {} }) } as any,
   mktLaunchText: { color: "#00E5FF", fontSize: 14, fontWeight: "600" },
   mktModalHeader: { flexDirection: "row", alignItems: "center", paddingHorizontal: 16, height: 60, borderBottomWidth: 1, borderColor: "#161822" },
   strategyBox: { backgroundColor: "rgba(0,229,255,0.02)", borderWidth: 1, borderColor: "rgba(0,229,255,0.15)", borderRadius: 16, padding: 18, marginTop: 28 },
@@ -2621,14 +2622,14 @@ const S = StyleSheet.create({
   shopItemTitle:   { color: "#FFFFFF", fontSize: 15, fontWeight: "700", maxWidth: "65%" },
   shopItemPrice:   { color: "#00E5FF", fontSize: 15, fontWeight: "700" },
   shopItemDesc:    { color: "#8F94A8", fontSize: 13, lineHeight: 18, marginBottom: 16 },
-  shopBuyBtn:      { backgroundColor: "#FFFFFF", height: 44, borderRadius: 10, alignItems: "center", justifyContent: "center" },
-  shopBuyBtnText:  { color: "#090A0F", fontWeight: "700", fontSize: 14 },
+  shopBuyBtn:      { height: 44, borderRadius: 10, alignItems: "center", justifyContent: "center", backgroundColor: "rgba(255,255,255,0.13)", borderWidth: 1, borderColor: "rgba(255,255,255,0.22)", overflow: "hidden", ...Platform.select({ web: { backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)" } as any, default: {} }) } as any,
+  shopBuyBtnText:  { color: "#FFFFFF", fontWeight: "700", fontSize: 14 },
 
   // Help screen
   faqCard:         { backgroundColor: "#161822", borderRadius: 14, padding: 16, borderWidth: 1, borderColor: "#242736", marginBottom: 12 },
   faqQuestion:     { color: "#FFFFFF", fontSize: 14, fontWeight: "600", marginBottom: 6 },
   faqAnswer:       { color: "#8F94A8", fontSize: 13, lineHeight: 18 },
-  supportBtn:      { backgroundColor: "#161822", height: 54, borderRadius: 12, alignItems: "center", justifyContent: "center", borderWidth: 1, borderColor: "#00E5FF" },
+  supportBtn:      { height: 54, borderRadius: 12, alignItems: "center", justifyContent: "center", borderWidth: 1, borderColor: "#00E5FF", backgroundColor: "rgba(0,229,255,0.08)", overflow: "hidden", ...Platform.select({ web: { backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)" } as any, default: {} }) } as any,
   supportBtnText:  { color: "#00E5FF", fontWeight: "600", fontSize: 15 },
 
   // Usage screen

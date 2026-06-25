@@ -117,7 +117,7 @@ export default function LoginScreen() {
             disabled={loading || !email || !password}
           >
             {loading
-              ? <ActivityIndicator color="#090A0F" />
+              ? <ActivityIndicator color="#FFFFFF" />
               : <Text style={S.loginBtnText}>Entrar no Sistema</Text>}
           </TouchableOpacity>
         </View>
@@ -172,9 +172,9 @@ const S = StyleSheet.create({
   input:              { backgroundColor: "#161822", height: 54, borderRadius: 12, paddingHorizontal: 16, color: "#FFFFFF", fontSize: 15, borderWidth: 1, borderColor: "#242736" },
   forgotBtn:          { alignSelf: "flex-end", paddingVertical: 6, marginTop: 8 },
   forgotText:         { color: "#8F94A8", fontSize: 13, fontWeight: "500" },
-  loginBtn:           { backgroundColor: "#FFFFFF", height: 54, borderRadius: 12, alignItems: "center", justifyContent: "center", marginTop: 24 },
+  loginBtn:           { height: 54, borderRadius: 12, alignItems: "center", justifyContent: "center", marginTop: 24, backgroundColor: "rgba(255,255,255,0.13)", borderWidth: 1, borderColor: "rgba(255,255,255,0.22)", overflow: "hidden", ...Platform.select({ web: { backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)" } as any, default: {} }) } as any,
   loginBtnDisabled:   { opacity: 0.35 },
-  loginBtnText:       { color: "#090A0F", fontWeight: "700", fontSize: 15 },
+  loginBtnText:       { color: "#FFFFFF", fontWeight: "700", fontSize: 15 },
 
   dividerRow:         { flexDirection: "row", alignItems: "center", marginVertical: 28 },
   line:               { flex: 1, height: 1, backgroundColor: "#1E1E2A" },

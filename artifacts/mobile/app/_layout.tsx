@@ -204,7 +204,7 @@ function RootLayoutNav() {
       />
       <Stack.Screen
         name="preview-unified"
-        options={{ headerShown: false, animation: "fade", gestureEnabled: false }}
+        options={{ headerShown: false, animation: "fade", gestureEnabled: true }}
       />
     </Stack>
   );
