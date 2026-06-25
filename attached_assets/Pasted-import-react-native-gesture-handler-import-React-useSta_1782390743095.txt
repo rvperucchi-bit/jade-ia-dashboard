@@ -1,0 +1,156 @@
+import 'react-native-gesture-handler';
+import React, { useState } from 'react';
+import { 
+  StyleSheet, 
+  Text, 
+  View, 
+  TouchableOpacity, 
+  SafeAreaView, 
+  StatusBar,
+  ScrollView,
+  Image,
+  Dimensions
+} from 'react-native';
+import { createDrawerNavigator, DrawerContentScrollView } from '@react-navigation/drawer';
+import { NavigationContainer } from '@react-navigation/native';
+
+// IMPORTAÇÃO DAS TELAS COMERCIAIS QUE VOCÊ JÁ CRIOU NO SEU REPLIT
+import PipelineScreen from './PipelineScreen';
+import RouteScreen from './RouteScreen';
+import ProspectingScreen from './ProspectingScreen';
+import MeetingScreen from './MeetingScreen';
+import FarmerScreen from './FarmerScreen';
+import ReportsScreen from './ReportsScreen';
+import MarketingScreen from './MarketingScreen';
+import ChatScreen from './ChatScreen'; // A tela limpa do Chat que criamos antes
+
+const { width } = Dimensions.get('window');
+
+// 1. SIDEBAR CUSTOMIZADA ULTRA PREMIUM (ESTILO CHATGPT / JADE)
+function CustomDrawerContent(props) {
+  // Estados para controlar quais submenus estão abertos/expandidos
+  const [conversasOpen, setConversasOpen] = useState(true); // Inicia aberto igual ao ChatGPT
+  const [comercialOpen, setComercialOpen] = useState(false);
+
+  return (
+    <View style={styles.drawerWrapper}>
+      {/* HEADER DA SIDEBAR: NOME DA IA E FOTO DO EXECUTIVO */}
+      <View style={styles.drawerHeader}>
+        <Text style={styles.brandName}>JADE</Text>
+        <Image 
+          source={{ uri: 'https://unsplash.com' }} 
+          style={styles.executiveAvatar} 
+        />
+      </View>
+
+      <ScrollView style={styles.menuScroll} showsVerticalScrollIndicator={false}>
+        
+        {/* CATEGORIA PRINCIPAL 1: CONVERSAS */}
+        <TouchableOpacity 
+          style={styles.menuHeaderButton} 
+          onPress={() => setConversasOpen(!conversasOpen)}
+          activeOpacity={0.7}
+        >
+          <Text style={styles.menuHeaderTitle}>✉️ Conversas</Text>
+          <Text style={styles.arrowIcon}>{conversasOpen ? '▼' : '►'}</Text>
+        </TouchableOpacity>
+
+        {/* SUBMENU: BOTÕES DE CONVERSAS */}
+        {conversasOpen && (
+          <View style={styles.subMenuContainer}>
+            <TouchableOpacity 
+              style={styles.subMenuItem}
+              onPress={() => props.navigation.navigate('Chat')}
+            >
+              <Text style={styles.subMenuText}>✨ Novo Chat</Text>
+            </TouchableOpacity>
+            
+            <TouchableOpacity 
+              style={styles.subMenuItem}
+              onPress={() => props.navigation.navigate('Chat')} // Direciona para o chat atual/histórico
+            >
+              <Text style={styles.subMenuText}>🕒 Histórico de Chats</Text>
+            </TouchableOpacity>
+          </View>
+        )}
+
+        <View style={styles.menuDivider} />
+
+        {/* CATEGORIA PRINCIPAL 2: COMERCIAL */}
+        <TouchableOpacity 
+          style={styles.menuHeaderButton} 
+          onPress={() => setComercialOpen(!comercialOpen)}
+          activeOpacity={0.7}
+        >
+          <Text style={styles.menuHeaderTitle}>📊 Comercial</Text>
+          <Text style={styles.arrowIcon}>{comercialOpen ? '▼' : '►'}</Text>
+        </TouchableOpacity>
+
+        {/* SUBMENU: TODAS AS SUAS TELAS COMERCIAIS */}
+        {comercialOpen && (
+          <View style={styles.subMenuContainer}>
+            <TouchableOpacity style={styles.subMenuItem} onPress={() => props.navigation.navigate('Pipeline')}>
+              <Text style={styles.subMenuText}>💼 Pipeline de Vendas</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity style={styles.subMenuItem} onPress={() => props.navigation.navigate('Route')}>
+              <Text style={styles.subMenuText}>🗺️ Rota Otimizada do Dia</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity style={styles.subMenuItem} onPress={() => props.navigation.navigate('Prospecting')}>
+              <Text style={styles.subMenuText}>🤖 Prospecção Maps IA</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity style={styles.subMenuItem} onPress={() => props.navigation.navigate('Meeting')}>
+              <Text style={styles.subMenuText}>🗓️ Agenda & Briefings</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity style={styles.subMenuItem} onPress={() => props.navigation.navigate('Farmer')}>
+              <Text style={styles.subMenuText}>📈 Farmer & Retenção</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity style={styles.subMenuItem} onPress={() => props.navigation.navigate('Reports')}>
+              <Text style={styles.subMenuText}>📉 KPIs & Relatórios</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity style={styles.subMenuItem} onPress={() => props.navigation.navigate('Marketing')}>
+              <Text style={styles.subMenuText}>🚀 Tráfego & Marketing IA</Text>
+            </TouchableOpacity>
+          </View>
+        )}
+
+      </ScrollView>
+    </View>
+  );
+}
+
+const Drawer = createDrawerNavigator();
+
+export default function App() {
+  return (
+    <NavigationContainer>
+      <StatusBar barStyle="light-content" backgroundColor="#090A0F" />
+      <Drawer.Navigator
+        initialRouteName="Chat"
+        drawerContent={(props) => <CustomDrawerContent {...props} />}
+        screenOptions={{
+          headerShown: false,
+          // Definimos a largura para ocupar quase toda a tela (ou toda ela se mudar para width)
+          drawerStyle: { backgroundColor: '#090A0F', width: width * 0.85 },
+          swipeEnabled: true,
+          drawerType: 'front',
+        }}
+      >
+        {/* Telas Registradas no Roteador */}
+        <Drawer.Screen name="Chat" component={ChatScreen} />
+        <Drawer.Screen name="Pipeline" component={PipelineScreen} />
+        <Drawer.Screen name="Route" component={RouteScreen} />
+        <Drawer.Screen name="Prospecting" component={ProspectingScreen} />
+        <Drawer.Screen name="Meeting" component={MeetingScreen} />
+        <Drawer.Screen name="Farmer" component={FarmerScreen} />
+        <Drawer.Screen name="Reports" component={ReportsScreen} />
+        <Drawer.Screen name="Marketing" component={MarketingScreen} />
+      </Drawer.Navigator>
+    </NavigationContainer>
+  );
+}

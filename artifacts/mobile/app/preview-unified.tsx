@@ -3,6 +3,7 @@ import {
   ActivityIndicator,
   Alert,
   Animated,
+  Dimensions,
   Switch,
   Easing,
   FlatList,
@@ -18,6 +19,8 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+
+const { width: SCREEN_W } = Dimensions.get("window");
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as Linking from "expo-linking";
 import { useRouter } from "expo-router";
@@ -81,60 +84,87 @@ const SCHEDULED_MEETINGS: ScheduledMeeting[] = [
 ];
 const MEETING_DAYS = ["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"] as const;
 
-const SIDEBAR_W = 280;
-
-// ─── Sidebar ──────────────────────────────────────────────────────────────────
-const MENU_ITEMS: { label: string; icon: string; route: Route }[] = [
-  { label: "Chat IA",          icon: "💬", route: "Chat"        },
-  { label: "Pipeline",         icon: "📊", route: "Pipeline"    },
-  { label: "Rota do Dia",      icon: "📍", route: "Route"       },
-  { label: "Prospecção",       icon: "🔍", route: "Prospecting" },
-  { label: "Agenda & Briefing",icon: "📅", route: "Meeting"     },
-  { label: "Farmer & Carteira",icon: "🌱", route: "Farmer"      },
-  { label: "Relatórios IA",    icon: "📈", route: "Reports"     },
-  { label: "Marketing IA",     icon: "💰", route: "Marketing"   },
+// ─── Sidebar (accordion estilo JADE / ChatGPT) ───────────────────────────────
+const COMERCIAL_ITEMS: { label: string; route: Route }[] = [
+  { label: "💼 Pipeline de Vendas",     route: "Pipeline"    },
+  { label: "🗺️ Rota Otimizada do Dia",  route: "Route"       },
+  { label: "🤖 Prospecção Maps IA",     route: "Prospecting" },
+  { label: "🗓️ Agenda & Briefings",     route: "Meeting"     },
+  { label: "📈 Farmer & Retenção",      route: "Farmer"      },
+  { label: "📉 KPIs & Relatórios",      route: "Reports"     },
+  { label: "🚀 Tráfego & Marketing IA", route: "Marketing"   },
 ];
 
 function Sidebar({ visible, onClose, currentRoute, onNavigate }: {
   visible: boolean; onClose: () => void;
   currentRoute: Route; onNavigate: (r: Route) => void;
 }) {
-  const slideX = useRef(new Animated.Value(-SIDEBAR_W)).current;
-  const dim    = useRef(new Animated.Value(0)).current;
+  const slideX = useRef(new Animated.Value(-SCREEN_W)).current;
   const insets = useSafeAreaInsets();
+  const [conversasOpen, setConversasOpen] = useState(true);
+  const [comercialOpen, setComercialOpen] = useState(false);
 
   React.useEffect(() => {
-    Animated.parallel([
-      Animated.timing(slideX, { toValue: visible ? 0 : -SIDEBAR_W, duration: visible ? 300 : 260, easing: visible ? Easing.out(Easing.cubic) : Easing.in(Easing.cubic), useNativeDriver: true }),
-      Animated.timing(dim,    { toValue: visible ? 1 : 0,           duration: visible ? 280 : 240, useNativeDriver: true }),
-    ]).start();
+    Animated.timing(slideX, {
+      toValue: visible ? 0 : -SCREEN_W,
+      duration: visible ? 320 : 270,
+      easing: visible ? Easing.out(Easing.cubic) : Easing.in(Easing.cubic),
+      useNativeDriver: true,
+    }).start();
   }, [visible]);
+
+  const go = (r: Route) => { onClose(); onNavigate(r); };
 
   return (
     <Modal visible={visible} transparent animationType="none" onRequestClose={onClose}>
-      <Animated.View style={[S.sidebarOverlay, { opacity: dim }]}>
-        <TouchableOpacity style={{ flex: 1 }} activeOpacity={1} onPress={onClose} />
-      </Animated.View>
-      <Animated.View style={[S.sidebar, { paddingTop: insets.top + 20, transform: [{ translateX: slideX }] }]}>
+      {/* Tap-outside to close */}
+      <TouchableOpacity style={S.sidebarOverlay} activeOpacity={1} onPress={onClose} />
+
+      <Animated.View style={[S.sidebar, { paddingTop: insets.top + 20, width: SCREEN_W, transform: [{ translateX: slideX }] }]}>
+        {/* Header */}
         <View style={S.drawerHeader}>
-          <Text style={S.drawerBrand}>Sleek CRM</Text>
-          <Text style={S.drawerUser}>Vendas Autônomas</Text>
+          <Text style={S.drawerBrand}>JADE</Text>
+          {/* Avatar placeholder */}
+          <View style={S.drawerAvatar}>
+            <Text style={{ fontSize: 18 }}>👤</Text>
+          </View>
         </View>
-        <ScrollView showsVerticalScrollIndicator={false}>
-          {MENU_ITEMS.map((item) => {
-            const active = currentRoute === item.route;
-            return (
-              <TouchableOpacity
-                key={item.route}
-                style={[S.drawerItem, active && S.drawerItemActive]}
-                activeOpacity={0.7}
-                onPress={() => { onClose(); onNavigate(item.route); }}
-              >
-                <Text style={S.drawerItemIcon}>{item.icon}</Text>
-                <Text style={[S.drawerItemText, active && S.drawerItemTextActive]}>{item.label}</Text>
+
+        <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
+          {/* ── Conversas ── */}
+          <TouchableOpacity style={S.drawerSection} onPress={() => setConversasOpen((v) => !v)} activeOpacity={0.7}>
+            <Text style={S.drawerSectionTitle}>✉️ Conversas</Text>
+            <Text style={S.drawerArrow}>{conversasOpen ? "▼" : "►"}</Text>
+          </TouchableOpacity>
+
+          {conversasOpen && (
+            <View style={S.drawerSubMenu}>
+              <TouchableOpacity style={S.drawerSubItem} onPress={() => go("Chat")} activeOpacity={0.7}>
+                <Text style={[S.drawerSubText, currentRoute === "Chat" && S.drawerSubTextActive]}>✨ Novo Chat</Text>
               </TouchableOpacity>
-            );
-          })}
+              <TouchableOpacity style={S.drawerSubItem} onPress={() => go("Chat")} activeOpacity={0.7}>
+                <Text style={S.drawerSubText}>🕒 Histórico de Chats</Text>
+              </TouchableOpacity>
+            </View>
+          )}
+
+          <View style={S.drawerDivider} />
+
+          {/* ── Comercial ── */}
+          <TouchableOpacity style={S.drawerSection} onPress={() => setComercialOpen((v) => !v)} activeOpacity={0.7}>
+            <Text style={S.drawerSectionTitle}>📊 Comercial</Text>
+            <Text style={S.drawerArrow}>{comercialOpen ? "▼" : "►"}</Text>
+          </TouchableOpacity>
+
+          {comercialOpen && (
+            <View style={S.drawerSubMenu}>
+              {COMERCIAL_ITEMS.map((item) => (
+                <TouchableOpacity key={item.route} style={S.drawerSubItem} onPress={() => go(item.route)} activeOpacity={0.7}>
+                  <Text style={[S.drawerSubText, currentRoute === item.route && S.drawerSubTextActive]}>{item.label}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          )}
         </ScrollView>
       </Animated.View>
     </Modal>
@@ -1027,17 +1057,20 @@ const S = StyleSheet.create({
   briefingLabel: { fontSize: 10, color: "#00E5FF", fontWeight: "700", letterSpacing: 1, marginBottom: 8 },
   briefingText: { fontSize: 14, color: "#E2E8F0", lineHeight: 22 },
 
-  // Sidebar
-  sidebarOverlay: { ...StyleSheet.absoluteFillObject, backgroundColor: "rgba(0,0,0,0.6)", zIndex: 10 },
-  sidebar: { position: "absolute", top: 0, left: 0, bottom: 0, width: SIDEBAR_W, backgroundColor: "#11131A", borderRightWidth: 1, borderColor: "#242736", paddingHorizontal: 12, zIndex: 20 },
-  drawerHeader: { paddingVertical: 28, paddingHorizontal: 10, borderBottomWidth: 1, borderColor: "#242736", marginBottom: 10 },
-  drawerBrand: { color: "#FFFFFF", fontSize: 22, fontWeight: "800", letterSpacing: -0.5 },
-  drawerUser: { color: "#00E5FF", fontSize: 12, fontWeight: "600", marginTop: 4, letterSpacing: 0.5 },
-  drawerItem: { flexDirection: "row", alignItems: "center", height: 50, borderRadius: 12, paddingHorizontal: 14, marginBottom: 6 },
-  drawerItemActive: { backgroundColor: "rgba(255,255,255,0.06)" },
-  drawerItemIcon: { fontSize: 16, marginRight: 12 },
-  drawerItemText: { color: "#8F94A8", fontSize: 15, fontWeight: "500" },
-  drawerItemTextActive: { color: "#FFFFFF", fontWeight: "700" },
+  // Sidebar — accordion estilo JADE / ChatGPT
+  sidebarOverlay: { ...StyleSheet.absoluteFillObject, backgroundColor: "rgba(0,0,0,0.45)", zIndex: 10 },
+  sidebar: { position: "absolute", top: 0, left: 0, bottom: 0, backgroundColor: "#090A0F", paddingHorizontal: 20, zIndex: 20 },
+  drawerHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", paddingBottom: 24, borderBottomWidth: 1, borderColor: "#161822", marginBottom: 20 },
+  drawerBrand: { color: "#FFFFFF", fontSize: 24, fontWeight: "800", letterSpacing: 1 },
+  drawerAvatar: { width: 44, height: 44, borderRadius: 22, borderWidth: 1.5, borderColor: "#242736", backgroundColor: "#161822", alignItems: "center", justifyContent: "center" },
+  drawerSection: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", paddingVertical: 14, borderRadius: 10 },
+  drawerSectionTitle: { color: "#FFFFFF", fontSize: 16, fontWeight: "600", letterSpacing: -0.2 },
+  drawerArrow: { color: "#4E5366", fontSize: 12 },
+  drawerSubMenu: { paddingLeft: 16, marginTop: 4, marginBottom: 10, borderLeftWidth: 1, borderColor: "#161822" },
+  drawerSubItem: { paddingVertical: 11, borderRadius: 8 },
+  drawerSubText: { color: "#8F94A8", fontSize: 14, fontWeight: "500" },
+  drawerSubTextActive: { color: "#FFFFFF", fontWeight: "700" },
+  drawerDivider: { height: 1, backgroundColor: "#161822", marginVertical: 10 },
 
   // Reports screen
   reportBox: { backgroundColor: "#161822", borderRadius: 16, padding: 18, borderWidth: 1, borderColor: "#242736", marginBottom: 28 },
