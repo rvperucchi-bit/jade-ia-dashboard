@@ -17,7 +17,7 @@ import { useColors } from "@/hooks/useColors";
 const PURPLE = "#8400FF";
 
 const PINK   = "#FF0080";
-const GREEN  = "#FF0080";
+const GREEN  = "#22CC88";
 
 type Period = "hoje" | "semana" | "mes";
 

@@ -44,9 +44,9 @@ export default function UsoScreen() {
 
   const msgPct    = credits.total > 0 ? Math.round((credits.remaining / credits.total) * 100) : 0;
   const radarPct  = radar.total > 0 ? Math.round((radar.remaining / radar.total) * 100) : 0;
-  const msgBar    = credits.warnLevel === "empty" ? "rgba(255,255,255,0.5)" : credits.warnLevel === "warn" ? "rgba(255,255,255,0.45)" : "rgba(255,255,255,0.55)";
+  const msgBar    = credits.warnLevel === "empty" ? "#CC2244" : credits.warnLevel === "warn" ? "#FF8800" : "#FF0080";
   const radarWarn = radar.remaining === 0 ? "empty" : radar.remaining < radar.total * 0.2 ? "warn" : "ok";
-  const radarBar  = radarWarn === "empty" ? "rgba(255,255,255,0.5)" : radarWarn === "warn" ? "rgba(255,255,255,0.45)" : "rgba(255,255,255,0.55)";
+  const radarBar  = radarWarn === "empty" ? "#CC2244" : radarWarn === "warn" ? "#FF8800" : "#8400FF";
 
   const topPad = Platform.OS === "web" ? 24 : insets.top + 4;
   const botPad = Platform.OS === "web" ? 40 : insets.bottom + 32;

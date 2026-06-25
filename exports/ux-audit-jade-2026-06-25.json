@@ -1,0 +1,75 @@
+{
+  "title": "Auditoria UX — JADE IA",
+  "subtitle": "Relatório completo de experiência do usuário",
+  "date": "25 de junho de 2026",
+  "output": "/home/runner/workspace/exports/auditoria-ux-jade-2026-06-25.pdf",
+  "sections": [
+    {
+      "heading": "Resumo Executivo",
+      "body": [
+        "Auditoria completa de UX percorrendo todas as 48 telas do app JADE IA (Expo/React Native SDK 54). Foram identificados 5 bugs visuais confirmados e corrigidos, além de mapeamento de inconsistências, oportunidades e itens pendentes para a próxima sprint. Nenhuma funcionalidade, integração ou design visual foi alterado — apenas polimento e correções de usabilidade."
+      ]
+    },
+    {
+      "heading": "Correções Aplicadas — 5 Bugs Corrigidos",
+      "bullets": [
+        "painelexecutivo.tsx: GREEN = \"#FF0080\" (idêntico ao PINK) — barras de KPI nunca ficavam verdes. Corrigido para #22CC88.",
+        "notificacoes.tsx: success: \"#FF0080\" — ícones de lead e JADE eram idênticos visualmente. Corrigido: lead → verde #22CC88, plano → laranja #FF8800.",
+        "crm.tsx: Filtro \"Perdidos\" ausente — leads descartados/inválidos existiam mas não podiam ser filtrados. Adicionado filtro \"Perdidos\".",
+        "uso.tsx: Barras de uso com cores quase iguais (rgba 0.45/0.50/0.55) — diferença de 0.05 imperceptível. Corrigido para vermelho/laranja/rosa semânticos.",
+        "login.tsx: Botões Google e Apple pareciam funcionais mas disparavam alert \"em breve\" sem indicação visual. Adicionado opacity 0.42 + rótulo \"Em breve\" em cada botão."
+      ]
+    },
+    {
+      "heading": "Status das Telas por Categoria",
+      "bullets": [
+        "AUTENTICAÇÃO: splash (OK), login (corrigido), cadastro (OK), onboarding (OK), sucesso (OK).",
+        "NAVEGAÇÃO/TABS: index (corrigido), tabs/_layout (OK), tabs/mais — redireciona para jade, comportamento intencional.",
+        "CHAT/IA: jade.tsx (OK — chat robusto, LeadCards, quick replies, voz, menu accordion), conversas.tsx (OK — filtros, busca, limite por lead, toggle JADE), conversa/[id].tsx (OK).",
+        "CRM/PIPELINE: leads.tsx Kanban (OK), crm.tsx (corrigido — filtro Perdidos), pipeline.tsx (OK), scanner.tsx (OK — radar geolocalizado), briefing/laudo/roteiro/objecoes/roleplay (todos OK).",
+        "GESTÃO/ANALYTICS: painelexecutivo (corrigido — KPIs verdes), analise/metas/relatorios/feedbackexecutivo/feedbackjade/gestao/meutime/carteira (OK — dados mock, ver pendências).",
+        "CONFIGURAÇÕES: perfil/empresa/plano/loja/uso (corrigido)/whatsapp-config/notificacoes (corrigido)/historico/treinamento/biblioteca/ajuda/termos/privacidade (todos OK)."
+      ]
+    },
+    {
+      "heading": "Consistência de Componentes — Avaliação",
+      "bullets": [
+        "Back button: presente e funcional em todas as telas fora da tab bar. Consistente.",
+        "Estados vazios: presentes com ícone + título + subtítulo em conversas, leads, histórico, notificações e CRM. Ausente em carteira e meu time (apenas dados mock).",
+        "Loading states: ActivityIndicator aplicado em todas as operações assíncronas. Consistente.",
+        "Haptics: aplicados corretamente — Light em seleções, Medium em ações, Success em confirmações.",
+        "SafeArea: todas as telas usam useSafeAreaInsets() corretamente.",
+        "Fontes: SpaceGrotesk em todo o app — consistente.",
+        "Cores primárias: #FF0080 (JADE pink) e #8400FF (Enterprise purple) — consistentes em todas as telas."
+      ]
+    },
+    {
+      "heading": "Pendências — Próxima Sprint (por Impacto)",
+      "bullets": [
+        "[ALTA] Dados mockados em dashboards: relatorios, painelexecutivo, metas e marketing exibem números fixos como se fossem dados reais. Conectar às APIs ou exibir estado vazio com CTA.",
+        "[ALTA] Recuperação de senha: botão \"Esqueci minha senha\" exibe alert mas não envia e-mail. Implementar endpoint de reset real.",
+        "[ALTA] Login Google/Apple: botões presentes mas não funcionais. Implementar OAuth ou remover até estar pronto.",
+        "[MÉDIA] Estado vazio em Carteira / Meu Time: telas mostram dados de equipe mock sem indicar que o usuário precisa configurar primeiro.",
+        "[MÉDIA] Pipeline com valor zerado: todos os deals têm value: 0 ao ser convertidos do CRM. Adicionar campo de valor esperado.",
+        "[MÉDIA] CRM sem busca por telefone: a busca filtra só por nome — campo crítico para vendedores de campo.",
+        "[MÉDIA] Exportar/Compartilhar conversa sem handler: CONTEXT_ITEMS do jade.tsx tem entradas mas sem ação implementada.",
+        "[MÉDIA] Limpar conversa sem confirmação: ação destrutiva deve pedir confirmação antes de executar.",
+        "[BAIXA] Cores hardcoded vs useColors(): algumas telas usam objetos de cor locais em vez do hook centralizado.",
+        "[BAIXA] Sem paginação no Histórico: todas as sessões carregadas de uma vez — pode impactar performance com muitas sessões.",
+        "[BAIXA] Aba Mais fantasma: (tabs)/mais.tsx redireciona silenciosamente para jade sem feedback visual."
+      ]
+    },
+    {
+      "heading": "Arquivos Modificados",
+      "bullets": [
+        "app/index.tsx — redireciona para /splash (correção de sessão anterior)",
+        "app/splash.tsx — animação oficial aprovada: fade-in + scale 95→100%, ~1.82s (correção de sessão anterior)",
+        "app/painelexecutivo.tsx — cor GREEN corrigida de #FF0080 para #22CC88",
+        "app/notificacoes.tsx — cores success (#22CC88) e warning (#FF8800) corrigidas",
+        "app/crm.tsx — filtro \"Perdidos\" adicionado ao FILTER_OPTIONS",
+        "app/uso.tsx — barras de uso com cores semânticas (vermelho/laranja/rosa)",
+        "app/login.tsx — botões sociais com indicativo \"Em breve\" visual"
+      ]
+    }
+  ]
+}

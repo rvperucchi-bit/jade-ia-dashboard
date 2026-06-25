@@ -149,3 +149,9 @@ id = "E1-M514X21wD0NMltUG-r"
 uri = "file://exports/relatorio-context-builder-2026-06-24.pdf"
 type = "pdf"
 title = "Relatório — JADE Context Builder"
+
+[[outputs]]
+id = "H2HDpC7fpXCPR-bd2D39Q"
+uri = "file://exports/auditoria-ux-jade-2026-06-25.pdf"
+type = "pdf"
+title = "Auditoria UX — JADE IA (25 jun 2026)"

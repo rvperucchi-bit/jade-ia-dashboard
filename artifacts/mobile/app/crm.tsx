@@ -97,6 +97,7 @@ const FILTER_OPTIONS: { key: ContactStatus | "todos"; label: string }[] = [
   { key: "quente",      label: "Quentes" },
   { key: "negociacao",  label: "Negociação" },
   { key: "fechado",     label: "Fechados" },
+  { key: "perdido",     label: "Perdidos" },
 ];
 
 function mapStatus(s: string): ContactStatus {

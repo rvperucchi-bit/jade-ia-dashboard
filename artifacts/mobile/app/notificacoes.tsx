@@ -20,8 +20,8 @@ const C = {
   sub: "#AAAACC",
   primary: "#FF0080",
   surface: "#16161F",
-  success: "#FF0080",
-  warning: "rgba(255,255,255,0.45)",
+  success: "#22CC88",
+  warning: "#FF8800",
 };
 
 const ICON_MAP: Record<AppNotification["type"], { name: string; color: string; bg: string }> = {
