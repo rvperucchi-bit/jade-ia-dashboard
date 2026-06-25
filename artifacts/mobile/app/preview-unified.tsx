@@ -104,15 +104,15 @@ function Sidebar({ visible, onClose, currentRoute, onNavigate }: {
 }) {
   const slideX = useRef(new Animated.Value(-SCREEN_W)).current;
   const insets = useSafeAreaInsets();
-  const [conversasOpen, setConversasOpen] = useState(true);
+  const [conversasOpen, setConversasOpen] = useState(false);
   const [comercialOpen, setComercialOpen] = useState(false);
   const [gestaoOpen,    setGestaoOpen]    = useState(false);
   const [contaOpen,     setContaOpen]     = useState(false);
 
   const swipePan = useRef(
     PanResponder.create({
-      onMoveShouldSetPanResponder: (_, g) => Math.abs(g.dx) > 10 && Math.abs(g.dx) > Math.abs(g.dy),
-      onPanResponderRelease: (_, g) => { if (g.dx < -40) onClose(); },
+      onMoveShouldSetPanResponder: (_, g) => g.dx < -20 && Math.abs(g.dx) > Math.abs(g.dy) * 2,
+      onPanResponderRelease: (_, g) => { if (g.dx < -100) onClose(); },
     })
   ).current;
 
@@ -144,13 +144,6 @@ function Sidebar({ visible, onClose, currentRoute, onNavigate }: {
               <Text style={{ fontSize: 16, color: "#8F94A8", fontWeight: "600" }}>A</Text>
             </View>
           </View>
-        </View>
-
-        {/* Botão fechar fixo (fora do scroll) */}
-        <View style={{ paddingBottom: 16 }} pointerEvents="box-none">
-          <TouchableOpacity style={S.sidebarCloseCircle} onPress={onClose} activeOpacity={0.7}>
-            <Ionicons name="chevron-back" size={22} color="rgba(255,255,255,0.85)" />
-          </TouchableOpacity>
         </View>
 
         <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false} keyboardDismissMode="on-drag" contentContainerStyle={{ paddingBottom: 32 }}>
@@ -266,10 +259,11 @@ function Sidebar({ visible, onClose, currentRoute, onNavigate }: {
         <View style={S.drawerFooter}>
           <TouchableOpacity
             style={S.logoutBtn}
-            onPress={() => { onClose(); onNavigate("Chat"); }}
+            onPress={() => { onClose(); }}
             activeOpacity={0.7}
           >
-            <Text style={S.logoutBtnText}>Sair da Conta</Text>
+            <Ionicons name="log-out-outline" size={16} color="#4E5366" />
+            <Text style={[S.logoutBtnText, { marginLeft: 6 }]}>Sair</Text>
           </TouchableOpacity>
         </View>
 
@@ -372,6 +366,29 @@ function ChatView({ onMenu }: { onMenu: () => void }) {
 
   const hasText = input.trim().length > 0;
 
+  // ── Animated wave bars ────────────────────────────────────────────────────
+  const waveAnims = useRef([
+    new Animated.Value(12),
+    new Animated.Value(24),
+    new Animated.Value(18),
+    new Animated.Value(28),
+    new Animated.Value(14),
+  ]).current;
+
+  useEffect(() => {
+    if (!recording) return;
+    const animations = waveAnims.map((anim, i) =>
+      Animated.loop(
+        Animated.sequence([
+          Animated.timing(anim, { toValue: 6 + Math.random() * 26, duration: 250 + i * 60, useNativeDriver: false }),
+          Animated.timing(anim, { toValue: 6 + Math.random() * 26, duration: 250 + i * 60, useNativeDriver: false }),
+        ])
+      )
+    );
+    animations.forEach(a => a.start());
+    return () => animations.forEach(a => a.stop());
+  }, [recording]);
+
   return (
     <View style={{ flex: 1 }}>
       <TopBar title="JADE" onMenu={onMenu} />
@@ -399,7 +416,7 @@ function ChatView({ onMenu }: { onMenu: () => void }) {
         {/* Indicador "JADE está pensando..." */}
         {isThinking && (
           <View style={[S.bubble, S.bubbleAi, { flexDirection: "row", alignItems: "center", gap: 8 }]}>
-            <ActivityIndicator size="small" color="#00E5FF" />
+            <ActivityIndicator size="small" color="#FFFFFF" />
             <Text style={[S.bubbleTextAi, { color: "#8F94A8" }]}>JADE está pensando…</Text>
           </View>
         )}
@@ -422,25 +439,26 @@ function ChatView({ onMenu }: { onMenu: () => void }) {
                   multiline
                 />
                 <TouchableOpacity
-                  style={S.sendButtonCircle}
+                  style={[S.sendButtonCircle, { backgroundColor: "#D36A9D", borderColor: "rgba(211,106,157,0.4)" }]}
                   onPress={hasText ? send : toggleRecording}
                   activeOpacity={0.8}
                 >
-                  <Text style={S.sendIcon}>{hasText ? "▲" : "●"}</Text>
+                  {hasText
+                    ? <Text style={[S.sendIcon, { color: "#FFFFFF" }]}>▲</Text>
+                    : <Ionicons name="mic-outline" size={18} color="#FFFFFF" />
+                  }
                 </TouchableOpacity>
               </>
             ) : (
               <View style={S.recordingWaveContainer}>
                 <Text style={S.recordingLabel}>Gravando áudio...</Text>
                 <View style={S.waveRow}>
-                  <View style={[S.waveLine, { height: 12 }]} />
-                  <View style={[S.waveLine, { height: 24 }]} />
-                  <View style={[S.waveLine, { height: 18 }]} />
-                  <View style={[S.waveLine, { height: 28 }]} />
-                  <View style={[S.waveLine, { height: 14 }]} />
+                  {waveAnims.map((anim, i) => (
+                    <Animated.View key={i} style={[S.waveLine, { height: anim }]} />
+                  ))}
                 </View>
                 <TouchableOpacity
-                  style={[S.sendButtonCircle, { backgroundColor: "#38A169" }]}
+                  style={[S.sendButtonCircle, { backgroundColor: "#D36A9D", borderColor: "rgba(211,106,157,0.5)" }]}
                   onPress={toggleRecording}
                   activeOpacity={0.8}
                 >
@@ -491,7 +509,7 @@ function PipelineView({ onMenu }: { onMenu: () => void }) {
             <Text style={S.cardSub}>{item.company}</Text>
             <View style={S.cardFoot}>
               <Text style={S.cardValue}>{item.value}</Text>
-              <View style={[S.dot, { backgroundColor: stage === "Fechados" ? "#38A169" : "#00E5FF" }]} />
+              <View style={[S.dot, { backgroundColor: "#FFFFFF" }]} />
             </View>
           </TouchableOpacity>
         )}
@@ -562,7 +580,7 @@ function RouteView({ onMenu }: { onMenu: () => void }) {
             </View>
           );
         })}
-        <View style={{ height: 100 }} />
+        <View style={{ height: 160 }} />
       </ScrollView>
 
       {/* FAB */}
@@ -693,7 +711,7 @@ function MeetingView({ onMenu }: { onMenu: () => void }) {
                 <Text style={S.meetBriefLabel}>RESUMO DA IA:</Text>
                 <Text style={[S.cardSub, { marginBottom: 4 }]} numberOfLines={2}>{item.aiSummary}</Text>
               </View>
-              <Text style={{ fontSize: 12, color: "#00E5FF", fontWeight: "500" }}>Toque para ver o Briefing de Preparação →</Text>
+              <Text style={{ fontSize: 12, color: "#8F94A8", fontWeight: "500" }}>Toque para ver o Briefing de Preparação →</Text>
             </TouchableOpacity>
           )}
         />
@@ -711,7 +729,7 @@ function MeetingView({ onMenu }: { onMenu: () => void }) {
             <Switch
               value={aiActive}
               onValueChange={setAiActive}
-              trackColor={{ false: "#161822", true: "#00E5FF" }}
+              trackColor={{ false: "#242736", true: "rgba(255,255,255,0.4)" }}
               thumbColor={aiActive ? "#FFFFFF" : "#8F94A8"}
             />
           </View>
@@ -738,7 +756,7 @@ function MeetingView({ onMenu }: { onMenu: () => void }) {
           <Text style={[S.sectionLabel, { marginBottom: 14 }]}>JANELA HORÁRIA DISPONÍVEL</Text>
           <TouchableOpacity style={S.timeWindowBtn} activeOpacity={0.7}>
             <Text style={{ color: "#FFFFFF", fontSize: 16, fontWeight: "600" }}>09:00 às 18:00</Text>
-            <Text style={{ color: "#00E5FF", fontSize: 13, fontWeight: "500" }}>Editar Janela</Text>
+            <Text style={{ color: "#FFFFFF", fontSize: 13, fontWeight: "500" }}>Editar Janela</Text>
           </TouchableOpacity>
 
           <Text style={S.helperText}>
@@ -770,7 +788,7 @@ function MeetingView({ onMenu }: { onMenu: () => void }) {
                 </View>
 
                 <View style={[S.briefingBox, { borderColor: "rgba(56,161,105,0.3)", backgroundColor: "rgba(56,161,105,0.04)", marginTop: 10 }]}>
-                  <Text style={[S.briefingLabel, { color: "#38A169" }]}>DIRECIONAMENTO PARA FECHAMENTO</Text>
+                  <Text style={[S.briefingLabel]}>DIRECIONAMENTO PARA FECHAMENTO</Text>
                   <Text style={S.briefingText}>{selected.prepTip}</Text>
                 </View>
 
@@ -865,11 +883,11 @@ type AiReport = { status: string; diagnostic: string; actionPlan: string };
 const REPORT_TABS = ["Produção Diária", "Visão Semanal"] as const;
 const DAILY_METRICS  = [
   { name: "Visitas Comerciais",      progress: "3 / 5",           pct: "60%",  color: "#E93E3E" },
-  { name: "Contatos via WhatsApp IA",progress: "42 / 40",         pct: "100%", color: "#38A169" },
+  { name: "Contatos via WhatsApp IA",progress: "42 / 40",         pct: "100%", color: "#FFFFFF" },
 ];
 const WEEKLY_METRICS = [
-  { name: "Novas Propostas Enviadas",progress: "8 / 12",          pct: "66%",  color: "#00E5FF" },
-  { name: "Volume Financeiro Fechado",progress: "R$ 65.500 / R$ 100k", pct: "65%", color: "#00E5FF" },
+  { name: "Novas Propostas Enviadas",progress: "8 / 12",          pct: "66%",  color: "#FFFFFF" },
+  { name: "Volume Financeiro Fechado",progress: "R$ 65.500 / R$ 100k", pct: "65%", color: "#FFFFFF" },
 ];
 
 function ReportsView({ onMenu }: { onMenu: () => void }) {
@@ -1254,7 +1272,7 @@ function ManagementView({ onMenu }: { onMenu: () => void }) {
                   <Text style={{ fontSize: 12, color: "#FFFFFF", fontWeight: "600" }}>{pct.toFixed(0)}%</Text>
                 </View>
                 <View style={S.progressTrack}>
-                  <View style={[S.progressBar, { width: `${pct}%` as any, backgroundColor: onTarget ? "#38A169" : "#00E5FF" }]} />
+                  <View style={[S.progressBar, { width: `${pct}%` as any, backgroundColor: "#FFFFFF" }]} />
                 </View>
               </View>
             </View>
@@ -1308,8 +1326,8 @@ const TEAM_PERFORMANCE: ExecPerf[] = [
   { id: "3", name: "Thiago Martins", conversion: "11%", meetings: "8 / 15",  avgClose: "19 dias", gap: "Baixa conversão no primeiro contato via WhatsApp.", plan: "Revisar os scripts iniciais gerados pela JADE na aba de prospecção." },
 ];
 const CHART_HISTORY = [
-  { month: "Junho", pct: "85%", w: "85%", color: "#00E5FF" },
-  { month: "Maio",  pct: "92%", w: "92%", color: "#38A169" },
+  { month: "Junho", pct: "85%", w: "85%", color: "#FFFFFF" },
+  { month: "Maio",  pct: "92%", w: "92%", color: "#FFFFFF" },
   { month: "Abril", pct: "64%", w: "64%", color: "#E93E3E" },
 ];
 
@@ -1363,7 +1381,7 @@ function KpisView({ onMenu }: { onMenu: () => void }) {
           <View style={S.kpiAiBox}>
             <Text style={S.kpiAiTitle}>Laudo de Performance JADE</Text>
             {loadingAi ? (
-              <ActivityIndicator color="#00E5FF" style={{ marginTop: 16 }} />
+              <ActivityIndicator color="#FFFFFF" style={{ marginTop: 16 }} />
             ) : selectedExec ? (
               <>
                 <View style={S.kpiMiniRow}>
@@ -1410,8 +1428,8 @@ function CorporatePortfolioView({ onMenu }: { onMenu: () => void }) {
         {/* Macro grid */}
         <View style={S.corpMacroRow}>
           {[
-            { label: "CHURN RATE", value: "1.8%", color: "#38A169" },
-            { label: "MRR TOTAL",  value: "R$ 12.4k", color: "#00E5FF" },
+            { label: "CHURN RATE", value: "1.8%", color: "#FFFFFF" },
+            { label: "MRR TOTAL",  value: "R$ 12.4k", color: "#FFFFFF" },
             { label: "EM RISCO",   value: "2",   color: "#E93E3E" },
           ].map((m) => (
             <View key={m.label} style={S.corpMacroCard}>
@@ -1430,7 +1448,7 @@ function CorporatePortfolioView({ onMenu }: { onMenu: () => void }) {
           contentContainerStyle={{ paddingHorizontal: 20 }}
           renderItem={({ item }) => {
             const danger = item.health !== "Saudável";
-            const healthColor = item.health === "Saudável" ? "#38A169" : item.health === "Esfriando" ? "#00E5FF" : "#E93E3E";
+            const healthColor = "#FFFFFF";
             return (
               <View style={[S.card, { marginBottom: 12 }]}>
                 <View style={S.cardHead}>
@@ -1508,7 +1526,7 @@ function BroadcastView({ onMenu }: { onMenu: () => void }) {
           activeOpacity={0.7}
         >
           {polishing
-            ? <ActivityIndicator color="#00E5FF" />
+            ? <ActivityIndicator color="#FFFFFF" />
             : <Text style={S.broadcastAiBtnText}>Otimizar Texto com Gatilhos JADE</Text>
           }
         </TouchableOpacity>
@@ -1590,7 +1608,7 @@ function FeedbacksView({ onMenu }: { onMenu: () => void }) {
           <View style={S.kpiAiBox}>
             <Text style={S.kpiAiTitle}>Roteiro de Alinhamento 1-on-1 (JADE)</Text>
             {loadingAi ? (
-              <ActivityIndicator color="#00E5FF" style={{ marginTop: 20 }} />
+              <ActivityIndicator color="#FFFFFF" style={{ marginTop: 20 }} />
             ) : aiFeedbackText ? (
               <>
                 <Text style={[S.cardSub, { marginBottom: 20, lineHeight: 22 }]}>{aiFeedbackText}</Text>
@@ -1616,8 +1634,8 @@ function TeamPulseView({ onMenu }: { onMenu: () => void }) {
   const [autoActive, setAutoActive] = useState(false);
 
   const PULSE_CARDS = [
-    { count: "4 Executivos", label: "Super Bem",        border: "#38A169" },
-    { count: "2 Executivos", label: "Com Dificuldade",  border: "#00E5FF" },
+    { count: "4 Executivos", label: "Super Bem",        border: "rgba(255,255,255,0.2)" },
+    { count: "2 Executivos", label: "Com Dificuldade",  border: "rgba(255,255,255,0.2)" },
     { count: "0 Executivos", label: "Sobrecarga",       border: "#E93E3E" },
   ];
 
@@ -1647,7 +1665,7 @@ function TeamPulseView({ onMenu }: { onMenu: () => void }) {
           <Switch
             value={autoActive}
             onValueChange={setAutoActive}
-            trackColor={{ false: "#161822", true: "#00E5FF" }}
+            trackColor={{ false: "#242736", true: "rgba(255,255,255,0.4)" }}
             thumbColor={autoActive ? "#FFFFFF" : "#8F94A8"}
           />
         </View>
@@ -1800,7 +1818,7 @@ function AccountSettingsView({ onMenu }: { onMenu: () => void }) {
         {activeTab === "Cérebro da IA (Empresa)" && (
           <View>
             <View style={[S.insightBox, { marginBottom: 20 }]}>
-              <Text style={[S.insightText, { color: "#00E5FF", marginBottom: 0 }]}>Estes dados moldam o conhecimento da JADE durante as conversas automatizadas com os clientes.</Text>
+              <Text style={[S.insightText, { marginBottom: 0 }]}>Estes dados moldam o conhecimento da JADE durante as conversas automatizadas com os clientes.</Text>
             </View>
 
             <Text style={S.label}>NOME DA EMPRESA</Text>
@@ -1920,7 +1938,7 @@ function SubscriptionView({ onMenu }: { onMenu: () => void }) {
                 onPress={() => handleUpgrade(tier)}
                 activeOpacity={0.8}
               >
-                <Text style={[S.tierBtnText, active && { color: "#00E5FF" }]}>
+                <Text style={[S.tierBtnText]}>
                   {active ? "Plano Ativo na Conta" : "Fazer Upgrade para este Plano"}
                 </Text>
               </TouchableOpacity>
@@ -1977,7 +1995,7 @@ function WhatsAppConfigView({ onMenu }: { onMenu: () => void }) {
       <ScrollView style={S.form} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false} keyboardDismissMode="on-drag">
 
         <View style={[S.insightBox, { marginBottom: 20 }]}>
-          <Text style={[S.insightText, { color: "#00E5FF", marginBottom: 0 }]}>Calibre o comportamento dos gatilhos de mensagens e respostas da JADE no WhatsApp.</Text>
+          <Text style={[S.insightText, { marginBottom: 0 }]}>Calibre o comportamento dos gatilhos de mensagens e respostas da JADE no WhatsApp.</Text>
         </View>
 
         <View style={S.waConfigCard}>
@@ -1985,7 +2003,7 @@ function WhatsAppConfigView({ onMenu }: { onMenu: () => void }) {
             <Text style={S.waConfigTitle}>Respostas Automáticas</Text>
             <Text style={S.waConfigSub}>Permitir que a JADE inicie conversas com leads interceptados no Maps</Text>
           </View>
-          <Switch value={autoReply} onValueChange={setAutoReply} trackColor={{ false: "#242736", true: "#00E5FF" }} thumbColor="#FFFFFF" />
+          <Switch value={autoReply} onValueChange={setAutoReply} trackColor={{ false: "#242736", true: "rgba(255,255,255,0.4)" }} thumbColor="#FFFFFF" />
         </View>
 
         <View style={S.waConfigCard}>
@@ -1993,7 +2011,7 @@ function WhatsAppConfigView({ onMenu }: { onMenu: () => void }) {
             <Text style={S.waConfigTitle}>Negociação Avançada com IA</Text>
             <Text style={S.waConfigSub}>Dar autonomia para a JADE apresentar preços e tentar fechar reuniões</Text>
           </View>
-          <Switch value={aiNegotiation} onValueChange={setAiNegotiation} trackColor={{ false: "#242736", true: "#00E5FF" }} thumbColor="#FFFFFF" />
+          <Switch value={aiNegotiation} onValueChange={setAiNegotiation} trackColor={{ false: "#242736", true: "rgba(255,255,255,0.4)" }} thumbColor="#FFFFFF" />
         </View>
 
         <Text style={S.label}>TEMPO DE ESPERA ANTES DE ENVIAR (SEGUNDOS)</Text>
@@ -2120,7 +2138,7 @@ function ResourceRow({ title, current, max, unit }: { title: string; current: nu
         <Text style={S.resourceCounter}>{current} <Text style={S.maxText}>/ {max} {unit}</Text></Text>
       </View>
       <View style={S.progressTrack}>
-        <View style={[S.progressBar, { width: pct, backgroundColor: over ? "#E93E3E" : "#00E5FF" }]} />
+        <View style={[S.progressBar, { width: pct, backgroundColor: over ? "#E93E3E" : "#FFFFFF" }]} />
       </View>
     </View>
   );
@@ -2216,7 +2234,7 @@ function MyCompanyView({ onMenu }: { onMenu: () => void }) {
       <ScrollView style={S.form} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false} keyboardDismissMode="on-drag">
 
         <View style={[S.insightBox, { marginBottom: 20 }]}>
-          <Text style={[S.insightText, { color: "#00E5FF", marginBottom: 0 }]}>Cérebro da JADE: As informações abaixo alimentam o conhecimento contextual do robô para negociar com leads no WhatsApp.</Text>
+          <Text style={[S.insightText, { marginBottom: 0 }]}>Cérebro da JADE: As informações abaixo alimentam o conhecimento contextual do robô para negociar com leads no WhatsApp.</Text>
         </View>
 
         <Text style={S.label}>NOME INSTITUCIONAL</Text>
@@ -2342,13 +2360,13 @@ export default function PreviewUnifiedScreen() {
   const [sidebar, setSidebar] = useState(false);
   const openMenu = () => setSidebar(true);
 
-  // Swipe-to-open sidebar: detecta arrasto da borda esquerda (x < 40) para a direita (dx > 60)
+  // Swipe-to-open sidebar: detecta arrasto da borda esquerda (x < 30) para a direita (dx > 80)
   const swipePan = useRef(
     PanResponder.create({
       onMoveShouldSetPanResponder: (evt, gs) =>
-        !sidebar && evt.nativeEvent.pageX < 40 && gs.dx > 10 && Math.abs(gs.dy) < Math.abs(gs.dx),
+        !sidebar && evt.nativeEvent.pageX < 30 && gs.dx > 20 && Math.abs(gs.dy) < Math.abs(gs.dx) * 0.5,
       onPanResponderRelease: (_evt, gs) => {
-        if (gs.dx > 60) setSidebar(true);
+        if (gs.dx > 80) setSidebar(true);
       },
     })
   ).current;
@@ -2405,7 +2423,7 @@ const S = StyleSheet.create({
   tabBtn: { marginRight: 24, paddingBottom: 6, position: "relative" },
   tabText: { fontSize: 15, fontWeight: "500", color: "#4E5366" },
   tabTextActive: { color: "#FFFFFF", fontWeight: "700" },
-  tabLine: { position: "absolute", bottom: -13, left: 0, right: 0, height: 2, backgroundColor: "#00E5FF", borderRadius: 1 },
+  tabLine: { position: "absolute", bottom: -13, left: 0, right: 0, height: 2, backgroundColor: "#FFFFFF", borderRadius: 1 },
 
   list: { padding: 20 },
   card: { backgroundColor: "#161822", borderRadius: 16, padding: 18, marginBottom: 14, borderWidth: 1, borderColor: "#242736" },
@@ -2419,7 +2437,7 @@ const S = StyleSheet.create({
   badge: { backgroundColor: "rgba(255,255,255,0.04)", paddingHorizontal: 8, paddingVertical: 4, borderRadius: 6 },
   badgeText: { fontSize: 11, color: "#8F94A8" },
   dot: { width: 8, height: 8, borderRadius: 4 },
-  aiBadge: { backgroundColor: "rgba(0,229,255,0.1)", paddingHorizontal: 8, paddingVertical: 4, borderRadius: 6 },
+  aiBadge: { backgroundColor: "rgba(255,255,255,0.06)", paddingHorizontal: 8, paddingVertical: 4, borderRadius: 6 },
   aiBadgeText: { fontSize: 11, color: "#FFFFFF", fontWeight: "600" },
   histCount: { fontSize: 13, color: "#FFFFFF", fontWeight: "600", borderTopWidth: 1, borderColor: "#242736", paddingTop: 12, marginTop: 4 },
   healthBadge: { backgroundColor: "rgba(56,161,105,0.15)", paddingHorizontal: 10, paddingVertical: 4, borderRadius: 6 },
@@ -2442,14 +2460,14 @@ const S = StyleSheet.create({
   aiHeroCard: { backgroundColor: "#161822", borderRadius: 20, padding: 22, borderWidth: 1, borderColor: "#242736", marginBottom: 20 },
   aiHeroTitle: { fontSize: 18, fontWeight: "700", color: "#FFFFFF", marginBottom: 8 },
   aiHeroDesc: { fontSize: 13, color: "#8F94A8", lineHeight: 20, marginBottom: 24 },
-  insightBox: { backgroundColor: "rgba(0,229,255,0.03)", borderRadius: 14, padding: 18, borderWidth: 1, borderColor: "rgba(0,229,255,0.15)" },
+  insightBox: { backgroundColor: "rgba(255,255,255,0.03)", borderRadius: 14, padding: 18, borderWidth: 1, borderColor: "rgba(255,255,255,0.08)" },
   insightTitle: { fontSize: 14, fontWeight: "600", color: "#FFFFFF", marginBottom: 10 },
   insightText: { fontSize: 13, color: "#8F94A8", lineHeight: 18, marginBottom: 6 },
 
   overlay: { flex: 1, backgroundColor: "rgba(0,0,0,0.6)", justifyContent: "flex-end" },
   sheet: { backgroundColor: "#11131A", borderTopLeftRadius: 24, borderTopRightRadius: 24, paddingHorizontal: 24, paddingTop: 12, paddingBottom: 40, borderTopWidth: 1, borderColor: "#242736" },
   handle: { width: 36, height: 4, backgroundColor: "#242736", borderRadius: 2, alignSelf: "center", marginBottom: 24 },
-  sheetCompany: { fontSize: 13, color: "#00E5FF", fontWeight: "600", textTransform: "uppercase", letterSpacing: 1, marginBottom: 4 },
+  sheetCompany: { fontSize: 13, color: "#FFFFFF", fontWeight: "600", textTransform: "uppercase", letterSpacing: 1, marginBottom: 4 },
   sheetName: { fontSize: 24, fontWeight: "700", color: "#FFFFFF" },
   sheetValue: { fontSize: 20, fontWeight: "800", color: "#FFFFFF", marginTop: 12, marginBottom: 30, paddingHorizontal: 12 },
   actionRow: { flexDirection: "row", gap: 12, marginTop: 20 },
@@ -2474,23 +2492,23 @@ const S = StyleSheet.create({
   innerBarButton:         { width: 36, height: 36, borderRadius: 18, backgroundColor: "transparent", alignItems: "center", justifyContent: "center" },
   barIcon:                { color: "#FFFFFF", fontSize: 20, fontWeight: "300" },
   textInputStyle:         { flex: 1, color: "#FFFFFF", fontSize: 15, paddingHorizontal: 10, maxHeight: 100 },
-  sendButtonCircle:       { width: 36, height: 36, borderRadius: 18, backgroundColor: "rgba(255,255,255,0.18)", alignItems: "center", justifyContent: "center", borderWidth: 1, borderColor: "rgba(255,255,255,0.3)", overflow: "hidden", ...Platform.select({ web: { backdropFilter: "blur(10px)", WebkitBackdropFilter: "blur(10px)" } as any, default: {} }) } as any,
+  sendButtonCircle:       { width: 36, height: 36, borderRadius: 18, backgroundColor: "rgba(255,255,255,0.10)", alignItems: "center", justifyContent: "center", borderWidth: 1, borderColor: "rgba(255,255,255,0.18)", overflow: "hidden", ...Platform.select({ web: { backdropFilter: "blur(10px)", WebkitBackdropFilter: "blur(10px)" } as any, default: {} }) } as any,
   sendIcon:               { color: "#FFFFFF", fontSize: 14, fontWeight: "700" },
   recordingWaveContainer: { flex: 1, flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: 4 },
   recordingLabel:         { color: "#8F94A8", fontSize: 14, fontWeight: "500" },
   waveRow:                { flexDirection: "row", alignItems: "center", justifyContent: "center", height: 30 },
-  waveLine:               { width: 3, backgroundColor: "#FFFFFF", marginHorizontal: 2, borderRadius: 1.5 },
+  waveLine:               { width: 3, backgroundColor: "#D36A9D", marginHorizontal: 2, borderRadius: 1.5 },
 
   // Route screen
   mapPreview: { height: 160, marginHorizontal: 20, borderRadius: 16, backgroundColor: "#161822", marginBottom: 20, alignItems: "center", justifyContent: "center", borderWidth: 1, borderColor: "#242736" },
   mapText: { color: "#4E5366", fontWeight: "600", fontSize: 14 },
-  mapSubText: { color: "#00E5FF", fontSize: 12, marginTop: 4, fontWeight: "500" },
+  mapSubText: { color: "#8F94A8", fontSize: 12, marginTop: 4, fontWeight: "500" },
   timelineRow: { flexDirection: "row", paddingHorizontal: 20, marginBottom: 4 },
   timelineSide: { width: 50, alignItems: "center", marginRight: 12 },
   timelineTime: { fontSize: 12, color: "#FFFFFF", fontWeight: "600", marginBottom: 4 },
   timelineDot: { width: 12, height: 12, borderRadius: 6, borderWidth: 2, borderColor: "#090A0F", zIndex: 2 },
-  dotConfirmed: { backgroundColor: "#38A169" },
-  dotSuggested: { backgroundColor: "#00E5FF" },
+  dotConfirmed: { backgroundColor: "#FFFFFF" },
+  dotSuggested: { backgroundColor: "#8F94A8" },
   timelineLine: { width: 2, backgroundColor: "#242736", flex: 1, marginTop: -2, marginBottom: -4 },
   eventCard: { flex: 1, backgroundColor: "#161822", borderRadius: 14, padding: 16, marginBottom: 16, borderWidth: 1, borderColor: "#242736" },
   eventHead: { flexDirection: "row", justifyContent: "space-between", marginBottom: 6 },
@@ -2498,33 +2516,33 @@ const S = StyleSheet.create({
   travelTime: { fontSize: 11, color: "#4E5366", fontWeight: "500" },
   eventTitle: { fontSize: 16, color: "#FFFFFF", fontWeight: "600", marginBottom: 2 },
   eventAddress: { fontSize: 13, color: "#8F94A8" },
-  suggestionBadge: { marginTop: 10, alignSelf: "flex-start", backgroundColor: "rgba(0,229,255,0.1)", paddingHorizontal: 8, paddingVertical: 4, borderRadius: 6 },
-  suggestionText: { color: "#00E5FF", fontSize: 11, fontWeight: "600" },
+  suggestionBadge: { marginTop: 10, alignSelf: "flex-start", backgroundColor: "rgba(255,255,255,0.06)", paddingHorizontal: 8, paddingVertical: 4, borderRadius: 6 },
+  suggestionText: { color: "#FFFFFF", fontSize: 11, fontWeight: "600" },
   fabContainer: { position: "absolute", left: 20, right: 20, zIndex: 10 },
-  confirmBtn: { height: 56, borderRadius: 16, alignItems: "center", justifyContent: "center", borderWidth: 1, borderColor: "#00E5FF", backgroundColor: "rgba(0,229,255,0.12)", shadowColor: "#00E5FF", shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.25, shadowRadius: 10, elevation: 6, overflow: "hidden", ...Platform.select({ web: { backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)" } as any, default: {} }) } as any,
+  confirmBtn: { height: 56, borderRadius: 16, alignItems: "center", justifyContent: "center", borderWidth: 1, borderColor: "rgba(255,255,255,0.22)", backgroundColor: "rgba(255,255,255,0.13)", overflow: "hidden", ...Platform.select({ web: { backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)" } as any, default: {} }) } as any,
   confirmBtnText: { color: "#FFFFFF", fontSize: 16, fontWeight: "700" },
   startBtn: { backgroundColor: "rgba(255,255,255,0.18)", borderColor: "rgba(255,255,255,0.4)" },
 
   // Meeting screen
   dateStrip: { flexDirection: "row", justifyContent: "space-between", paddingHorizontal: 20, paddingBottom: 16 },
   dateChip: { paddingHorizontal: 12, paddingVertical: 8, borderRadius: 12, backgroundColor: "#161822", borderWidth: 1, borderColor: "#242736" },
-  dateChipActive: { backgroundColor: "#00E5FF22", borderColor: "#00E5FF" },
+  dateChipActive: { backgroundColor: "rgba(255,255,255,0.08)", borderColor: "rgba(255,255,255,0.3)" },
   dateChipText: { fontSize: 12, color: "#4E5366", fontWeight: "600" },
-  dateChipTextActive: { color: "#00E5FF" },
+  dateChipTextActive: { color: "#FFFFFF" },
   meetCard: { flexDirection: "row", backgroundColor: "#161822", borderRadius: 16, padding: 16, marginBottom: 12, borderWidth: 1, borderColor: "#242736" },
   meetTimeCol: { width: 44, alignItems: "center", marginRight: 14, gap: 6 },
   meetTime: { fontSize: 13, color: "#FFFFFF", fontWeight: "700" },
   meetDot: { width: 8, height: 8, borderRadius: 4 },
   statusChip: { paddingHorizontal: 8, paddingVertical: 3, borderRadius: 6, borderWidth: 1 },
   statusChipText: { fontSize: 10, fontWeight: "700" },
-  briefingBox: { backgroundColor: "rgba(0,229,255,0.04)", borderRadius: 12, padding: 16, borderWidth: 1, borderColor: "rgba(0,229,255,0.15)", marginTop: 16, marginBottom: 4 },
-  briefingLabel: { fontSize: 10, color: "#00E5FF", fontWeight: "700", letterSpacing: 1, marginBottom: 8 },
+  briefingBox: { backgroundColor: "rgba(255,255,255,0.03)", borderRadius: 12, padding: 16, borderWidth: 1, borderColor: "rgba(255,255,255,0.08)", marginTop: 16, marginBottom: 4 },
+  briefingLabel: { fontSize: 10, color: "#8F94A8", fontWeight: "700", letterSpacing: 1, marginBottom: 8 },
   briefingText: { fontSize: 14, color: "#E2E8F0", lineHeight: 22 },
 
   // Sidebar — accordion estilo JADE / ChatGPT
   sidebarOverlay: { ...StyleSheet.absoluteFillObject, backgroundColor: "rgba(0,0,0,0.45)", zIndex: 10 },
   sidebar: { position: "absolute", top: 0, left: 0, bottom: 0, backgroundColor: "#090A0F", paddingHorizontal: 20, zIndex: 20 },
-  drawerHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", paddingBottom: 24, borderBottomWidth: 1, borderColor: "#161822", marginBottom: 20 },
+  drawerHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", paddingBottom: 20, borderBottomWidth: 1, borderColor: "#161822", marginBottom: 16 },
   drawerBrand: { color: "#FFFFFF", fontSize: 24, fontWeight: "800", letterSpacing: 1 },
   drawerAvatar: { width: 51, height: 51, borderRadius: 26, borderWidth: 1.5, borderColor: "#242736", backgroundColor: "#161822", alignItems: "center", justifyContent: "center" },
   drawerSection: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", paddingVertical: 14, borderRadius: 10 },
@@ -2545,7 +2563,7 @@ const S = StyleSheet.create({
   reportBoxTitle: { fontSize: 14, fontWeight: "700", color: "#FFFFFF", flex: 1 },
   reportStatusChip: { paddingHorizontal: 8, paddingVertical: 4, borderRadius: 6 },
   chipRed: { backgroundColor: "rgba(229,62,62,0.1)" },
-  chipGreen: { backgroundColor: "rgba(56,161,105,0.1)" },
+  chipGreen: { backgroundColor: "rgba(255,255,255,0.06)" },
   reportStatusText: { fontSize: 10, fontWeight: "700", textTransform: "uppercase" },
   reportLabel: { fontSize: 9, color: "#4E5366", fontWeight: "700", letterSpacing: 0.5, marginBottom: 6 },
   reportMuted: { fontSize: 13, color: "#8F94A8", lineHeight: 19, marginBottom: 14 },
@@ -2562,13 +2580,13 @@ const S = StyleSheet.create({
 
   // Meeting screen — robot config
   meetBriefPreview: { backgroundColor: "rgba(255,255,255,0.02)", borderRadius: 10, padding: 12, marginTop: 12, marginBottom: 10, borderWidth: 1, borderColor: "#242736" },
-  meetBriefLabel: { fontSize: 9, color: "#00E5FF", fontWeight: "700", letterSpacing: 0.5, marginBottom: 6 },
+  meetBriefLabel: { fontSize: 9, color: "#8F94A8", fontWeight: "700", letterSpacing: 0.5, marginBottom: 6 },
   configRow: { flexDirection: "row", alignItems: "center", backgroundColor: "#161822", borderRadius: 14, padding: 18, borderWidth: 1, borderColor: "#242736", marginBottom: 24 },
   daysGrid: { flexDirection: "row", flexWrap: "wrap", gap: 10, marginBottom: 24 },
   dayChip: { paddingHorizontal: 16, paddingVertical: 10, borderRadius: 10, backgroundColor: "#161822", borderWidth: 1, borderColor: "#242736" },
-  dayChipActive: { backgroundColor: "rgba(0,229,255,0.12)", borderColor: "#00E5FF" },
+  dayChipActive: { backgroundColor: "rgba(255,255,255,0.08)", borderColor: "rgba(255,255,255,0.3)" },
   dayChipText: { fontSize: 13, color: "#4E5366", fontWeight: "600" },
-  dayChipTextActive: { color: "#00E5FF" },
+  dayChipTextActive: { color: "#FFFFFF" },
   timeWindowBtn: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", backgroundColor: "#161822", borderRadius: 14, padding: 18, borderWidth: 1, borderColor: "#242736", marginBottom: 20 },
 
   // KPIs screen
@@ -2576,7 +2594,7 @@ const S = StyleSheet.create({
   kpiChartMonth: { width: 52, color: "#8F94A8", fontSize: 13, fontWeight: "500" },
   kpiChartValue: { color: "#FFFFFF", fontSize: 13, fontWeight: "600", width: 38, textAlign: "right" },
   kpiExecItem:   { flexDirection: "row", justifyContent: "space-between", alignItems: "center", paddingVertical: 16, paddingHorizontal: 20 },
-  kpiAiBox:      { backgroundColor: "rgba(0,229,255,0.02)", borderWidth: 1, borderColor: "rgba(0,229,255,0.15)", borderRadius: 16, padding: 18, marginBottom: 8 },
+  kpiAiBox:      { backgroundColor: "rgba(255,255,255,0.02)", borderWidth: 1, borderColor: "rgba(255,255,255,0.08)", borderRadius: 16, padding: 18, marginBottom: 8 },
   kpiAiTitle:    { fontSize: 14, fontWeight: "700", color: "#FFFFFF", marginBottom: 16 },
   kpiMiniRow:    { flexDirection: "row", justifyContent: "space-between", backgroundColor: "#161822", padding: 12, borderRadius: 10, marginBottom: 16 },
   kpiMiniCard:   { alignItems: "center", flex: 1 },
@@ -2587,11 +2605,11 @@ const S = StyleSheet.create({
 
   // My Profile screen
   profileAvatarBox:         { alignItems: "center", marginBottom: 28, paddingBottom: 20, borderBottomWidth: 1, borderColor: "#161822" },
-  profileAvatarRing:        { width: 96, height: 96, borderRadius: 48, borderWidth: 2, borderColor: "#00E5FF", overflow: "hidden", marginBottom: 14, alignItems: "center", justifyContent: "center" },
+  profileAvatarRing:        { width: 96, height: 96, borderRadius: 48, borderWidth: 2, borderColor: "rgba(255,255,255,0.2)", overflow: "hidden", marginBottom: 14, alignItems: "center", justifyContent: "center" },
   profileAvatarPlaceholder: { width: 96, height: 96, borderRadius: 48, backgroundColor: "#161822", alignItems: "center", justifyContent: "center" },
   profileAvatarImg:         { width: 96, height: 96, borderRadius: 48 },
   profileUploadBtn:         { backgroundColor: "rgba(255,255,255,0.03)", paddingHorizontal: 16, paddingVertical: 8, borderRadius: 20, borderWidth: 1, borderColor: "#242736" },
-  profileUploadBtnText:     { color: "#00E5FF", fontSize: 13, fontWeight: "600" },
+  profileUploadBtnText:     { color: "#FFFFFF", fontSize: 13, fontWeight: "600" },
 
   // Account Settings screen
   acctSecBtn:        { height: 54, borderRadius: 12, alignItems: "center", justifyContent: "center", borderWidth: 1, borderColor: "rgba(255,255,255,0.15)", marginTop: 12, backgroundColor: "rgba(255,255,255,0.08)", overflow: "hidden", ...Platform.select({ web: { backdropFilter: "blur(10px)", WebkitBackdropFilter: "blur(10px)" } as any, default: {} }) } as any,
@@ -2599,25 +2617,25 @@ const S = StyleSheet.create({
   acctProductList:   { backgroundColor: "#161822", borderRadius: 12, padding: 14, borderWidth: 1, borderColor: "#242736", marginBottom: 12 },
   acctProductRow:    { flexDirection: "row", justifyContent: "space-between", paddingVertical: 6 },
   acctAddRow:        { flexDirection: "row", alignItems: "center", marginBottom: 20 },
-  acctMiniBtn:       { width: 54, height: 54, borderRadius: 12, borderWidth: 1, borderColor: "#00E5FF", justifyContent: "center", alignItems: "center", backgroundColor: "rgba(0,229,255,0.1)", overflow: "hidden", ...Platform.select({ web: { backdropFilter: "blur(10px)", WebkitBackdropFilter: "blur(10px)" } as any, default: {} }) } as any,
-  acctMiniBtnText:   { color: "#00E5FF", fontSize: 20, fontWeight: "600" },
+  acctMiniBtn:       { width: 54, height: 54, borderRadius: 12, borderWidth: 1, borderColor: "rgba(255,255,255,0.22)", justifyContent: "center", alignItems: "center", backgroundColor: "rgba(255,255,255,0.1)", overflow: "hidden", ...Platform.select({ web: { backdropFilter: "blur(10px)", WebkitBackdropFilter: "blur(10px)" } as any, default: {} }) } as any,
+  acctMiniBtnText:   { color: "#FFFFFF", fontSize: 20, fontWeight: "600" },
 
   // Subscription screen
   tierCard:        { backgroundColor: "#161822", borderRadius: 16, padding: 20, marginBottom: 16, borderWidth: 1, borderColor: "#242736" },
-  tierCardActive:  { borderColor: "#00E5FF", backgroundColor: "rgba(0,229,255,0.01)" },
+  tierCardActive:  { borderColor: "rgba(255,255,255,0.3)", backgroundColor: "rgba(255,255,255,0.02)" },
   tierCardHeader:  { flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start", borderBottomWidth: 1, borderColor: "#242736", paddingBottom: 14 },
   tierName:        { color: "#FFFFFF", fontSize: 18, fontWeight: "700" },
-  tierActiveLbl:   { color: "#00E5FF", fontSize: 11, fontWeight: "700", marginTop: 4, letterSpacing: 0.5 },
+  tierActiveLbl:   { color: "#FFFFFF", fontSize: 11, fontWeight: "700", marginTop: 4, letterSpacing: 0.5 },
   tierPrice:       { color: "#FFFFFF", fontSize: 16, fontWeight: "700" },
   tierFeatureText: { color: "#8F94A8", fontSize: 13, paddingVertical: 4, lineHeight: 18 },
   tierActionBtn:   { height: 48, borderRadius: 12, alignItems: "center", justifyContent: "center", overflow: "hidden" },
-  tierBtnActive:   { backgroundColor: "rgba(0,229,255,0.1)", borderWidth: 1, borderColor: "rgba(0,229,255,0.3)", ...Platform.select({ web: { backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)" } as any, default: {} }) } as any,
+  tierBtnActive:   { backgroundColor: "rgba(255,255,255,0.1)", borderWidth: 1, borderColor: "rgba(255,255,255,0.3)", ...Platform.select({ web: { backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)" } as any, default: {} }) } as any,
   tierBtnInactive: { backgroundColor: "rgba(255,255,255,0.13)", borderWidth: 1, borderColor: "rgba(255,255,255,0.22)", ...Platform.select({ web: { backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)" } as any, default: {} }) } as any,
   tierBtnText:     { color: "#FFFFFF", fontWeight: "700", fontSize: 14 },
 
   // Feedbacks screen
-  fbScoreBadge: { backgroundColor: "rgba(0,229,255,0.10)", paddingHorizontal: 10, paddingVertical: 6, borderRadius: 8 },
-  fbScoreText:  { color: "#00E5FF", fontWeight: "700", fontSize: 13 },
+  fbScoreBadge: { backgroundColor: "rgba(255,255,255,0.08)", paddingHorizontal: 10, paddingVertical: 6, borderRadius: 8 },
+  fbScoreText:  { color: "#FFFFFF", fontWeight: "700", fontSize: 13 },
 
   // Team Pulse screen
   pulseGrid:  { flexDirection: "row", justifyContent: "space-between", marginBottom: 24, gap: 8 },
@@ -2627,16 +2645,16 @@ const S = StyleSheet.create({
 
   // Pulse Check screen
   pulseCheckWrapper:    { flexGrow: 1, paddingHorizontal: 24, paddingBottom: 40, justifyContent: "center" },
-  pulseCheckBrand:      { color: "#00E5FF", fontSize: 11, fontWeight: "700", letterSpacing: 1, marginBottom: 8, textAlign: "center" },
+  pulseCheckBrand:      { color: "#8F94A8", fontSize: 11, fontWeight: "700", letterSpacing: 1, marginBottom: 8, textAlign: "center" },
   pulseCheckTitle:      { color: "#FFFFFF", fontSize: 22, fontWeight: "700", textAlign: "center", lineHeight: 30, letterSpacing: -0.3, marginBottom: 10 },
   pulseOption:          { flexDirection: "row", alignItems: "center", backgroundColor: "#161822", height: 56, borderRadius: 12, paddingHorizontal: 16, borderWidth: 1, borderColor: "#242736", marginBottom: 12 },
-  pulseOptionActive:    { borderColor: "#00E5FF", backgroundColor: "rgba(0,229,255,0.02)" },
+  pulseOptionActive:    { borderColor: "rgba(255,255,255,0.3)", backgroundColor: "rgba(255,255,255,0.04)" },
   pulseOptionText:      { color: "#8F94A8", fontSize: 14, fontWeight: "500", flex: 1 },
   pulseOptionTextActive:{ color: "#FFFFFF", fontWeight: "600" },
 
   // Broadcast screen
-  broadcastAiBtn:     { height: 48, borderRadius: 12, alignItems: "center", justifyContent: "center", borderWidth: 1, borderColor: "#00E5FF", marginBottom: 16, backgroundColor: "rgba(0,229,255,0.08)", overflow: "hidden", ...Platform.select({ web: { backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)" } as any, default: {} }) } as any,
-  broadcastAiBtnText: { color: "#00E5FF", fontSize: 14, fontWeight: "600" },
+  broadcastAiBtn:     { height: 48, borderRadius: 12, alignItems: "center", justifyContent: "center", borderWidth: 1, borderColor: "rgba(255,255,255,0.22)", marginBottom: 16, backgroundColor: "rgba(255,255,255,0.08)", overflow: "hidden", ...Platform.select({ web: { backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)" } as any, default: {} }) } as any,
+  broadcastAiBtnText: { color: "#FFFFFF", fontSize: 14, fontWeight: "600" },
 
   // Management screen
   mgmtAddBtn: { backgroundColor: "rgba(255,255,255,0.1)", borderWidth: 1, borderColor: "rgba(255,255,255,0.18)", paddingHorizontal: 16, height: 40, borderRadius: 10, justifyContent: "center", alignItems: "center", overflow: "hidden", ...Platform.select({ web: { backdropFilter: "blur(10px)", WebkitBackdropFilter: "blur(10px)" } as any, default: {} }) } as any,
@@ -2645,38 +2663,40 @@ const S = StyleSheet.create({
   mgmtGridRow: { flexDirection: "row", justifyContent: "space-between", marginBottom: 12 },
   mgmtGridCard: { flex: 1, backgroundColor: "#161822", borderRadius: 14, padding: 16, borderWidth: 1, borderColor: "#242736", marginRight: 10 },
   mgmtGridLabel: { fontSize: 9, color: "#4E5366", fontWeight: "700", letterSpacing: 0.5 },
-  mgmtGridValue: { fontSize: 18, fontWeight: "700", color: "#00E5FF", marginTop: 4, paddingHorizontal: 4 },
+  mgmtGridValue: { fontSize: 18, fontWeight: "700", color: "#FFFFFF", marginTop: 4, paddingHorizontal: 4 },
   mgmtExecRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
   mgmtAvatar: { width: 44, height: 44, borderRadius: 22, backgroundColor: "#090A0F", borderWidth: 1, borderColor: "#242736", alignItems: "center", justifyContent: "center" },
 
   // Marketing screen
-  mktLaunchBtn: { backgroundColor: "rgba(255,255,255,0.08)", height: 50, borderRadius: 12, borderWidth: 1, borderColor: "rgba(255,255,255,0.15)", justifyContent: "center", paddingHorizontal: 16, overflow: "hidden", ...Platform.select({ web: { backdropFilter: "blur(10px)", WebkitBackdropFilter: "blur(10px)" } as any, default: {} }) } as any,
-  mktLaunchText: { color: "#00E5FF", fontSize: 14, fontWeight: "600" },
+  mktLaunchBtn: { backgroundColor: "rgba(255,255,255,0.08)", height: 50, borderRadius: 12, borderWidth: 1, borderColor: "rgba(255,255,255,0.22)", justifyContent: "center", paddingHorizontal: 16, overflow: "hidden", ...Platform.select({ web: { backdropFilter: "blur(10px)", WebkitBackdropFilter: "blur(10px)" } as any, default: {} }) } as any,
+  mktLaunchText: { color: "#FFFFFF", fontSize: 14, fontWeight: "600" },
   mktModalHeader: { flexDirection: "row", alignItems: "center", paddingHorizontal: 16, height: 60, borderBottomWidth: 1, borderColor: "#161822" },
-  strategyBox: { backgroundColor: "rgba(0,229,255,0.02)", borderWidth: 1, borderColor: "rgba(0,229,255,0.15)", borderRadius: 16, padding: 18, marginTop: 28 },
+  strategyBox: { backgroundColor: "rgba(255,255,255,0.02)", borderWidth: 1, borderColor: "rgba(255,255,255,0.08)", borderRadius: 16, padding: 18, marginTop: 28 },
   mktOutputText: { fontSize: 13, color: "#8F94A8", lineHeight: 19, marginBottom: 12 },
 
   // Privacy screen
-  privacySecBox:  { backgroundColor: "rgba(56,161,105,0.02)", borderWidth: 1, borderColor: "rgba(56,161,105,0.15)", borderRadius: 16, padding: 18, marginBottom: 24 },
-  privacySecTitle:{ color: "#38A169", fontSize: 15, fontWeight: "700", marginBottom: 8 },
+  privacySecBox:  { backgroundColor: "rgba(255,255,255,0.02)", borderWidth: 1, borderColor: "rgba(255,255,255,0.08)", borderRadius: 16, padding: 18, marginBottom: 24 },
+  privacySecTitle:{ color: "#FFFFFF", fontSize: 15, fontWeight: "700", marginBottom: 8 },
   privacySecText: { color: "#8F94A8", fontSize: 13, lineHeight: 20 },
   privacyItem:    { backgroundColor: "#161822", borderRadius: 12, padding: 16, borderWidth: 1, borderColor: "#242736", marginBottom: 10, flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
   privacyItemMain:{ color: "#FFFFFF", fontSize: 14, fontWeight: "500" },
   privacyItemSub: { color: "#4E5366", fontSize: 12 },
 
   // Sidebar logout footer
-  drawerFooter:   { borderTopWidth: 1, borderColor: "#161822", paddingVertical: 16 },
+  drawerFooter:   { borderTopWidth: 0, paddingVertical: 12, paddingHorizontal: 4 },
   logoutBtn: {
-    borderRadius: 14,
+    flexDirection: "row",
+    borderRadius: 20,
     borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.22)",
-    backgroundColor: "rgba(255,255,255,0.13)",
-    paddingVertical: 14,
+    borderColor: "rgba(255,255,255,0.08)",
+    backgroundColor: "transparent",
+    paddingVertical: 7,
+    paddingHorizontal: 14,
     alignItems: "center",
     justifyContent: "center",
-    ...Platform.select({ web: { backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)" } as any, default: {} }),
+    alignSelf: "flex-start",
   } as any,
-  logoutBtnText:  { color: "#FFFFFF", fontSize: 15, fontWeight: "600" },
+  logoutBtnText:  { color: "#4E5366", fontSize: 12, fontWeight: "500" },
 
   // WhatsApp Config screen
   waConfigCard:    { flexDirection: "row", justifyContent: "space-between", alignItems: "center", backgroundColor: "#161822", padding: 16, borderRadius: 14, borderWidth: 1, borderColor: "#242736", marginBottom: 14 },
@@ -2687,7 +2707,7 @@ const S = StyleSheet.create({
   shopCard:        { backgroundColor: "#161822", borderRadius: 16, padding: 18, borderWidth: 1, borderColor: "#242736", marginBottom: 16 },
   shopCardTop:     { flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start", borderBottomWidth: 1, borderColor: "#242736", paddingBottom: 12, marginBottom: 12 },
   shopItemTitle:   { color: "#FFFFFF", fontSize: 15, fontWeight: "700", maxWidth: "65%" },
-  shopItemPrice:   { color: "#00E5FF", fontSize: 15, fontWeight: "700" },
+  shopItemPrice:   { color: "#FFFFFF", fontSize: 15, fontWeight: "700" },
   shopItemDesc:    { color: "#8F94A8", fontSize: 13, lineHeight: 18, marginBottom: 16 },
   shopBuyBtn:      { height: 44, borderRadius: 10, alignItems: "center", justifyContent: "center", backgroundColor: "rgba(255,255,255,0.13)", borderWidth: 1, borderColor: "rgba(255,255,255,0.22)", overflow: "hidden", ...Platform.select({ web: { backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)" } as any, default: {} }) } as any,
   shopBuyBtnText:  { color: "#FFFFFF", fontWeight: "700", fontSize: 14 },
@@ -2696,8 +2716,8 @@ const S = StyleSheet.create({
   faqCard:         { backgroundColor: "#161822", borderRadius: 14, padding: 16, borderWidth: 1, borderColor: "#242736", marginBottom: 12 },
   faqQuestion:     { color: "#FFFFFF", fontSize: 14, fontWeight: "600", marginBottom: 6 },
   faqAnswer:       { color: "#8F94A8", fontSize: 13, lineHeight: 18 },
-  supportBtn:      { height: 54, borderRadius: 12, alignItems: "center", justifyContent: "center", borderWidth: 1, borderColor: "#00E5FF", backgroundColor: "rgba(0,229,255,0.08)", overflow: "hidden", ...Platform.select({ web: { backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)" } as any, default: {} }) } as any,
-  supportBtnText:  { color: "#00E5FF", fontWeight: "600", fontSize: 15 },
+  supportBtn:      { height: 54, borderRadius: 12, alignItems: "center", justifyContent: "center", borderWidth: 1, borderColor: "rgba(255,255,255,0.22)", backgroundColor: "rgba(255,255,255,0.08)", overflow: "hidden", ...Platform.select({ web: { backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)" } as any, default: {} }) } as any,
+  supportBtnText:  { color: "#FFFFFF", fontWeight: "600", fontSize: 15 },
 
   // Usage screen
   usagePlanCard:      { backgroundColor: "#161822", borderRadius: 16, padding: 18, borderWidth: 1, borderColor: "#242736", marginBottom: 24, marginTop: 4 },
@@ -2706,9 +2726,9 @@ const S = StyleSheet.create({
   usagePlanReset:     { fontSize: 12, color: "#8F94A8", lineHeight: 16, marginBottom: 14 },
   usagePlanToggle:    { flexDirection: "row", gap: 8 },
   usageChip:          { flex: 1, height: 32, borderRadius: 8, borderWidth: 1, borderColor: "#242736", alignItems: "center", justifyContent: "center" },
-  usageChipActive:    { borderColor: "#00E5FF", backgroundColor: "rgba(0,229,255,0.08)" },
+  usageChipActive:    { borderColor: "rgba(255,255,255,0.3)", backgroundColor: "rgba(255,255,255,0.08)" },
   usageChipText:      { color: "#4E5366", fontSize: 12, fontWeight: "600" },
-  usageChipTextActive:{ color: "#00E5FF" },
+  usageChipTextActive:{ color: "#FFFFFF" },
   usageWrapper:       { backgroundColor: "#161822", borderRadius: 16, paddingHorizontal: 18, paddingVertical: 8, borderWidth: 1, borderColor: "#242736" },
   resourceBlock:      { paddingVertical: 14, borderBottomWidth: 1, borderColor: "#090A0F" },
   resourceHeader:     { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 8 },
