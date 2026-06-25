@@ -5,7 +5,7 @@ import { fileURLToPath } from "url";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname  = path.dirname(__filename);
-const OUTPUT = path.resolve(__dirname, "../../../exports/auditoria-jade-ia.pdf");
+const OUTPUT = path.resolve(__dirname, "../../exports/auditoria-jade-ia.pdf");
 fs.mkdirSync(path.dirname(OUTPUT), { recursive: true });
 
 const doc = new PDFDocument({ size: "A4", margin: 48, info: { Title: "JADE IA — Auditoria Completa", Author: "Replit Agent" } });
@@ -15,6 +15,30 @@ doc.pipe(stream);
 // ── Paleta ──────────────────────────────────────────────────
 const C = { bg: "#090A0F", cyan: "#00E5FF", white: "#FFFFFF", muted: "#8F94A8", green: "#22CC88", red: "#E93E3E", yellow: "#F6C90E", border: "#242736" };
 const W = 595 - 96; // largura útil
+
+// ── Fundo escuro + rodapé em cada página (texto branco some em fundo branco) ──
+let pageNum = 0;
+function newPageSetup() {
+  pageNum++;
+  doc.rect(0, 0, 595, 842).fill("#090A0F");
+  const savedBottom = doc.page.margins.bottom;
+  doc.page.margins.bottom = 0; // evita auto-quebra (recursão) ao escrever no rodapé
+  doc.fontSize(8).fillColor("#4E5366").font("Helvetica")
+    .text(`JADE IA · Auditoria do Sistema · Pág. ${pageNum}`, 48, 808, { align: "center", width: W, lineBreak: false });
+  doc.page.margins.bottom = savedBottom;
+  doc.x = 48;
+  doc.y = 48;
+}
+newPageSetup();                       // página 1
+doc.on("pageAdded", newPageSetup);    // páginas seguintes (manuais e auto-quebra)
+
+// ── Remove emojis/símbolos que a Helvetica não renderiza (vira lixo no PDF) ──
+function clean(s: string): string {
+  return s
+    .replace(/[\u{1F000}-\u{1FFFF}\u{2600}-\u{27BF}\u{2B00}-\u{2BFF}\u{2190}-\u{21FF}\u{25A0}-\u{25FF}\u{2300}-\u{23FF}\u{FE00}-\u{FE0F}\u{2000}-\u{200D}]/gu, "")
+    .replace(/[ ]{2,}/g, " ")
+    .trim();
+}
 
 function header(title: string, sub: string) {
   doc.rect(0, 0, 595, 120).fill("#090A0F");
@@ -27,30 +51,32 @@ function header(title: string, sub: string) {
 }
 
 function sectionTitle(label: string) {
+  if (doc.y > 740) doc.addPage();
   const y = doc.y;
   doc.rect(48, y, W, 28).fill("#161822");
   doc.rect(48, y, 4, 28).fill("#00E5FF");
-  doc.fontSize(11).fillColor("#00E5FF").font("Helvetica-Bold").text(label.toUpperCase(), 60, y + 8);
+  doc.fontSize(11).fillColor("#00E5FF").font("Helvetica-Bold").text(clean(label).toUpperCase(), 60, y + 8);
   doc.moveDown(2.2);
 }
 
 function statusRow(label: string, status: "ok" | "parcial" | "pendente" | "erro", detail: string) {
-  const icons = { ok: "✓", parcial: "◐", pendente: "○", erro: "✗" };
   const colors = { ok: "#22CC88", parcial: "#F6C90E", pendente: "#8F94A8", erro: "#E93E3E" };
   const y = doc.y;
-  doc.fontSize(10).fillColor(colors[status]).font("Helvetica-Bold").text(icons[status], 48, y, { width: 18 });
-  doc.fontSize(10).fillColor("#FFFFFF").font("Helvetica-Bold").text(label, 70, y, { width: 180, continued: false });
-  doc.fontSize(9).fillColor("#8F94A8").font("Helvetica").text(detail, 70, doc.y - 1, { width: W - 22 });
-  doc.moveDown(0.4);
+  doc.circle(56, y + 5, 3.2).fill(colors[status]);
+  doc.fontSize(10).fillColor("#FFFFFF").font("Helvetica-Bold").text(clean(label), 70, y, { width: W - 22 });
+  doc.fontSize(9).fillColor("#8F94A8").font("Helvetica").text(clean(detail), 70, doc.y, { width: W - 22 });
+  doc.moveDown(0.45);
 }
 
 function bullet(text: string, color = "#8F94A8") {
-  doc.fontSize(9).fillColor(color).font("Helvetica").text(`• ${text}`, 58, doc.y, { width: W - 10 });
+  const y = doc.y;
+  doc.circle(60, y + 5, 1.6).fill(color);
+  doc.fontSize(9).fillColor(color).font("Helvetica").text(clean(text), 70, y, { width: W - 22 });
   doc.moveDown(0.3);
 }
 
-function subLabel(text: string) {
-  doc.fontSize(9).fillColor("#4E5366").font("Helvetica-Bold").text(text.toUpperCase(), 48, doc.y, { width: W });
+function subLabel(text: string, color = "#4E5366") {
+  doc.fontSize(9).fillColor(color).font("Helvetica-Bold").text(clean(text).toUpperCase(), 48, doc.y, { width: W });
   doc.moveDown(0.5);
 }
 
@@ -199,7 +225,7 @@ divider();
 // ── 5. STATUS GERAL ──────────────────────────────────────────
 sectionTitle("5. Resumo Executivo — O que está 100% e o que falta");
 
-subLabel("✅ 100% implementado e funcional");
+subLabel("100% implementado e funcional", "#22CC88");
 const done = [
   "24 views únicas dentro de preview-unified.tsx — todas com TopBar + navegação via sidebar",
   "Sidebar Dark Premium com accordion de 4 seções (Conversas, Comercial, Gestão, Conta)",
@@ -219,7 +245,7 @@ const done = [
 done.forEach(d => bullet(d, "#22CC88"));
 divider();
 
-subLabel("⚠️ Parcial / Requer atenção futura");
+subLabel("Parcial / Requer atencao futura", "#F6C90E");
 const partial = [
   "management/* não declarado explicitamente no Stack do _layout.tsx (funciona via herança, mas melhor declarar para garantia)",
   "ChatView: fetchJadeAIResponse é stub — aguarda chave OPENAI_API_KEY para ativar IA real",
@@ -231,7 +257,7 @@ const partial = [
 partial.forEach(p => bullet(p, "#F6C90E"));
 divider();
 
-subLabel("❌ Não implementado (pendente de requisição)");
+subLabel("Nao implementado (pendente de requisicao)", "#E93E3E");
 const pending = [
   "Persistência de configurações WhatsApp no backend (endpoint /api/whatsapp/config PUT)",
   "Push notifications reais (expo-notifications não funciona no Expo Go SDK 53+)",
@@ -239,15 +265,6 @@ const pending = [
   "Dashboard Analytics com dados reais por empresa (atual retorna dados mock)",
 ];
 pending.forEach(p => bullet(p, "#E93E3E"));
-divider();
-
-// ── Rodapé ───────────────────────────────────────────────────
-const pages = doc.bufferedPageRange();
-for (let i = 0; i < pages.count; i++) {
-  doc.switchToPage(pages.start + i);
-  doc.fontSize(8).fillColor("#4E5366").font("Helvetica")
-    .text(`JADE IA · Auditoria do Sistema · Pág. ${i + 1} de ${pages.count}`, 48, 820, { align: "center", width: W });
-}
 
 doc.end();
 stream.on("finish", () => { console.log("PDF gerado:", OUTPUT); });
