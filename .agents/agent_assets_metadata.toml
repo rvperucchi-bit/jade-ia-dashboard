@@ -191,3 +191,9 @@ id = "Kl3qUVl8kHka7RUi_Deid"
 uri = "file://exports/openai-migration-jade.pdf"
 type = "pdf"
 title = "JADE IA — Migração OpenAI (corrigido)"
+
+[[outputs]]
+id = "AzX825s8PEUMnLVva-zvF"
+uri = "file://exports/gpt54-mini-update.pdf"
+type = "pdf"
+title = "Atualização — gpt-5.4-mini"

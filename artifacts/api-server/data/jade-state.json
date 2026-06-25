@@ -1270,6 +1270,17 @@
   ],
   "activity_events": [
     {
+      "id": "382f0c5ecee1407f",
+      "type": "message",
+      "text": "JADE respondeu a uma mensagem",
+      "icon": "robot",
+      "color": "#FF0080",
+      "metadata": {
+        "session_id": "test-gpt54-001"
+      },
+      "created_at": "2026-06-25T06:16:59.138Z"
+    },
+    {
       "id": "1c9a7c4834401146",
       "type": "message",
       "text": "JADE respondeu a uma mensagem",
@@ -3209,14 +3220,6 @@
         "session_id": "a56a68abe0357b26"
       },
       "created_at": "2026-06-23T20:31:03.599Z"
-    },
-    {
-      "id": "1ec4f7554a790b10",
-      "type": "message",
-      "text": "JADE respondeu: \"Oi\"",
-      "icon": "robot",
-      "color": "#FF0080",
-      "created_at": "2026-06-23T20:30:49.946Z"
     }
   ],
   "marketing_campaigns": [

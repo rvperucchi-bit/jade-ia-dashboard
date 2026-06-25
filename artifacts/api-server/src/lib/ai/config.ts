@@ -37,15 +37,15 @@ export function isWhisperConfig(c: OperationConfig): c is WhisperOperationConfig
 }
 
 // ── Operation registry ──────────────────────────────────────────────────────
-// Primary chat model: gpt-4.1-mini (released Apr 2025, best ROI in the mini tier).
-// If unavailable on the account, swap to 'gpt-4o-mini'.
+// Primary chat model: gpt-5.4-mini (recommended on account, Jun 2025).
+// Fallback: swap to 'gpt-4.1-mini' if unavailable.
 // All secondary ops run on gpt-4o-mini (stable, lower-cost).
 // Transcription: gpt-4o-transcribe (higher accuracy than whisper-1).
 // Embeddings: text-embedding-3-small (1536 dims, low cost, strong recall).
 export const OPERATION_CONFIG: Record<string, OperationConfig> = {
   chat: {
     provider: 'openai',
-    model: 'gpt-4.1-mini',
+    model: 'gpt-5.4-mini',
     temperature: 0.7,
     maxTokens: 4000,
   },
