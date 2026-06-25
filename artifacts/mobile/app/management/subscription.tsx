@@ -15,7 +15,7 @@ type Tier = { id: string; name: string; price: string; features: string[] };
 const TIERS: Tier[] = [
   {
     id: "start",
-    name: "Sleek Start",
+    name: "JADE Start",
     price: "R$ 199/mês",
     features: [
       "Até 100 leads ativos/mês",
@@ -26,7 +26,7 @@ const TIERS: Tier[] = [
   },
   {
     id: "pro",
-    name: "Sleek Pro",
+    name: "JADE Pro",
     price: "R$ 499/mês",
     features: [
       "Leads ativos ILIMITADOS",

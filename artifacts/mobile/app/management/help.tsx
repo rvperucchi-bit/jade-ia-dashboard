@@ -3,8 +3,8 @@ import { Alert, SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, Vi
 
 const FAQ = [
   { q: "Como o robô evita bloqueios no WhatsApp?", a: "A JADE utiliza rotinas nativas de tempo de espera dinâmico (Delay) e variação gramatical nos textos para simular interações 100% humanas." },
-  { q: "O Radar do Maps consome créditos do Google?", a: "Não. Toda a varredura é efetuada através dos servidores dedicados da Sleek IA, protegendo sua operação de custos adicionais de APIs." },
-  { q: "Posso conectar múltiplos números de WhatsApp?", a: "Sim. No plano Pro e Enterprise você pode adicionar agentes extras de atendimento diretamente pela Loja Sleek." },
+  { q: "O Radar do Maps consome créditos do Google?", a: "Não. Toda a varredura é efetuada através dos servidores dedicados da JADE IA, protegendo sua operação de custos adicionais de APIs." },
+  { q: "Posso conectar múltiplos números de WhatsApp?", a: "Sim. No plano Pro e Enterprise você pode adicionar agentes extras de atendimento diretamente pela Loja JADE." },
 ];
 
 export default function HelpScreen() {

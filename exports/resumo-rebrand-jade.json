@@ -1,0 +1,60 @@
+{
+  "title": "JADE IA — Rebrand Concluído",
+  "subtitle": "Migração Visual: Sleek → JADE | Design Unificado Ativado",
+  "date": "25/06/2026",
+  "output": "exports/resumo-rebrand-jade.pdf",
+  "sections": [
+    {
+      "heading": "Objetivo",
+      "body": [
+        "Substituir completamente a identidade visual e nominal 'Sleek'/'SLEEK' pelo nome 'JADE' em todo o aplicativo mobile (Expo SDK 54), e ativar a nova tela principal unificada (preview-unified.tsx) como rota padrão após o login."
+      ]
+    },
+    {
+      "heading": "Tela Principal Ativada",
+      "bullets": [
+        "preview-unified.tsx agora é a tela principal do app após login",
+        "Registrada no Stack em _layout.tsx com animation: 'fade' e gestureEnabled: false",
+        "Rota: /login → (após autenticação) → /preview-unified",
+        "Design escuro: fundo #090A0F, acento ciano #00E5FF, texto branco",
+        "Menu lateral com swipe-to-open e navegação interna por React state"
+      ]
+    },
+    {
+      "heading": "Renomeações Realizadas",
+      "bullets": [
+        "preview-unified.tsx — 'Sleek Start' → 'JADE Start', 'Sleek Pro' → 'JADE Pro'",
+        "preview-unified.tsx — 'Loja Sleek' → 'Loja JADE'",
+        "preview-unified.tsx — 'Sleek IA' → 'JADE IA' (FAQ e textos de suporte)",
+        "preview-unified.tsx — 'Sleek Automações' → 'JADE Automações' (AccountSettings e MyCompany)",
+        "preview-unified.tsx — 'alexandre@sleekia.com.br' → 'alexandre@jadeia.com.br'",
+        "preview-chat-sidebar.tsx — 'Sleek CRM' → 'JADE' (brand do drawer)",
+        "preview-chat-sidebar.tsx — 'Sleek IA' → 'JADE IA' (top bar)",
+        "preview-chat-sidebar.tsx — 'Perguntar ao Sleek IA...' → 'Perguntar à JADE IA...'",
+        "management/subscription.tsx — 'Sleek Start' → 'JADE Start', 'Sleek Pro' → 'JADE Pro'",
+        "management/usage.tsx — 'Sleek Start 🟢' → 'JADE Start 🟢', 'Sleek Pro 🟣' → 'JADE Pro 🟣'",
+        "management/help.tsx — 'Sleek IA' → 'JADE IA', 'Loja Sleek' → 'Loja JADE'",
+        "management/account-settings.tsx — email e nome da empresa atualizados para JADE"
+      ]
+    },
+    {
+      "heading": "Verificação Final",
+      "bullets": [
+        "Busca por 'Sleek/SLEEK/sleek/sleekia' em artifacts/mobile/app — ZERO ocorrências",
+        "Screenshot confirmada: topbar exibe 'JADE', placeholder 'Perguntar à JADE IA...'",
+        "Design dark (#090A0F) renderizando corretamente no web e iOS",
+        "Login screen integra corretamente ao novo fluxo",
+        "Workflows api-server e expo — ambos RUNNING sem erros"
+      ]
+    },
+    {
+      "heading": "Fluxo de Navegação Atual",
+      "bullets": [
+        "index.tsx → /login",
+        "/login → /preview-unified (após autenticação)",
+        "/preview-unified → navegação interna via estado React (Chat, Pipeline, CRM, etc.)",
+        "Telas antigas (/(tabs)/jade, crm.tsx, etc.) permanecem no código mas não são acessadas"
+      ]
+    }
+  ]
+}

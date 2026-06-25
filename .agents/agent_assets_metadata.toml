@@ -263,3 +263,9 @@ id = "XGOodFs5CufE6kRrBOnRq"
 uri = "file://exports/jade-ia-screenshots.pdf"
 type = "pdf"
 title = "JADE IA — Resumo PDF da Captura de Telas"
+
+[[outputs]]
+id = "gZD-ppDod4bu1ICMBjM6v"
+uri = "file://exports/exports/resumo-rebrand-jade.pdf"
+type = "pdf"
+title = "Rebrand Concluído — Sleek → JADE"

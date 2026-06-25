@@ -11,7 +11,7 @@ import {
 
 const PLAN_LIMITS = {
   start: {
-    name: "Sleek Start 🟢",
+    name: "JADE Start 🟢",
     chat:   { max: 500,  label: "mensagens" },
     radar:  { max: 50,   label: "buscas"    },
     audio:  { max: 30,   label: "minutos"   },
@@ -20,7 +20,7 @@ const PLAN_LIMITS = {
     vision: { max: 20,   label: "imagens"   },
   },
   pro: {
-    name: "Sleek Pro 🟣",
+    name: "JADE Pro 🟣",
     chat:   { max: 2000, label: "mensagens" },
     radar:  { max: 200,  label: "buscas"    },
     audio:  { max: 120,  label: "minutos"   },

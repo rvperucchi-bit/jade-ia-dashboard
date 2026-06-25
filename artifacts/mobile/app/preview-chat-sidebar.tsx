@@ -62,7 +62,7 @@ function Sidebar({
       <Animated.View style={[S.sidebar, { paddingTop: insets.top + 16, transform: [{ translateX: slideX }] }]}>
         {/* Brand */}
         <View style={S.drawerHeader}>
-          <Text style={S.drawerBrand}>Sleek CRM</Text>
+          <Text style={S.drawerBrand}>JADE</Text>
           <Text style={S.drawerUser}>Agente Autônomo Ativo</Text>
         </View>
 
@@ -135,7 +135,7 @@ export default function PreviewChatSidebarScreen() {
         </TouchableOpacity>
 
         <View style={{ alignItems: "center" }}>
-          <Text style={S.topTitle}>Sleek IA</Text>
+          <Text style={S.topTitle}>JADE IA</Text>
           {activeRoute !== "Chat" && (
             <Text style={{ color: "#00E5FF", fontSize: 10, marginTop: 1 }}>{activeRoute}</Text>
           )}
@@ -186,7 +186,7 @@ export default function PreviewChatSidebarScreen() {
 
             <TextInput
               style={S.textInput}
-              placeholder="Perguntar ao Sleek IA..."
+              placeholder="Perguntar à JADE IA..."
               placeholderTextColor="#626880"
               value={inputText}
               onChangeText={setInputText}

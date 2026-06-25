@@ -22,8 +22,8 @@ export default function AccountSettingsScreen() {
   const [tab,            setTab]            = useState(TABS[0]);
   const [isSaving,       setIsSaving]       = useState(false);
   const [userName,       setUserName]       = useState("Alexandre Silveira");
-  const [userEmail,      setUserEmail]      = useState("alexandre@sleekia.com.br");
-  const [companyName,    setCompanyName]    = useState("Sleek Automações");
+  const [userEmail,      setUserEmail]      = useState("alexandre@jadeia.com.br");
+  const [companyName,    setCompanyName]    = useState("JADE Automações");
   const [segment,        setSegment]        = useState("Tecnologia B2B");
   const [campaign,       setCampaign]       = useState("Desconto de 15% para fechamentos até sexta-feira.");
   const [city,           setCity]           = useState("Criciúma");

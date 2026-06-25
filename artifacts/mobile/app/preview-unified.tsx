@@ -1680,8 +1680,8 @@ function AccountSettingsView({ onMenu }: { onMenu: () => void }) {
   const [activeTab,       setActiveTab]       = useState(ACCT_TABS[0]);
   const [isSaving,        setIsSaving]        = useState(false);
   const [userName,        setUserName]        = useState("Alexandre Silveira");
-  const [userEmail,       setUserEmail]       = useState("alexandre@sleekia.com.br");
-  const [companyName,     setCompanyName]     = useState("Sleek Automações");
+  const [userEmail,       setUserEmail]       = useState("alexandre@jadeia.com.br");
+  const [companyName,     setCompanyName]     = useState("JADE Automações");
   const [segment,         setSegment]         = useState("Tecnologia B2B");
   const [activeCampaign,  setActiveCampaign]  = useState("Desconto de 15% para fechamentos até sexta-feira.");
   const [city,            setCity]            = useState("Criciúma");
@@ -1805,8 +1805,8 @@ function AccountSettingsView({ onMenu }: { onMenu: () => void }) {
 // ─── Data: Subscription ───────────────────────────────────────────────────────
 type Tier = { id: string; name: string; price: string; features: string[] };
 const TIERS: Tier[] = [
-  { id: "start",      name: "Sleek Start", price: "R$ 199/mês",  features: ["Até 100 leads ativos/mês", "Disparos automáticos básicos", "Suporte via e-mail", "1 Robô ativo no Maps"] },
-  { id: "pro",        name: "Sleek Pro",   price: "R$ 499/mês",  features: ["Leads ativos ILIMITADOS", "Cérebro avançado da JADE", "Integração WhatsApp nativa", "Laudos de performance em tempo real", "Suporte prioritário 24/7"] },
+  { id: "start",      name: "JADE Start", price: "R$ 199/mês",  features: ["Até 100 leads ativos/mês", "Disparos automáticos básicos", "Suporte via e-mail", "1 Robô ativo no Maps"] },
+  { id: "pro",        name: "JADE Pro",   price: "R$ 499/mês",  features: ["Leads ativos ILIMITADOS", "Cérebro avançado da JADE", "Integração WhatsApp nativa", "Laudos de performance em tempo real", "Suporte prioritário 24/7"] },
   { id: "enterprise", name: "Enterprise",  price: "Sob Consulta", features: ["Múltiplos agentes autônomos", "Customização avançada de LLM", "Painel de auditoria multi-vendedores", "API dedicada de disparo de Push", "Gerente de conta exclusivo"] },
 ];
 
@@ -1960,7 +1960,7 @@ function WhatsAppConfigView({ onMenu }: { onMenu: () => void }) {
 function ShopView({ onMenu }: { onMenu: () => void }) {
   return (
     <View style={{ flex: 1 }}>
-      <TopBar title="Loja Sleek" subtitle="⚙️ CONTA" onMenu={onMenu} />
+      <TopBar title="Loja JADE" subtitle="⚙️ CONTA" onMenu={onMenu} />
       <ScrollView style={S.form} showsVerticalScrollIndicator={false}>
         <Text style={[S.cardSub, { marginBottom: 20 }]}>Adicione recursos avulsos ou expanda os limites da sua operação instantaneamente.</Text>
 
@@ -1987,8 +1987,8 @@ function ShopView({ onMenu }: { onMenu: () => void }) {
 // ─── Screen: Help ─────────────────────────────────────────────────────────────
 const FAQ_ITEMS = [
   { q: "Como o robô evita bloqueios no WhatsApp?", a: "A JADE utiliza rotinas nativas de tempo de espera dinâmico (Delay) e variação gramatical nos textos para simular interações 100% humanas." },
-  { q: "O Radar do Maps consome créditos do Google?", a: "Não. Toda a varredura é efetuada através dos servidores dedicados da Sleek IA, protegendo sua operação de custos adicionais de APIs." },
-  { q: "Posso conectar múltiplos números de WhatsApp?", a: "Sim. No plano Pro e Enterprise você pode adicionar agentes extras de atendimento diretamente pela Loja Sleek." },
+  { q: "O Radar do Maps consome créditos do Google?", a: "Não. Toda a varredura é efetuada através dos servidores dedicados da JADE IA, protegendo sua operação de custos adicionais de APIs." },
+  { q: "Posso conectar múltiplos números de WhatsApp?", a: "Sim. No plano Pro e Enterprise você pode adicionar agentes extras de atendimento diretamente pela Loja JADE." },
 ];
 
 function HelpView({ onMenu }: { onMenu: () => void }) {
@@ -2021,7 +2021,7 @@ function HelpView({ onMenu }: { onMenu: () => void }) {
 // ─── Screen: Usage & Plan Limits ─────────────────────────────────────────────
 const PLAN_LIMITS_U = {
   start: {
-    name: "Sleek Start 🟢",
+    name: "JADE Start 🟢",
     chat:   { max: 500,  label: "mensagens" },
     radar:  { max: 50,   label: "buscas"    },
     audio:  { max: 30,   label: "minutos"   },
@@ -2030,7 +2030,7 @@ const PLAN_LIMITS_U = {
     vision: { max: 20,   label: "imagens"   },
   },
   pro: {
-    name: "Sleek Pro 🟣",
+    name: "JADE Pro 🟣",
     chat:   { max: 2000, label: "mensagens" },
     radar:  { max: 200,  label: "buscas"    },
     audio:  { max: 120,  label: "minutos"   },
@@ -2124,7 +2124,7 @@ function UsageView({ onMenu }: { onMenu: () => void }) {
 // ─── Screen: My Company (Cérebro da JADE) ────────────────────────────────────
 function MyCompanyView({ onMenu }: { onMenu: () => void }) {
   const [isSaving,       setIsSaving]       = useState(false);
-  const [companyName,    setCompanyName]    = useState("Sleek Automações");
+  const [companyName,    setCompanyName]    = useState("JADE Automações");
   const [segment,        setSegment]        = useState("Tecnologia B2B");
   const [cnpj,           setCnpj]           = useState("00.000.000/0001-00");
   const [campaign,       setCampaign]       = useState("Desconto de 15% para fechamentos até sexta-feira.");
@@ -2212,7 +2212,7 @@ function MyCompanyView({ onMenu }: { onMenu: () => void }) {
 // ─── Screen: My Profile ──────────────────────────────────────────────────────
 function MyProfileView({ onMenu }: { onMenu: () => void }) {
   const [name,   setName]   = useState("Alexandre Silveira");
-  const [email,  setEmail]  = useState("alexandre@sleekia.com.br");
+  const [email,  setEmail]  = useState("alexandre@jadeia.com.br");
   const [phone,  setPhone]  = useState("(48) 99999-9999");
   const [role,   setRole]   = useState("Diretor Comercial");
   const [avatar, setAvatar] = useState<string | null>(null);

@@ -202,6 +202,10 @@ function RootLayoutNav() {
         name="admin-uso"
         options={{ headerShown: false, presentation: "card", animation: "slide_from_right" }}
       />
+      <Stack.Screen
+        name="preview-unified"
+        options={{ headerShown: false, animation: "fade", gestureEnabled: false }}
+      />
     </Stack>
   );
 }
