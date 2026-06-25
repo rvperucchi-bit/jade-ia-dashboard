@@ -1,5 +1,4 @@
-// LLM-backed operations (chat + generate). The provider for each is decided
-// by OPERATION_CONFIG, not by this type — an op here may run on Gemini or OpenAI.
+// LLM-backed operations (chat + generate). All run on OpenAI.
 export type LLMOperationName =
   | 'chat'
   | 'chat:lead-analysis'
@@ -7,9 +6,11 @@ export type LLMOperationName =
   | 'marketing:generate'
   | 'approach';
 
+export type EmbedOperationName = 'embed';
+
 export type WhisperOperationName = 'transcribe';
 
-export type OperationName = LLMOperationName | WhisperOperationName;
+export type OperationName = LLMOperationName | EmbedOperationName | WhisperOperationName;
 
 export interface NormalizedMessage {
   role: 'user' | 'assistant';
@@ -26,6 +27,10 @@ export interface ChatOptions {
 export interface GenerateOptions {
   prompt: string;
   operation: LLMOperationName;
+}
+
+export interface EmbedOptions {
+  texts: string[];
 }
 
 export interface TranscribeOptions {

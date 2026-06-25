@@ -1,17 +1,14 @@
 /**
- * JADE Context Builder — central module that assembles only the prompt
- * blocks relevant to each operation profile, optionally enriched with
- * JADE Memory (persistent company config).
+ * JADE Context Builder — assembles only the prompt blocks relevant to each
+ * operation profile, enriched with JADE Memory (persistent company config
+ * and optional embedding-retrieved chunks).
  *
  * Operation → blocks mapping:
  *   chat      → identity, objeções, linguagem, exemplos, bant, identidade,
- *               spin, whatsapp + full company memory
+ *               spin, whatsapp + full company memory + retrieved chunks
  *   marketing → identity (minimal), linguagem + marketing memory
- *               (diferenciais, publicoAlvo, tom)
  *   reports   → identity (minimal), linguagem + reports memory
- *               (metas, equipe, regrasComerciais)
  *   support   → identity (minimal), linguagem + support memory
- *               (regrasComerciais, processos)
  *   lead-analysis → empty system prompt (raw prompt only)
  */
 
@@ -26,7 +23,6 @@ import type { CompanyConfig } from '../../db/store.js';
 
 // ── Cached base prompts ───────────────────────────────────────────────────────
 
-/** Full commercial chat system prompt (no company memory — appended per request). */
 const CHAT_BASE = [
   JADE_PREAMBLE,
   OBJECOES,
@@ -39,14 +35,13 @@ const CHAT_BASE = [
   'JADE IA v10.5 — Agente comercial ativa.',
 ].join('\n\n');
 
-/** Minimal identity used in non-chat operation prompts. */
 const IDENTITY_BASE = [
   JADE_PREAMBLE,
   REGRAS_LINGUAGEM,
   'JADE IA v10.5 — Agente especializada.',
 ].join('\n\n');
 
-// ── Internal memory block builders per profile ────────────────────────────────
+// ── Internal memory block builders ────────────────────────────────────────────
 
 function line(label: string, value: string | undefined): string | null {
   const v = value?.trim();
@@ -58,18 +53,10 @@ function block(label: string, value: string | undefined): string | null {
   return v ? `**${label}:**\n${v}` : null;
 }
 
-/**
- * Marketing-focused memory: identity + diferenciais + publicoAlvo + tom.
- * Excludes operational fields (metas, equipe, regrasComerciais) to keep the
- * marketing context lean and on-topic.
- */
 export function buildMarketingMemoryBlock(config: CompanyConfig): string {
   if (!config.nome?.trim()) return '';
 
-  const parts: string[] = [
-    '## CONTEXTO DA EMPRESA (personalização de conteúdo de marketing)',
-    '',
-  ];
+  const parts: string[] = ['## CONTEXTO DA EMPRESA (personalização de conteúdo de marketing)', ''];
 
   const coreLines = [
     line('Empresa', config.nome),
@@ -99,28 +86,16 @@ export function buildMarketingMemoryBlock(config: CompanyConfig): string {
   return parts.join('\n');
 }
 
-/**
- * Reports-focused memory: identity + metas + equipe + regrasComerciais.
- * Excludes marketing fields to keep context lean for analytical tasks.
- */
 export function buildReportsMemoryBlock(config: CompanyConfig): string {
   if (!config.nome?.trim()) return '';
 
-  const parts: string[] = [
-    '## CONTEXTO DA EMPRESA (análise e relatórios)',
-    '',
-  ];
+  const parts: string[] = ['## CONTEXTO DA EMPRESA (análise e relatórios)', ''];
 
   const coreLines = [
     line('Empresa', config.nome),
     line('Segmento', config.segmento),
-    line(
-      'Localização',
-      [config.cidade, config.estado].filter(Boolean).join(' / ') || undefined,
-    ),
-    config.modoOperacao
-      ? line('Modo de operação', MODO_MAP[config.modoOperacao] ?? config.modoOperacao)
-      : null,
+    line('Localização', [config.cidade, config.estado].filter(Boolean).join(' / ') || undefined),
+    config.modoOperacao ? line('Modo de operação', MODO_MAP[config.modoOperacao] ?? config.modoOperacao) : null,
   ].filter(Boolean) as string[];
 
   parts.push(...coreLines);
@@ -144,17 +119,10 @@ export function buildReportsMemoryBlock(config: CompanyConfig): string {
   return parts.join('\n');
 }
 
-/**
- * Support-focused memory: empresa + regrasComerciais + processos.
- * Minimal — enough for atendimento / FAQ without polluting the context.
- */
 export function buildSupportMemoryBlock(config: CompanyConfig): string {
   if (!config.nome?.trim()) return '';
 
-  const parts: string[] = [
-    '## CONTEXTO DA EMPRESA (atendimento ao cliente)',
-    '',
-  ];
+  const parts: string[] = ['## CONTEXTO DA EMPRESA (atendimento ao cliente)', ''];
 
   const coreLines = [
     line('Empresa', config.nome),
@@ -189,35 +157,29 @@ export type ContextProfile =
   | 'lead-analysis';
 
 export interface BuiltContext {
-  /** Assembled system prompt — pass directly to engine.chat() or prepend to generate prompt. */
   systemPrompt: string;
-  /** Which profile was used (informational / for logging). */
   profile: ContextProfile;
-  /**
-   * Names of included block categories (informational / for logging).
-   * Lets callers log which blocks were assembled without inspecting the prompt string.
-   */
   blocks: string[];
 }
 
 /**
  * Central Context Builder.
  *
- * Given an operation profile and an optional company config, returns a
- * BuiltContext whose `systemPrompt` contains only the blocks relevant to
- * that profile. Falls back to full 'chat' context for unknown profiles.
- *
- * All profiles degrade gracefully when `companyConfig` is absent or has no
- * `nome` — they return a valid (though un-personalised) system prompt.
+ * @param profile       Which operation context to build.
+ * @param companyConfig Persistent company config (from JADE Memory store).
+ * @param retrievedChunks Optional embedding-retrieved memory chunks relevant
+ *                        to the current user query. When provided, these are
+ *                        appended after the structured memory block so the
+ *                        model gets the most contextually relevant facts first.
  */
 export function buildContextForOperation(
   profile: ContextProfile,
   companyConfig?: CompanyConfig | null,
+  retrievedChunks?: string[],
 ): BuiltContext {
   const config = companyConfig ?? null;
 
   switch (profile) {
-    // ── chat: full commercial context ─────────────────────────────────────────
     case 'chat': {
       const blocks = [
         'identity', 'objeções', 'linguagem', 'exemplos',
@@ -233,10 +195,17 @@ export function buildContextForOperation(
         }
       }
 
+      if (retrievedChunks && retrievedChunks.length > 0) {
+        systemPrompt =
+          systemPrompt +
+          '\n\n## CONTEXTO RECUPERADO (relevante para esta mensagem)\n\n' +
+          retrievedChunks.join('\n\n');
+        blocks.push('embedding-retrieved');
+      }
+
       return { systemPrompt, profile, blocks };
     }
 
-    // ── marketing: identity + marketing memory only ───────────────────────────
     case 'marketing': {
       const blocks = ['identity', 'linguagem'];
       let systemPrompt = IDENTITY_BASE;
@@ -252,7 +221,6 @@ export function buildContextForOperation(
       return { systemPrompt, profile, blocks };
     }
 
-    // ── reports: identity + reports memory only ───────────────────────────────
     case 'reports': {
       const blocks = ['identity', 'linguagem'];
       let systemPrompt = IDENTITY_BASE;
@@ -268,7 +236,6 @@ export function buildContextForOperation(
       return { systemPrompt, profile, blocks };
     }
 
-    // ── support: identity + support memory only ───────────────────────────────
     case 'support': {
       const blocks = ['identity', 'linguagem'];
       let systemPrompt = IDENTITY_BASE;
@@ -284,14 +251,10 @@ export function buildContextForOperation(
       return { systemPrompt, profile, blocks };
     }
 
-    // ── lead-analysis: no system prompt (raw prompt only) ─────────────────────
-    case 'lead-analysis': {
+    case 'lead-analysis':
       return { systemPrompt: '', profile, blocks: [] };
-    }
 
-    // ── fallback ──────────────────────────────────────────────────────────────
-    default: {
-      return buildContextForOperation('chat', companyConfig);
-    }
+    default:
+      return buildContextForOperation('chat', companyConfig, retrievedChunks);
   }
 }

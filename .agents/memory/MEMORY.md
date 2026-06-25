@@ -11,4 +11,5 @@
 - [Notifications Architecture](notifications-arch.md) — NotificationsContext em context/; expo-notifications NÃO funciona no Expo Go (SDK 53+); funciona em development builds e produção; armazenamento local via AsyncStorage @jade_ia:notifications funciona em todos os ambientes
 - [Context Builder](context-builder.md) — lib/context/builder.ts monta systemPrompt por perfil (chat/marketing/reports/support/lead-analysis); integrado em jade.ts e marketing.ts
 - [PDF Generation](pdf-generation.md) — preferência: sempre gerar PDF em exports/ ao concluir tarefa; usar scripts/src/gerar-pdf.ts (pdfkit, JSON→PDF); output relativo ao dir do JSON, rodar com caminho absoluto
-- [JADE AI Engine](jade-ai-engine.md) — lib/ai/ abstrai Gemini+Whisper; roteamento por config.provider; JadeAIConfigError; singleton engine; pronto para trocar Gemini→OpenAI só em config+providers
+- [JADE AI Engine — OpenAI](jade-ai-engine.md) — lib/ai/ 100% OpenAI; chat=gpt-4.1-mini, ops secundárias=gpt-4o-mini, embed=text-embedding-3-small, transcribe=gpt-4o-transcribe; gemini.ts isolado (não importado pelo engine)
+- [Company Memory Embeddings](company-memory-embeddings.md) — embeddings em data/jade-memory.json (separado do jade-state.json); chave=MD5(nome)[0:12]; refresh automático no POST /empresa + lazy no /jade/chat; cosineSimilarity topK=4 threshold=0.3

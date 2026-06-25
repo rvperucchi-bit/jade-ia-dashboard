@@ -1,41 +1,49 @@
 ---
-name: JADE AI Engine
-description: Camada central de IA em lib/ai/ que abstrai Gemini e Whisper; roteamento por provider, retry e logs centralizados
+name: JADE AI Engine — OpenAI
+description: Configuração atual do motor de IA — providers, modelos e operações após migração Gemini→OpenAI completa
 ---
 
-Localização: `artifacts/api-server/src/lib/ai/` (types, config, providers/gemini, providers/whisper, engine, index)
+## Regra
 
-**Arquitetura:**
-- `config.ts`: registro central de modelo/temp/tokens por `OperationName`; type guards `isGeminiConfig` / `isWhisperConfig`
-- `engine.ts`: singleton `engine`; métodos `chat(ChatOptions)`, `generate(GenerateOptions)`, `transcribe(TranscribeOptions)`
-- Roteamento real usa `config.provider` (não decide por nome de método), prevenindo casts inválidos
-- `JadeAIConfigError` em `types.ts`: erros de misconfig que não são retried e surfaceiam 500 nas rotas
+Todo o núcleo de IA da JADE roda em OpenAI. Gemini está isolado em `providers/gemini.ts` e NÃO é importado pelo engine.
 
-**Operações mapeadas:**
-- `chat` (chat principal da JADE) → OpenAI (`gpt-4o-mini`, raw fetch /v1/chat/completions)
-- `chat:lead-analysis`, `chat:prospectar`, `marketing:generate`, `approach` → Gemini
-- `transcribe` → Whisper (OpenAI API raw fetch)
+**Why:** decisão de produto de unificar em OpenAI para controle, billing e capacidades (embeddings, whisper, gpt-4.1-mini).
 
-**Provider OpenAI** (`providers/openai.ts`):
-- Usa `OPENAI_API_KEY` (mesma do Whisper); raw fetch com AbortController timeout 60s (erro contém 'timeout' → withRetry trata como transient)
-- Normalização própria: system prompt primeiro, depois history user/assistant; role legado `model` → `assistant` (qualquer role != 'user' vira assistant)
-- Config `OpenAIOperationConfig` usa `maxTokens` (≠ Gemini que usa `maxOutputTokens`)
-- engine.chat()/generate() fazem dispatch por `config.provider` (isOpenAIConfig/isGeminiConfig)
-- ROLLBACK para Gemini: trocar bloco `chat` em OPERATION_CONFIG de volta p/ gemini — sem tocar telas (há comentário no config.ts)
-- Tipo `LLMOperationName` (antes `GeminiOperationName`) cobre ops chat+generate de qualquer provider
+## Modelos por operação (OPERATION_CONFIG em config.ts)
 
-**JADE Memory** (`lib/memory/company.ts`):
-- `buildCompanyMemoryBlock(config: CompanyConfig): string` — ponto único de montagem do bloco de memória no system prompt
-- `CompanyConfig` (store.ts) tem 7 campos opcionais extras: publicoAlvo, diferenciais, objecoesComuns, concorrentes, metas, equipe, regrasComerciais
-- Chat primary source: `getCompanyConfig()` servidor; backward compat: client-sent `company_config` no body como fallback
-- Seção JADE MEMORY adicionada na tela empresa.tsx do mobile (campos multiline)
-- `/api/empresa` POST aceita + salva todos os campos; nenhuma outra rota foi alterada
+| Operação | Provider | Modelo | Uso |
+|---|---|---|---|
+| `chat` | openai | gpt-4.1-mini | Chat principal JADE |
+| `chat:lead-analysis` | openai | gpt-4o-mini | Análise de lead no radar |
+| `chat:prospectar` | openai | gpt-4o-mini | Leads fictícios /prospectar |
+| `marketing:generate` | openai | gpt-4o-mini | Conteúdo de marketing |
+| `approach` | openai | gpt-4o-mini | Mensagem WhatsApp de abordagem |
+| `embed` | openai-embedding | text-embedding-3-small | Company Memory (1536 dims) |
+| `transcribe` | whisper | gpt-4o-transcribe | Áudio → texto |
 
-**Why:**
-- Abstração para troca futura Gemini→OpenAI: criar `providers/openai.ts` + ajustar `engine.ts` + `config.ts`; rotas e telas não precisam ser tocadas
-- retry: 1x após 1.5s em erros 5xx, 429, timeout; `JadeAIConfigError` não é retried
-- API keys validadas em cada provider (`assertKey()`); aviso no logger ao init se ausentes
+## Estrutura de arquivos
 
-**Migrations restantes para OpenAI:**
-- `/jade/chat` ainda usa Gemini (engine.chat)
-- Próximo passo: adicionar `providers/openai.ts` e mudar config `chat` para `provider: 'openai'`
+```
+lib/ai/
+  config.ts       — OPERATION_CONFIG, type guards (isOpenAIConfig, isOpenAIEmbeddingConfig, isWhisperConfig)
+  types.ts        — ChatOptions, GenerateOptions, EmbedOptions, TranscribeOptions, JadeAIConfigError
+  engine.ts       — JadeAIEngine (chat/generate/embed/transcribe), singleton engine
+  index.ts        — barrel export
+  providers/
+    openai.ts     — chat(), generate(), embed() (raw fetch, sem SDK)
+    whisper.ts    — transcribe() via /v1/audio/transcriptions
+    gemini.ts     — ISOLADO, não importado pelo engine, mantido para rollback
+```
+
+## Company Memory flow
+
+- `POST /empresa` → fire-and-forget: buildCompanyChunks → engine.embed → saveCompanyEmbeddings em `data/jade-memory.json`
+- `POST /jade/chat` Path C → isEmbeddingStale? → lazy refresh (void) OR embed query → retrieveRelevantChunks (cosine topK=4) → buildContextForOperation('chat', config, chunks)
+
+## How to apply
+
+- Para mudar modelo do chat: alterar `chat.model` em `OPERATION_CONFIG` — zero mudança no resto.
+- Para rollback a Gemini: reintroduzir GeminiOperationConfig em config.ts + re-importar GeminiProvider no engine.
+- `OPENAI_API_KEY` é o único secret necessário para o núcleo.
+- `engine.embed()` retorna `number[][]` — um vetor por texto, na mesma ordem da entrada.
+- Erros de embedding são capturados como warn — chat continua sem retrieved chunks (graceful degradation).

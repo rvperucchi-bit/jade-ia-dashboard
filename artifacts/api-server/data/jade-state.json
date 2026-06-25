@@ -1270,6 +1270,28 @@
   ],
   "activity_events": [
     {
+      "id": "1c9a7c4834401146",
+      "type": "message",
+      "text": "JADE respondeu a uma mensagem",
+      "icon": "robot",
+      "color": "#FF0080",
+      "metadata": {
+        "session_id": "test-embed-002"
+      },
+      "created_at": "2026-06-25T06:05:19.185Z"
+    },
+    {
+      "id": "c69e688640fffc0e",
+      "type": "message",
+      "text": "JADE respondeu a uma mensagem",
+      "icon": "robot",
+      "color": "#FF0080",
+      "metadata": {
+        "session_id": "test-openai-001"
+      },
+      "created_at": "2026-06-25T06:05:04.303Z"
+    },
+    {
       "id": "fb1ea53c48dd2d3a",
       "type": "message",
       "text": "JADE respondeu: \"Oi\"",
@@ -3195,29 +3217,6 @@
       "icon": "robot",
       "color": "#FF0080",
       "created_at": "2026-06-23T20:30:49.946Z"
-    },
-    {
-      "id": "0ea5aaca812ad2f7",
-      "type": "message",
-      "text": "JADE respondeu a uma mensagem",
-      "icon": "robot",
-      "color": "#FF0080",
-      "metadata": {
-        "session_id": "a56a68abe0357b26"
-      },
-      "created_at": "2026-06-23T20:30:49.564Z"
-    },
-    {
-      "id": "16a9888bc4dfa864",
-      "type": "module",
-      "text": "Scanner Radar ativado",
-      "icon": "crosshair",
-      "color": "#6C63FF",
-      "metadata": {
-        "module": "scanner",
-        "active": true
-      },
-      "created_at": "2026-06-23T20:30:21.690Z"
     }
   ],
   "marketing_campaigns": [
@@ -4825,21 +4824,16 @@
   ],
   "scanner_history": [],
   "company_config": {
-    "nome": "TeleVendas Pro",
-    "produto": "Plano Internet Fibra 500MB",
-    "segmento": "Telecom",
-    "tom": "agressivo",
-    "planos": "• Plano 100MB — R$89,90\n• Plano 500MB — R$129,90\n• Plano 1GB — R$179,90",
-    "cidade": "Campinas",
-    "estado": "SP",
+    "nome": "Teste Embeddings Ltda",
+    "produto": "Software de CRM",
+    "segmento": "Consultoria & B2B/SaaS",
+    "tom": "consultivo",
+    "planos": "",
+    "cidade": "",
+    "estado": "",
     "modoOperacao": "fechamento",
-    "publicoAlvo": "Pequenas e médias empresas de Campinas e região, 20-200 funcionários, que precisam de internet estável para trabalho remoto",
-    "diferenciais": "Fibra dedicada com SLA 99,9%, instalação em 48h, suporte técnico 24/7 sem fila, sem fidelidade nos planos",
-    "objecoesComuns": "Tá caro comparado com operadora X; Já tenho contrato ativo; Preciso ver com o sócio; Internet aqui já funciona bem",
-    "concorrentes": "Vivo Empresas (preço baixo mas suporte ruim), Claro Empresas (marca forte), NET Virtua (preço agressivo)",
-    "metas": "Fechar 25 contratos por mês, ticket médio R$150/mês, foco em contratos anuais",
-    "equipe": "5 SDRs fazendo prospecção ativa, 2 closers para demos e fechamento, ciclo médio 7 dias",
-    "regrasComerciais": "Desconto máximo 15% sem aprovação do gerente, parcelamento em até 12x no cartão, proposta enviada em até 2h após reunião",
-    "updated_at": "2026-06-24T23:50:02.682Z"
+    "publicoAlvo": "Gestores comerciais B2B",
+    "diferenciais": "IA integrada, suporte 24h",
+    "updated_at": "2026-06-25T06:05:04.585Z"
   }
 }

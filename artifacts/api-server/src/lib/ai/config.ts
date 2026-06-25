@@ -1,10 +1,4 @@
-export interface GeminiOperationConfig {
-  provider: 'gemini';
-  model: string;
-  temperature: number;
-  maxOutputTokens: number;
-}
-
+// ── OpenAI Chat / Generate ──────────────────────────────────────────────────
 export interface OpenAIOperationConfig {
   provider: 'openai';
   model: string;
@@ -12,6 +6,13 @@ export interface OpenAIOperationConfig {
   maxTokens: number;
 }
 
+// ── OpenAI Embeddings ───────────────────────────────────────────────────────
+export interface OpenAIEmbeddingConfig {
+  provider: 'openai-embedding';
+  model: string;
+}
+
+// ── Whisper (speech-to-text) ────────────────────────────────────────────────
 export interface WhisperOperationConfig {
   provider: 'whisper';
   model: string;
@@ -19,59 +20,66 @@ export interface WhisperOperationConfig {
 }
 
 export type OperationConfig =
-  | GeminiOperationConfig
   | OpenAIOperationConfig
+  | OpenAIEmbeddingConfig
   | WhisperOperationConfig;
-
-export function isGeminiConfig(c: OperationConfig): c is GeminiOperationConfig {
-  return c.provider === 'gemini';
-}
 
 export function isOpenAIConfig(c: OperationConfig): c is OpenAIOperationConfig {
   return c.provider === 'openai';
+}
+
+export function isOpenAIEmbeddingConfig(c: OperationConfig): c is OpenAIEmbeddingConfig {
+  return c.provider === 'openai-embedding';
 }
 
 export function isWhisperConfig(c: OperationConfig): c is WhisperOperationConfig {
   return c.provider === 'whisper';
 }
 
+// ── Operation registry ──────────────────────────────────────────────────────
+// Primary chat model: gpt-4.1-mini (released Apr 2025, best ROI in the mini tier).
+// If unavailable on the account, swap to 'gpt-4o-mini'.
+// All secondary ops run on gpt-4o-mini (stable, lower-cost).
+// Transcription: gpt-4o-transcribe (higher accuracy than whisper-1).
+// Embeddings: text-embedding-3-small (1536 dims, low cost, strong recall).
 export const OPERATION_CONFIG: Record<string, OperationConfig> = {
-  // Main chat (JADE conversational assistant) runs on OpenAI.
-  // ROLLBACK to Gemini without touching screens: replace this block with
-  //   chat: { provider: 'gemini', model: 'gemini-2.5-flash', temperature: 0.7, maxOutputTokens: 4000 }
   chat: {
     provider: 'openai',
-    model: 'gpt-4o-mini',
+    model: 'gpt-4.1-mini',
     temperature: 0.7,
     maxTokens: 4000,
   },
   'chat:lead-analysis': {
-    provider: 'gemini',
-    model: 'gemini-2.5-flash',
+    provider: 'openai',
+    model: 'gpt-4o-mini',
     temperature: 0.5,
-    maxOutputTokens: 500,
+    maxTokens: 500,
   },
   'chat:prospectar': {
-    provider: 'gemini',
-    model: 'gemini-2.5-flash',
+    provider: 'openai',
+    model: 'gpt-4o-mini',
     temperature: 0.9,
-    maxOutputTokens: 2000,
+    maxTokens: 2000,
   },
   'marketing:generate': {
-    provider: 'gemini',
-    model: 'gemini-2.5-flash',
+    provider: 'openai',
+    model: 'gpt-4o-mini',
     temperature: 0.8,
-    maxOutputTokens: 2000,
+    maxTokens: 2000,
   },
   approach: {
-    provider: 'gemini',
-    model: 'gemini-2.5-flash',
+    provider: 'openai',
+    model: 'gpt-4o-mini',
     temperature: 0.85,
-    maxOutputTokens: 200,
+    maxTokens: 200,
+  },
+  embed: {
+    provider: 'openai-embedding',
+    model: 'text-embedding-3-small',
   },
   transcribe: {
     provider: 'whisper',
-    model: 'whisper-1',
+    model: 'gpt-4o-transcribe',
     language: 'pt',
   },
 };

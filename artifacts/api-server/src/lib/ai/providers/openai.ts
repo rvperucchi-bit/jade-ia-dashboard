@@ -14,6 +14,7 @@ export interface OpenAIHistoryItem {
 }
 
 const REQUEST_TIMEOUT_MS = 60000;
+const EMBED_TIMEOUT_MS   = 20000;
 
 export class OpenAIProvider {
   constructor(private readonly apiKey: string) {}
@@ -67,9 +68,9 @@ export class OpenAIProvider {
     }
   }
 
-  // Normalize history for OpenAI: system prompt first, then user/assistant
-  // turns. Legacy messages stored with role 'model' (Gemini convention) are
-  // converted to 'assistant'.
+  // Normalize history: system prompt first, then user/assistant turns.
+  // Legacy messages stored with role 'model' (Gemini convention) are
+  // converted to 'assistant' for backward compatibility.
   async chat(opts: {
     systemPrompt: string;
     history: OpenAIHistoryItem[];
@@ -100,5 +101,46 @@ export class OpenAIProvider {
   }): Promise<string> {
     const messages: OpenAIChatMessage[] = [{ role: 'user', content: opts.prompt }];
     return this.complete(messages, opts.config);
+  }
+
+  // ── Embeddings API ──────────────────────────────────────────────────────────
+  // Returns one embedding vector per input text, in input order.
+  async embed(opts: { texts: string[]; model: string }): Promise<number[][]> {
+    this.assertKey();
+    if (opts.texts.length === 0) return [];
+
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), EMBED_TIMEOUT_MS);
+    try {
+      const res = await fetch('https://api.openai.com/v1/embeddings', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${this.apiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ model: opts.model, input: opts.texts }),
+        signal: controller.signal,
+      });
+
+      if (!res.ok) {
+        const errBody = await res.text();
+        throw new Error(`OpenAI Embeddings API error ${res.status}: ${errBody}`);
+      }
+
+      const data = (await res.json()) as {
+        data: Array<{ embedding: number[]; index: number }>;
+      };
+
+      return data.data
+        .sort((a, b) => a.index - b.index)
+        .map((d) => d.embedding);
+    } catch (err) {
+      if (err instanceof Error && err.name === 'AbortError') {
+        throw new Error(`OpenAI Embeddings timeout after ${EMBED_TIMEOUT_MS}ms`);
+      }
+      throw err;
+    } finally {
+      clearTimeout(timer);
+    }
   }
 }

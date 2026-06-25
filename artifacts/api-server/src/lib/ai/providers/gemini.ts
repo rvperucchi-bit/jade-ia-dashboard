@@ -1,6 +1,16 @@
+// ── GEMINI PROVIDER — ISOLATED (not used by JadeAIEngine) ────────────────────
+// Kept for reference / rollback only. All core operations now run on OpenAI.
+// Do NOT import this file from engine.ts or any active route.
+
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { JadeAIConfigError } from '../types.js';
-import type { GeminiOperationConfig } from '../config.js';
+
+interface GeminiOperationConfig {
+  provider: 'gemini';
+  model: string;
+  temperature: number;
+  maxOutputTokens: number;
+}
 
 export type GeminiHistory = Array<{
   role: 'user' | 'model';

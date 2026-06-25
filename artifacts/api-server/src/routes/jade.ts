@@ -7,6 +7,12 @@ import {
   type CompanyConfig, type CrmStatus, type CrmPipeline,
 } from '../db/store.js';
 import { buildContextForOperation } from '../lib/context/builder.js';
+import {
+  buildCompanyChunks,
+  saveCompanyEmbeddings,
+  isEmbeddingStale,
+  retrieveRelevantChunks,
+} from '../lib/memory/company.js';
 
 const BATCH_SIZE = 5;
 
@@ -311,9 +317,6 @@ router.post('/chat', async (req: Request, res: Response) => {
       } : null
     );
 
-    const { systemPrompt, blocks: contextBlocks } = buildContextForOperation('chat', companyConfig);
-    req.log.debug({ profile: 'chat', blocks: contextBlocks, hasMemory: contextBlocks.includes('company-memory-full') }, 'context built');
-
     const lastMessage = messagesArray[messagesArray.length - 1];
     const lastUserText = lastMessage!.content;
     const mapsApiKey = process.env.GOOGLE_MAPS_API_KEY ?? process.env.GOOGLE_MAPS_PLATFORM_KEY;
@@ -417,10 +420,50 @@ router.post('/chat', async (req: Request, res: Response) => {
           session_id: body.session_id, handoff: false, statusType: 'radar', leadsFound: places.length,
         });
       }
-      // Zero results → fall through so Gemini can explain
+      // Zero results → fall through to AI Engine for a natural response
     }
 
     // ─── Path C: JADE AI Engine ───────────────────────────────────────────────
+    // Company Memory: lazily refresh embeddings when stale, then retrieve
+    // the chunks most semantically relevant to this message.
+    let retrievedChunks: string[] = [];
+    if (companyConfig?.nome) {
+      try {
+        if (isEmbeddingStale(companyConfig.nome, companyConfig.updated_at)) {
+          // Refresh embeddings in the background — do not await
+          void (async () => {
+            try {
+              const chunks = buildCompanyChunks(companyConfig!);
+              if (chunks.length > 0) {
+                const embeddings = await engine.embed({ texts: chunks });
+                saveCompanyEmbeddings(companyConfig!, chunks, embeddings);
+                req.log.info(
+                  { company: companyConfig!.nome, chunks: chunks.length },
+                  'jade-memory: lazy embedding refresh complete',
+                );
+              }
+            } catch (bgErr) {
+              req.log.warn({ err: bgErr }, 'jade-memory: background refresh failed');
+            }
+          })();
+        } else {
+          const [queryEmbedding] = await engine.embed({ texts: [lastUserText] });
+          if (queryEmbedding) {
+            retrievedChunks = retrieveRelevantChunks(companyConfig.nome, queryEmbedding);
+            req.log.debug({ count: retrievedChunks.length }, 'jade-memory: chunks retrieved');
+          }
+        }
+      } catch (embErr) {
+        req.log.warn({ err: embErr }, 'jade-memory: retrieval skipped (non-fatal)');
+      }
+    }
+
+    const { systemPrompt, blocks: contextBlocks } = buildContextForOperation('chat', companyConfig, retrievedChunks);
+    req.log.debug(
+      { profile: 'chat', blocks: contextBlocks, hasMemory: contextBlocks.includes('company-memory-full'), hasEmbedding: contextBlocks.includes('embedding-retrieved') },
+      'context built',
+    );
+
     const text = await engine.chat({
       systemPrompt,
       history: messagesArray.slice(0, -1).map((m) => ({ role: m.role as 'user' | 'assistant', content: m.content })),
