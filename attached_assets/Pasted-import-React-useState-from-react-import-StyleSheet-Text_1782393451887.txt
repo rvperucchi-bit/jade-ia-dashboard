@@ -1,0 +1,65 @@
+import React, { useState } from 'react';
+import { StyleSheet, Text, View, TextInput, TouchableOpacity, SafeAreaView, Alert, ActivityIndicator } from 'react-native';
+
+export default function BroadcastScreen() {
+  const [title, setTitle] = useState('');
+  const [message, setMessage] = useState('');
+  const [polishing, setPolishing] = useState(false);
+
+  // Simula a JADE aplicando gatilhos mentais e melhorando o texto do Gerente
+  const handleAiPolish = () => {
+    if (!message) return;
+    setPolishing(true);
+    setTimeout(() => {
+      setPolishing(false);
+      setTitle('🚨 META DO DIA: Foco Estratégico Ativado');
+      setMessage('Atenção equipe! Nossa IA detectou um pico de leads altamente qualificados no funil de Proposta nas últimas horas. Cancelem gargalos operacionais e priorizem o fechamento agora. Vamos garantir a entrega do mês!');
+    }, 1500);
+  };
+
+  const handleSendPush = () => {
+    if (!title || !message) return;
+    Alert.alert('Sucesso', 'Push Notification disparada para todos os executivos ativos!');
+    setTitle('');
+    setMessage('');
+  };
+
+  return (
+    <SafeAreaView style={styles.container}>
+      <View style={styles.wrapper}>
+        <Text style={styles.screenTitle}>Mural da Equipe</Text>
+        <Text style={styles.subtitle}>Envie avisos em massa com push direto na tela do time</Text>
+
+        <Text style={styles.label}>TÍTULO DO ALERTA</Text>
+        <TextInput style={styles.input} placeholder="Ex: Urgente: Reunião Geral" placeholderTextColor="#4E5366" value={title} onChangeText={setTitle} />
+
+        <Text style={styles.label}>CORPO DA MENSAGEM</Text>
+        <TextInput style={[styles.input, { height: 120, paddingTop: 14 }]} placeholder="Digite o aviso para o time de vendas..." placeholderTextColor="#4E5366" multiline value={message} onChangeText={setMessage} />
+
+        {/* BOTÃO DA JADE PARA MELHORAR O TEXTO */}
+        <TouchableOpacity style={styles.aiButton} onPress={handleAiPolish} activeOpacity={0.7} disabled={polishing}>
+          {polishing ? <ActivityIndicator color="#00E5FF" /> : <Text style={styles.aiButtonText}>✨ Otimizar Texto com Gatilhos JADE</Text>}
+        </TouchableOpacity>
+
+        {/* DISPARO DO PUSH */}
+        <TouchableOpacity style={[styles.sendButton, (!title || !message) && styles.disabled]} onPress={handleSendPush} activeOpacity={0.8} disabled={!title || !message}>
+          <Text style={styles.sendButtonText}>Disparar Push Notification 🚀</Text>
+        </TouchableOpacity>
+      </View>
+    </SafeAreaView>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: { flex: 1, backgroundColor: '#090A0F' },
+  wrapper: { padding: 20 },
+  screenTitle: { fontSize: 26, fontWeight: '700', color: '#FFFFFF' },
+  subtitle: { fontSize: 13, color: '#8F94A8', marginTop: 4, marginBottom: 24 },
+  label: { fontSize: 11, color: '#8F94A8', fontWeight: '700', letterSpacing: 0.8, marginBottom: 8 },
+  input: { backgroundColor: '#161822', height: 54, borderRadius: 12, paddingHorizontal: 16, color: '#FFFFFF', fontSize: 15, borderWidth: 1, borderColor: '#242736', marginBottom: 20, textAlignVertical: 'top' },
+  aiButton: { backgroundColor: 'transparent', height: 48, borderRadius: 12, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: '#00E5FF', marginBottom: 16 },
+  aiButtonText: { color: '#00E5FF', fontSize: 14, fontWeight: '600' },
+  sendButton: { backgroundColor: '#FFFFFF', height: 54, borderRadius: 12, alignItems: 'center', justifyContent: 'center', marginTop: 10 },
+  disabled: { opacity: 0.4 },
+  sendButtonText: { color: '#090A0F', fontWeight: '700', fontSize: 15 }
+});

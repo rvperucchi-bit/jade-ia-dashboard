@@ -1,0 +1,70 @@
+import React from 'react';
+import { StyleSheet, Text, View, FlatList, SafeAreaView } from 'react-native';
+
+const CORPORATE_ACCOUNTS = [
+  { id: '1', account: 'Alpha Construtora', owner: 'Mariana Rios', mrr: 'R$ 5.800', health: 'Saudável' },
+  { id: '2', account: 'Diretriz Comercial', owner: 'Lucas Santana', mrr: 'R$ 4.500', health: 'Saudável' },
+  { id: '3', account: 'Glow Estética', owner: 'Thiago Martins', mrr: 'R$ 1.200', health: 'Risco de Churn' },
+  { id: '4', account: 'Ponto do Café', owner: 'Thiago Martins', mrr: 'R$ 900', health: 'Esfriando' }
+];
+
+export default function CorporatePortfolioScreen() {
+  return (
+    <SafeAreaView style={styles.container}>
+      <View style={styles.header}>
+        <Text style={styles.title}>Carteira Corporativa</Text>
+      </View>
+
+      {/* PAINEL MACRO NO TOPO */}
+      <View style={styles.macroGrid}>
+        <View style={styles.macroCard}><Text style={styles.macroLabel}>CHURN RATE</Text><Text style={[styles.macroValue, { color: '#38A169' }]}>1.8%</Text></View>
+        <View style={styles.macroCard}><Text style={styles.macroLabel}>MRR TOTAL</Text><Text style={styles.macroValue}>R$ 12.4k</Text></View>
+        <View style={styles.macroCard}><Text style={styles.macroLabel}>EM RISCO</Text><Text style={[styles.macroValue, { color: '#E93E3E' }]}>2</Text></View>
+      </View>
+
+      <Text style={styles.sectionLabel}>AUDITORIA GLOBAL DE CONTAS</Text>
+      <FlatList
+        data={CORPORATE_ACCOUNTS}
+        keyExtractor={(item) => item.id}
+        contentContainerStyle={{ paddingHorizontal: 20 }}
+        renderItem={({ item }) => {
+          const isDanger = item.health !== 'Saudável';
+          return (
+            <View style={styles.accountCard}>
+              <View style={styles.cardMain}>
+                <View>
+                  <Text style={styles.accountName}>{item.account}</Text>
+                  <Text style={styles.ownerText}>Responsável: {item.owner}</Text>
+                </View>
+                <Text style={styles.mrrValue}>{item.mrr}</Text>
+              </View>
+              <View style={[styles.badge, isDanger && styles.badgeDanger]}>
+                <Text style={[styles.badgeText, isDanger && styles.badgeTextDanger]}>{item.health}</Text>
+              </View>
+            </View>
+          );
+        }}
+      />
+    </SafeAreaView>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: { flex: 1, backgroundColor: '#090A0F' },
+  header: { padding: 20 },
+  title: { fontSize: 26, fontWeight: '700', color: '#FFFFFF' },
+  macroGrid: { flexDirection: 'row', paddingHorizontal: 20, justifyContent: 'space-between', marginBottom: 20 },
+  macroCard: { flex: 1, backgroundColor: '#161822', borderRadius: 12, padding: 12, borderWidth: 1, borderColor: '#242736', marginRight: 8 },
+  macroLabel: { fontSize: 9, color: '#4E5366', fontWeight: '700' },
+  macroValue: { fontSize: 18, fontWeight: '700', color: '#00E5FF', marginTop: 4 },
+  sectionLabel: { paddingHorizontal: 20, fontSize: 11, color: '#8F94A8', fontWeight: '700', letterSpacing: 0.8, marginBottom: 12 },
+  accountCard: { backgroundColor: '#161822', borderRadius: 14, padding: 16, marginBottom: 12, borderWidth: 1, borderColor: '#242736' },
+  cardMain: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  accountName: { color: '#FFFFFF', fontSize: 16, fontWeight: '600' },
+  ownerText: { color: '#8F94A8', fontSize: 12, marginTop: 2 },
+  mrrValue: { color: '#FFFFFF', fontSize: 15, fontWeight: '700' },
+  badge: { alignSelf: 'flex-start', backgroundColor: 'rgba(56, 161, 105, 0.1)', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 6, marginTop: 12 },
+  badgeDanger: { backgroundColor: 'rgba(229, 62, 62, 0.1)' },
+  badgeText: { fontSize: 11, color: '#38A169', fontWeight: '600' },
+  badgeTextDanger: { color: '#E93E3E' }
+});

@@ -1,0 +1,103 @@
+import React, { useState } from 'react';
+import { StyleSheet, Text, View, FlatList, ScrollView, TouchableOpacity, SafeAreaView, ActivityIndicator } from 'react-native';
+
+const TEAM_PERFORMANCE = [
+  { id: '1', name: 'Lucas Santana', conversion: '18%', meetings: '14 / 20', avgClose: '12 dias', gap: 'Gargalo na transição de Proposta para Fechados.', plan: 'Aplicar gatilho de escassez e follow-up em até 24h após envio do orçamento.' },
+  { id: '2', name: 'Mariana Rios', conversion: '26%', meetings: '22 / 22', avgClose: '8 dias', gap: 'Nenhum gap ativo. Performance acima da média.', plan: 'Iniciar estratégia de Up-sell com os clientes ativos de maior faturamento.' },
+  { id: '3', name: 'Thiago Martins', conversion: '11%', meetings: '8 / 15', avgClose: '19 dias', gap: 'Baixa conversão no primeiro contato via WhatsApp.', plan: 'Revisar os scripts iniciais gerados pela JADE na aba de prospecção.' }
+];
+
+export default function KpisScreen() {
+  const [selectedExec, setSelectedExec] = useState(null);
+  const [loadingAi, setLoadingAi] = useState(false);
+  const [aiLaudo, setAiLaudo] = useState(null);
+
+  const handleSelectExec = (exec) => {
+    setSelectedExec(exec);
+    setLoadingAi(true);
+    setAiLaudo(null);
+    // Simula a JADE gerando o laudo preditivo na hora
+    setTimeout(() => {
+      setLoadingAi(false);
+      setAiLaudo({ gap: exec.gap, plan: exec.plan });
+    }, 1500);
+  };
+
+  return (
+    <SafeAreaView style={styles.container}>
+      <ScrollView style={styles.scroll} showsVerticalScrollIndicator={false}>
+        <Text style={styles.title}>Métricas do Time</Text>
+        
+        {/* GRÁFICO HISTÓRICO SIMULADO */}
+        <Text style={styles.sectionLabel}>HISTÓRICO DE PRODUÇÃO GLOBAL</Text>
+        <View style={styles.chartCard}>
+          <View style={styles.chartRow}><Text style={styles.chartMonth}>Junho</Text><View style={[styles.chartBar, { width: '85%', backgroundColor: '#00E5FF' }]} /><Text style={styles.chartValue}>85%</Text></View>
+          <View style={styles.chartRow}><Text style={styles.chartMonth}>Maio</Text><View style={[styles.chartBar, { width: '92%', backgroundColor: '#38A169' ]} /><Text style={styles.chartValue}>92%</Text></View>
+          <View style={styles.chartRow}><Text style={styles.chartMonth}>Abril</Text><View style={[styles.chartBar, { width: '64%', backgroundColor: '#E93E3E' ]} /><Text style={styles.chartValue}>64%</Text></View>
+        </View>
+
+        {/* DRILL-DOWN DE EXECUTIVOS */}
+        <Text style={styles.sectionLabel}>SELECIONE UM EXECUTIVO PARA AUDITORIA</Text>
+        <View style={styles.listWrapper}>
+          {TEAM_PERFORMANCE.map((exec) => (
+            <TouchableOpacity key={exec.id} style={[styles.execItem, selectedExec?.id === exec.id && styles.execItemActive]} onPress={() => handleSelectExec(exec)}>
+              <Text style={styles.execName}>{exec.name}</Text>
+              <Text style={styles.execChevron}>➔</Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+
+        {/* LAUDO CONSULTIVO DA IA */}
+        {selectedExec && (
+          <View style={styles.aiBox}>
+            <Text style={styles.aiBoxTitle}>🤖 Laudo de Performance JADE</Text>
+            {loadingAi ? (
+              <ActivityIndicator color="#00E5FF" style={{ marginTop: 15 }} />
+            ) : (
+              aiLaudo && (
+                <>
+                  <View style={styles.metricsRow}>
+                    <View style={styles.miniMetric}><Text style={styles.miniLabel}>CONVERSÃO</Text><Text style={styles.miniValue}>{selectedExec.conversion}</Text></View>
+                    <View style={styles.miniMetric}><Text style={styles.miniLabel}>REUNIÕES</Text><Text style={styles.miniValue}>{selectedExec.meetings}</Text></View>
+                    <View style={styles.miniMetric}><Text style={styles.miniLabel}>CICLO MÉDIO</Text><Text style={styles.miniValue}>{selectedExec.avgClose}</Text></View>
+                  </View>
+                  <Text style={styles.reportLabel}>DIAGNÓSTICO DO GAP:</Text>
+                  <Text style={styles.reportText}>{aiLaudo.gap}</Text>
+                  <Text style={styles.reportLabel}>PLANO DE AÇÃO SUGERIDO:</Text>
+                  <Text style={styles.actionText}>💡 {aiLaudo.plan}</Text>
+                </>
+              )
+            )}
+          </View>
+        )}
+        <View style={{ height: 40 }} />
+      </ScrollView>
+    </SafeAreaView>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: { flex: 1, backgroundColor: '#090A0F' },
+  scroll: { padding: 20 },
+  title: { fontSize: 26, fontWeight: '700', color: '#FFFFFF', marginBottom: 20 },
+  sectionLabel: { fontSize: 11, color: '#8F94A8', fontWeight: '700', letterSpacing: 0.8, marginBottom: 12, marginTop: 10 },
+  chartCard: { backgroundColor: '#161822', borderRadius: 16, padding: 18, borderWidth: 1, borderColor: '#242736', marginBottom: 20 },
+  chartRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 12 },
+  chartMonth: { width: 55, color: '#8F94A8', fontSize: 13, fontWeight: '500' },
+  chartBar: { height: 8, borderRadius: 4, flex: 1, marginRight: 10 },
+  chartValue: { color: '#FFFFFF', fontSize: 13, fontWeight: '600', width: 35, textAlign: 'right' },
+  listWrapper: { backgroundColor: '#161822', borderRadius: 16, borderWidth: 1, borderColor: '#242736', paddingHorizontal: 16, marginBottom: 20 },
+  execItem: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 16, borderBottomWidth: 1, borderColor: '#242736' },
+  execItemActive: { opacity: 0.5 },
+  execName: { color: '#FFFFFF', fontSize: 15, fontWeight: '500' },
+  execChevron: { color: '#4E5366', fontSize: 14 },
+  aiBox: { backgroundColor: 'rgba(0, 229, 255, 0.02)', borderWidth: 1, borderColor: 'rgba(0, 229, 255, 0.15)', borderRadius: 16, padding: 18 },
+  aiBoxTitle: { fontSize: 14, fontWeight: '700', color: '#FFFFFF', marginBottom: 15 },
+  metricsRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 16, backgroundColor: '#161822', padding: 12, borderRadius: 10 },
+  miniMetric: { alignItems: 'center', flex: 1 },
+  miniLabel: { fontSize: 9, color: '#4E5366', fontWeight: '700' },
+  miniValue: { fontSize: 15, color: '#FFFFFF', fontWeight: '600', marginTop: 4 },
+  reportLabel: { fontSize: 9, color: '#4E5366', fontWeight: '700', marginTop: 12, marginBottom: 4 },
+  reportText: { fontSize: 13, color: '#8F94A8', lineHeight: 18 },
+  actionText: { fontSize: 13, color: '#FFFFFF', lineHeight: 18, fontWeight: '500' }
+});

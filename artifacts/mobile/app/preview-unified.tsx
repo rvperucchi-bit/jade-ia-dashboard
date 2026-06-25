@@ -28,7 +28,7 @@ import * as Linking from "expo-linking";
 import { useRouter } from "expo-router";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
-type Route = "Chat" | "Pipeline" | "Route" | "Prospecting" | "Meeting" | "Farmer" | "Reports" | "Marketing" | "Management";
+type Route = "Chat" | "Pipeline" | "Route" | "Prospecting" | "Meeting" | "Farmer" | "Reports" | "Marketing" | "Management" | "Kpis" | "CorporatePortfolio" | "Broadcast";
 type PipelineLead  = { id: string; name: string; company: string; value: string; stage: string; daysIdle: number; phone: string };
 type AiLead        = { id: string; name: string; segment: string; address: string };
 type HistoryItem   = { id: string; query: string; location: string; date: string; leadsCount: number };
@@ -185,6 +185,15 @@ function Sidebar({ visible, onClose, currentRoute, onNavigate }: {
             <View style={S.drawerSubMenu}>
               <TouchableOpacity style={S.drawerSubItem} onPress={() => go("Management")} activeOpacity={0.7}>
                 <Text style={[S.drawerSubText, currentRoute === "Management" && S.drawerSubTextActive]}>👥 Controle de Time & Metas</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={S.drawerSubItem} onPress={() => go("Kpis")} activeOpacity={0.7}>
+                <Text style={[S.drawerSubText, currentRoute === "Kpis" && S.drawerSubTextActive]}>📊 Metas & KPIs Detalhados</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={S.drawerSubItem} onPress={() => go("CorporatePortfolio")} activeOpacity={0.7}>
+                <Text style={[S.drawerSubText, currentRoute === "CorporatePortfolio" && S.drawerSubTextActive]}>🏢 Carteira Corporativa</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={S.drawerSubItem} onPress={() => go("Broadcast")} activeOpacity={0.7}>
+                <Text style={[S.drawerSubText, currentRoute === "Broadcast" && S.drawerSubTextActive]}>📣 Mural da Equipe</Text>
               </TouchableOpacity>
             </View>
           )}
@@ -1163,6 +1172,234 @@ function ManagementView({ onMenu }: { onMenu: () => void }) {
   );
 }
 
+// ─── Data: KPIs ──────────────────────────────────────────────────────────────
+type ExecPerf = { id: string; name: string; conversion: string; meetings: string; avgClose: string; gap: string; plan: string };
+const TEAM_PERFORMANCE: ExecPerf[] = [
+  { id: "1", name: "Lucas Santana",  conversion: "18%", meetings: "14 / 20", avgClose: "12 dias", gap: "Gargalo na transição de Proposta para Fechados.", plan: "Aplicar gatilho de escassez e follow-up em até 24h após envio do orçamento." },
+  { id: "2", name: "Mariana Rios",   conversion: "26%", meetings: "22 / 22", avgClose: "8 dias",  gap: "Nenhum gap ativo. Performance acima da média.",  plan: "Iniciar estratégia de Up-sell com os clientes ativos de maior faturamento." },
+  { id: "3", name: "Thiago Martins", conversion: "11%", meetings: "8 / 15",  avgClose: "19 dias", gap: "Baixa conversão no primeiro contato via WhatsApp.", plan: "Revisar os scripts iniciais gerados pela JADE na aba de prospecção." },
+];
+const CHART_HISTORY = [
+  { month: "Junho", pct: "85%", w: "85%", color: "#00E5FF" },
+  { month: "Maio",  pct: "92%", w: "92%", color: "#38A169" },
+  { month: "Abril", pct: "64%", w: "64%", color: "#E93E3E" },
+];
+
+// ─── Screen: KPIs ─────────────────────────────────────────────────────────────
+function KpisView({ onMenu }: { onMenu: () => void }) {
+  const [selectedExec, setSelectedExec] = useState<ExecPerf | null>(null);
+  const [loadingAi,    setLoadingAi]    = useState(false);
+
+  const handleSelect = (exec: ExecPerf) => {
+    setSelectedExec(null);
+    setLoadingAi(true);
+    setTimeout(() => { setSelectedExec(exec); setLoadingAi(false); }, 1400);
+  };
+
+  return (
+    <View style={{ flex: 1 }}>
+      <TopBar title="Metas & KPIs" subtitle="PAINEL DO DIRETOR" onMenu={onMenu} />
+      <ScrollView style={S.form} showsVerticalScrollIndicator={false}>
+        {/* Histórico global */}
+        <Text style={S.sectionLabel}>HISTÓRICO DE PRODUÇÃO GLOBAL</Text>
+        <View style={S.card}>
+          {CHART_HISTORY.map((row) => (
+            <View key={row.month} style={S.kpiChartRow}>
+              <Text style={S.kpiChartMonth}>{row.month}</Text>
+              <View style={{ flex: 1, height: 8, backgroundColor: "#090A0F", borderRadius: 4, overflow: "hidden", marginRight: 10 }}>
+                <View style={{ width: row.w as any, height: "100%", backgroundColor: row.color, borderRadius: 4 }} />
+              </View>
+              <Text style={S.kpiChartValue}>{row.pct}</Text>
+            </View>
+          ))}
+        </View>
+
+        {/* Drill-down executivos */}
+        <Text style={S.sectionLabel}>SELECIONE UM EXECUTIVO PARA AUDITORIA</Text>
+        <View style={[S.card, { paddingHorizontal: 0, paddingVertical: 0, overflow: "hidden" }]}>
+          {TEAM_PERFORMANCE.map((exec, idx) => (
+            <TouchableOpacity
+              key={exec.id}
+              style={[S.kpiExecItem, idx < TEAM_PERFORMANCE.length - 1 && { borderBottomWidth: 1, borderColor: "#242736" }]}
+              onPress={() => handleSelect(exec)}
+              activeOpacity={0.7}
+            >
+              <Text style={S.cardName}>{exec.name}</Text>
+              <Text style={{ color: "#4E5366", fontSize: 16 }}>➔</Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+
+        {/* Laudo IA */}
+        {(loadingAi || selectedExec) && (
+          <View style={S.kpiAiBox}>
+            <Text style={S.kpiAiTitle}>🤖 Laudo de Performance JADE</Text>
+            {loadingAi ? (
+              <ActivityIndicator color="#00E5FF" style={{ marginTop: 16 }} />
+            ) : selectedExec ? (
+              <>
+                <View style={S.kpiMiniRow}>
+                  {[
+                    { label: "CONVERSÃO",   value: selectedExec.conversion },
+                    { label: "REUNIÕES",    value: selectedExec.meetings   },
+                    { label: "CICLO MÉDIO", value: selectedExec.avgClose   },
+                  ].map((m) => (
+                    <View key={m.label} style={S.kpiMiniCard}>
+                      <Text style={S.mgmtGridLabel}>{m.label}</Text>
+                      <Text style={[S.cardName, { marginTop: 4 }]}>{m.value}</Text>
+                    </View>
+                  ))}
+                </View>
+                <Text style={S.mgmtGridLabel}>DIAGNÓSTICO DO GAP:</Text>
+                <Text style={[S.cardSub, { marginTop: 4, marginBottom: 12 }]}>{selectedExec.gap}</Text>
+                <Text style={S.mgmtGridLabel}>PLANO DE AÇÃO SUGERIDO:</Text>
+                <Text style={[S.cardName, { fontSize: 13, marginTop: 4, lineHeight: 20 }]}>💡 {selectedExec.plan}</Text>
+              </>
+            ) : null}
+          </View>
+        )}
+        <View style={{ height: 40 }} />
+      </ScrollView>
+    </View>
+  );
+}
+
+// ─── Data: Corporate Portfolio ────────────────────────────────────────────────
+type CorpAccount = { id: string; account: string; owner: string; mrr: string; health: string };
+const CORPORATE_ACCOUNTS: CorpAccount[] = [
+  { id: "1", account: "Alpha Construtora",   owner: "Mariana Rios",   mrr: "R$ 5.800", health: "Saudável"        },
+  { id: "2", account: "Diretriz Comercial",  owner: "Lucas Santana",  mrr: "R$ 4.500", health: "Saudável"        },
+  { id: "3", account: "Glow Estética",       owner: "Thiago Martins", mrr: "R$ 1.200", health: "Risco de Churn"  },
+  { id: "4", account: "Ponto do Café",       owner: "Thiago Martins", mrr: "R$ 900",   health: "Esfriando"       },
+];
+
+// ─── Screen: Corporate Portfolio ─────────────────────────────────────────────
+function CorporatePortfolioView({ onMenu }: { onMenu: () => void }) {
+  return (
+    <View style={{ flex: 1 }}>
+      <TopBar title="Carteira Corporativa" subtitle="VISÃO MACRO" onMenu={onMenu} />
+      <ScrollView showsVerticalScrollIndicator={false}>
+        {/* Macro grid */}
+        <View style={S.corpMacroRow}>
+          {[
+            { label: "CHURN RATE", value: "1.8%", color: "#38A169" },
+            { label: "MRR TOTAL",  value: "R$ 12.4k", color: "#00E5FF" },
+            { label: "EM RISCO",   value: "2",   color: "#E93E3E" },
+          ].map((m) => (
+            <View key={m.label} style={S.corpMacroCard}>
+              <Text style={S.mgmtGridLabel}>{m.label}</Text>
+              <Text style={[S.mgmtGridValue, { color: m.color, fontSize: 20 }]}>{m.value}</Text>
+            </View>
+          ))}
+        </View>
+
+        <Text style={[S.sectionLabel, { paddingHorizontal: 20 }]}>AUDITORIA GLOBAL DE CONTAS</Text>
+
+        <FlatList
+          data={CORPORATE_ACCOUNTS}
+          keyExtractor={(i) => i.id}
+          scrollEnabled={false}
+          contentContainerStyle={{ paddingHorizontal: 20 }}
+          renderItem={({ item }) => {
+            const danger = item.health !== "Saudável";
+            const healthColor = item.health === "Saudável" ? "#38A169" : item.health === "Esfriando" ? "#00E5FF" : "#E93E3E";
+            return (
+              <View style={[S.card, { marginBottom: 12 }]}>
+                <View style={S.cardHead}>
+                  <View style={{ flex: 1 }}>
+                    <Text style={S.cardName}>{item.account}</Text>
+                    <Text style={S.cardSub2}>Responsável: {item.owner}</Text>
+                  </View>
+                  <Text style={[S.cardName, { color: "#FFFFFF" }]}>{item.mrr}</Text>
+                </View>
+                <View style={[S.badge, { alignSelf: "flex-start", marginTop: 12, backgroundColor: healthColor + "15", borderColor: healthColor + "40" }]}>
+                  <Text style={[S.badgeText, { color: healthColor }]}>{item.health}</Text>
+                </View>
+              </View>
+            );
+          }}
+        />
+        <View style={{ height: 40 }} />
+      </ScrollView>
+    </View>
+  );
+}
+
+// ─── Screen: Broadcast ───────────────────────────────────────────────────────
+function BroadcastView({ onMenu }: { onMenu: () => void }) {
+  const [title,     setTitle]     = useState("");
+  const [message,   setMessage]   = useState("");
+  const [polishing, setPolishing] = useState(false);
+
+  const handleAiPolish = () => {
+    if (!message) return;
+    setPolishing(true);
+    setTimeout(() => {
+      setPolishing(false);
+      setTitle("🚨 META DO DIA: Foco Estratégico Ativado");
+      setMessage("Atenção equipe! Nossa IA detectou um pico de leads altamente qualificados no funil de Proposta nas últimas horas. Cancelem gargalos operacionais e priorizem o fechamento agora. Vamos garantir a entrega do mês!");
+    }, 1500);
+  };
+
+  const handleSend = () => {
+    if (!title || !message) return;
+    Alert.alert("Enviado! 🚀", "Push Notification disparada para todos os executivos ativos!");
+    setTitle(""); setMessage("");
+  };
+
+  return (
+    <View style={{ flex: 1 }}>
+      <TopBar title="Mural da Equipe" subtitle="CENTRAL DE AVISOS" onMenu={onMenu} />
+      <ScrollView style={S.form} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
+        <Text style={[S.cardSub, { marginBottom: 24, marginTop: -4 }]}>Envie avisos em massa com push direto na tela do time</Text>
+
+        <Text style={S.label}>TÍTULO DO ALERTA</Text>
+        <TextInput
+          style={S.input}
+          placeholder="Ex: Urgente: Reunião Geral"
+          placeholderTextColor="#4E5366"
+          value={title}
+          onChangeText={setTitle}
+        />
+
+        <Text style={S.label}>CORPO DA MENSAGEM</Text>
+        <TextInput
+          style={[S.input, { height: 120, paddingTop: 14, textAlignVertical: "top" }]}
+          placeholder="Digite o aviso para o time de vendas..."
+          placeholderTextColor="#4E5366"
+          multiline
+          value={message}
+          onChangeText={setMessage}
+        />
+
+        {/* Botão JADE polish */}
+        <TouchableOpacity
+          style={[S.broadcastAiBtn, !message && { opacity: 0.4 }]}
+          onPress={handleAiPolish}
+          disabled={polishing || !message}
+          activeOpacity={0.7}
+        >
+          {polishing
+            ? <ActivityIndicator color="#00E5FF" />
+            : <Text style={S.broadcastAiBtnText}>✨ Otimizar Texto com Gatilhos JADE</Text>
+          }
+        </TouchableOpacity>
+
+        {/* Disparo */}
+        <TouchableOpacity
+          style={[S.primaryBtn, (!title || !message) && S.primaryBtnDisabled, { marginTop: 8 }]}
+          onPress={handleSend}
+          disabled={!title || !message}
+          activeOpacity={0.8}
+        >
+          <Text style={S.primaryBtnText}>Disparar Push Notification 🚀</Text>
+        </TouchableOpacity>
+        <View style={{ height: 40 }} />
+      </ScrollView>
+    </View>
+  );
+}
+
 // ─── Root ─────────────────────────────────────────────────────────────────────
 export default function PreviewUnifiedScreen() {
   const router = useRouter();
@@ -1186,7 +1423,10 @@ export default function PreviewUnifiedScreen() {
       {route === "Farmer"      && <FarmerView      onMenu={openMenu} />}
       {route === "Reports"     && <ReportsView     onMenu={openMenu} />}
       {route === "Marketing"   && <MarketingView   onMenu={openMenu} />}
-      {route === "Management"  && <ManagementView  onMenu={openMenu} />}
+      {route === "Management"        && <ManagementView        onMenu={openMenu} />}
+      {route === "Kpis"              && <KpisView              onMenu={openMenu} />}
+      {route === "CorporatePortfolio"&& <CorporatePortfolioView onMenu={openMenu} />}
+      {route === "Broadcast"         && <BroadcastView         onMenu={openMenu} />}
 
       <Sidebar visible={sidebar} onClose={() => setSidebar(false)} currentRoute={route} onNavigate={setRoute} />
     </View>
@@ -1370,6 +1610,24 @@ const S = StyleSheet.create({
   dayChipText: { fontSize: 13, color: "#4E5366", fontWeight: "600" },
   dayChipTextActive: { color: "#00E5FF" },
   timeWindowBtn: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", backgroundColor: "#161822", borderRadius: 14, padding: 18, borderWidth: 1, borderColor: "#242736", marginBottom: 20 },
+
+  // KPIs screen
+  kpiChartRow:   { flexDirection: "row", alignItems: "center", marginBottom: 14 },
+  kpiChartMonth: { width: 52, color: "#8F94A8", fontSize: 13, fontWeight: "500" },
+  kpiChartValue: { color: "#FFFFFF", fontSize: 13, fontWeight: "600", width: 38, textAlign: "right" },
+  kpiExecItem:   { flexDirection: "row", justifyContent: "space-between", alignItems: "center", paddingVertical: 16, paddingHorizontal: 20 },
+  kpiAiBox:      { backgroundColor: "rgba(0,229,255,0.02)", borderWidth: 1, borderColor: "rgba(0,229,255,0.15)", borderRadius: 16, padding: 18, marginBottom: 8 },
+  kpiAiTitle:    { fontSize: 14, fontWeight: "700", color: "#FFFFFF", marginBottom: 16 },
+  kpiMiniRow:    { flexDirection: "row", justifyContent: "space-between", backgroundColor: "#161822", padding: 12, borderRadius: 10, marginBottom: 16 },
+  kpiMiniCard:   { alignItems: "center", flex: 1 },
+
+  // Corporate Portfolio screen
+  corpMacroRow:  { flexDirection: "row", paddingHorizontal: 20, justifyContent: "space-between", marginBottom: 20, gap: 8 },
+  corpMacroCard: { flex: 1, backgroundColor: "#161822", borderRadius: 12, padding: 12, borderWidth: 1, borderColor: "#242736" },
+
+  // Broadcast screen
+  broadcastAiBtn:     { height: 48, borderRadius: 12, alignItems: "center", justifyContent: "center", borderWidth: 1, borderColor: "#00E5FF", marginBottom: 16 },
+  broadcastAiBtnText: { color: "#00E5FF", fontSize: 14, fontWeight: "600" },
 
   // Management screen
   mgmtAddBtn: { backgroundColor: "#161822", borderWidth: 1, borderColor: "#242736", paddingHorizontal: 16, height: 40, borderRadius: 10, justifyContent: "center", alignItems: "center" },

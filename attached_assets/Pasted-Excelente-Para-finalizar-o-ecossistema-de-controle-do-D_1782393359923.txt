@@ -1,0 +1,24 @@
+Excelente! Para finalizar o ecossistema de controle do Diretor, preciso que você adicione mais 3 novas telas oficiais dentro da estrutura do 'expo-router', registrando-as como novos submenus dentro do bloco de 🛠️ Gestão na Sidebar da JADE. 
+
+Crie as telas seguindo rigorosamente a identidade visual Dark Premium (Fundo #090A0F, Surfaces #161822, Bordas #242736 e Neon #00E5FF):
+
+1. TELA: Metas & KPIs Detalhados (app/management/kpis.tsx)
+- Visão Geral do Time: Um painel no topo com gráficos de barra horizontais elegantes mostrando a produção e o atingimento da meta global do time mês a mês (Histórico dos últimos 3 meses).
+- Broca de Dados (Drill-down): Uma lista com o nome de cada executivo. Ao clicar no nome de um executivo, a tela exibe os números detalhados do funil dele (Taxa de conversão, reuniões agendadas vs realizadas e tempo médio de fechamento).
+- Laudo e Planejamento IA: Logo abaixo dos dados do executivo, a JADE deve gerar um laudo analítico sob demanda identificando o gap dele (ex: "Lucas está com gargalo na transição de Proposta para Fechamento") e sugerir um plano de ação preditivo com dicas para o time conseguir entregar o resultado e bater a meta do mês.
+
+2. TELA: Visão Geral da Carteira Corporativa (app/management/corporate-portfolio.tsx)
+- Painel macro para o gerente acompanhar a saúde de TODOS os clientes da empresa de forma consolidada, e não apenas de um executivo.
+- Métricas no Topo: Exibe a taxa geral de Churn (Cancelamento), o faturamento total em MRR (Receita Recorrente) e a quantidade de contas em risco na empresa.
+- Listagem Inteligente: Uma tabela ou lista limpa separando as contas por vendedor responsável, permitindo ao gerente filtrar quais carteiras de clientes estão esfriando para intervir junto ao executivo antes do cancelamento.
+
+3. TELA: Central de Notificações / Push da Equipe (app/management/broadcast.tsx)
+- Ferramenta para o gerente enviar avisos e alertas em massa para o aplicativo de toda a equipe de vendas.
+- Interface de Criação: Um campo de texto limpo para digitar o título e o corpo do aviso (Ex: "Foco total nos leads de alta prioridade hoje!").
+- Gatilhos da JADE: Um botão para a JADE revisar e melhorar o texto do aviso usando gatilhos mentais de vendas e urgência antes de enviar.
+- Botão de Disparo: Um botão de alto contraste "Disparar Push Notification 🚀" que simula o envio imediato da notificação com um aviso de sucesso na tela.
+
+4. ATUALIZAÇÃO DA SIDEBAR (JADE):
+Insira estas 3 rotas de forma limpa abaixo do botão "Controle de Time" no acordeão de 🛠️ Gestão, garantindo que as fontes fiquem brancas e as interações fechem o menu ao transicionar.
+
+Gere os códigos na estrutura de pastas correta do expo-router e atualize o preview unificado no Expo Go!
