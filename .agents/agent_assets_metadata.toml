@@ -167,3 +167,9 @@ id = "zGlWnSSYIqJs0lPXPpE7K"
 uri = "file://exports/resumo-documentacao-visual-jade.pdf"
 type = "pdf"
 title = "Resumo PDF — Documentação Visual JADE IA"
+
+[[outputs]]
+id = "0unu23K2k0m29J6r6EhYb"
+uri = "file://exports/integracao-whatsapp-jade.pdf"
+type = "pdf"
+title = "Integração WhatsApp — JADE IA (Relatório Técnico)"
