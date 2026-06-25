@@ -1,4 +1,6 @@
-import React, { useRef, useState } from "react";
+import React, { useRef, useState, useEffect } from "react";
+import * as ImagePicker from "expo-image-picker";
+import { Audio } from "expo-av";
 import {
   ActivityIndicator,
   Alert,
@@ -213,44 +215,139 @@ function TopBar({ title, subtitle, onMenu }: { title: string; subtitle?: string;
 
 // ─── Screen: Chat ─────────────────────────────────────────────────────────────
 function ChatView({ onMenu }: { onMenu: () => void }) {
-  const insets = useSafeAreaInsets();
-  const [input,    setInput]    = useState("");
-  const [messages, setMessages] = useState<ChatMsg[]>([]);
+  const insets   = useSafeAreaInsets();
+  const [input,      setInput]      = useState("");
+  const [messages,   setMessages]   = useState<ChatMsg[]>([]);
+  const [isThinking, setIsThinking] = useState(false);
+  const [recording,  setRecording]  = useState<Audio.Recording | null>(null);
   const scrollRef = useRef<ScrollView>(null);
 
-  const send = () => {
-    const t = input.trim(); if (!t) return;
-    setMessages((p) => [...p, { id: Date.now().toString(), text: t, sender: "user" }]);
-    setInput("");
-    setTimeout(() => {
-      setMessages((p) => [...p, { id: (Date.now()+1).toString(), text: "Analisando seus dados comerciais… Em breve trarei insights sobre seu pipeline e oportunidades de up-sell.", sender: "ai" }]);
-      scrollRef.current?.scrollToEnd({ animated: true });
-    }, 900);
-    setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 80);
+  // ── Request audio permission on mount ──────────────────────────────────────
+  useEffect(() => {
+    Audio.requestPermissionsAsync();
+  }, []);
+
+  // ── Scroll to bottom whenever messages change ───────────────────────────────
+  useEffect(() => {
+    if (messages.length > 0) {
+      setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 80);
+    }
+  }, [messages]);
+
+  // ──────────────────────────────────────────────────────────────────────────
+  // fetchJadeAIResponse — stub preparado para receber chave de API
+  // Substitua o conteúdo desta função com sua chamada real (OpenAI / Anthropic)
+  // ──────────────────────────────────────────────────────────────────────────
+  const fetchJadeAIResponse = async (_userMessage: string): Promise<string> => {
+    // TODO: substituir pela chamada real à API
+    // Exemplo: const res = await openai.chat.completions.create({ ... })
+    await new Promise((r) => setTimeout(r, 1200));
+    return "Analisando seus dados comerciais… Em breve trarei insights sobre seu pipeline e oportunidades de up-sell.";
   };
+
+  // ── Enviar mensagem de texto ────────────────────────────────────────────────
+  const send = async () => {
+    const t = input.trim();
+    if (!t || isThinking) return;
+    const userMsg: ChatMsg = { id: Date.now().toString(), text: t, sender: "user" };
+    setMessages((p) => [...p, userMsg]);
+    setInput("");
+    setIsThinking(true);
+    const reply = await fetchJadeAIResponse(t);
+    setMessages((p) => [...p, { id: (Date.now() + 1).toString(), text: reply, sender: "ai" }]);
+    setIsThinking(false);
+  };
+
+  // ── Abrir galeria com expo-image-picker ────────────────────────────────────
+  const pickImage = async () => {
+    const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!perm.granted) { Alert.alert("Permissão necessária", "Permita acesso à galeria para enviar imagens."); return; }
+    const result = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ImagePicker.MediaTypeOptions.Images, quality: 0.8 });
+    if (!result.canceled && result.assets[0]) {
+      const uri = result.assets[0].uri;
+      setMessages((p) => [...p, { id: Date.now().toString(), text: `📎 Imagem enviada: ${uri.split("/").pop()}`, sender: "user" }]);
+    }
+  };
+
+  // ── Gravar / parar áudio com expo-av ──────────────────────────────────────
+  const toggleRecording = async () => {
+    if (recording) {
+      await recording.stopAndUnloadAsync();
+      setRecording(null);
+      setMessages((p) => [...p, { id: Date.now().toString(), text: "🎙️ Mensagem de voz enviada", sender: "user" }]);
+    } else {
+      try {
+        await Audio.setAudioModeAsync({ allowsRecordingIOS: true, playsInSilentModeIOS: true });
+        const { recording: rec } = await Audio.Recording.createAsync(Audio.RecordingOptionsPresets.HIGH_QUALITY);
+        setRecording(rec);
+      } catch {
+        Alert.alert("Erro", "Não foi possível iniciar a gravação.");
+      }
+    }
+  };
+
+  const hasText = input.trim().length > 0;
 
   return (
     <View style={{ flex: 1 }}>
-      <TopBar title="Sleek IA" onMenu={onMenu} />
-      <ScrollView ref={scrollRef} style={{ flex: 1 }} contentContainerStyle={[S.chatArea, messages.length === 0 && S.chatAreaCenter]} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
+      <TopBar title="JADE" onMenu={onMenu} />
+
+      <ScrollView
+        ref={scrollRef}
+        style={{ flex: 1 }}
+        contentContainerStyle={[S.chatArea, messages.length === 0 && S.chatAreaCenter]}
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+      >
         {messages.length === 0 ? (
           <View style={S.welcomeWrap}>
-            <Text style={S.aiEmoji}>🤖</Text>
-            <Text style={S.welcomeText}>Como posso alavancar suas vendas hoje?</Text>
+            <Text style={S.welcomeText}>Como posso alavancar{"\n"}suas vendas hoje?</Text>
           </View>
-        ) : messages.map((m) => (
-          <View key={m.id} style={[S.bubble, m.sender === "user" ? S.bubbleUser : S.bubbleAi]}>
-            <Text style={[S.bubbleText, m.sender === "user" ? S.bubbleTextUser : S.bubbleTextAi]}>{m.text}</Text>
+        ) : (
+          messages.map((m) => (
+            <View key={m.id} style={[S.bubble, m.sender === "user" ? S.bubbleUser : S.bubbleAi]}>
+              <Text style={[S.bubbleText, m.sender === "user" ? S.bubbleTextUser : S.bubbleTextAi]}>{m.text}</Text>
+            </View>
+          ))
+        )}
+
+        {/* Indicador "JADE está pensando..." */}
+        {isThinking && (
+          <View style={[S.bubble, S.bubbleAi, { flexDirection: "row", alignItems: "center", gap: 8 }]}>
+            <ActivityIndicator size="small" color="#00E5FF" />
+            <Text style={[S.bubbleTextAi, { color: "#8F94A8" }]}>JADE está pensando…</Text>
           </View>
-        ))}
+        )}
       </ScrollView>
+
+      {/* Indicador de gravação ativo */}
+      {recording && (
+        <View style={S.recordingBar}>
+          <View style={S.recordingDot} />
+          <Text style={S.recordingText}>Gravando… toque 🎙️ para enviar</Text>
+        </View>
+      )}
+
       <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"}>
         <View style={[S.inputContainer, { paddingBottom: insets.bottom + 12 }]}>
           <View style={S.inputRow}>
-            <TouchableOpacity style={S.innerBarBtn}><Text style={S.barIcon}>＋</Text></TouchableOpacity>
-            <TextInput style={S.textInput} placeholder="Perguntar ao Sleek IA..." placeholderTextColor="#626880" value={input} onChangeText={setInput} multiline />
-            <TouchableOpacity style={S.sendBtn} onPress={send} activeOpacity={0.8}>
-              <Text style={S.sendIcon}>{input.trim().length > 0 ? "▲" : "🎙️"}</Text>
+            <TouchableOpacity style={S.innerBarBtn} onPress={pickImage} activeOpacity={0.7}>
+              <Text style={S.barIcon}>＋</Text>
+            </TouchableOpacity>
+            <TextInput
+              style={S.textInput}
+              placeholder="Perguntar à JADE..."
+              placeholderTextColor="#626880"
+              value={input}
+              onChangeText={setInput}
+              multiline
+            />
+            <TouchableOpacity
+              style={[S.sendBtn, recording && { backgroundColor: "#E93E3E" }]}
+              onPress={hasText ? send : toggleRecording}
+              activeOpacity={0.8}
+            >
+              <Text style={S.sendIcon}>{hasText ? "▲" : "🎙️"}</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -1257,6 +1354,11 @@ const S = StyleSheet.create({
   metricRow: { },
   progressTrack: { height: 6, backgroundColor: "#090A0F", borderRadius: 3, overflow: "hidden" },
   progressBar: { height: "100%", borderRadius: 3 },
+
+  // Chat — recording indicator
+  recordingBar: { flexDirection: "row", alignItems: "center", backgroundColor: "rgba(233,62,62,0.12)", borderTopWidth: 1, borderColor: "rgba(233,62,62,0.3)", paddingHorizontal: 20, paddingVertical: 10, gap: 10 },
+  recordingDot: { width: 10, height: 10, borderRadius: 5, backgroundColor: "#E93E3E" },
+  recordingText: { color: "#E93E3E", fontSize: 13, fontWeight: "600" },
 
   // Meeting screen — robot config
   meetBriefPreview: { backgroundColor: "rgba(255,255,255,0.02)", borderRadius: 10, padding: 12, marginTop: 12, marginBottom: 10, borderWidth: 1, borderColor: "#242736" },
