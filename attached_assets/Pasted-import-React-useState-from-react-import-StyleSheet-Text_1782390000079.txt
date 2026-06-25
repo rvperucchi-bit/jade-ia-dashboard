@@ -1,0 +1,216 @@
+import React, { useState } from 'react';
+import { 
+  StyleSheet, 
+  Text, 
+  View, 
+  ScrollView, 
+  TouchableOpacity, 
+  SafeAreaView, 
+  TextInput,
+  Modal,
+  ActivityIndicator,
+  Share,
+  Alert
+} from 'react-native';
+
+const MARKETING_TABS = ['Campanhas Ativas', 'Criativos Redes'];
+
+export default function MarketingScreen() {
+  const [activeTab, setActiveTab] = useState('Campanhas Ativas');
+  const [isBudgetModalOpen, setIsBudgetModalOpen] = useState(false);
+  const [isCalculating, setIsCalculating] = useState(false);
+  
+  const [investmentValue, setInvestmentValue] = useState('');
+  const [numberOfDays, setNumberOfDays] = useState('');
+  const [aiStrategy, setAiStrategy] = useState(null);
+
+  const creativeHeadline = '"Cansado de perder leads na sua empresa?"';
+  const creativeBody = "Legenda sugerida: Deixar dinheiro na mesa dói. Enquanto você atende um cliente, nossa IA qualifica e agenda os próximos direto no seu WhatsApp comercial. Toque no link e mude o ritmo do seu negócio.";
+
+  // Função Nativa para Compartilhar o Texto da IA para qualquer Rede Social ou WhatsApp
+  const handleShareCreative = async () => {
+    try {
+      const result = await Share.share({
+        message: `${creativeHeadline}\n\n${creativeBody}`,
+      });
+      if (result.action === Share.sharedAction) {
+        if (result.activityType) {
+          // compartilhado com um tipo de atividade específico
+        } else {
+          Alert.alert('Sucesso', 'Criativo enviado com sucesso!');
+        }
+      }
+    } catch (error) {
+      Alert.alert('Erro', 'Não foi possível compartilhar o criativo.');
+    }
+  };
+
+  const handleGenerateStrategy = () => {
+    if (!investmentValue || !numberOfDays) return;
+    setIsCalculating(true);
+    setTimeout(() => {
+      setIsCalculating(false);
+      setAiStrategy({
+        meta: 'R$ ' + (parseFloat(investmentValue) * 0.6).toFixed(0) + ' no Meta Ads (Instagram/FB Reels)',
+        google: 'R$ ' + (parseFloat(investmentValue) * 0.4).toFixed(0) + ' no Google Ads (Busca Local)',
+        bestTimes: 'Terças e Quintas, das 11:30 às 13:30 e 18:00 às 20:30',
+        expectedLeads: Math.floor(parseFloat(investmentValue) / 8) + ' a ' + Math.floor(parseFloat(investmentValue) / 5) + ' leads qualificados'
+      });
+    }, 2000);
+  };
+
+  return (
+    <SafeAreaView style={styles.container}>
+      <View style={styles.header}>
+        <Text style={styles.greeting}>Growth & Tráfego</Text>
+        <Text style={styles.stageTotal}>Marketing IA</Text>
+      </View>
+
+      <View style={styles.topActionWrapper}>
+        <TouchableOpacity 
+          style={styles.budgetLauncherButton}
+          activeOpacity={0.8}
+          onPress={() => setIsBudgetModalOpen(true)}
+        >
+          <Text style={styles.budgetLauncherText}>💰 Planejar Verba de Tráfego Pago →</Text>
+        </TouchableOpacity>
+      </View>
+
+      <View style={styles.tabsWrapper}>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.tabsScroll}>
+          {MARKETING_TABS.map((tab) => {
+            const isActive = activeTab === tab;
+            return (
+              <TouchableOpacity key={tab} activeOpacity={0.8} onPress={() => setActiveTab(tab)} style={styles.tabButton}>
+                <Text style={[styles.tabText, isActive && styles.activeTabText]}>{tab}</Text>
+                {isActive && <View style={styles.tabIndicator} />}
+              </TouchableOpacity>
+            );
+          })}
+        </ScrollView>
+      </View>
+
+      {activeTab === 'Campanhas Ativas' && (
+        <ScrollView style={styles.tabContentContainer} showsVerticalScrollIndicator={false}>
+          <Text style={styles.sectionLabel}>MÉTRICAS DE TRÁFEGO ATUAIS</Text>
+          
+          <View style={styles.statsCard}>
+            <View style={styles.statsRow}>
+              <View>
+                <Text style={styles.miniLabel}>CUSTO POR LEAD (CPL)</Text>
+                <Text style={styles.statsValue}>R$ 6,42</Text>
+              </View>
+              <View style={styles.badgePositive}>
+                <Text style={styles.badgePositiveText}>↓ 14% mais barato</Text>
+              </View>
+            </View>
+            <Text style={styles.statsSubtext}>O robô reduziu o custo otimizando o raio geográfico do Google Maps.</Text>
+          </View>
+
+          <View style={styles.statsCard}>
+            <View style={styles.statsRow}>
+              <View>
+                <Text style={styles.miniLabel}>ROAS GLOBAL (RETORNO)</Text>
+                <Text style={[styles.statsValue, { color: '#38A169' }]}>4.2x</Text>
+              </View>
+            </View>
+            <Text style={styles.statsSubtext}>Para cada R$ 1,00 investido este mês, retornaram R$ 4,20 no Pipeline.</Text>
+          </View>
+        </ScrollView>
+      )}
+
+      {activeTab === 'Criativos Redes' && (
+        <ScrollView style={styles.tabContentContainer} showsVerticalScrollIndicator={false}>
+          <Text style={styles.sectionLabel}>CRIATIVOS RECENTES DA IA</Text>
+          
+          <View style={styles.creativeCard}>
+            <View style={styles.creativeHeader}>
+              <Text style={styles.creativeTag}>📸 INSTAGRAM REELS / ADS</Text>
+              {/* BOTÃO INTERATIVO DE COMPARTILHAMENTO NATIVO */}
+              <TouchableOpacity onPress={handleShareCreative} activeOpacity={0.6}>
+                <Text style={styles.copyButton}>Compartilhar 🚀</Text>
+              </TouchableOpacity>
+            </View>
+            <Text style={styles.creativeHeadline}>{creativeHeadline}</Text>
+            <Text style={styles.creativeBody}>{creativeBody}</Text>
+            <View style={styles.mediaPlaceholder}>
+              <Text style={styles.mediaPlaceholderText}>🎬 Prompt de vídeo gerado para o CapCut/Canva</Text>
+            </View>
+          </View>
+        </ScrollView>
+      )}
+
+      <Modal
+        visible={isBudgetModalOpen}
+        animationType="slide"
+        onRequestClose={() => setIsBudgetModalOpen(false)}
+      >
+        <SafeAreaView style={styles.modalContainer}>
+          <View style={styles.modalHeader}>
+            <TouchableOpacity onPress={() => setIsBudgetModalOpen(false)} style={styles.backButton}>
+              <Text style={styles.backButtonText}>← Voltar</Text>
+            </TouchableOpacity>
+            <Text style={styles.modalTitleHeader}>Distribuição Inteligente</Text>
+          </View>
+
+          <ScrollView style={styles.modalFormScroll} keyboardShouldPersistTaps="handled">
+            <Text style={styles.sectionTitle}>Calculadora de Mídia IA</Text>
+            
+            <Text style={styles.inputLabel}>QUANTO DESEJA INVESTIR? (R$ TOTAL)</Text>
+            <TextInput 
+              style={styles.inputStyle}
+              placeholder="Ex: 1500"
+              placeholderTextColor="#4E5366"
+              keyboardType="numeric"
+              value={investmentValue}
+              onChangeText={setInvestmentValue}
+            />
+
+            <Text style={styles.inputLabel}>NÚMERO DE DIAS DA CAMPANHA</Text>
+            <TextInput 
+              style={styles.inputStyle}
+              placeholder="Ex: 10"
+              placeholderTextColor="#4E5366"
+              keyboardType="numeric"
+              value={numberOfDays}
+              onChangeText={setNumberOfDays}
+            />
+
+            <TouchableOpacity 
+              style={[styles.primaryButton, (!investmentValue || !numberOfDays) && styles.disabledButton]}
+              activeOpacity={0.8}
+              onPress={handleGenerateStrategy}
+              disabled={isCalculating || !investmentValue || !numberOfDays}
+            >
+              {isCalculating ? (
+                <ActivityIndicator color="#090A0F" />
+              ) : (
+                <Text style={styles.primaryButtonText}>Otimizar Canais e Horários ✨</Text>
+              )}
+            </TouchableOpacity>
+
+            {aiStrategy && (
+              <View style={styles.strategyOutputBox}>
+                <Text style={styles.outputBoxTitle}>🎯 Planejamento Recomendado</Text>
+                
+                <Text style={styles.outputLabelMini}>ONDE POSTAR & QUANTO INVESTIR:</Text>
+                <Text style={styles.outputText}>• {aiStrategy.meta}</Text>
+                <Text style={styles.outputText}>• {aiStrategy.google}</Text>
+
+                <View style={styles.innerDivider} />
+
+                <Text style={styles.outputLabelMini}>DIAS E HORÁRIOS CRÍTICOS (MAIOR CONVERSÃO):</Text>
+                <Text style={styles.outputText}>🕒 {aiStrategy.bestTimes}</Text>
+
+                <View style={styles.innerDivider} />
+
+                <Text style={styles.outputLabelMini}>PREVISÃO DISPARADA PELO HISTÓRICO:</Text>
+                <Text style={[styles.outputText, { color: '#00E5FF', fontWeight: '700' }]}>📈 {aiStrategy.expectedLeads}</Text>
+              </View>
+            )}
+          </ScrollView>
+        </SafeAreaView>
+      </Modal>
+    </SafeAreaView>
+  );
+}

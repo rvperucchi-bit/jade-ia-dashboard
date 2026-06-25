@@ -1,0 +1,56 @@
+const styles = StyleSheet.create({
+  container: { flex: 1, backgroundColor: '#090A0F' },
+  header: { paddingHorizontal: 20, paddingTop: 20, paddingBottom: 15 },
+  greeting: { fontSize: 14, color: '#8F94A8', fontWeight: '500', letterSpacing: 0.5, textTransform: 'uppercase' },
+  stageTotal: { fontSize: 28, fontWeight: '700', color: '#FFFFFF', letterSpacing: -0.5, marginTop: 4 },
+  
+  topActionWrapper: { paddingHorizontal: 20, marginBottom: 15 },
+  budgetLauncherButton: { backgroundColor: '#161822', height: 50, borderRadius: 12, borderWidth: 1, borderColor: '#242736', justifyContent: 'center', paddingHorizontal: 16 },
+  budgetLauncherText: { color: '#00E5FF', fontSize: 14, fontWeight: '600' },
+  
+  tabsWrapper: { borderBottomWidth: 1, borderColor: '#161822' },
+  tabsScroll: { paddingHorizontal: 20, paddingBottom: 12 },
+  tabButton: { marginRight: 28, paddingBottom: 6, position: 'relative' },
+  tabText: { fontSize: 15, fontWeight: '500', color: '#4E5366' },
+  activeTabText: { color: '#FFFFFF', fontWeight: '700' },
+  tabIndicator: { position: 'absolute', bottom: -13, left: 0, right: 0, height: 2, backgroundColor: '#00E5FF', borderRadius: 1 },
+  
+  tabContentContainer: { flex: 1, padding: 20 },
+  sectionLabel: { fontSize: 11, color: '#8F94A8', fontWeight: '700', letterSpacing: 0.8, marginBottom: 16 },
+  statsCard: { backgroundColor: '#161822', borderRadius: 16, padding: 18, marginBottom: 14, borderWidth: 1, borderColor: '#242736' },
+  statsRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 },
+  miniLabel: { fontSize: 9, color: '#4E5366', fontWeight: '700', letterSpacing: 0.5 },
+  statsValue: { fontSize: 24, fontWeight: '700', color: '#FFFFFF', marginTop: 4 },
+  badgePositive: { backgroundColor: 'rgba(56, 161, 105, 0.1)', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 6 },
+  badgePositiveText: { color: '#38A169', fontSize: 11, fontWeight: '600' },
+  statsSubtext: { fontSize: 13, color: '#8F94A8', lineHeight: 18 },
+  
+  creativeCard: { backgroundColor: '#161822', borderRadius: 16, padding: 18, borderWidth: 1, borderColor: '#242736' },
+  creativeHeader: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 14 },
+  creativeTag: { fontSize: 11, color: '#00E5FF', fontWeight: '700', letterSpacing: 0.5 },
+  copyButton: { color: '#8F94A8', fontSize: 12, fontWeight: '500' },
+  creativeHeadline: { fontSize: 16, fontWeight: '700', color: '#FFFFFF', marginBottom: 8 },
+  creativeBody: { fontSize: 13, color: '#8F94A8', lineHeight: 20, marginBottom: 16 },
+  mediaPlaceholder: { backgroundColor: '#090A0F', height: 48, borderRadius: 10, justifyContent: 'center', paddingHorizontal: 14, borderWidth: 1, borderColor: '#242736' },
+  mediaPlaceholderText: { color: '#4E5366', fontSize: 12, fontWeight: '500' },
+
+  // ESTILOS DO MODAL DA SEGUNDA TELA
+  modalContainer: { flex: 1, backgroundColor: '#090A0F' },
+  modalHeader: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, height: 60, borderBottomWidth: 1, borderColor: '#161822' },
+  backButton: { paddingRight: 16 },
+  backButtonText: { color: '#8F94A8', fontSize: 15, fontWeight: '600' },
+  modalTitleHeader: { color: '#FFFFFF', fontSize: 16, fontWeight: '700' },
+  modalFormScroll: { padding: 20 },
+  sectionTitle: { fontSize: 22, fontWeight: '700', color: '#FFFFFF', marginBottom: 24, letterSpacing: -0.5 },
+  inputLabel: { fontSize: 11, color: '#8F94A8', fontWeight: '700', letterSpacing: 0.8, marginBottom: 8 },
+  inputStyle: { backgroundColor: '#161822', height: 54, borderRadius: 12, paddingHorizontal: 16, color: '#FFFFFF', fontSize: 15, borderWidth: 1, borderColor: '#242736', marginBottom: 20 },
+  primaryButton: { backgroundColor: '#FFFFFF', height: 54, borderRadius: 12, alignItems: 'center', justifyContent: 'center', marginTop: 8 },
+  disabledButton: { backgroundColor: '#161822', borderWidth: 1, borderColor: '#242736', opacity: 0.5 },
+  primaryButtonText: { color: '#090A0F', fontWeight: '700', fontSize: 15 },
+  
+  strategyOutputBox: { backgroundColor: 'rgba(0, 229, 255, 0.02)', borderStyle: 'solid', borderWidth: 1, borderColor: 'rgba(0, 229, 255, 0.15)', borderRadius: 16, padding: 18, marginTop: 32 },
+  outputBoxTitle: { fontSize: 15, fontWeight: '700', color: '#FFFFFF', marginBottom: 16 },
+  outputLabelMini: { fontSize: 9, color: '#4E5366', fontWeight: '700', letterSpacing: 0.5, marginBottom: 6 },
+  outputText: { fontSize: 13, color: '#8F94A8', lineHeight: 19, marginBottom: 12 },
+  innerDivider: { height: 1, backgroundColor: '#242736', marginVertical: 10 }
+});

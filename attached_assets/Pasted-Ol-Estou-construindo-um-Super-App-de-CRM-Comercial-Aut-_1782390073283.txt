@@ -1,0 +1,36 @@
+Olá! Estou construindo um Super App de CRM Comercial Autónomo focado em IA utilizando React Native rodando no ecossistema do Expo Go. Toda a interface visual precisa seguir estritamente o guia de estilo "Dark Premium".
+
+Por favor, configure o ambiente e execute os seguintes passos de desenvolvimento:
+
+1. INSTALAÇÃO DE DEPENDÊNCIAS DE NAVEGAÇÃO:
+Garante que os seguintes pacotes essenciais estejam instalados no projeto e configurados de forma estável:
+- @react-navigation/native
+- @react-navigation/drawer
+- react-native-gesture-handler
+- react-native-reanimated
+
+2. CONFIGURAÇÃO DO BABEL:
+Verifique o arquivo 'babel.config.js' e certifique-se de incluir o plugin da biblioteca Reanimated exatamente nesta estrutura de array:
+plugins: ['react-native-reanimated/plugin']
+
+3. SISTEMA DE DESIGN KIT E TOKENS DE CORES (MODO ESCURO):
+Todos os componentes criados precisam compartilhar desta paleta de cores hexadecimais para manter o padrão premium de profundidade:
+- Background Geral (Fundo das Telas): #090A0F
+- Surface (Fundo dos Cards, Menus e Inputs): #161822
+- Border (Bordas ultrafinas cirúrgicas): #242736
+- Destaque Neon Principal (Linhas de Abas e Números): #00E5FF
+- Texto Primário (Nomes e Títulos): #FFFFFF
+- Texto Secundário (Descrições e Valores de apoio): #8F94A8
+- Botões de Ação Primária Máxima (Contraste Alto): Fundo #FFFFFF com texto #090A0F
+
+4. ESTRUTURAÇÃO DE ARQUIVOS (6 TELAS PRINCIPAIS):
+Organize o projeto dividindo as telas em componentes separados na pasta raiz e importe-as no App.js principal conectadas a uma Sidebar deslizante (Navegação via Drawer da Esquerda com swipeEnabled). Os arquivos criados são:
+- App.js (Contém as rotas do NavigationContainer, Drawer.Navigator e a tela do Chat principal no estilo ChatGPT/Gemini com KeyboardAvoidingView e input arredondado na base).
+- PipelineScreen.js (Pipeline comercial Kanban no formato de abas horizontais com FlatList e BottomSheet de detalhes do lead integrado à API do expo-linking para Ligar e abrir WhatsApp).
+- RouteScreen.js (Cronograma e Linha do tempo de rotas otimizadas pela IA com visualização de trajeto e botão flutuante de confirmação).
+- ProspectingScreen.js (Robô varredor do Google Maps com formulário de busca de seguimento, cidade, bairro e aba de histórico).
+- MeetingScreen.js (Agenda de reuniões com briefing e diagnóstico consultivo da IA em formato BottomSheet, além da aba de configuração de horários do robô).
+- FarmerScreen.js (Pós-venda e carteira de clientes segmentados por Health Score e alertas de churn em vermelho translúcido).
+- MarketingScreen.js (Geração de criativos e textos para redes sociais integrados à API nativa de compartilhamento 'Share' e a calculadora de orçamento de mídia com distribuição automática de verba).
+
+Gere a estrutura de código limpa, trate os possíveis erros de importação e inicie o servidor do Expo Go exibindo o QR Code no console.

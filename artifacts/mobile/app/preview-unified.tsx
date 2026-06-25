@@ -1,6 +1,7 @@
 import React, { useRef, useState } from "react";
 import {
   ActivityIndicator,
+  Alert,
   Animated,
   Easing,
   FlatList,
@@ -8,6 +9,7 @@ import {
   Modal,
   Platform,
   ScrollView,
+  Share,
   StatusBar,
   StyleSheet,
   Text,
@@ -20,7 +22,7 @@ import * as Linking from "expo-linking";
 import { useRouter } from "expo-router";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
-type Route = "Chat" | "Pipeline" | "Route" | "Prospecting" | "Meeting" | "Farmer" | "Reports";
+type Route = "Chat" | "Pipeline" | "Route" | "Prospecting" | "Meeting" | "Farmer" | "Reports" | "Marketing";
 type PipelineLead  = { id: string; name: string; company: string; value: string; stage: string; daysIdle: number; phone: string };
 type AiLead        = { id: string; name: string; segment: string; address: string };
 type HistoryItem   = { id: string; query: string; location: string; date: string; leadsCount: number };
@@ -82,6 +84,7 @@ const MENU_ITEMS: { label: string; icon: string; route: Route }[] = [
   { label: "Agenda & Briefing",icon: "📅", route: "Meeting"     },
   { label: "Farmer & Carteira",icon: "🌱", route: "Farmer"      },
   { label: "Relatórios IA",    icon: "📈", route: "Reports"     },
+  { label: "Marketing IA",     icon: "💰", route: "Marketing"   },
 ];
 
 function Sidebar({ visible, onClose, currentRoute, onNavigate }: {
@@ -634,6 +637,161 @@ function ReportsView({ onMenu }: { onMenu: () => void }) {
   );
 }
 
+// ─── Screen: Marketing ───────────────────────────────────────────────────────
+type AiStrategy = { meta: string; google: string; bestTimes: string; expectedLeads: string };
+const MARKETING_TABS = ["Campanhas Ativas", "Criativos Redes"] as const;
+const CREATIVE_HEADLINE = '"Cansado de perder leads na sua empresa?"';
+const CREATIVE_BODY = "Legenda sugerida: Deixar dinheiro na mesa dói. Enquanto você atende um cliente, nossa IA qualifica e agenda os próximos direto no seu WhatsApp comercial. Toque no link e mude o ritmo do seu negócio.";
+
+function MarketingView({ onMenu }: { onMenu: () => void }) {
+  const insets = useSafeAreaInsets();
+  const [tab,         setTab]         = useState<(typeof MARKETING_TABS)[number]>("Campanhas Ativas");
+  const [budgetOpen,  setBudgetOpen]  = useState(false);
+  const [calculating, setCalculating] = useState(false);
+  const [investment,  setInvestment]  = useState("");
+  const [days,        setDays]        = useState("");
+  const [strategy,    setStrategy]    = useState<AiStrategy | null>(null);
+
+  const generate = () => {
+    if (!investment || !days) return;
+    setCalculating(true);
+    setTimeout(() => {
+      setCalculating(false);
+      const v = parseFloat(investment);
+      setStrategy({
+        meta:          `R$ ${(v * 0.6).toFixed(0)} no Meta Ads (Instagram/FB Reels)`,
+        google:        `R$ ${(v * 0.4).toFixed(0)} no Google Ads (Busca Local)`,
+        bestTimes:     "Terças e Quintas, das 11:30 às 13:30 e 18:00 às 20:30",
+        expectedLeads: `${Math.floor(v / 8)} a ${Math.floor(v / 5)} leads qualificados`,
+      });
+    }, 2000);
+  };
+
+  const shareCreative = async () => {
+    try {
+      await Share.share({ message: `${CREATIVE_HEADLINE}\n\n${CREATIVE_BODY}` });
+    } catch {
+      Alert.alert("Erro", "Não foi possível compartilhar o criativo.");
+    }
+  };
+
+  return (
+    <View style={{ flex: 1 }}>
+      <TopBar title="Marketing IA" subtitle="GROWTH & TRÁFEGO" onMenu={onMenu} />
+
+      {/* Budget launcher */}
+      <View style={{ paddingHorizontal: 20, marginBottom: 14 }}>
+        <TouchableOpacity style={S.mktLaunchBtn} onPress={() => setBudgetOpen(true)} activeOpacity={0.8}>
+          <Text style={S.mktLaunchText}>💰 Planejar Verba de Tráfego Pago →</Text>
+        </TouchableOpacity>
+      </View>
+
+      {/* Tabs */}
+      <View style={S.tabsWrapper}>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={S.tabsScroll}>
+          {MARKETING_TABS.map((t) => {
+            const active = tab === t;
+            return (
+              <TouchableOpacity key={t} style={S.tabBtn} onPress={() => setTab(t)} activeOpacity={0.8}>
+                <Text style={[S.tabText, active && S.tabTextActive]}>{t}</Text>
+                {active && <View style={S.tabLine} />}
+              </TouchableOpacity>
+            );
+          })}
+        </ScrollView>
+      </View>
+
+      {/* Campanhas */}
+      {tab === "Campanhas Ativas" && (
+        <ScrollView style={S.form} showsVerticalScrollIndicator={false}>
+          <Text style={[S.sectionLabel, { marginBottom: 16 }]}>MÉTRICAS DE TRÁFEGO ATUAIS</Text>
+          <View style={S.card}>
+            <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+              <View>
+                <Text style={S.label2}>CUSTO POR LEAD (CPL)</Text>
+                <Text style={{ fontSize: 24, fontWeight: "700", color: "#FFFFFF", marginTop: 4 }}>R$ 6,42</Text>
+              </View>
+              <View style={{ backgroundColor: "rgba(56,161,105,0.1)", paddingHorizontal: 8, paddingVertical: 4, borderRadius: 6 }}>
+                <Text style={{ color: "#38A169", fontSize: 11, fontWeight: "600" }}>↓ 14% mais barato</Text>
+              </View>
+            </View>
+            <Text style={S.cardSub}>O robô reduziu o custo otimizando o raio geográfico do Google Maps.</Text>
+          </View>
+          <View style={S.card}>
+            <Text style={S.label2}>ROAS GLOBAL (RETORNO)</Text>
+            <Text style={{ fontSize: 24, fontWeight: "700", color: "#38A169", marginTop: 4, marginBottom: 8 }}>4.2x</Text>
+            <Text style={S.cardSub}>Para cada R$ 1,00 investido este mês, retornaram R$ 4,20 no Pipeline.</Text>
+          </View>
+          <View style={{ height: 40 }} />
+        </ScrollView>
+      )}
+
+      {/* Criativos */}
+      {tab === "Criativos Redes" && (
+        <ScrollView style={S.form} showsVerticalScrollIndicator={false}>
+          <Text style={[S.sectionLabel, { marginBottom: 16 }]}>CRIATIVOS RECENTES DA IA</Text>
+          <View style={S.card}>
+            <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 14 }}>
+              <Text style={{ fontSize: 11, color: "#00E5FF", fontWeight: "700", letterSpacing: 0.5 }}>📸 INSTAGRAM REELS / ADS</Text>
+              <TouchableOpacity onPress={shareCreative} activeOpacity={0.6}>
+                <Text style={{ color: "#8F94A8", fontSize: 12, fontWeight: "500" }}>Compartilhar 🚀</Text>
+              </TouchableOpacity>
+            </View>
+            <Text style={{ fontSize: 16, fontWeight: "700", color: "#FFFFFF", marginBottom: 8 }}>{CREATIVE_HEADLINE}</Text>
+            <Text style={[S.cardSub, { lineHeight: 20, marginBottom: 16 }]}>{CREATIVE_BODY}</Text>
+            <View style={{ backgroundColor: "#090A0F", height: 48, borderRadius: 10, justifyContent: "center", paddingHorizontal: 14, borderWidth: 1, borderColor: "#242736" }}>
+              <Text style={{ color: "#4E5366", fontSize: 12, fontWeight: "500" }}>🎬 Prompt de vídeo gerado para o CapCut/Canva</Text>
+            </View>
+          </View>
+          <View style={{ height: 40 }} />
+        </ScrollView>
+      )}
+
+      {/* Budget modal — full screen */}
+      <Modal visible={budgetOpen} animationType="slide" onRequestClose={() => setBudgetOpen(false)}>
+        <View style={[S.root, { paddingTop: insets.top }]}>
+          <View style={S.mktModalHeader}>
+            <TouchableOpacity onPress={() => setBudgetOpen(false)} style={{ paddingRight: 16 }} activeOpacity={0.7}>
+              <Text style={{ color: "#8F94A8", fontSize: 15, fontWeight: "600" }}>← Voltar</Text>
+            </TouchableOpacity>
+            <Text style={{ color: "#FFFFFF", fontSize: 16, fontWeight: "700" }}>Distribuição Inteligente</Text>
+          </View>
+
+          <ScrollView style={S.form} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
+            <Text style={{ fontSize: 22, fontWeight: "700", color: "#FFFFFF", marginBottom: 24, letterSpacing: -0.5 }}>Calculadora de Mídia IA</Text>
+
+            <Text style={S.label}>QUANTO DESEJA INVESTIR? (R$ TOTAL)</Text>
+            <TextInput style={S.input} placeholder="Ex: 1500" placeholderTextColor="#4E5366" keyboardType="numeric" value={investment} onChangeText={setInvestment} />
+
+            <Text style={S.label}>NÚMERO DE DIAS DA CAMPANHA</Text>
+            <TextInput style={S.input} placeholder="Ex: 10" placeholderTextColor="#4E5366" keyboardType="numeric" value={days} onChangeText={setDays} />
+
+            <TouchableOpacity style={[S.primaryBtn, (!investment || !days) && S.primaryBtnDisabled]} activeOpacity={0.8} onPress={generate} disabled={calculating || !investment || !days}>
+              {calculating ? <ActivityIndicator color="#090A0F" /> : <Text style={S.primaryBtnText}>Otimizar Canais e Horários ✨</Text>}
+            </TouchableOpacity>
+
+            {strategy && (
+              <View style={S.strategyBox}>
+                <Text style={{ fontSize: 15, fontWeight: "700", color: "#FFFFFF", marginBottom: 16 }}>🎯 Planejamento Recomendado</Text>
+                <Text style={S.label2}>ONDE POSTAR & QUANTO INVESTIR:</Text>
+                <Text style={S.mktOutputText}>• {strategy.meta}</Text>
+                <Text style={S.mktOutputText}>• {strategy.google}</Text>
+                <View style={{ height: 1, backgroundColor: "#242736", marginVertical: 12 }} />
+                <Text style={S.label2}>DIAS E HORÁRIOS CRÍTICOS (MAIOR CONVERSÃO):</Text>
+                <Text style={S.mktOutputText}>🕒 {strategy.bestTimes}</Text>
+                <View style={{ height: 1, backgroundColor: "#242736", marginVertical: 12 }} />
+                <Text style={S.label2}>PREVISÃO DISPARADA PELO HISTÓRICO:</Text>
+                <Text style={[S.mktOutputText, { color: "#00E5FF", fontWeight: "700" }]}>📈 {strategy.expectedLeads}</Text>
+              </View>
+            )}
+            <View style={{ height: 60 }} />
+          </ScrollView>
+        </View>
+      </Modal>
+    </View>
+  );
+}
+
 // ─── Root ─────────────────────────────────────────────────────────────────────
 export default function PreviewUnifiedScreen() {
   const router = useRouter();
@@ -656,6 +814,7 @@ export default function PreviewUnifiedScreen() {
       {route === "Meeting"     && <MeetingView     onMenu={openMenu} />}
       {route === "Farmer"      && <FarmerView      onMenu={openMenu} />}
       {route === "Reports"     && <ReportsView     onMenu={openMenu} />}
+      {route === "Marketing"   && <MarketingView   onMenu={openMenu} />}
 
       <Sidebar visible={sidebar} onClose={() => setSidebar(false)} currentRoute={route} onNavigate={setRoute} />
     </View>
@@ -818,4 +977,11 @@ const S = StyleSheet.create({
   metricRow: { },
   progressTrack: { height: 6, backgroundColor: "#090A0F", borderRadius: 3, overflow: "hidden" },
   progressBar: { height: "100%", borderRadius: 3 },
+
+  // Marketing screen
+  mktLaunchBtn: { backgroundColor: "#161822", height: 50, borderRadius: 12, borderWidth: 1, borderColor: "#242736", justifyContent: "center", paddingHorizontal: 16 },
+  mktLaunchText: { color: "#00E5FF", fontSize: 14, fontWeight: "600" },
+  mktModalHeader: { flexDirection: "row", alignItems: "center", paddingHorizontal: 16, height: 60, borderBottomWidth: 1, borderColor: "#161822" },
+  strategyBox: { backgroundColor: "rgba(0,229,255,0.02)", borderWidth: 1, borderColor: "rgba(0,229,255,0.15)", borderRadius: 16, padding: 18, marginTop: 28 },
+  mktOutputText: { fontSize: 13, color: "#8F94A8", lineHeight: 19, marginBottom: 12 },
 });
