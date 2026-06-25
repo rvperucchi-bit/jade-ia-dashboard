@@ -105,6 +105,9 @@ export default function ConversaDetail() {
         data={messages}
         keyExtractor={(item) => item.id}
         inverted
+        initialNumToRender={15}
+        maxToRenderPerBatch={8}
+        windowSize={8}
         showsVerticalScrollIndicator={false}
         keyboardDismissMode="interactive"
         keyboardShouldPersistTaps="handled"

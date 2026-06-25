@@ -173,3 +173,9 @@ id = "0unu23K2k0m29J6r6EhYb"
 uri = "file://exports/integracao-whatsapp-jade.pdf"
 type = "pdf"
 title = "Integração WhatsApp — JADE IA (Relatório Técnico)"
+
+[[outputs]]
+id = "AzvH3EAaXlmKP5aU5KYaU"
+uri = "file://exports/auditoria-performance-jade-2026-06-25.pdf"
+type = "pdf"
+title = "Auditoria de Performance — JADE IA Mobile"

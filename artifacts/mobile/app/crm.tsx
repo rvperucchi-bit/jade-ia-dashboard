@@ -566,6 +566,9 @@ export default function CRMScreen() {
       <FlatList
         data={filtered}
         keyExtractor={(item) => item.id}
+        initialNumToRender={12}
+        maxToRenderPerBatch={8}
+        windowSize={10}
         contentContainerStyle={{ paddingTop: 8, paddingBottom: bottomPad }}
         renderItem={({ item }) => (
           <ContactCard contact={item} onPress={() => { setSelectedContact(item); setDetailVisible(true); }} />

@@ -1,5 +1,5 @@
 import { useSQLiteContext } from "expo-sqlite";
-import React, { createContext, useCallback, useContext, useEffect, useRef, useState } from "react";
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { Platform } from "react-native";
 
 const API_BASE =
@@ -426,14 +426,17 @@ function NativeAppProvider({ children }: { children: React.ReactNode }) {
     );
   };
 
+  const ctxValue = useMemo(() => ({
+    leads, conversations, moduleStates, activityEvents, campaigns, leadActivities, loading,
+    moveLead, addLead, toggleModule,
+    addActivityEvent: addActivityEventFn,
+    addLeadActivity: addLeadActivityFn,
+    addCampaign, refreshDashboard,
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }), [leads, conversations, moduleStates, activityEvents, campaigns, leadActivities, loading]);
+
   return (
-    <AppContext.Provider value={{
-      leads, conversations, moduleStates, activityEvents, campaigns, leadActivities, loading,
-      moveLead, addLead, toggleModule,
-      addActivityEvent: addActivityEventFn,
-      addLeadActivity: addLeadActivityFn,
-      addCampaign, refreshDashboard,
-    }}>
+    <AppContext.Provider value={ctxValue}>
       {children}
     </AppContext.Provider>
   );
@@ -507,14 +510,17 @@ function WebAppProvider({ children }: { children: React.ReactNode }) {
     if (data?.activity_events && data.activity_events.length > 0) setActivityEvents(data.activity_events);
   };
 
+  const ctxValue = useMemo(() => ({
+    leads, conversations, moduleStates, activityEvents, campaigns, leadActivities, loading: false as const,
+    moveLead, addLead, toggleModule,
+    addActivityEvent: addActivityEventFn,
+    addLeadActivity: addLeadActivityFn,
+    addCampaign, refreshDashboard,
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }), [leads, conversations, moduleStates, activityEvents, campaigns, leadActivities]);
+
   return (
-    <AppContext.Provider value={{
-      leads, conversations, moduleStates, activityEvents, campaigns, leadActivities, loading: false,
-      moveLead, addLead, toggleModule,
-      addActivityEvent: addActivityEventFn,
-      addLeadActivity: addLeadActivityFn,
-      addCampaign, refreshDashboard,
-    }}>
+    <AppContext.Provider value={ctxValue}>
       {children}
     </AppContext.Provider>
   );

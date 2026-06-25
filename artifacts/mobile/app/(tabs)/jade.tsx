@@ -1550,6 +1550,9 @@ export default function JADEScreen() {
               );
             }}
             inverted
+            initialNumToRender={15}
+            maxToRenderPerBatch={8}
+            windowSize={8}
             showsVerticalScrollIndicator={false}
             contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 16, paddingBottom: 16 }}
             keyboardDismissMode="interactive"

@@ -94,6 +94,9 @@ export default function HistoricoScreen() {
       <FlatList
         data={sessions}
         keyExtractor={(item) => item.id}
+        initialNumToRender={10}
+        maxToRenderPerBatch={6}
+        windowSize={8}
         contentContainerStyle={{ padding: 16, paddingBottom: bottomPad, gap: 10 }}
         renderItem={({ item }) => (
           <SessionCard

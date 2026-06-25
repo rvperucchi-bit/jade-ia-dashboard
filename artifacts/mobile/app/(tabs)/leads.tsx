@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import React, { memo, useCallback, useMemo, useRef, useState } from "react";
 import {
   Alert,
   Animated,
@@ -109,7 +109,7 @@ function channelLabel(ch: ContactEntry["channel"]) {
 }
 
 // ─── Score badge ──────────────────────────────────────────────────────────────
-function ScoreBadge({ lead }: { lead: Lead }) {
+const ScoreBadge = memo(function ScoreBadge({ lead }: { lead: Lead }) {
   const info = getLeadScoreInfo(lead);
   const isHot = info.score >= 70;
   return (
@@ -117,10 +117,10 @@ function ScoreBadge({ lead }: { lead: Lead }) {
       <Text style={[L.scoreNum, { color: isHot ? "#FF0080" : "rgba(255,255,255,0.45)" }]}>{info.score}</Text>
     </View>
   );
-}
+});
 
 // ─── Lead card ────────────────────────────────────────────────────────────────
-function LeadCard({ lead, onPress }: { lead: Lead; onPress: () => void }) {
+const LeadCard = memo(function LeadCard({ lead, onPress }: { lead: Lead; onPress: () => void }) {
   const colors = useColors();
   const statusColor = leadStatusColor(lead);
   const scoreInfo = getLeadScoreInfo(lead);
@@ -164,7 +164,7 @@ function LeadCard({ lead, onPress }: { lead: Lead; onPress: () => void }) {
       </Text>
     </TouchableOpacity>
   );
-}
+});
 
 // ─── Move Modal ───────────────────────────────────────────────────────────────
 function MoveModal({
@@ -434,24 +434,34 @@ export default function LeadsScreen() {
   const topPad    = Platform.OS === "web" ? 67  : insets.top;
   const bottomPad = Platform.OS === "web" ? 84  : insets.bottom + 60;
 
-  const openDetail = (lead: Lead) => {
+  const openDetail = useCallback((lead: Lead) => {
     setSelectedLead(lead);
     setDetailVisible(true);
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-  };
+  }, []);
 
-  const handleMove = (col: LeadColumn) => {
+  const handleMove = useCallback((col: LeadColumn) => {
     if (selectedLead) {
       moveLead(selectedLead.id, col);
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     }
     setMoveVisible(false);
-  };
+  }, [selectedLead, moveLead]);
 
   const filterChips: { key: LeadsFilter; label: string }[] = [
     { key: "all", label: "Todos" },
     { key: "hot", label: "🔥 Quentes" },
   ];
+
+  const columnData = useMemo(() =>
+    COLUMNS.map((col) => {
+      const rawLeads = leads.filter((l) => l.column === col.key);
+      const sorted   = [...rawLeads].sort((a, b) => calcLeadScore(b) - calcLeadScore(a));
+      const colLeads = filter === "hot" ? sorted.filter((l) => calcLeadScore(l) >= 70) : sorted;
+      return { col, colLeads };
+    }),
+    [leads, filter]
+  );
 
   return (
     <View style={[L.container, { backgroundColor: colors.background }]}>
@@ -502,35 +512,28 @@ export default function LeadsScreen() {
         style={{ flex: 1 }}
         contentContainerStyle={[L.kanban, { paddingBottom: bottomPad, alignItems: "stretch" }]}
       >
-        {COLUMNS.map((col) => {
-          const rawLeads = leads.filter((l) => l.column === col.key);
-          // Sort by score descending
-          const sorted = [...rawLeads].sort((a, b) => calcLeadScore(b) - calcLeadScore(a));
-          // Apply hot filter (score >= 70)
-          const colLeads = filter === "hot" ? sorted.filter((l) => calcLeadScore(l) >= 70) : sorted;
-          return (
-            <View key={col.key} style={[L.column, { backgroundColor: colors.card, borderColor: colors.border }]}>
-              <View style={L.colHeader}>
-                <View style={[L.colDot, { backgroundColor: col.color }]} />
-                <Text style={[L.colTitle, { color: colors.text }]}>{col.label}</Text>
-                <View style={[L.colBadge, { backgroundColor: "rgba(255,255,255,0.08)" }]}>
-                  <Text style={[L.colBadgeText, { color: col.color }]}>{colLeads.length}</Text>
-                </View>
+        {columnData.map(({ col, colLeads }) => (
+          <View key={col.key} style={[L.column, { backgroundColor: colors.card, borderColor: colors.border }]}>
+            <View style={L.colHeader}>
+              <View style={[L.colDot, { backgroundColor: col.color }]} />
+              <Text style={[L.colTitle, { color: colors.text }]}>{col.label}</Text>
+              <View style={[L.colBadge, { backgroundColor: "rgba(255,255,255,0.08)" }]}>
+                <Text style={[L.colBadgeText, { color: col.color }]}>{colLeads.length}</Text>
               </View>
-              <ScrollView showsVerticalScrollIndicator={false} nestedScrollEnabled>
-                {colLeads.map((lead) => (
-                  <LeadCard key={lead.id} lead={lead} onPress={() => openDetail(lead)} />
-                ))}
-                {colLeads.length === 0 && (
-                  <View style={L.emptyCol}>
-                    <MaterialCommunityIcons name="inbox-outline" size={28} color={colors.mutedForeground} />
-                    <Text style={[L.emptyColText, { color: colors.mutedForeground }]}>Vazio</Text>
-                  </View>
-                )}
-              </ScrollView>
             </View>
-          );
-        })}
+            <ScrollView showsVerticalScrollIndicator={false} nestedScrollEnabled>
+              {colLeads.map((lead) => (
+                <LeadCard key={lead.id} lead={lead} onPress={() => openDetail(lead)} />
+              ))}
+              {colLeads.length === 0 && (
+                <View style={L.emptyCol}>
+                  <MaterialCommunityIcons name="inbox-outline" size={28} color={colors.mutedForeground} />
+                  <Text style={[L.emptyColText, { color: colors.mutedForeground }]}>Vazio</Text>
+                </View>
+              )}
+            </ScrollView>
+          </View>
+        ))}
       </ScrollView>
 
       <LeadDetailModal

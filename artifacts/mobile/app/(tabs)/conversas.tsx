@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { memo, useEffect, useMemo, useState } from "react";
 import {
   View,
   Text,
@@ -63,7 +63,7 @@ function applyFilter(conversations: Conversation[], filter: FilterType): Convers
 }
 
 // ─── ConversationItem ─────────────────────────────────────────────────────────
-function ConversationItem({
+const ConversationItem = memo(function ConversationItem({
   item, onPress, limitReached,
 }: { item: Conversation; onPress: () => void; limitReached?: boolean }) {
   const colors = useColors();
@@ -130,7 +130,7 @@ function ConversationItem({
       </View>
     </TouchableOpacity>
   );
-}
+});
 
 // ─── LimitCounter ─────────────────────────────────────────────────────────────
 function LimitCounter({ value, onChange, min, max }: { value: number; onChange: (v: number) => void; min: number; max: number }) {
@@ -251,10 +251,16 @@ export default function ConversasScreen() {
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
   };
 
-  const filtered = applyFilter(conversations, activeFilter)
-    .filter(c => !query || c.contactName.toLowerCase().includes(query.toLowerCase()));
+  const filtered = useMemo(() =>
+    applyFilter(conversations, activeFilter)
+      .filter(c => !query || c.contactName.toLowerCase().includes(query.toLowerCase())),
+    [conversations, activeFilter, query]
+  );
 
-  const waitingCount = conversations.filter(c => !c.isOnline && c.unread === 0).length;
+  const waitingCount = useMemo(() =>
+    conversations.filter(c => !c.isOnline && c.unread === 0).length,
+    [conversations]
+  );
 
   return (
     <View style={[S.root, { backgroundColor: colors.background }]}>
@@ -352,6 +358,9 @@ export default function ConversasScreen() {
       <FlatList
         data={filtered}
         keyExtractor={(item) => item.id}
+        initialNumToRender={12}
+        maxToRenderPerBatch={8}
+        windowSize={10}
         renderItem={({ item }) => {
           const reached = limitReachedIds.has(item.id);
           return (

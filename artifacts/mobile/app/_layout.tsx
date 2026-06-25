@@ -28,7 +28,16 @@ import { initializeDatabase } from "@/db/init";
 
 SplashScreen.preventAutoHideAsync();
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime:            30_000,
+      gcTime:               5 * 60_000,
+      retry:                1,
+      refetchOnWindowFocus: false,
+    },
+  },
+});
 
 function DatabaseWrapper({ children }: { children: React.ReactNode }) {
   if (Platform.OS === "web") {
