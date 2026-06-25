@@ -28,7 +28,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as Linking from "expo-linking";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
-type Route = "Chat" | "Pipeline" | "Route" | "Prospecting" | "Meeting" | "Farmer" | "Reports" | "Marketing" | "Management" | "Kpis" | "CorporatePortfolio" | "Broadcast" | "Feedbacks" | "TeamPulse" | "PulseCheck" | "AccountSettings" | "Subscription" | "MyProfile";
+type Route = "Chat" | "Pipeline" | "Route" | "Prospecting" | "Meeting" | "Farmer" | "Reports" | "Marketing" | "Management" | "Kpis" | "CorporatePortfolio" | "Broadcast" | "Feedbacks" | "TeamPulse" | "PulseCheck" | "AccountSettings" | "Subscription" | "MyProfile" | "MyCompany";
 type PipelineLead  = { id: string; name: string; company: string; value: string; stage: string; daysIdle: number; phone: string };
 type AiLead        = { id: string; name: string; segment: string; address: string };
 type HistoryItem   = { id: string; query: string; location: string; date: string; leadsCount: number };
@@ -221,8 +221,8 @@ function Sidebar({ visible, onClose, currentRoute, onNavigate }: {
               <TouchableOpacity style={S.drawerSubItem} onPress={() => go("MyProfile")} activeOpacity={0.7}>
                 <Text style={[S.drawerSubText, currentRoute === "MyProfile" && S.drawerSubTextActive]}>👤 Meu Perfil</Text>
               </TouchableOpacity>
-              <TouchableOpacity style={S.drawerSubItem} onPress={() => go("AccountSettings")} activeOpacity={0.7}>
-                <Text style={[S.drawerSubText, currentRoute === "AccountSettings" && S.drawerSubTextActive]}>🧠 Cérebro da IA (Empresa)</Text>
+              <TouchableOpacity style={S.drawerSubItem} onPress={() => go("MyCompany")} activeOpacity={0.7}>
+                <Text style={[S.drawerSubText, currentRoute === "MyCompany" && S.drawerSubTextActive]}>🏢 Minha Empresa</Text>
               </TouchableOpacity>
               <TouchableOpacity style={S.drawerSubItem} onPress={() => go("Subscription")} activeOpacity={0.7}>
                 <Text style={[S.drawerSubText, currentRoute === "Subscription" && S.drawerSubTextActive]}>💳 Planos de Assinatura</Text>
@@ -989,7 +989,7 @@ function MarketingView({ onMenu }: { onMenu: () => void }) {
             <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
               <View>
                 <Text style={S.label2}>CUSTO POR LEAD (CPL)</Text>
-                <Text style={{ fontSize: 24, fontWeight: "700", color: "#FFFFFF", marginTop: 4 }}>R$ 6,42</Text>
+                <Text style={{ fontSize: 18, fontWeight: "700", color: "#FFFFFF", marginTop: 4, paddingHorizontal: 4 }}>R$ 6,42</Text>
               </View>
               <View style={{ backgroundColor: "rgba(56,161,105,0.1)", paddingHorizontal: 8, paddingVertical: 4, borderRadius: 6 }}>
                 <Text style={{ color: "#38A169", fontSize: 11, fontWeight: "600" }}>↓ 14% mais barato</Text>
@@ -999,7 +999,7 @@ function MarketingView({ onMenu }: { onMenu: () => void }) {
           </View>
           <View style={S.card}>
             <Text style={S.label2}>ROAS GLOBAL (RETORNO)</Text>
-            <Text style={{ fontSize: 24, fontWeight: "700", color: "#38A169", marginTop: 4, marginBottom: 8 }}>4.2x</Text>
+            <Text style={{ fontSize: 18, fontWeight: "700", color: "#38A169", marginTop: 4, marginBottom: 8, paddingHorizontal: 4 }}>4.2x</Text>
             <Text style={S.cardSub}>Para cada R$ 1,00 investido este mês, retornaram R$ 4,20 no Pipeline.</Text>
           </View>
           <View style={{ height: 40 }} />
@@ -1852,6 +1852,94 @@ function SubscriptionView({ onMenu }: { onMenu: () => void }) {
   );
 }
 
+// ─── Screen: My Company (Cérebro da JADE) ────────────────────────────────────
+function MyCompanyView({ onMenu }: { onMenu: () => void }) {
+  const [isSaving,       setIsSaving]       = useState(false);
+  const [companyName,    setCompanyName]    = useState("Sleek Automações");
+  const [segment,        setSegment]        = useState("Tecnologia B2B");
+  const [cnpj,           setCnpj]           = useState("00.000.000/0001-00");
+  const [campaign,       setCampaign]       = useState("Desconto de 15% para fechamentos até sexta-feira.");
+  const [city,           setCity]           = useState("Criciúma");
+  const [neighborhood,   setNeighborhood]   = useState("Centro");
+  const [uf,             setUf]             = useState("SC");
+  const [address,        setAddress]        = useState("Av. Centenário, 1500");
+  const [products,       setProducts]       = useState<Product[]>([
+    { id: 1, name: "Licença Software CRM", value: "299" },
+    { id: 2, name: "Setup + Treinamento",  value: "1500" },
+  ]);
+  const [newProdName,  setNewProdName]  = useState("");
+  const [newProdValue, setNewProdValue] = useState("");
+
+  const addProduct = () => {
+    if (!newProdName || !newProdValue) return;
+    setProducts((p) => [...p, { id: p.length + 1, name: newProdName, value: newProdValue }]);
+    setNewProdName(""); setNewProdValue("");
+  };
+
+  const save = () => {
+    setIsSaving(true);
+    setTimeout(() => {
+      setIsSaving(false);
+      Alert.alert("Cérebro Atualizado 🧠", "A JADE assimilou as novas informações e já está usando nos atendimentos.");
+    }, 1500);
+  };
+
+  return (
+    <View style={{ flex: 1 }}>
+      <TopBar title="Minha Empresa" subtitle="⚙️ CONTA" onMenu={onMenu} />
+      <ScrollView style={S.form} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
+
+        <View style={[S.insightBox, { marginBottom: 20 }]}>
+          <Text style={[S.insightText, { color: "#00E5FF", marginBottom: 0 }]}>🧠 Cérebro da JADE: As informações abaixo alimentam o conhecimento contextual do robô para negociar com leads no WhatsApp.</Text>
+        </View>
+
+        <Text style={S.label}>NOME INSTITUCIONAL</Text>
+        <TextInput style={S.input} value={companyName} onChangeText={setCompanyName} placeholderTextColor="#4E5366" />
+
+        <Text style={S.label}>CNPJ (OPCIONAL)</Text>
+        <TextInput style={S.input} value={cnpj} onChangeText={setCnpj} placeholder="00.000.000/0000-00" placeholderTextColor="#4E5366" />
+
+        <Text style={S.label}>SEGMENTO MERCADOLÓGICO</Text>
+        <TextInput style={S.input} value={segment} onChangeText={setSegment} placeholderTextColor="#4E5366" />
+
+        <Text style={S.label}>PRODUTOS E PREÇOS ATIVOS</Text>
+        <View style={S.acctProductList}>
+          {products.map((p) => (
+            <View key={p.id} style={S.acctProductRow}>
+              <Text style={S.cardName}>• {p.name}</Text>
+              <Text style={S.cardSub2}>R$ {p.value}</Text>
+            </View>
+          ))}
+        </View>
+        <View style={[S.acctAddRow, { marginTop: 4 }]}>
+          <TextInput style={[S.input, { flex: 2, marginBottom: 0, marginRight: 8 }]} placeholder="Novo Produto"  placeholderTextColor="#4E5366" value={newProdName}  onChangeText={setNewProdName} />
+          <TextInput style={[S.input, { flex: 1, marginBottom: 0, marginRight: 8 }]} placeholder="Valor"         placeholderTextColor="#4E5366" keyboardType="numeric" value={newProdValue} onChangeText={setNewProdValue} />
+          <TouchableOpacity style={S.acctMiniBtn} onPress={addProduct} activeOpacity={0.7}>
+            <Text style={S.acctMiniBtnText}>＋</Text>
+          </TouchableOpacity>
+        </View>
+
+        <Text style={S.label}>CAMPANHA / GATILHO DO PRODUTO ATUAL</Text>
+        <TextInput style={[S.input, { height: 75, paddingTop: 12, textAlignVertical: "top" }]} value={campaign} onChangeText={setCampaign} multiline placeholderTextColor="#4E5366" />
+
+        <Text style={S.label}>LOGRADOURO DA SEDE</Text>
+        <TextInput style={S.input} value={address} onChangeText={setAddress} placeholder="Rua, Número" placeholderTextColor="#4E5366" />
+
+        <View style={{ flexDirection: "row" }}>
+          <TextInput style={[S.input, { flex: 2, marginRight: 8 }]} value={city}         onChangeText={setCity}         placeholder="Cidade" placeholderTextColor="#4E5366" />
+          <TextInput style={[S.input, { flex: 2, marginRight: 8 }]} value={neighborhood} onChangeText={setNeighborhood} placeholder="Bairro" placeholderTextColor="#4E5366" />
+          <TextInput style={[S.input, { flex: 1 }]}                 value={uf}           onChangeText={setUf}           placeholder="UF"     placeholderTextColor="#4E5366" maxLength={2} />
+        </View>
+
+        <TouchableOpacity style={[S.primaryBtn, { marginTop: 8 }]} onPress={save} disabled={isSaving} activeOpacity={0.8}>
+          {isSaving ? <ActivityIndicator color="#090A0F" /> : <Text style={S.primaryBtnText}>Sincronizar Cérebro da JADE 🚀</Text>}
+        </TouchableOpacity>
+        <View style={{ height: 40 }} />
+      </ScrollView>
+    </View>
+  );
+}
+
 // ─── Screen: My Profile ──────────────────────────────────────────────────────
 function MyProfileView({ onMenu }: { onMenu: () => void }) {
   const [name,   setName]   = useState("Alexandre Silveira");
@@ -1961,6 +2049,7 @@ export default function PreviewUnifiedScreen() {
       {route === "AccountSettings"   && <AccountSettingsView   onMenu={openMenu} />}
       {route === "Subscription"      && <SubscriptionView      onMenu={openMenu} />}
       {route === "MyProfile"         && <MyProfileView         onMenu={openMenu} />}
+      {route === "MyCompany"         && <MyCompanyView         onMenu={openMenu} />}
 
       <Sidebar visible={sidebar} onClose={() => setSidebar(false)} currentRoute={route} onNavigate={setRoute} />
     </View>
@@ -2007,7 +2096,7 @@ const S = StyleSheet.create({
   healthTextRisk: { color: "#E93E3E" },
 
   form: { padding: 20 },
-  label: { fontSize: 11, color: "#8F94A8", fontWeight: "600", letterSpacing: 0.8, marginBottom: 8 },
+  label: { fontSize: 11, color: "#8F94A8", fontWeight: "600", letterSpacing: 0.8, marginBottom: 8, marginTop: 16 },
   label2: { fontSize: 9, color: "#4E5366", fontWeight: "700", letterSpacing: 0.5, marginBottom: 4 },
   sectionLabel: { fontSize: 12, color: "#8F94A8", fontWeight: "700", letterSpacing: 0.8 },
   input: { backgroundColor: "#161822", height: 54, borderRadius: 12, paddingHorizontal: 16, color: "#FFFFFF", fontSize: 15, borderWidth: 1, borderColor: "#242736", marginBottom: 20 },
@@ -2030,7 +2119,7 @@ const S = StyleSheet.create({
   handle: { width: 36, height: 4, backgroundColor: "#242736", borderRadius: 2, alignSelf: "center", marginBottom: 24 },
   sheetCompany: { fontSize: 13, color: "#00E5FF", fontWeight: "600", textTransform: "uppercase", letterSpacing: 1, marginBottom: 4 },
   sheetName: { fontSize: 24, fontWeight: "700", color: "#FFFFFF" },
-  sheetValue: { fontSize: 32, fontWeight: "800", color: "#FFFFFF", marginTop: 12, marginBottom: 30 },
+  sheetValue: { fontSize: 20, fontWeight: "800", color: "#FFFFFF", marginTop: 12, marginBottom: 30, paddingHorizontal: 12 },
   actionRow: { flexDirection: "row", gap: 12, marginTop: 20 },
   actionBtn: { flex: 1, backgroundColor: "#FFFFFF", height: 52, borderRadius: 14, alignItems: "center", justifyContent: "center" },
   actionBtnText: { color: "#090A0F", fontWeight: "600", fontSize: 15 },
@@ -2223,7 +2312,7 @@ const S = StyleSheet.create({
   mgmtGridRow: { flexDirection: "row", justifyContent: "space-between", marginBottom: 12 },
   mgmtGridCard: { flex: 1, backgroundColor: "#161822", borderRadius: 14, padding: 16, borderWidth: 1, borderColor: "#242736", marginRight: 10 },
   mgmtGridLabel: { fontSize: 9, color: "#4E5366", fontWeight: "700", letterSpacing: 0.5 },
-  mgmtGridValue: { fontSize: 24, fontWeight: "700", color: "#00E5FF", marginTop: 4 },
+  mgmtGridValue: { fontSize: 18, fontWeight: "700", color: "#00E5FF", marginTop: 4, paddingHorizontal: 4 },
   mgmtExecRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
   mgmtAvatar: { width: 44, height: 44, borderRadius: 22, backgroundColor: "#090A0F", borderWidth: 1, borderColor: "#242736", alignItems: "center", justifyContent: "center" },
 
