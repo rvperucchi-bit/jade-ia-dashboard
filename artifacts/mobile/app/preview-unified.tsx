@@ -28,7 +28,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as Linking from "expo-linking";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
-type Route = "Chat" | "Pipeline" | "Route" | "Prospecting" | "Meeting" | "Farmer" | "Reports" | "Marketing" | "Management" | "Kpis" | "CorporatePortfolio" | "Broadcast" | "Feedbacks" | "TeamPulse" | "PulseCheck" | "AccountSettings" | "Subscription" | "MyProfile" | "MyCompany";
+type Route = "Chat" | "Pipeline" | "Route" | "Prospecting" | "Meeting" | "Farmer" | "Reports" | "Marketing" | "Management" | "Kpis" | "CorporatePortfolio" | "Broadcast" | "Feedbacks" | "TeamPulse" | "PulseCheck" | "AccountSettings" | "Subscription" | "MyProfile" | "MyCompany" | "Usage";
 type PipelineLead  = { id: string; name: string; company: string; value: string; stage: string; daysIdle: number; phone: string };
 type AiLead        = { id: string; name: string; segment: string; address: string };
 type HistoryItem   = { id: string; query: string; location: string; date: string; leadsCount: number };
@@ -226,6 +226,9 @@ function Sidebar({ visible, onClose, currentRoute, onNavigate }: {
               </TouchableOpacity>
               <TouchableOpacity style={S.drawerSubItem} onPress={() => go("Subscription")} activeOpacity={0.7}>
                 <Text style={[S.drawerSubText, currentRoute === "Subscription" && S.drawerSubTextActive]}>💳 Planos de Assinatura</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={S.drawerSubItem} onPress={() => go("Usage")} activeOpacity={0.7}>
+                <Text style={[S.drawerSubText, currentRoute === "Usage" && S.drawerSubTextActive]}>📊 Consumo do Plano</Text>
               </TouchableOpacity>
             </View>
           )}
@@ -1852,6 +1855,109 @@ function SubscriptionView({ onMenu }: { onMenu: () => void }) {
   );
 }
 
+// ─── Screen: Usage & Plan Limits ─────────────────────────────────────────────
+const PLAN_LIMITS_U = {
+  start: {
+    name: "Sleek Start 🟢",
+    chat:   { max: 500,  label: "mensagens" },
+    radar:  { max: 50,   label: "buscas"    },
+    audio:  { max: 30,   label: "minutos"   },
+    images: { max: 10,   label: "gerações"  },
+    docs:   { max: 20,   label: "arquivos"  },
+    vision: { max: 20,   label: "imagens"   },
+  },
+  pro: {
+    name: "Sleek Pro 🟣",
+    chat:   { max: 2000, label: "mensagens" },
+    radar:  { max: 200,  label: "buscas"    },
+    audio:  { max: 120,  label: "minutos"   },
+    images: { max: 50,   label: "gerações"  },
+    docs:   { max: 100,  label: "arquivos"  },
+    vision: { max: 100,  label: "imagens"   },
+  },
+  enterprise: {
+    name: "Enterprise 🔴",
+    chat:   { max: 5000, label: "mensagens" },
+    radar:  { max: 500,  label: "buscas"    },
+    audio:  { max: 500,  label: "minutos"   },
+    images: { max: 200,  label: "gerações"  },
+    docs:   { max: 500,  label: "arquivos"  },
+    vision: { max: 500,  label: "imagens"   },
+  },
+} as const;
+
+type PlanKey = keyof typeof PLAN_LIMITS_U;
+
+const CURRENT_USAGE = { chat: 342, radar: 21, audio: 12, images: 7, docs: 14, vision: 5 };
+
+function ResourceRow({ title, current, max, unit }: { title: string; current: number; max: number; unit: string }) {
+  const pct = `${Math.min((current / max) * 100, 100)}%` as `${number}%`;
+  const over = current / max > 0.8;
+  return (
+    <View style={S.resourceBlock}>
+      <View style={S.resourceHeader}>
+        <Text style={S.resourceTitle}>{title}</Text>
+        <Text style={S.resourceCounter}>{current} <Text style={S.maxText}>/ {max} {unit}</Text></Text>
+      </View>
+      <View style={S.progressTrack}>
+        <View style={[S.progressBar, { width: pct, backgroundColor: over ? "#E93E3E" : "#00E5FF" }]} />
+      </View>
+    </View>
+  );
+}
+
+function UsageView({ onMenu }: { onMenu: () => void }) {
+  const [userPlan, setUserPlan] = useState<PlanKey>("start");
+  const plan = PLAN_LIMITS_U[userPlan];
+
+  const handleBuyCredits = () =>
+    Alert.alert(
+      "Créditos Avulsos ⚡",
+      "Deseja recarregar seu saldo de mensagens ou buscas via Pix instantâneo?",
+      [{ text: "Cancelar", style: "cancel" }, { text: "Ver Opções", onPress: () => {} }]
+    );
+
+  return (
+    <View style={{ flex: 1 }}>
+      <TopBar title="Consumo do Plano" subtitle="⚙️ CONTA" onMenu={onMenu} />
+      <ScrollView style={S.form} showsVerticalScrollIndicator={false}>
+
+        <View style={S.usagePlanCard}>
+          <Text style={S.usagePlanLabel}>PLANO CONTRATADO</Text>
+          <Text style={S.usagePlanName}>{plan.name}</Text>
+          <Text style={S.usagePlanReset}>Os limites renovam automaticamente no início do próximo ciclo de faturamento.</Text>
+          <View style={S.usagePlanToggle}>
+            {(["start", "pro", "enterprise"] as PlanKey[]).map((k) => (
+              <TouchableOpacity key={k} onPress={() => setUserPlan(k)}
+                style={[S.usageChip, userPlan === k && S.usageChipActive]} activeOpacity={0.7}>
+                <Text style={[S.usageChipText, userPlan === k && S.usageChipTextActive]}>
+                  {k === "start" ? "Start" : k === "pro" ? "Pro" : "Enterprise"}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        </View>
+
+        <Text style={[S.sectionLabel, { marginBottom: 14 }]}>MÉTRICAS DE USO DOS RECURSOS</Text>
+
+        <View style={S.usageWrapper}>
+          <ResourceRow title="💬 Chat IA"                current={CURRENT_USAGE.chat}   max={plan.chat.max}   unit={plan.chat.label}   />
+          <ResourceRow title="🔍 Radar de Prospecção"   current={CURRENT_USAGE.radar}  max={plan.radar.max}  unit={plan.radar.label}  />
+          <ResourceRow title="🎙️ Transcrição de Áudio" current={CURRENT_USAGE.audio}  max={plan.audio.max}  unit={plan.audio.label}  />
+          <ResourceRow title="🎨 Imagens IA"            current={CURRENT_USAGE.images} max={plan.images.max} unit={plan.images.label} />
+          <ResourceRow title="📄 Análise de Documentos" current={CURRENT_USAGE.docs}   max={plan.docs.max}   unit={plan.docs.label}   />
+          <ResourceRow title="👁️ Vision"               current={CURRENT_USAGE.vision} max={plan.vision.max} unit={plan.vision.label} />
+        </View>
+
+        <TouchableOpacity style={[S.primaryBtn, { marginTop: 24, marginBottom: 0 }]} onPress={handleBuyCredits} activeOpacity={0.8}>
+          <Text style={S.primaryBtnText}>Comprar mais créditos ⚡</Text>
+        </TouchableOpacity>
+        <View style={{ height: 40 }} />
+      </ScrollView>
+    </View>
+  );
+}
+
 // ─── Screen: My Company (Cérebro da JADE) ────────────────────────────────────
 function MyCompanyView({ onMenu }: { onMenu: () => void }) {
   const [isSaving,       setIsSaving]       = useState(false);
@@ -2050,6 +2156,7 @@ export default function PreviewUnifiedScreen() {
       {route === "Subscription"      && <SubscriptionView      onMenu={openMenu} />}
       {route === "MyProfile"         && <MyProfileView         onMenu={openMenu} />}
       {route === "MyCompany"         && <MyCompanyView         onMenu={openMenu} />}
+      {route === "Usage"             && <UsageView             onMenu={openMenu} />}
 
       <Sidebar visible={sidebar} onClose={() => setSidebar(false)} currentRoute={route} onNavigate={setRoute} />
     </View>
@@ -2322,4 +2429,21 @@ const S = StyleSheet.create({
   mktModalHeader: { flexDirection: "row", alignItems: "center", paddingHorizontal: 16, height: 60, borderBottomWidth: 1, borderColor: "#161822" },
   strategyBox: { backgroundColor: "rgba(0,229,255,0.02)", borderWidth: 1, borderColor: "rgba(0,229,255,0.15)", borderRadius: 16, padding: 18, marginTop: 28 },
   mktOutputText: { fontSize: 13, color: "#8F94A8", lineHeight: 19, marginBottom: 12 },
+
+  // Usage screen
+  usagePlanCard:      { backgroundColor: "#161822", borderRadius: 16, padding: 18, borderWidth: 1, borderColor: "#242736", marginBottom: 24, marginTop: 4 },
+  usagePlanLabel:     { fontSize: 9, color: "#4E5366", fontWeight: "700", letterSpacing: 0.5 },
+  usagePlanName:      { fontSize: 18, fontWeight: "700", color: "#FFFFFF", marginTop: 4, marginBottom: 8 },
+  usagePlanReset:     { fontSize: 12, color: "#8F94A8", lineHeight: 16, marginBottom: 14 },
+  usagePlanToggle:    { flexDirection: "row", gap: 8 },
+  usageChip:          { flex: 1, height: 32, borderRadius: 8, borderWidth: 1, borderColor: "#242736", alignItems: "center", justifyContent: "center" },
+  usageChipActive:    { borderColor: "#00E5FF", backgroundColor: "rgba(0,229,255,0.08)" },
+  usageChipText:      { color: "#4E5366", fontSize: 12, fontWeight: "600" },
+  usageChipTextActive:{ color: "#00E5FF" },
+  usageWrapper:       { backgroundColor: "#161822", borderRadius: 16, paddingHorizontal: 18, paddingVertical: 8, borderWidth: 1, borderColor: "#242736" },
+  resourceBlock:      { paddingVertical: 14, borderBottomWidth: 1, borderColor: "#090A0F" },
+  resourceHeader:     { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 8 },
+  resourceTitle:      { color: "#FFFFFF", fontSize: 14, fontWeight: "500" },
+  resourceCounter:    { color: "#FFFFFF", fontSize: 13, fontWeight: "600" },
+  maxText:            { color: "#4E5366", fontSize: 12, fontWeight: "400" },
 });
