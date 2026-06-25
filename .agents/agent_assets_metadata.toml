@@ -155,3 +155,15 @@ id = "H2HDpC7fpXCPR-bd2D39Q"
 uri = "file://exports/auditoria-ux-jade-2026-06-25.pdf"
 type = "pdf"
 title = "Auditoria UX — JADE IA (25 jun 2026)"
+
+[[outputs]]
+id = "FrGir-_rln4fe2bKZsxI5"
+uri = "file://exports/jade-documentacao-visual-2026-06-25.zip"
+type = "unspecified"
+title = "JADE IA — Documentação Visual (ZIP, 5,2 MB)"
+
+[[outputs]]
+id = "zGlWnSSYIqJs0lPXPpE7K"
+uri = "file://exports/resumo-documentacao-visual-jade.pdf"
+type = "pdf"
+title = "Resumo PDF — Documentação Visual JADE IA"
