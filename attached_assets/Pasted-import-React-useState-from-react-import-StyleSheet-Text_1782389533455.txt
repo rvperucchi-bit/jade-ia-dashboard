@@ -1,0 +1,201 @@
+import React, { useState } from 'react';
+import { 
+  StyleSheet, 
+  Text, 
+  View, 
+  FlatList, 
+  ScrollView, 
+  TouchableOpacity, 
+  SafeAreaView, 
+  ActivityIndicator
+} from 'react-native';
+
+const REPORT_TABS = ['Produção Diária', 'Visão Semanal'];
+
+export default function ReportsScreen() {
+  const [activeTab, setActiveTab] = useState('Produção Diária');
+  const [isGeneratingReport, setIsGeneratingReport] = useState(false);
+  const [aiReport, setAiReport] = useState({
+    status: 'Abaixo da Meta (Gap Detectado)',
+    diagnostic: 'Você realizou 3 visitas das 5 planejadas hoje. O maior gargalo está no tempo médio de deslocamento na rota da tarde.',
+    actionPlan: 'A IA otimizou sua agenda de amanhã para reduzir em 22% o trânsito. Foque nas duas propostas pendentes no Pipeline para bater o KPI da semana.'
+  });
+
+  // Disparador manual do laudo em tempo real
+  const handleTriggerLiveReport = () => {
+    setIsGeneratingReport(true);
+    setTimeout(() => {
+      setIsGeneratingReport(false);
+      setAiReport({
+        status: 'Análise Atualizada em Tempo Real',
+        diagnostic: 'Novos dados processados: 1 lead avançou para a etapa de Proposta nas últimas duas horas. Ritmo de fechamento subiu para estável.',
+        actionPlan: 'Dispare o acompanhamento automático no WhatsApp para o cliente "Diana Prince" agora mesmo para garantir a meta.'
+      });
+    }, 2000);
+  };
+
+  return (
+    <SafeAreaView style={styles.container}>
+      {/* HEADER */}
+      <View style={styles.header}>
+        <Text style={styles.greeting}>Performance & KPIs</Text>
+        <Text style={styles.stageTotal}>Relatórios IA</Text>
+      </View>
+
+      {/* ABAS DESIGN SYSTEM UNIFICADO */}
+      <View style={styles.tabsWrapper}>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.tabsScroll}>
+          {REPORT_TABS.map((tab) => {
+            const isActive = activeTab === tab;
+            return (
+              <TouchableOpacity key={tab} activeOpacity={0.8} onPress={() => setActiveTab(tab)} style={styles.tabButton}>
+                <Text style={[styles.tabText, isActive && styles.activeTabText]}>{tab}</Text>
+                {isActive && <View style={styles.tabIndicator} />}
+              </TouchableOpacity>
+            );
+          })}
+        </ScrollView>
+      </View>
+
+      <ScrollView style={styles.scrollContainer} showsVerticalScrollIndicator={false}>
+        
+        {/* SEÇÃO: BOTÃO DISPARADOR DE LAUDO IMEDIATO */}
+        <View style={styles.liveTriggerContainer}>
+          <TouchableOpacity 
+            style={[styles.liveButton, isGeneratingReport && styles.disabledButton]}
+            activeOpacity={0.8}
+            onPress={handleTriggerLiveReport}
+            disabled={isGeneratingReport}
+          >
+            {isGeneratingReport ? (
+              <ActivityIndicator color="#090A0F" />
+            ) : (
+              <Text style={styles.liveButtonText}>⚡ Gerar Laudo IA na Hora</Text>
+            )}
+          </TouchableOpacity>
+          <Text style={styles.configTimeText}>Robô configurado para relatório automático às 18:00</Text>
+        </View>
+
+        {/* PAINEL DE INSIGHT & DIAGNÓSTICO DA IA */}
+        {aiReport && (
+          <View style={styles.aiDiagnosticBox}>
+            <View style={styles.diagnosticHeader}>
+              <Text style={styles.diagnosticTitle}>🤖 Diagnóstico Consultivo IA</Text>
+              <Text style={[
+                styles.statusBadge, 
+                aiReport.status.includes('Gap') ? styles.statusGap : styles.statusOk
+              ]}>
+                {aiReport.status}
+              </Text>
+            </View>
+            
+            <Text style={styles.diagnosticLabel}>O QUE ESTÁ ACONTECENDO:</Text>
+            <Text style={styles.diagnosticText}>{aiReport.diagnostic}</Text>
+            
+            <View style={styles.divider} />
+            
+            <Text style={styles.diagnosticLabel}>PLANO DE AÇÃO CORRETIVO:</Text>
+            <Text style={styles.actionText}>💡 {aiReport.actionPlan}</Text>
+          </View>
+        )}
+
+        {/* MÉTRICAS E BARRA DE PROGRESSO DE METAS (RENDERIZAÇÃO BASEADA NA ABA) */}
+        <Text style={styles.sectionTitle}>ACOMPANHAMENTO DE METAS</Text>
+        
+        {activeTab === 'Produção Diária' ? (
+          <View style={styles.metricsWrapper}>
+            {/* Meta 1 */}
+            <View style={styles.metricRow}>
+              <View style={styles.metricMetaInfo}>
+                <Text style={styles.metaName}>Visitas Comerciais</Text>
+                <Text style={styles.metaProgress}>3 / 5</Text>
+              </View>
+              <View style={styles.progressTrack}>
+                <View style={[styles.progressBar, { width: '60%', backgroundColor: '#E93E3E' }]} />
+              </View>
+            </View>
+
+            {/* Meta 2 */}
+            <View style={styles.metricRow}>
+              <View style={styles.metricMetaInfo}>
+                <Text style={styles.metaName}>Contatos via WhatsApp IA</Text>
+                <Text style={styles.metaProgress}>42 / 40</Text>
+              </View>
+              <View style={styles.progressTrack}>
+                <View style={[styles.progressBar, { width: '100%', backgroundColor: '#38A169' }]} />
+              </View>
+            </View>
+          </View>
+        ) : (
+          <View style={styles.metricsWrapper}>
+            {/* Meta Semanal 1 */}
+            <View style={styles.metricRow}>
+              <View style={styles.metricMetaInfo}>
+                <Text style={styles.metaName}>Novas Propostas Enviadas</Text>
+                <Text style={styles.metaProgress}>8 / 12</Text>
+              </View>
+              <View style={styles.progressTrack}>
+                <View style={[styles.progressBar, { width: '66%', backgroundColor: '#00E5FF' }]} />
+              </View>
+            </View>
+
+            {/* Meta Semanal 2 */}
+            <View style={styles.metricRow}>
+              <View style={styles.metricMetaInfo}>
+                <Text style={styles.metaName}>Volume Financeiro Fechado</Text>
+                <Text style={styles.metaProgress}>R$ 65.500 / R$ 100k</Text>
+              </View>
+              <View style={styles.progressTrack}>
+                <View style={[styles.progressBar, { width: '65%', backgroundColor: '#00E5FF' }]} />
+              </View>
+            </View>
+          </View>
+        )}
+
+        <View style={{ height: 40 }} />
+      </ScrollView>
+    </SafeAreaView>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: { flex: 1, backgroundColor: '#090A0F' },
+  header: { paddingHorizontal: 20, paddingTop: 20, paddingBottom: 15 },
+  greeting: { fontSize: 14, color: '#8F94A8', fontWeight: '500', letterSpacing: 0.5, textTransform: 'uppercase' },
+  stageTotal: { fontSize: 28, fontWeight: '700', color: '#FFFFFF', letterSpacing: -0.5, marginTop: 4 },
+  
+  tabsWrapper: { borderBottomWidth: 1, borderColor: '#161822' },
+  tabsScroll: { paddingHorizontal: 20, paddingBottom: 12 },
+  tabButton: { marginRight: 28, paddingBottom: 6, position: 'relative' },
+  tabText: { fontSize: 15, fontWeight: '500', color: '#4E5366' },
+  activeTabText: { color: '#FFFFFF', fontWeight: '700' },
+  tabIndicator: { position: 'absolute', bottom: -13, left: 0, right: 0, height: 2, backgroundColor: '#00E5FF', borderRadius: 1 },
+  
+  scrollContainer: { flex: 1, padding: 20 },
+  
+  liveTriggerContainer: { marginBottom: 20 },
+  liveButton: { backgroundColor: '#FFFFFF', height: 52, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
+  disabledButton: { backgroundColor: '#161822', borderWidth: 1, borderColor: '#242736', opacity: 0.5 },
+  liveButtonText: { color: '#090A0F', fontWeight: '700', fontSize: 15 },
+  configTimeText: { color: '#4E5366', fontSize: 11, textAlign: 'center', marginTop: 8 },
+
+  aiDiagnosticBox: { backgroundColor: '#161822', borderRadius: 16, padding: 18, borderWidth: 1, borderColor: '#242736', marginBottom: 28 },
+  diagnosticHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 },
+  diagnosticTitle: { fontSize: 14, fontWeight: '700', color: '#FFFFFF' },
+  statusBadge: { fontSize: 10, fontWeight: '700', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 6, textTransform: 'uppercase' },
+  statusGap: { backgroundColor: 'rgba(229, 62, 62, 0.1)', color: '#E93E3E' },
+  statusOk: { backgroundColor: 'rgba(56, 161, 105, 0.1)', color: '#38A169' },
+  diagnosticLabel: { fontSize: 9, color: '#4E5366', fontWeight: '700', letterSpacing: 0.5, marginBottom: 6 },
+  diagnosticText: { fontSize: 13, color: '#8F94A8', lineHeight: 19, marginBottom: 14 },
+  divider: { height: 1, backgroundColor: '#242736', marginVertical: 12 },
+  actionText: { fontSize: 13, color: '#FFFFFF', lineHeight: 19, fontWeight: '500' },
+
+  sectionTitle: { fontSize: 11, color: '#8F94A8', fontWeight: '700', letterSpacing: 0.8, marginBottom: 16 },
+  metricsWrapper: { backgroundColor: '#161822', borderRadius: 16, padding: 18, borderWidth: 1, borderColor: '#242736' },
+  metricRow: { marginBottom: 18 },
+  metricMetaInfo: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 6 },
+  metaName: { fontSize: 14, color: '#FFFFFF', fontWeight: '500' },
+  metaProgress: { fontSize: 13, color: '#8F94A8', fontWeight: '600' },
+  progressTrack: { height: 6, backgroundColor: '#090A0F', borderRadius: 3, overflow: 'hidden' },
+  progressBar: { height: '100%', borderRadius: 3 }
+});

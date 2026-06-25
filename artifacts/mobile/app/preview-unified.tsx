@@ -20,7 +20,7 @@ import * as Linking from "expo-linking";
 import { useRouter } from "expo-router";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
-type Route = "Chat" | "Pipeline" | "Route" | "Prospecting" | "Meeting" | "Farmer";
+type Route = "Chat" | "Pipeline" | "Route" | "Prospecting" | "Meeting" | "Farmer" | "Reports";
 type PipelineLead  = { id: string; name: string; company: string; value: string; stage: string; daysIdle: number; phone: string };
 type AiLead        = { id: string; name: string; segment: string; address: string };
 type HistoryItem   = { id: string; query: string; location: string; date: string; leadsCount: number };
@@ -81,6 +81,7 @@ const MENU_ITEMS: { label: string; icon: string; route: Route }[] = [
   { label: "Prospecção",       icon: "🔍", route: "Prospecting" },
   { label: "Agenda & Briefing",icon: "📅", route: "Meeting"     },
   { label: "Farmer & Carteira",icon: "🌱", route: "Farmer"      },
+  { label: "Relatórios IA",    icon: "📈", route: "Reports"     },
 ];
 
 function Sidebar({ visible, onClose, currentRoute, onNavigate }: {
@@ -532,6 +533,107 @@ function FarmerView({ onMenu }: { onMenu: () => void }) {
   );
 }
 
+// ─── Screen: Reports ─────────────────────────────────────────────────────────
+type AiReport = { status: string; diagnostic: string; actionPlan: string };
+const REPORT_TABS = ["Produção Diária", "Visão Semanal"] as const;
+const DAILY_METRICS  = [
+  { name: "Visitas Comerciais",      progress: "3 / 5",           pct: "60%",  color: "#E93E3E" },
+  { name: "Contatos via WhatsApp IA",progress: "42 / 40",         pct: "100%", color: "#38A169" },
+];
+const WEEKLY_METRICS = [
+  { name: "Novas Propostas Enviadas",progress: "8 / 12",          pct: "66%",  color: "#00E5FF" },
+  { name: "Volume Financeiro Fechado",progress: "R$ 65.500 / R$ 100k", pct: "65%", color: "#00E5FF" },
+];
+
+function ReportsView({ onMenu }: { onMenu: () => void }) {
+  const [tab,       setTab]       = useState<(typeof REPORT_TABS)[number]>("Produção Diária");
+  const [loading,   setLoading]   = useState(false);
+  const [aiReport,  setAiReport]  = useState<AiReport>({
+    status:      "Abaixo da Meta (Gap Detectado)",
+    diagnostic:  "Você realizou 3 visitas das 5 planejadas hoje. O maior gargalo está no tempo médio de deslocamento na rota da tarde.",
+    actionPlan:  "A IA otimizou sua agenda de amanhã para reduzir em 22% o trânsito. Foque nas duas propostas pendentes no Pipeline para bater o KPI da semana.",
+  });
+
+  const generateReport = () => {
+    setLoading(true);
+    setTimeout(() => {
+      setLoading(false);
+      setAiReport({
+        status:      "Análise Atualizada em Tempo Real",
+        diagnostic:  "Novos dados processados: 1 lead avançou para a etapa de Proposta nas últimas duas horas. Ritmo de fechamento subiu para estável.",
+        actionPlan:  'Dispare o acompanhamento automático no WhatsApp para o cliente "Diana Prince" agora mesmo para garantir a meta.',
+      });
+    }, 2000);
+  };
+
+  const isGap = aiReport.status.includes("Gap");
+  const metrics = tab === "Produção Diária" ? DAILY_METRICS : WEEKLY_METRICS;
+
+  return (
+    <View style={{ flex: 1 }}>
+      <TopBar title="Relatórios IA" subtitle="PERFORMANCE & KPIs" onMenu={onMenu} />
+      <View style={S.tabsWrapper}>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={S.tabsScroll}>
+          {REPORT_TABS.map((t) => {
+            const active = tab === t;
+            return (
+              <TouchableOpacity key={t} style={S.tabBtn} onPress={() => setTab(t)} activeOpacity={0.8}>
+                <Text style={[S.tabText, active && S.tabTextActive]}>{t}</Text>
+                {active && <View style={S.tabLine} />}
+              </TouchableOpacity>
+            );
+          })}
+        </ScrollView>
+      </View>
+
+      <ScrollView style={S.form} showsVerticalScrollIndicator={false}>
+        {/* Live trigger */}
+        <TouchableOpacity
+          style={[S.primaryBtn, loading && S.primaryBtnDisabled]}
+          activeOpacity={0.8}
+          onPress={generateReport}
+          disabled={loading}
+        >
+          {loading ? <ActivityIndicator color="#090A0F" /> : <Text style={S.primaryBtnText}>⚡ Gerar Laudo IA na Hora</Text>}
+        </TouchableOpacity>
+        <Text style={[S.helperText, { marginTop: -8, marginBottom: 20 }]}>Robô configurado para relatório automático às 18:00</Text>
+
+        {/* AI Diagnostic box */}
+        <View style={S.reportBox}>
+          <View style={S.reportBoxHead}>
+            <Text style={S.reportBoxTitle}>🤖 Diagnóstico Consultivo IA</Text>
+            <View style={[S.reportStatusChip, isGap ? S.chipRed : S.chipGreen]}>
+              <Text style={[S.reportStatusText, { color: isGap ? "#E93E3E" : "#38A169" }]}>{aiReport.status}</Text>
+            </View>
+          </View>
+          <Text style={S.reportLabel}>O QUE ESTÁ ACONTECENDO:</Text>
+          <Text style={S.reportMuted}>{aiReport.diagnostic}</Text>
+          <View style={{ height: 1, backgroundColor: "#242736", marginVertical: 14 }} />
+          <Text style={S.reportLabel}>PLANO DE AÇÃO CORRETIVO:</Text>
+          <Text style={S.reportWhite}>💡 {aiReport.actionPlan}</Text>
+        </View>
+
+        {/* KPI metrics */}
+        <Text style={[S.sectionLabel, { marginBottom: 14 }]}>ACOMPANHAMENTO DE METAS</Text>
+        <View style={S.metricsBox}>
+          {metrics.map((m, i) => (
+            <View key={i} style={[S.metricRow, i < metrics.length - 1 && { marginBottom: 18 }]}>
+              <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 6 }}>
+                <Text style={{ fontSize: 14, color: "#FFFFFF", fontWeight: "500" }}>{m.name}</Text>
+                <Text style={{ fontSize: 13, color: "#8F94A8", fontWeight: "600" }}>{m.progress}</Text>
+              </View>
+              <View style={S.progressTrack}>
+                <View style={[S.progressBar, { width: m.pct as any, backgroundColor: m.color }]} />
+              </View>
+            </View>
+          ))}
+        </View>
+        <View style={{ height: 40 }} />
+      </ScrollView>
+    </View>
+  );
+}
+
 // ─── Root ─────────────────────────────────────────────────────────────────────
 export default function PreviewUnifiedScreen() {
   const router = useRouter();
@@ -553,6 +655,7 @@ export default function PreviewUnifiedScreen() {
       {route === "Prospecting" && <ProspectingView onMenu={openMenu} />}
       {route === "Meeting"     && <MeetingView     onMenu={openMenu} />}
       {route === "Farmer"      && <FarmerView      onMenu={openMenu} />}
+      {route === "Reports"     && <ReportsView     onMenu={openMenu} />}
 
       <Sidebar visible={sidebar} onClose={() => setSidebar(false)} currentRoute={route} onNavigate={setRoute} />
     </View>
@@ -699,4 +802,20 @@ const S = StyleSheet.create({
   drawerItemIcon: { fontSize: 16, marginRight: 12 },
   drawerItemText: { color: "#8F94A8", fontSize: 15, fontWeight: "500" },
   drawerItemTextActive: { color: "#FFFFFF", fontWeight: "700" },
+
+  // Reports screen
+  reportBox: { backgroundColor: "#161822", borderRadius: 16, padding: 18, borderWidth: 1, borderColor: "#242736", marginBottom: 28 },
+  reportBoxHead: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 16, gap: 8 },
+  reportBoxTitle: { fontSize: 14, fontWeight: "700", color: "#FFFFFF", flex: 1 },
+  reportStatusChip: { paddingHorizontal: 8, paddingVertical: 4, borderRadius: 6 },
+  chipRed: { backgroundColor: "rgba(229,62,62,0.1)" },
+  chipGreen: { backgroundColor: "rgba(56,161,105,0.1)" },
+  reportStatusText: { fontSize: 10, fontWeight: "700", textTransform: "uppercase" },
+  reportLabel: { fontSize: 9, color: "#4E5366", fontWeight: "700", letterSpacing: 0.5, marginBottom: 6 },
+  reportMuted: { fontSize: 13, color: "#8F94A8", lineHeight: 19, marginBottom: 14 },
+  reportWhite: { fontSize: 13, color: "#FFFFFF", lineHeight: 19, fontWeight: "500" },
+  metricsBox: { backgroundColor: "#161822", borderRadius: 16, padding: 18, borderWidth: 1, borderColor: "#242736", marginBottom: 20 },
+  metricRow: { },
+  progressTrack: { height: 6, backgroundColor: "#090A0F", borderRadius: 3, overflow: "hidden" },
+  progressBar: { height: "100%", borderRadius: 3 },
 });
