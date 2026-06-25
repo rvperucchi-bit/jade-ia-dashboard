@@ -1,0 +1,86 @@
+REVISÃO URGENTE — CONFIRMAR CAMINHO CORRETO DAS TELAS NOVAS
+
+As últimas alterações não apareceram no app para mim. Isso indica que talvez você esteja editando o caminho errado, componentes antigos ou telas que não são mais as telas novas atuais.
+
+Antes de qualquer nova alteração, faça uma conferência completa:
+
+1. Confirme quais arquivos/componentes estão sendo realmente renderizados no app atual.
+2. Confirme se as telas que você está editando são as telas novas, não versões antigas.
+3. Não restaure telas antigas.
+4. Não recrie layout.
+5. Não mude o visual novo aprovado.
+6. Corrija apenas o que está sendo realmente usado no app atual.
+
+CONTEXTO IMPORTANTE:
+Hoje eu troquei praticamente todas as telas. Então pode existir código antigo, rota antiga, import antigo ou componente antigo ainda conectado.
+
+Se encontrar algo apontando para tela antiga, corrija para a tela nova atual.
+
+A tela nova é a verdade do app.
+
+CORREÇÃO DE CORES DOS TEXTOS:
+Quero que toda letra, número, label, métrica ou texto que esteja dentro de células, badges, cards, botões ou áreas coloridas fique branco.
+
+Isso vale para textos que hoje aparecem em:
+
+* azul
+* verde
+* vermelho
+* ciano
+* rosa
+* cinza muito apagado
+* qualquer outra cor que prejudique a leitura
+
+Não é para mudar o fundo dos cards agora.
+Não é para mudar o layout.
+É apenas para deixar as letras/números brancos e legíveis.
+
+Exemplos:
+
+* métricas como “R$ 12.4k”
+* números como “1.8%”, “2”, “4.2x”
+* status como “Saudável”, “Risco de Churn”, “Esfriando”
+* textos de botões e links
+* labels pequenas dentro dos cards
+
+REGRA:
+Texto e número devem ficar brancos.
+Cores podem continuar apenas como detalhe de fundo ou estado visual, mas não como cor principal da fonte.
+
+SIDEBAR / MENU:
+A tela do menu/sidebar está bugada.
+
+Corrigir:
+
+1. O botão “Sair da Conta” precisa ficar correto na parte de baixo, como botão de logout.
+2. Ele não pode entrar visualmente bugado.
+3. O menu precisa abrir e fechar corretamente.
+4. Quero voltar/fechar o menu arrastando com o dedo, como já funcionava antes.
+5. Manter o menu sem ícones decorativos nos itens e subitens.
+6. Os itens do menu devem ficar apenas com os nomes/textos.
+7. Não remover opções do menu.
+8. Não remover botões.
+9. Manter somente ícones essenciais, como voltar, fechar, abrir menu, entrar, enviar ou confirmar.
+
+EXPO GO:
+Tudo precisa continuar compatível com Expo Go.
+Não usar recurso que funcione só em build nativa e quebre no Expo Go.
+Se algo não for compatível com Expo Go, criar fallback seguro.
+
+CHECKLIST ANTES DE FINALIZAR:
+
+* Confirmou o caminho real das telas renderizadas?
+* Confirmou que não estava editando telas antigas?
+* As alterações aparecem no app atual?
+* Todos os textos/números coloridos em cards, badges e botões ficaram brancos?
+* Sidebar abre corretamente?
+* Sidebar fecha arrastando?
+* Botão “Sair da Conta” ficou visualmente correto?
+* Menu/submenu ficou sem ícones decorativos?
+* Visual novo foi preservado?
+* App continua funcionando no Expo Go?
+* Sem erro de TypeScript?
+* Sem crash?
+
+IMPORTANTE:
+Não avance para novas funcionalidades antes de confirmar que está editando o caminho certo e que as mudanças aparecem no app atual.

@@ -260,17 +260,18 @@ function Sidebar({ visible, onClose, currentRoute, onNavigate }: {
             </View>
           )}
 
-          {/* ── Botão Sair (dentro do scroll) ── */}
-          <View style={{ paddingTop: 24, paddingBottom: 8 }}>
-            <TouchableOpacity
-              style={S.logoutBtn}
-              onPress={() => { onClose(); onNavigate("Chat"); }}
-              activeOpacity={0.7}
-            >
-              <Text style={S.logoutBtnText}>Sair da Conta</Text>
-            </TouchableOpacity>
-          </View>
         </ScrollView>
+
+        {/* ── Botão Sair fixado na base ── */}
+        <View style={S.drawerFooter}>
+          <TouchableOpacity
+            style={S.logoutBtn}
+            onPress={() => { onClose(); onNavigate("Chat"); }}
+            activeOpacity={0.7}
+          >
+            <Text style={S.logoutBtnText}>Sair da Conta</Text>
+          </TouchableOpacity>
+        </View>
 
       </Animated.View>
     </Modal>
@@ -843,8 +844,8 @@ function FarmerView({ onMenu }: { onMenu: () => void }) {
             <View>
               <Text style={[S.cardName, { marginBottom: 14 }]}>Análise Comercial Concluída</Text>
               <View style={{ flexDirection: "row", gap: 10, marginBottom: 16 }}>
-                <View style={[S.card, { flex: 1 }]}><Text style={S.label2}>HEALTH SCORE</Text><Text style={[S.cardValue, { color: "#00E5FF", fontSize: 20 }]}>{report.healthScore}</Text></View>
-                <View style={[S.card, { flex: 1 }]}><Text style={S.label2}>EXPANSÃO</Text><Text style={[S.cardValue, { color: "#38A169", fontSize: 20 }]}>Up-sell</Text></View>
+                <View style={[S.card, { flex: 1 }]}><Text style={S.label2}>HEALTH SCORE</Text><Text style={[S.cardValue, { color: "#FFFFFF", fontSize: 20 }]}>{report.healthScore}</Text></View>
+                <View style={[S.card, { flex: 1 }]}><Text style={S.label2}>EXPANSÃO</Text><Text style={[S.cardValue, { color: "#FFFFFF", fontSize: 20 }]}>Up-sell</Text></View>
               </View>
               <View style={S.insightBox}>
                 <Text style={S.insightTitle}>Insights Prontos:</Text>
@@ -929,7 +930,7 @@ function ReportsView({ onMenu }: { onMenu: () => void }) {
           <View style={S.reportBoxHead}>
             <Text style={S.reportBoxTitle}>Diagnóstico Consultivo IA</Text>
             <View style={[S.reportStatusChip, isGap ? S.chipRed : S.chipGreen]}>
-              <Text style={[S.reportStatusText, { color: isGap ? "#E93E3E" : "#38A169" }]}>{aiReport.status}</Text>
+              <Text style={[S.reportStatusText, { color: "#FFFFFF" }]}>{aiReport.status}</Text>
             </View>
           </View>
           <Text style={S.reportLabel}>O QUE ESTÁ ACONTECENDO:</Text>
@@ -1068,14 +1069,14 @@ function MarketingView({ onMenu }: { onMenu: () => void }) {
                 <Text style={{ fontSize: 18, fontWeight: "700", color: "#FFFFFF", marginTop: 4, paddingHorizontal: 4 }}>R$ 6,42</Text>
               </View>
               <View style={{ backgroundColor: "rgba(56,161,105,0.1)", paddingHorizontal: 8, paddingVertical: 4, borderRadius: 6 }}>
-                <Text style={{ color: "#38A169", fontSize: 11, fontWeight: "600" }}>↓ 14% mais barato</Text>
+                <Text style={{ color: "#FFFFFF", fontSize: 11, fontWeight: "600" }}>↓ 14% mais barato</Text>
               </View>
             </View>
             <Text style={S.cardSub}>O robô reduziu o custo otimizando o raio geográfico do Google Maps.</Text>
           </View>
           <View style={S.card}>
             <Text style={S.label2}>ROAS GLOBAL (RETORNO)</Text>
-            <Text style={{ fontSize: 18, fontWeight: "700", color: "#38A169", marginTop: 4, marginBottom: 8, paddingHorizontal: 4 }}>4.2x</Text>
+            <Text style={{ fontSize: 18, fontWeight: "700", color: "#FFFFFF", marginTop: 4, marginBottom: 8, paddingHorizontal: 4 }}>4.2x</Text>
             <Text style={S.cardSub}>Para cada R$ 1,00 investido este mês, retornaram R$ 4,20 no Pipeline.</Text>
           </View>
           <View style={{ height: 40 }} />
@@ -1088,7 +1089,7 @@ function MarketingView({ onMenu }: { onMenu: () => void }) {
           <Text style={[S.sectionLabel, { marginBottom: 16 }]}>CRIATIVOS RECENTES DA IA</Text>
           <View style={S.card}>
             <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 14 }}>
-              <Text style={{ fontSize: 11, color: "#00E5FF", fontWeight: "700", letterSpacing: 0.5 }}>INSTAGRAM REELS / ADS</Text>
+              <Text style={{ fontSize: 11, color: "#FFFFFF", fontWeight: "700", letterSpacing: 0.5 }}>INSTAGRAM REELS / ADS</Text>
               <TouchableOpacity onPress={shareCreative} activeOpacity={0.6}>
                 <Text style={{ color: "#8F94A8", fontSize: 12, fontWeight: "500" }}>Compartilhar</Text>
               </TouchableOpacity>
@@ -1142,7 +1143,7 @@ function MarketingView({ onMenu }: { onMenu: () => void }) {
                 <Text style={S.mktOutputText}>{resultadoIA.distribuicaoOrcamento}</Text>
                 <View style={{ height: 1, backgroundColor: "#242736", marginVertical: 12 }} />
                 <Text style={S.label2}>INSIGHT DA IA:</Text>
-                <Text style={[S.mktOutputText, { color: "#00E5FF", fontWeight: "700" }]}>{resultadoIA.insightDaIA}</Text>
+                <Text style={[S.mktOutputText, { color: "#FFFFFF", fontWeight: "700" }]}>{resultadoIA.insightDaIA}</Text>
               </View>
             )}
             <View style={{ height: 60 }} />
@@ -1222,7 +1223,7 @@ function ManagementView({ onMenu }: { onMenu: () => void }) {
             </View>
             <View style={S.mgmtGridCard}>
               <Text style={S.mgmtGridLabel}>TOTAL VENDIDO</Text>
-              <Text style={[S.mgmtGridValue, { fontSize: 18, color: "#38A169" }]}>{brl(totalSold)}</Text>
+              <Text style={[S.mgmtGridValue, { fontSize: 18, color: "#FFFFFF" }]}>{brl(totalSold)}</Text>
             </View>
           </View>
         </View>
@@ -1244,7 +1245,7 @@ function ManagementView({ onMenu }: { onMenu: () => void }) {
                 </View>
                 <View style={{ alignItems: "flex-end" }}>
                   <Text style={S.mgmtGridLabel}>VENDIDO</Text>
-                  <Text style={[S.cardName, { color: onTarget ? "#38A169" : "#FFFFFF", marginTop: 2 }]}>{brl(member.sold)}</Text>
+                  <Text style={[S.cardName, { color: "#FFFFFF", marginTop: 2 }]}>{brl(member.sold)}</Text>
                 </View>
               </View>
               <View style={{ marginTop: 16 }}>
@@ -1415,7 +1416,7 @@ function CorporatePortfolioView({ onMenu }: { onMenu: () => void }) {
           ].map((m) => (
             <View key={m.label} style={S.corpMacroCard}>
               <Text style={S.mgmtGridLabel}>{m.label}</Text>
-              <Text style={[S.mgmtGridValue, { color: m.color, fontSize: 20 }]}>{m.value}</Text>
+              <Text style={[S.mgmtGridValue, { color: "#FFFFFF", fontSize: 20 }]}>{m.value}</Text>
             </View>
           ))}
         </View>
@@ -1440,7 +1441,7 @@ function CorporatePortfolioView({ onMenu }: { onMenu: () => void }) {
                   <Text style={[S.cardName, { color: "#FFFFFF" }]}>{item.mrr}</Text>
                 </View>
                 <View style={[S.badge, { alignSelf: "flex-start", marginTop: 12, backgroundColor: healthColor + "15", borderColor: healthColor + "40" }]}>
-                  <Text style={[S.badgeText, { color: healthColor }]}>{item.health}</Text>
+                  <Text style={[S.badgeText, { color: "#FFFFFF" }]}>{item.health}</Text>
                 </View>
               </View>
             );
@@ -2419,12 +2420,12 @@ const S = StyleSheet.create({
   badgeText: { fontSize: 11, color: "#8F94A8" },
   dot: { width: 8, height: 8, borderRadius: 4 },
   aiBadge: { backgroundColor: "rgba(0,229,255,0.1)", paddingHorizontal: 8, paddingVertical: 4, borderRadius: 6 },
-  aiBadgeText: { fontSize: 11, color: "#00E5FF", fontWeight: "600" },
-  histCount: { fontSize: 13, color: "#00E5FF", fontWeight: "600", borderTopWidth: 1, borderColor: "#242736", paddingTop: 12, marginTop: 4 },
-  healthBadge: { backgroundColor: "rgba(56,161,105,0.1)", paddingHorizontal: 10, paddingVertical: 4, borderRadius: 6 },
-  healthBadgeRisk: { backgroundColor: "rgba(229,62,62,0.1)" },
-  healthText: { fontSize: 11, color: "#38A169", fontWeight: "600" },
-  healthTextRisk: { color: "#E93E3E" },
+  aiBadgeText: { fontSize: 11, color: "#FFFFFF", fontWeight: "600" },
+  histCount: { fontSize: 13, color: "#FFFFFF", fontWeight: "600", borderTopWidth: 1, borderColor: "#242736", paddingTop: 12, marginTop: 4 },
+  healthBadge: { backgroundColor: "rgba(56,161,105,0.15)", paddingHorizontal: 10, paddingVertical: 4, borderRadius: 6 },
+  healthBadgeRisk: { backgroundColor: "rgba(229,62,62,0.15)" },
+  healthText: { fontSize: 11, color: "#FFFFFF", fontWeight: "600" },
+  healthTextRisk: { color: "#FFFFFF" },
 
   form: { padding: 20 },
   label: { fontSize: 11, color: "#8F94A8", fontWeight: "600", letterSpacing: 0.8, marginBottom: 8, marginTop: 16 },
