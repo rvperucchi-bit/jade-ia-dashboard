@@ -227,3 +227,9 @@ id = "Y2yLtI9Rcg0yK9A6gkQo1"
 uri = "file://exports/redesign-radar-buscar-leads.pdf"
 type = "pdf"
 title = "Resumo — Redesign Radar (Buscar Leads)"
+
+[[outputs]]
+id = "uCCJC_in0mYWaDUBx-Xvg"
+uri = "file://exports/ajustes-radar-jade-autonoma.pdf"
+type = "pdf"
+title = "Resumo — Ajustes UI + JADE Prospectora Autônoma"

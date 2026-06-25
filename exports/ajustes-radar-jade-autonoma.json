@@ -1,0 +1,52 @@
+{
+  "title": "Ajustes de UI e JADE Prospectora Autônoma",
+  "subtitle": "Tela Buscar Leads — remoção de textos, ponto verde e histórico em tempo real",
+  "date": "25/06/2026",
+  "output": "ajustes-radar-jade-autonoma.pdf",
+  "sections": [
+    {
+      "heading": "Ajustes de interface (UI)",
+      "bullets": [
+        "Subtítulo \"Encontre empresas e estabelecimentos\" removido do cabeçalho.",
+        "Texto \"Preencha os campos abaixo para encontrar empresas\" removido do card de formulário.",
+        "Card \"X buscas restantes este mês — Ver planos\" removido da tela principal."
+      ]
+    },
+    {
+      "heading": "Ponto verde na lupa",
+      "bullets": [
+        "Pequeno ponto (10×10 px) posicionado no canto superior direito do botão de lupa.",
+        "Verde (#00D68F) quando a JADE está prospectando autonomamente; cinza escuro quando em standby.",
+        "Pisca suavemente (alterna opacidade a cada 600ms) durante a prospecção ativa.",
+        "Fica persistente e visível mesmo quando a barra de busca está fechada."
+      ]
+    },
+    {
+      "heading": "Aba Histórico — JADE Prospectora",
+      "bullets": [
+        "A aba Histórico agora exibe as buscas que a JADE faz automaticamente, não as buscas manuais do usuário.",
+        "Barra de status no topo: mostra \"JADE prospectando agora...\" (verde) ou \"JADE em standby\" (cinza), com subtítulo explicativo.",
+        "Polling a cada 5 segundos nos endpoints /api/places/radar-activity e /api/places/radar-status.",
+        "Cada card de busca mostra: segmento, cidade/UF, horário relativo e badge com a contagem de leads.",
+        "Preview dos 3 primeiros leads de cada busca com botão (+) para adicionar ao CRM diretamente.",
+        "Estado vazio amigável enquanto a JADE ainda não executou nenhuma busca automática."
+      ]
+    },
+    {
+      "heading": "Backend — Worker Autônomo da JADE",
+      "bullets": [
+        "Novo módulo lib/radar-worker.ts no servidor API: executa buscas no Google Places a cada 30 minutos.",
+        "Usa o segmento e a cidade configurados na empresa (getCompanyConfig) — sem necessidade de input do usuário.",
+        "Resultados salvos em data/jade-radar-activity.json (máximo 50 entradas, LIFO).",
+        "Endpoints criados: GET /api/places/radar-activity (lista de buscas) e GET /api/places/radar-status (isActive, lastRun, nextRun).",
+        "Worker iniciado automaticamente junto com o servidor; primeira busca roda 5s após o start."
+      ]
+    },
+    {
+      "heading": "Validação",
+      "body": [
+        "Typecheck passou sem erros tanto no mobile quanto no servidor API. Ambos os workflows estão rodando. O radar-worker foi confirmado nos logs do servidor com a mensagem \"radar-worker: iniciado\"."
+      ]
+    }
+  ]
+}

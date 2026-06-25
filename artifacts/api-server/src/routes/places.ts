@@ -1,6 +1,18 @@
 import { Router, Request, Response } from 'express';
+import { getEntries, getRadarStatus } from '../lib/radar-worker.js';
 
 const router = Router();
+
+// ─── GET /places/radar-activity — histórico autônomo da JADE ─────────────────
+router.get('/radar-activity', (_req: Request, res: Response) => {
+  const entries = getEntries();
+  return res.json({ entries });
+});
+
+// ─── GET /places/radar-status — status da JADE prospectora ──────────────────
+router.get('/radar-status', (_req: Request, res: Response) => {
+  return res.json(getRadarStatus());
+});
 
 // ─── Segment → Google Places keyword mapping ──────────────────────────────────
 const SEGMENT_KEYWORDS: Record<string, string> = {

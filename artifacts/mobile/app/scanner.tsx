@@ -85,6 +85,27 @@ interface RadarHistoryItem {
   ts: number;
 }
 
+interface JadeRadarLead {
+  placeId: string;
+  name: string;
+  address: string;
+  phone: string;
+  rating: number | null;
+  totalRatings: number;
+  status: string;
+}
+
+interface JadeRadarEntry {
+  id: string;
+  segmento: string;
+  cidade: string;
+  estado: string;
+  count: number;
+  leads: JadeRadarLead[];
+  ts: number;
+  error?: string;
+}
+
 const API_BASE =
   Platform.OS === "web"
     ? ""
@@ -145,7 +166,40 @@ export default function ScannerScreen() {
   const [showCidadePicker, setShowCidadePicker] = useState(false);
   const [cidadeFilter,     setCidadeFilter]     = useState("");
 
-  // ── Histórico ──────────────────────────────────────────────────────────────
+  // ── JADE Atividade Autônoma ────────────────────────────────────────────────
+  const [jadeActive,   setJadeActive]   = useState(false);
+  const [jadeActivity, setJadeActivity] = useState<JadeRadarEntry[]>([]);
+  const [dotPulse,     setDotPulse]     = useState(false);
+
+  useEffect(() => {
+    const poll = async () => {
+      try {
+        const [statusRes, activityRes] = await Promise.all([
+          fetch(`${API_BASE}/api/places/radar-status`),
+          fetch(`${API_BASE}/api/places/radar-activity`),
+        ]);
+        if (statusRes.ok) {
+          const s = (await statusRes.json()) as { isActive: boolean };
+          setJadeActive(s.isActive);
+        }
+        if (activityRes.ok) {
+          const a = (await activityRes.json()) as { entries: JadeRadarEntry[] };
+          setJadeActivity(a.entries ?? []);
+        }
+      } catch { /* ignore */ }
+    };
+    poll();
+    const iv = setInterval(poll, 5000);
+    return () => clearInterval(iv);
+  }, []);
+
+  useEffect(() => {
+    if (!jadeActive) { setDotPulse(false); return; }
+    const t = setInterval(() => setDotPulse((v) => !v), 600);
+    return () => clearInterval(t);
+  }, [jadeActive]);
+
+  // ── Histórico (manual) ─────────────────────────────────────────────────────
   const [history, setHistory] = useState<RadarHistoryItem[]>([]);
   useEffect(() => {
     AsyncStorage.getItem(HISTORY_KEY).then((raw) => {
@@ -349,17 +403,17 @@ export default function ScannerScreen() {
         </TouchableOpacity>
         <View style={{ flex: 1 }}>
           <Text style={[styles.headerTitle, { color: colors.text }]}>Buscar leads</Text>
-          <Text style={[styles.headerSub, { color: colors.mutedForeground }]}>
-            Encontre empresas e estabelecimentos
-          </Text>
         </View>
-        <TouchableOpacity
-          style={[styles.lupaBtn, { backgroundColor: showSearch ? "#FF008018" : colors.card, borderColor: showSearch ? "#FF008055" : colors.border }]}
-          onPress={() => { setShowSearch((v) => !v); if (showSearch) setSearchQuery(""); Haptics.selectionAsync(); }}
-          activeOpacity={0.8}
-        >
-          <Feather name="search" size={18} color={showSearch ? "#FF0080" : colors.mutedForeground} />
-        </TouchableOpacity>
+        <View style={{ position: "relative" }}>
+          <TouchableOpacity
+            style={[styles.lupaBtn, { backgroundColor: showSearch ? "#FF008018" : colors.card, borderColor: showSearch ? "#FF008055" : colors.border }]}
+            onPress={() => { setShowSearch((v) => !v); if (showSearch) setSearchQuery(""); Haptics.selectionAsync(); }}
+            activeOpacity={0.8}
+          >
+            <Feather name="search" size={18} color={showSearch ? "#FF0080" : colors.mutedForeground} />
+          </TouchableOpacity>
+          <View style={[styles.jadeDotSmall, { backgroundColor: jadeActive ? "#00D68F" : "#444", opacity: jadeActive && dotPulse ? 0.55 : 1 }]} />
+        </View>
       </View>
 
       {/* Barra de busca (toggle pela lupa) */}
@@ -417,9 +471,6 @@ export default function ScannerScreen() {
             {/* Card de formulário */}
             <View style={[styles.formCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
               <Text style={[styles.formCardTitle, { color: colors.text }]}>O que você quer procurar hoje?</Text>
-              <Text style={[styles.formCardSub, { color: colors.mutedForeground }]}>
-                Preencha os campos abaixo para encontrar empresas.
-              </Text>
 
               {/* Segmento */}
               <View style={styles.field}>
@@ -614,79 +665,115 @@ export default function ScannerScreen() {
               </View>
             )}
 
-            {/* Buscas restantes */}
-            <TouchableOpacity
-              style={[styles.quotaCard, { backgroundColor: colors.card, borderColor: colors.border }]}
-              onPress={() => setShowLojaModal(true)}
-              activeOpacity={0.85}
-            >
-              <Feather name="zap" size={15} color="#FFB300" />
-              <Text style={[styles.quotaText, { color: colors.text }]}>
-                {remaining} busca{remaining !== 1 ? "s" : ""} restante{remaining !== 1 ? "s" : ""} este mês
-              </Text>
-              <View style={styles.quotaLink}>
-                <Text style={styles.quotaLinkText}>Ver planos</Text>
-                <Feather name="chevron-right" size={16} color="#FF0080" />
-              </View>
-            </TouchableOpacity>
           </>
         ) : (
-          /* ── Histórico ── */
+          /* ── Histórico JADE (automático) ── */
           <>
-            {filteredHistory.length === 0 ? (
+            {/* Status da JADE */}
+            <View style={[styles.jadeStatusBar, {
+              backgroundColor: jadeActive ? "rgba(0,214,143,0.08)" : colors.card,
+              borderColor: jadeActive ? "rgba(0,214,143,0.28)" : colors.border,
+            }]}>
+              <View style={[styles.jadeDotMed, {
+                backgroundColor: jadeActive ? "#00D68F" : "#555",
+                opacity: jadeActive && dotPulse ? 0.5 : 1,
+              }]} />
+              <View style={{ flex: 1 }}>
+                <Text style={[styles.jadeStatusTitle, { color: colors.text }]}>
+                  {jadeActive ? "JADE prospectando agora..." : "JADE em standby"}
+                </Text>
+                <Text style={[styles.jadeStatusSub, { color: colors.mutedForeground }]}>
+                  {jadeActive
+                    ? "Buscando leads automaticamente pelo segmento configurado"
+                    : "Busca automática roda a cada 30 min quando o app está aberto"}
+                </Text>
+              </View>
+              <Feather name="zap" size={16} color={jadeActive ? "#00D68F" : colors.mutedForeground} />
+            </View>
+
+            {jadeActivity.length === 0 ? (
               <View style={styles.emptyWrap}>
                 <View style={[styles.emptyIcon, { backgroundColor: colors.card, borderColor: colors.border }]}>
-                  <Feather name="clock" size={26} color={colors.mutedForeground} />
+                  <Feather name="zap" size={26} color={colors.mutedForeground} />
                 </View>
-                <Text style={[styles.emptyTitle, { color: colors.text }]}>
-                  {history.length === 0 ? "Nenhuma busca ainda" : "Nada encontrado"}
-                </Text>
+                <Text style={[styles.emptyTitle, { color: colors.text }]}>JADE ainda não prospectou</Text>
                 <Text style={[styles.emptySub, { color: colors.mutedForeground }]}>
-                  {history.length === 0
-                    ? "Suas buscas no radar aparecerão aqui para você repetir com um toque."
-                    : "Tente outro termo na busca."}
+                  Quando a JADE fizer buscas automáticas, os leads encontrados aparecerão aqui em tempo real.
                 </Text>
-                {history.length === 0 && (
-                  <TouchableOpacity style={styles.emptyBtn} onPress={() => setTab("buscar")} activeOpacity={0.85}>
-                    <Feather name="search" size={15} color="#fff" />
-                    <Text style={styles.emptyBtnText}>Fazer primeira busca</Text>
-                  </TouchableOpacity>
-                )}
               </View>
             ) : (
               <>
-                <View style={styles.historyHeader}>
-                  <Text style={[styles.historyHeaderText, { color: colors.mutedForeground }]}>
-                    {filteredHistory.length} BUSCA{filteredHistory.length !== 1 ? "S" : ""}
-                  </Text>
-                  <TouchableOpacity onPress={clearHistory} activeOpacity={0.7} style={styles.clearBtn}>
-                    <Feather name="trash-2" size={13} color={colors.mutedForeground} />
-                    <Text style={[styles.clearBtnText, { color: colors.mutedForeground }]}>Limpar</Text>
-                  </TouchableOpacity>
-                </View>
+                <Text style={[styles.radarResultsTitle, { color: colors.mutedForeground }]}>
+                  {jadeActivity.length} BUSCA{jadeActivity.length !== 1 ? "S" : ""} AUTOMÁTICA{jadeActivity.length !== 1 ? "S" : ""}
+                </Text>
 
-                {filteredHistory.map((item) => (
-                  <TouchableOpacity
-                    key={item.id}
-                    style={[styles.historyCard, { backgroundColor: colors.card, borderColor: colors.border }]}
-                    onPress={() => applyHistory(item)}
-                    activeOpacity={0.85}
+                {jadeActivity.map((entry) => (
+                  <View
+                    key={entry.id}
+                    style={[styles.jadeEntryCard, {
+                      backgroundColor: colors.card,
+                      borderColor: entry.error ? "rgba(255,100,100,0.2)" : colors.border,
+                    }]}
                   >
-                    <View style={[styles.historyIcon, { backgroundColor: "#FF008018" }]}>
-                      <Feather name="search" size={15} color="#FF0080" />
+                    {/* Cabeçalho da busca */}
+                    <View style={styles.jadeEntryHeader}>
+                      <View style={[styles.jadeEntryIcon, { backgroundColor: "rgba(0,214,143,0.12)" }]}>
+                        <Feather name="zap" size={14} color="#00D68F" />
+                      </View>
+                      <View style={{ flex: 1 }}>
+                        <Text style={[styles.jadeEntryTitle, { color: colors.text }]} numberOfLines={1}>
+                          {entry.segmento}
+                        </Text>
+                        <Text style={[styles.jadeEntryMeta, { color: colors.mutedForeground }]} numberOfLines={1}>
+                          {entry.cidade}{entry.estado ? ` - ${entry.estado}` : ""} · {formatTimeAgo(entry.ts)}
+                        </Text>
+                      </View>
+                      <View style={[styles.jadeCountBadge, { backgroundColor: entry.error ? "rgba(255,100,100,0.1)" : "rgba(0,214,143,0.1)" }]}>
+                        <Text style={[styles.jadeCountText, { color: entry.error ? "#ff6464" : "#00D68F" }]}>
+                          {entry.error ? "erro" : `${entry.count} leads`}
+                        </Text>
+                      </View>
                     </View>
-                    <View style={{ flex: 1 }}>
-                      <Text style={[styles.historyTitle, { color: colors.text }]} numberOfLines={1}>
-                        {item.segmento || "Busca"}
+
+                    {/* Leads encontrados (preview dos 3 primeiros) */}
+                    {!entry.error && entry.leads.slice(0, 3).map((lead, i) => {
+                      const alreadyAdded = radarAddedIds.has(lead.placeId);
+                      return (
+                        <View key={lead.placeId} style={[styles.jadeLeadRow, i > 0 && { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: colors.border }]}>
+                          <View style={{ flex: 1 }}>
+                            <Text style={[styles.jadeLeadName, { color: colors.text }]} numberOfLines={1}>{lead.name}</Text>
+                            <Text style={[styles.jadeLeadAddr, { color: colors.mutedForeground }]} numberOfLines={1}>{lead.address}</Text>
+                          </View>
+                          <TouchableOpacity
+                            style={[styles.jadeLeadAdd, alreadyAdded && { opacity: 0.45 }]}
+                            onPress={() => {
+                              if (alreadyAdded) return;
+                              const lead2: Lead = {
+                                id: `jade-auto_${lead.placeId}`,
+                                name: lead.name, company: entry.segmento, value: 0,
+                                phone: lead.phone, column: "novo", tag: "JADE Auto",
+                                tagColor: "#00D68F", time: "agora",
+                                initials: lead.name.slice(0, 2).toUpperCase(),
+                                avatarColor: "#00D68F",
+                              };
+                              addLead(lead2);
+                              setRadarAddedIds((prev) => new Set([...prev, lead.placeId]));
+                              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                            }}
+                            activeOpacity={0.8}
+                            hitSlop={6}
+                          >
+                            <Feather name={alreadyAdded ? "check" : "plus"} size={15} color={alreadyAdded ? "#00D68F" : colors.mutedForeground} />
+                          </TouchableOpacity>
+                        </View>
+                      );
+                    })}
+                    {!entry.error && entry.count > 3 && (
+                      <Text style={[styles.jadeMoreText, { color: colors.mutedForeground }]}>
+                        +{entry.count - 3} lead{entry.count - 3 !== 1 ? "s" : ""} encontrado{entry.count - 3 !== 1 ? "s" : ""}
                       </Text>
-                      <Text style={[styles.historyMeta, { color: colors.mutedForeground }]} numberOfLines={1}>
-                        {item.cidade}{item.estado ? ` - ${item.estado}` : ""}{item.bairro ? ` · ${item.bairro}` : ""} · {item.count} lead{item.count !== 1 ? "s" : ""} · {formatTimeAgo(item.ts)}
-                      </Text>
-                    </View>
-                    <TouchableOpacity onPress={() => removeHistoryItem(item.id)} hitSlop={8} style={styles.historyDelete}>
-                      <Feather name="x" size={16} color={colors.mutedForeground} />
-                    </TouchableOpacity>
-                  </TouchableOpacity>
+                    )}
+                  </View>
                 ))}
               </>
             )}
@@ -873,6 +960,32 @@ const styles = StyleSheet.create({
   emptySub: { fontSize: 14, fontFamily: "SpaceGrotesk_400Regular", textAlign: "center", lineHeight: 20 },
   emptyBtn: { flexDirection: "row", alignItems: "center", gap: 8, backgroundColor: "#FF0080", paddingHorizontal: 18, height: 46, borderRadius: 13, marginTop: 10 },
   emptyBtnText: { fontSize: 15, fontFamily: "SpaceGrotesk_700Bold", color: "#fff" },
+
+  // ─── JADE dot + histórico autônomo ───────────────────────────────────────────
+  jadeDotSmall: {
+    position: "absolute", top: -2, right: -2,
+    width: 10, height: 10, borderRadius: 5,
+    borderWidth: 2, borderColor: "#0A0A0F",
+  },
+  jadeDotMed: { width: 10, height: 10, borderRadius: 5, flexShrink: 0 },
+  jadeStatusBar: {
+    flexDirection: "row", alignItems: "center", gap: 12,
+    borderRadius: 14, borderWidth: 1, padding: 14,
+  },
+  jadeStatusTitle: { fontSize: 14, fontFamily: "SpaceGrotesk_600SemiBold" },
+  jadeStatusSub: { fontSize: 12, fontFamily: "SpaceGrotesk_400Regular", marginTop: 2, lineHeight: 17 },
+  jadeEntryCard: { borderRadius: 14, borderWidth: 1, padding: 14, gap: 10 },
+  jadeEntryHeader: { flexDirection: "row", alignItems: "center", gap: 10 },
+  jadeEntryIcon: { width: 32, height: 32, borderRadius: 9, alignItems: "center", justifyContent: "center" },
+  jadeEntryTitle: { fontSize: 14, fontFamily: "SpaceGrotesk_600SemiBold" },
+  jadeEntryMeta: { fontSize: 11, fontFamily: "SpaceGrotesk_400Regular", marginTop: 1 },
+  jadeCountBadge: { borderRadius: 8, paddingHorizontal: 9, paddingVertical: 4 },
+  jadeCountText: { fontSize: 11, fontFamily: "SpaceGrotesk_700Bold" },
+  jadeLeadRow: { flexDirection: "row", alignItems: "center", gap: 10, paddingTop: 8 },
+  jadeLeadName: { fontSize: 13, fontFamily: "SpaceGrotesk_600SemiBold" },
+  jadeLeadAddr: { fontSize: 11, fontFamily: "SpaceGrotesk_400Regular", marginTop: 1 },
+  jadeLeadAdd: { width: 30, height: 30, borderRadius: 8, alignItems: "center", justifyContent: "center" },
+  jadeMoreText: { fontSize: 12, fontFamily: "SpaceGrotesk_400Regular", textAlign: "center", paddingTop: 4 },
 
   // ─── Modal styles ──────────────────────────────────────────────────────────
   modalOverlay: { flex: 1, backgroundColor: "rgba(0,0,0,0.75)", justifyContent: "flex-end", alignItems: "center" },
