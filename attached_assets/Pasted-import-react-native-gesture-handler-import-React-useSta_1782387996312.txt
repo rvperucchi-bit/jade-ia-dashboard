@@ -1,0 +1,111 @@
+import 'react-native-gesture-handler';
+import React, { useState } from 'react';
+import { StyleSheet, Text, View, TextInput, TouchableOpacity, SafeAreaView, StatusBar, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
+import { createDrawerNavigator, DrawerContentScrollView } from '@react-navigation/drawer';
+import { NavigationContainer } from '@react-navigation/native';
+
+// IMPORTAÇÃO DAS NOSSAS TELAS PREMIUM REALISTAS
+import PipelineScreen from './screens/PipelineScreen';
+import ProspectingScreen from './screens/ProspectingScreen';
+import FarmerScreen from './screens/FarmerScreen';
+
+// CONTROLE CUSTOMIZADO DA BARRA LATERAL (DRAWER)
+function CustomDrawerContent(props) {
+  const menuItems = [
+    { label: '💬 Chat Central IA', route: 'Chat' },
+    { label: '📊 Pipeline Comercial', route: 'Pipeline' },
+    { label: '🔍 Prospecção Maps IA', route: 'Prospecting' },
+    { label: '🌱 Carteira & Farmer', route: 'Farmer' },
+  ];
+
+  return (
+    <DrawerContentScrollView {...props} style={styles.drawerContainer}>
+      <View style={styles.drawerHeader}>
+        <Text style={styles.drawerBrand}>Sleek CRM</Text>
+        <Text style={styles.drawerUser}>Agente Autónomo Ativo</Text>
+      </View>
+      {menuItems.map((item, index) => (
+        <TouchableOpacity key={index} style={styles.drawerItem} activeOpacity={0.7} onPress={() => props.navigation.navigate(item.route)}>
+          <Text style={styles.drawerItemText}>{item.label}</Text>
+        </TouchableOpacity>
+      ))}
+    </DrawerContentScrollView>
+  );
+}
+
+// INTERFACE DE CHAT ESTILO CHATGPT / GEMINI
+function ChatScreen({ navigation }) {
+  const [inputText, setInputText] = useState('');
+
+  return (
+    <SafeAreaView style={styles.container}>
+      <StatusBar barStyle="light-content" backgroundColor="#090A0F" />
+      <View style={styles.topBar}>
+        <TouchableOpacity style={styles.transparentButton} onPress={() => navigation.openDrawer()}>
+          <Text style={styles.topIconText}>☰</Text> 
+        </TouchableOpacity>
+        <Text style={styles.topTitle}>Sleek IA</Text>
+        <TouchableOpacity style={styles.transparentButton}><Text style={styles.topIconText}>⚙️</Text></TouchableOpacity>
+      </View>
+
+      <ScrollView contentContainerStyle={styles.chatArea} showsVerticalScrollIndicator={false}>
+        <View style={styles.welcomeContainer}>
+          <Text style={styles.aiLogoGlow}>🤖</Text>
+          <Text style={styles.welcomeText}>Como posso alavancar suas vendas hoje?</Text>
+        </View>
+      </ScrollView>
+
+      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+        <View style={styles.inputContainer}>
+          <View style={styles.inputRowInside}>
+            <TouchableOpacity style={styles.innerBarButton}><Text style={styles.barIcon}>＋</Text></TouchableOpacity>
+            <TextInput style={styles.textInputStyle} placeholder="Perguntar ao Sleek IA..." placeholderTextColor="#626880" value={inputText} onChangeText={setInputText} multiline />
+            <TouchableOpacity style={styles.sendButtonCircle}>
+              <Text style={styles.sendIcon}>{inputText.trim().length > 0 ? '▲' : '🎙️'}</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
+  );
+}
+
+const Drawer = createDrawerNavigator();
+
+export default function App() {
+  return (
+    <NavigationContainer>
+      <Drawer.Navigator
+        drawerContent={(props) => <CustomDrawerContent {...props} />}
+        screenOptions={{
+          headerShown: false,
+          drawerStyle: { width: 280 },
+          swipeEnabled: true,
+        }}
+      >
+        <Drawer.Screen name="Chat" component={ChatScreen} />
+        <Drawer.Screen name="Pipeline" component={PipelineScreen} />
+        <Drawer.Screen name="Prospecting" component={ProspectingScreen} />
+        <Drawer.Screen name="Farmer" component={FarmerScreen} />
+      </Drawer.Navigator>
+    </NavigationContainer>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: { flex: 1, backgroundColor: '#090A0F' },
+  topBar: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 16, paddingTop: Platform.OS === 'ios' ? 10 : 20, height: 60 },
+  transparentButton: { width: 42, height: 42, borderRadius: 12, backgroundColor: 'rgba(255, 255, 255, 0.03)', borderWidth: 1, borderColor: 'rgba(255, 255, 255, 0.05)', alignItems: 'center', justifyStyle: 'center', justifyContent: 'center' },
+  topIconText: { color: '#FFFFFF', fontSize: 18 },
+  topTitle: { color: '#8F94A8', fontSize: 14, fontWeight: '600', letterSpacing: 1, textTransform: 'uppercase' },
+  chatArea: { flexGrow: 1, justifyContent: 'center', alignItems: 'center', paddingHorizontal: 30 },
+  welcomeContainer: { alignItems: 'center' },
+  aiLogoGlow: { fontSize: 48, marginBottom: 20 },
+  welcomeText: { color: '#FFFFFF', fontSize: 18, fontWeight: '500', textAlign: 'center', lineHeight: 26 },
+  inputContainer: { paddingHorizontal: 16, paddingBottom: Platform.OS === 'ios' ? 24 : 16, paddingTop: 8, backgroundColor: '#090A0F' },
+  inputRowInside: { flexDirection: 'row', backgroundColor: '#161822', borderRadius: 28, alignItems: 'center', paddingHorizontal: 8, paddingVertical: 6, borderWidth: 1, borderColor: '#242736' },
+  innerBarButton: { width: 36, height: 36, borderRadius: 18, alignItems: 'center', justifyStyle: 'center', justifyContent: 'center' },
+  barIcon: { color: '#8F94A8', fontSize: 20 },
+  textInputStyle: { flex: 1, color: '#FFFFFF', fontSize: 15, paddingHorizontal: 10, maxHeight: 100 },
+  sendButtonCircle: { width: 38, height: 38, borderRadius: 19, backgroundColor: '#FFFFFF', alignItems: 'center', justifyStyle: 'center', justifyContent: 'center' },
+  sendIcon: { color: '#090A0F', fontSize: 14, fontWeight: '700

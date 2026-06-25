@@ -1,0 +1,127 @@
+import React, { useState } from 'react';
+import { StyleSheet, Text, View, FlatList, ScrollView, TouchableOpacity, SafeAreaView, Modal } from 'react-native';
+import * as Linking from 'expo-linking';
+
+const INITIAL_LEADS = [
+  { id: '1', name: 'Alex Silva', company: 'TechNova Solutions', value: 'R$ 15.400', stage: 'Prospecção', daysIdle: 2, phone: '5511999999999' },
+  { id: '2', name: 'Beatriz Costa', company: 'Acme Corp', value: 'R$ 42.000', stage: 'Prospecção', daysIdle: 5, phone: '5511988888888' },
+  { id: '3', name: 'Carlos Eduardo', company: 'Vortex Media', value: 'R$ 8.900', stage: 'Contato', daysIdle: 1, phone: '5511977777777' },
+  { id: '4', name: 'Diana Prince', company: 'Wayne Enterprises', value: 'R$ 120.000', stage: 'Proposta', daysIdle: 3, phone: '5511966666666' },
+  { id: '5', name: 'Felipe Ramos', company: 'Stark Labs', value: 'R$ 65.500', stage: 'Fechados', daysIdle: 0, phone: '5511955555555' },
+];
+
+const PIPELINE_STAGES = ['Prospecção', 'Contato', 'Proposta', 'Fechados'];
+
+export default function PipelineScreen({ navigation }) {
+  const [currentStage, setCurrentStage] = useState('Prospecção');
+  const [selectedLead, setSelectedLead] = useState(null);
+
+  const filteredLeads = INITIAL_LEADS.filter(lead => lead.stage === currentStage);
+  const totalValue = filteredLeads.reduce((acc, lead) => {
+    const numericValue = parseFloat(lead.value.replace('R$ ', '').replace('.', ''));
+    return acc + numericValue;
+  }, 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+
+  return (
+    <SafeAreaView style={styles.container}>
+      <View style={styles.header}>
+        <TouchableOpacity style={styles.menuButton} onPress={() => navigation.openDrawer()}>
+          <Text style={styles.menuButtonText}>☰</Text>
+        </TouchableOpacity>
+        <View style={{ alignItems: 'flex-end' }}>
+          <Text style={styles.greeting}>{currentStage}</Text>
+          <Text style={styles.stageTotal}>{totalValue}</Text>
+        </View>
+      </View>
+
+      <View style={styles.tabsWrapper}>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.tabsScroll}>
+          {PIPELINE_STAGES.map((stage) => {
+            const isActive = currentStage === stage;
+            const count = INITIAL_LEADS.filter(l => l.stage === stage).length;
+            return (
+              <TouchableOpacity key={stage} activeOpacity={0.8} onPress={() => setCurrentStage(stage)} style={styles.tabButton}>
+                <Text style={[styles.tabText, isActive && styles.activeTabText]}>{stage} ({count})</Text>
+                {isActive && <View style={styles.tabIndicator} />}
+              </TouchableOpacity>
+            );
+          })}
+        </ScrollView>
+      </View>
+
+      <FlatList
+        data={filteredLeads}
+        keyExtractor={(item) => item.id}
+        renderItem={({ item }) => (
+          <TouchableOpacity activeOpacity={0.7} style={styles.card} onPress={() => setSelectedLead(item)}>
+            <View style={styles.cardHeader}>
+              <Text style={styles.clientName}>{item.name}</Text>
+              <View style={styles.badge}><Text style={styles.badgeText}>{item.daysIdle}d ativo</Text></View>
+            </View>
+            <Text style={styles.companyName}>{item.company}</Text>
+            <View style={styles.cardFooter}>
+              <Text style={styles.dealValue}>{item.value}</Text>
+              <View style={[styles.priorityDot, { backgroundColor: currentStage === 'Fechados' ? '#38A169' : '#00E5FF' }]} />
+            </View>
+          </TouchableOpacity>
+        )}
+        contentContainerStyle={styles.listContent}
+      />
+
+      <Modal visible={selectedLead !== null} animationType="slide" transparent={true}>
+        <TouchableOpacity style={styles.modalOverlay} activeOpacity={1} onPress={() => setSelectedLead(null)}>
+          <View style={styles.bottomSheet}>
+            <View style={styles.dragIndicator} />
+            {selectedLead && (
+              <>
+                <Text style={styles.modalCompanyName}>{selectedLead.company}</Text>
+                <Text style={styles.modalClientName}>{selectedLead.name}</Text>
+                <Text style={styles.modalValue}>{selectedLead.value}</Text>
+                <View style={styles.actionRow}>
+                  <TouchableOpacity style={styles.actionButton} onPress={() => Linking.openURL(`whatsapp://send?phone=${selectedLead.phone}`)}><Text style={styles.actionButtonText}>WhatsApp</Text></TouchableOpacity>
+                  <TouchableOpacity style={[styles.actionButton, styles.actionButtonSecondary]} onPress={() => Linking.openURL(`tel:${selectedLead.phone}`)}><Text style={styles.actionButtonTextSecondary}>Ligar</Text></TouchableOpacity>
+                </View>
+              </>
+            )}
+          </View>
+        </TouchableOpacity>
+      </Modal>
+    </SafeAreaView>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: { flex: 1, backgroundColor: '#090A0F' },
+  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 20, paddingTop: 10, paddingBottom: 15 },
+  menuButton: { width: 42, height: 42, borderRadius: 12, backgroundColor: 'rgba(255, 255, 255, 0.03)', borderWidth: 1, borderColor: 'rgba(255, 255, 255, 0.05)', alignItems: 'center', justifyStyle: 'center', justifyContent: 'center' },
+  menuButtonText: { color: '#FFF', fontSize: 18 },
+  greeting: { fontSize: 12, color: '#8F94A8', fontWeight: '500', textTransform: 'uppercase' },
+  stageTotal: { fontSize: 24, fontWeight: '700', color: '#FFFFFF', marginTop: 4 },
+  tabsWrapper: { borderBottomWidth: 1, borderColor: '#161822' },
+  tabsScroll: { paddingHorizontal: 20, paddingBottom: 12 },
+  tabButton: { marginRight: 24, paddingBottom: 6, position: 'relative' },
+  tabText: { fontSize: 15, fontWeight: '500', color: '#4E5366' },
+  activeTabText: { color: '#FFFFFF', fontWeight: '700' },
+  tabIndicator: { position: 'absolute', bottom: -13, left: 0, right: 0, height: 2, backgroundColor: '#00E5FF' },
+  listContent: { padding: 20 },
+  card: { backgroundColor: '#161822', borderRadius: 16, padding: 18, marginBottom: 14, borderWidth: 1, borderColor: '#242736' },
+  cardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 },
+  clientName: { fontSize: 16, fontWeight: '600', color: '#FFFFFF' },
+  companyName: { fontSize: 13, color: '#8F94A8', marginBottom: 16 },
+  badge: { backgroundColor: 'rgba(255, 255, 255, 0.04)', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 6 },
+  badgeText: { fontSize: 11, color: '#8F94A8' },
+  cardFooter: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  dealValue: { fontSize: 18, fontWeight: '700', color: '#FFFFFF' },
+  priorityDot: { width: 8, height: 8, borderRadius: 4 },
+  modalOverlay: { flex: 1, backgroundColor: 'rgba(0, 0, 0, 0.6)', justifyContent: 'flex-end' },
+  bottomSheet: { backgroundColor: '#11131A', borderTopLeftRadius: 24, borderTopRightRadius: 24, paddingHorizontal: 24, paddingTop: 12, paddingBottom: 40, borderTopWidth: 1, borderColor: '#242736' },
+  dragIndicator: { width: 36, height: 4, backgroundColor: '#242736', borderRadius: 2, alignSelf: 'center', marginBottom: 24 },
+  modalCompanyName: { fontSize: 13, color: '#00E5FF', fontWeight: '600', textTransform: 'uppercase' },
+  modalClientName: { fontSize: 24, fontWeight: '700', color: '#FFFFFF', marginTop: 4 },
+  modalValue: { fontSize: 32, fontWeight: '800', color: '#FFFFFF', marginTop: 12 },
+  actionRow: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 30 },
+  actionButton: { flex: 1, backgroundColor: '#FFFFFF', height: 52, borderRadius: 14, alignItems: 'center', justifyContent: 'center', marginRight: 12 },
+  actionButtonText: { color: '#090A0F', fontWeight: '600', fontSize: 15 },
+  actionButtonSecondary: { backgroundColor: 'transparent', borderWidth: 1, borderColor: '#242736', marginRight: 0 },
+  actionButtonTextSecondary: { color: '#FFFFFF', fontWeight: '600', fontSize: 15 }
+});

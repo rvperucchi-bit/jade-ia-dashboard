@@ -481,6 +481,13 @@ export default function LeadsScreen() {
           >
             <Text style={{ color: colors.mutedForeground, fontSize: 11, fontFamily: "SpaceGrotesk_500Medium" }}>P4</Text>
           </TouchableOpacity>
+          <TouchableOpacity
+            style={{ paddingHorizontal: 10, paddingVertical: 6, borderRadius: 10, borderWidth: 1, borderColor: colors.border }}
+            onPress={() => router.push("/preview-unified" as any)}
+            activeOpacity={0.8}
+          >
+            <Text style={{ color: colors.mutedForeground, fontSize: 11, fontFamily: "SpaceGrotesk_500Medium" }}>P5</Text>
+          </TouchableOpacity>
         </View>
       </View>
 
