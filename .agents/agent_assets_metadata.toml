@@ -245,3 +245,9 @@ id = "pBOl_GLS3WoFY1T0FBo_C"
 uri = "file://exports/auditoria-jade-ia.pdf"
 type = "pdf"
 title = "JADE IA — Auditoria Completa do Sistema"
+
+[[outputs]]
+id = "D9eg7Gk6HkgsB9KM0PxKf"
+uri = "file://exports/jade-ajuste-icones.pdf"
+type = "pdf"
+title = "JADE IA — Resumo: Ajuste de Interface (Menus sem ícones)"

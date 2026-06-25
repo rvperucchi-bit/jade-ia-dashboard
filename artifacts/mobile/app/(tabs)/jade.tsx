@@ -40,7 +40,7 @@ const PINK      = "#FF0080";
 const BG        = "#0A0A0F";
 const { width: SCREEN_W } = Dimensions.get("window");
 const DRAWER_W  = SCREEN_W;
-const RDRAWER_W = 76;
+const RDRAWER_W = 96;
 
 // ─── Menu data ────────────────────────────────────────────────────────────────
 type MenuItem = { label: string; route?: string; action?: "nova-conversa" };
@@ -162,7 +162,6 @@ function AccordionItem({
   return (
     <View style={C.accordionWrap}>
       <TouchableOpacity style={C.accordionHeader} onPress={onToggle} activeOpacity={0.7}>
-        <Feather name={section.icon as any} size={14} color={isOpen ? PINK : "#FFFFFF"} />
         <Text style={[C.accordionTitle, isOpen && C.accordionTitleOpen]}>{section.title}</Text>
         <Animated.View style={{ transform: [{ rotate }] }}>
           <Feather name="chevron-right" size={13} color="rgba(255,255,255,0.22)" />
@@ -1779,11 +1778,9 @@ export default function JADEScreen() {
                   onPress={() => toggleModule(mod.key)}
                   activeOpacity={0.75}
                 >
-                  <Feather
-                    name={mod.icon}
-                    size={20}
-                    color={active ? "#fff" : "rgba(255,255,255,0.28)"}
-                  />
+                  <Text style={[C.modBtnLabel, active && C.modBtnLabelActive]}>
+                    {mod.label}
+                  </Text>
                 </TouchableOpacity>
               );
             })}
@@ -1802,7 +1799,6 @@ export default function JADEScreen() {
                 style={[C.contextItem, idx < CONTEXT_ITEMS.length - 1 && { borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: "#222" }]}
                 onPress={() => handleContextItem(item.label)} activeOpacity={0.7}
               >
-                <Feather name={item.icon} size={15} color={"danger" in item && item.danger ? "rgba(255,255,255,0.5)" : "#666"} />
                 <Text style={[C.contextLabel, { color: "danger" in item && item.danger ? "rgba(255,255,255,0.5)" : "#ddd" }]}>
                   {item.label}
                 </Text>
@@ -1933,7 +1929,7 @@ const C = StyleSheet.create({
     height: ITEM_H, flexDirection: "row", alignItems: "center",
     paddingHorizontal: 40,
   },
-  accordionItemText:  { flex: 1, fontSize: 15, fontFamily: "SpaceGrotesk_400Regular", color: "rgba(255,255,255,0.42)" },
+  accordionItemText:  { flex: 1, fontSize: 15, fontFamily: "SpaceGrotesk_400Regular", color: "rgba(255,255,255,0.82)" },
   accordionItemNew:   { color: PINK, fontFamily: "SpaceGrotesk_500Medium" },
 
   activeDot: { fontSize: 8, color: PINK, marginRight: 2 },
@@ -1959,7 +1955,7 @@ const C = StyleSheet.create({
     minWidth: 210, overflow: "hidden",
     shadowColor: "#000", shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.5, shadowRadius: 20, elevation: 20,
   },
-  contextItem:  { flexDirection: "row", alignItems: "center", gap: 12, paddingHorizontal: 16, paddingVertical: 13 },
+  contextItem:  { flexDirection: "row", alignItems: "center", paddingHorizontal: 16, paddingVertical: 13 },
   contextLabel: { fontSize: 13, fontFamily: "SpaceGrotesk_400Regular" },
 
   // ── Right drawer (AI Modules) — compact floating panel ──
@@ -1991,12 +1987,13 @@ const C = StyleSheet.create({
     marginBottom: 4,
   },
   modBtn: {
-    width: 50,
-    height: 50,
-    borderRadius: 12,
+    width: 80,
+    height: 36,
+    borderRadius: 10,
     alignItems: "center",
     justifyContent: "center",
     backgroundColor: "rgba(255,255,255,0.05)",
+    paddingHorizontal: 6,
   },
   modBtnActive: {
     backgroundColor: "rgba(255,255,255,0.13)",
@@ -2004,5 +2001,14 @@ const C = StyleSheet.create({
     shadowOffset: { width: 0, height: 0 },
     shadowOpacity: 0.18,
     shadowRadius: 8,
+  },
+  modBtnLabel: {
+    fontSize: 11,
+    fontFamily: "SpaceGrotesk_500Medium",
+    color: "rgba(255,255,255,0.45)",
+    textAlign: "center",
+  },
+  modBtnLabelActive: {
+    color: "#FFFFFF",
   },
 });

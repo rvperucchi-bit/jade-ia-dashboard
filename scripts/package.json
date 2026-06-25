@@ -7,6 +7,7 @@
     "hello": "tsx ./src/hello.ts",
     "gerar-pdf": "tsx ./src/gerar-pdf.ts",
     "auditoria": "tsx ./src/auditoria-jade.ts",
+    "resumo-ajuste-icones": "tsx ./src/resumo-ajuste-icones.ts",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "devDependencies": {
