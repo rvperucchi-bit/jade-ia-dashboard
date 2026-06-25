@@ -1,6 +1,5 @@
 import React, { memo, useCallback, useMemo, useRef, useState } from "react";
 import {
-  Alert,
   Animated,
   Easing,
   Modal,
@@ -17,17 +16,23 @@ import * as Haptics from "expo-haptics";
 import { useRouter } from "expo-router";
 
 import { useColors } from "@/hooks/useColors";
-import { useApp, Lead, LeadColumn, LeadActivity } from "@/context/AppContext";
+import { useApp, type Lead, type LeadColumn, type LeadActivity } from "@/context/AppContext";
 import { getLeadScoreInfo, calcLeadScore } from "@/utils/leadScore";
 
-const COLUMNS: { key: LeadColumn; label: string; color: string }[] = [
-  { key: "novo",       label: "Novo",        color: "#8400FF" },
-  { key: "qualificado",label: "Qualificado", color: "rgba(255,255,255,0.45)" },
-  { key: "proposta",   label: "Proposta",    color: "#FF0080" },
-  { key: "fechado",    label: "Fechado",     color: "rgba(255,255,255,0.55)" },
+// ─── CRM columns ──────────────────────────────────────────────────────────────
+const COLUMNS: { key: LeadColumn; label: string }[] = [
+  { key: "novo",        label: "Novo" },
+  { key: "qualificado", label: "Qualificado" },
+  { key: "proposta",    label: "Proposta" },
+  { key: "fechado",     label: "Fechado" },
 ];
 
+function colLabel(key: LeadColumn) {
+  return COLUMNS.find((c) => c.key === key)?.label ?? key;
+}
+
 function formatValue(v: number) {
+  if (!v) return null;
   return `R$ ${v.toLocaleString("pt-BR")}`;
 }
 
@@ -44,7 +49,7 @@ function cleanTag(tag: string): string {
   return r || t.slice(0, 20);
 }
 
-// ─── Mock CRM history per lead ────────────────────────────────────────────────
+// ─── Contact history types ────────────────────────────────────────────────────
 type ContactEntry = {
   date: string;
   time: string;
@@ -55,50 +60,29 @@ type ContactEntry = {
 
 const CRM_HISTORY: Record<string, ContactEntry[]> = {
   default: [
-    { date: "Hoje",       time: "09:14", channel: "jade",    agent: "JADE IA",       note: "Primeiro contato automático. Lead respondeu com interesse." },
-    { date: "Ontem",      time: "16:40", channel: "whatsapp",agent: "Você",          note: "Enviou proposta comercial. Aguardando retorno." },
-    { date: "15 Jun",     time: "11:05", channel: "phone",   agent: "Você",          note: "Ligação de 8 min. Apresentou o produto e tirou dúvidas." },
-    { date: "12 Jun",     time: "08:30", channel: "email",   agent: "JADE IA",       note: "E-mail de boas-vindas enviado automaticamente." },
+    { date: "Hoje",   time: "09:14", channel: "jade",    agent: "JADE IA", note: "Primeiro contato automático. Lead respondeu com interesse." },
+    { date: "Ontem",  time: "16:40", channel: "whatsapp",agent: "Você",    note: "Enviou proposta comercial. Aguardando retorno." },
+    { date: "15 Jun", time: "11:05", channel: "phone",   agent: "Você",    note: "Ligação de 8 min. Apresentou o produto e tirou dúvidas." },
+    { date: "12 Jun", time: "08:30", channel: "email",   agent: "JADE IA", note: "E-mail de boas-vindas enviado automaticamente." },
   ],
 };
 
 const JADE_SUMMARIES: string[] = [
-  "Lead demonstrou alto interesse no produto. Mencionou orçamento disponível e urgência para Q3. Probabilidade de fechamento estimada em 78%. Recomendo follow-up com proposta personalizada.",
-  "Lead em fase de avaliação com concorrentes. Destacou preço como fator decisivo. Probabilidade 55%. Sugiro oferta de demonstração gratuita para acelerar decisão.",
-  "Contato muito engajado, respondeu rapidamente em todas interações. Solicitou referências de clientes. Probabilidade 82%. Envie cases do mesmo segmento.",
-  "Lead frio, demorou a responder. Última interação há 4 dias. Probabilidade 30%. Recomendo reengajamento com conteúdo relevante ao setor.",
+  "Lead demonstrou alto interesse. Orçamento disponível e urgência para Q3. Probabilidade estimada em 78%. Recomendo follow-up com proposta personalizada.",
+  "Lead avaliando concorrentes. Preço é fator decisivo. Probabilidade 55%. Sugiro demonstração gratuita para acelerar decisão.",
+  "Contato engajado, responde rapidamente. Solicitou referências de clientes. Probabilidade 82%. Envie cases do mesmo segmento.",
+  "Lead frio, última interação há 4 dias. Probabilidade 30%. Recomendo reengajamento com conteúdo relevante ao setor.",
 ];
 
-// ─── Lead semaphore status ────────────────────────────────────────────────────
-function leadStatusColor(lead: Lead): string {
-  if (lead.column === "fechado" || lead.column === "proposta") return "rgba(255,255,255,0.5)";
-  const t = lead.time.toLowerCase();
-  if (t.includes("min") || (t.includes("h") && !t.includes("dia"))) return "rgba(255,255,255,0.55)";
-  if (t.includes("dia")) {
-    const m = t.match(/(\d+)/);
-    const days = m ? parseInt(m[1], 10) : 1;
-    if (days >= 7) return "rgba(255,255,255,0.5)";
-    if (days >= 3) return "rgba(255,255,255,0.45)";
+function channelIcon(ch: ContactEntry["channel"], muted: string) {
+  switch (ch) {
+    case "whatsapp": return <Feather name="message-circle" size={13} color={muted} />;
+    case "email":    return <Feather name="mail"           size={13} color={muted} />;
+    case "phone":    return <Feather name="phone"          size={13} color={muted} />;
+    case "jade":     return <MaterialCommunityIcons name="robot" size={13} color={muted} />;
   }
-  return "rgba(255,255,255,0.55)";
 }
 
-function channelIcon(ch: ContactEntry["channel"], color: string) {
-  switch (ch) {
-    case "whatsapp": return <Feather name="message-circle" size={14} color={color} />;
-    case "email":    return <Feather name="mail" size={14} color={color} />;
-    case "phone":    return <Feather name="phone" size={14} color={color} />;
-    case "jade":     return <MaterialCommunityIcons name="robot" size={14} color={color} />;
-  }
-}
-function channelColor(ch: ContactEntry["channel"]) {
-  switch (ch) {
-    case "whatsapp": return "rgba(255,255,255,0.6)";
-    case "email":    return "#8400FF";
-    case "phone":    return "rgba(255,255,255,0.45)";
-    case "jade":     return "#FF0080";
-  }
-}
 function channelLabel(ch: ContactEntry["channel"]) {
   switch (ch) {
     case "whatsapp": return "WhatsApp";
@@ -108,65 +92,272 @@ function channelLabel(ch: ContactEntry["channel"]) {
   }
 }
 
-// ─── Score badge ──────────────────────────────────────────────────────────────
-const ScoreBadge = memo(function ScoreBadge({ lead }: { lead: Lead }) {
-  const info = getLeadScoreInfo(lead);
-  const isHot = info.score >= 70;
-  return (
-    <View style={[L.scoreBadge, { backgroundColor: "rgba(255,255,255,0.06)", borderColor: "rgba(255,255,255,0.1)" }]}>
-      <Text style={[L.scoreNum, { color: isHot ? "#FF0080" : "rgba(255,255,255,0.45)" }]}>{info.score}</Text>
-    </View>
-  );
-});
-
-// ─── Lead card ────────────────────────────────────────────────────────────────
-const LeadCard = memo(function LeadCard({ lead, onPress }: { lead: Lead; onPress: () => void }) {
+// ─── Minimal lead card ────────────────────────────────────────────────────────
+const LeadCard = memo(function LeadCard({
+  lead, onPress, showColumn,
+}: { lead: Lead; onPress: () => void; showColumn?: boolean }) {
   const colors = useColors();
-  const statusColor = leadStatusColor(lead);
-  const scoreInfo = getLeadScoreInfo(lead);
   return (
     <TouchableOpacity
       style={[L.card, { backgroundColor: colors.card, borderColor: colors.border }]}
       onPress={onPress}
-      activeOpacity={0.8}
+      activeOpacity={0.75}
     >
-      <View style={L.cardHeader}>
-        <View style={[L.avatar, { backgroundColor: lead.avatarColor }]}>
-          <Text style={L.avatarText}>{lead.initials}</Text>
+      <View style={L.cardRow}>
+        <View style={[L.avatar, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+          <Text style={[L.avatarText, { color: colors.mutedForeground }]}>{lead.initials}</Text>
         </View>
         <View style={{ flex: 1 }}>
-          <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
-            <Text style={[L.cardName, { color: colors.text, flex: 1 }]} numberOfLines={1}>{lead.name}</Text>
-            <View style={[L.semDot, { backgroundColor: statusColor }]} />
-          </View>
-          {lead.company !== lead.name && (
+          <Text style={[L.cardName, { color: colors.text }]} numberOfLines={1}>{lead.name}</Text>
+          {lead.company && lead.company !== lead.name && (
             <Text style={[L.cardCompany, { color: colors.mutedForeground }]} numberOfLines={1}>{lead.company}</Text>
           )}
         </View>
-      </View>
-      {/* Score bar */}
-      <View style={L.scoreRow}>
-        <ScoreBadge lead={lead} />
-        <View style={[L.scoreTrack, { backgroundColor: "rgba(255,255,255,0.08)" }]}>
-          <View style={[L.scoreFill, { width: `${scoreInfo.score}%` as any, backgroundColor: scoreInfo.score >= 70 ? "#FF0080" : "rgba(255,255,255,0.2)" }]} />
+        <View style={{ alignItems: "flex-end", gap: 6 }}>
+          <Text style={[L.cardTime, { color: colors.mutedForeground }]}>{lead.time}</Text>
+          {showColumn && (
+            <Text style={[L.cardStage, { color: colors.mutedForeground }]}>{colLabel(lead.column)}</Text>
+          )}
         </View>
       </View>
-      <View style={L.cardFooter}>
-        <Text style={[L.cardValue, { color: colors.primary }]}>{formatValue(lead.value)}</Text>
-        {cleanTag(lead.tag) ? (
-          <View style={[L.tag, { backgroundColor: "rgba(255,255,255,0.06)" }]}>
-            <Text style={[L.tagText, { color: "rgba(255,255,255,0.45)" }]}>{cleanTag(lead.tag)}</Text>
-          </View>
-        ) : null}
-      </View>
-      <Text style={[L.cardTime, { color: colors.mutedForeground }]}>
-        {(COLUMNS.find((c) => c.key === lead.column)?.label ?? lead.column)} · {lead.time}
-      </Text>
     </TouchableOpacity>
   );
 });
 
-// ─── Move Modal ───────────────────────────────────────────────────────────────
+// ─── Lead detail bottom sheet ─────────────────────────────────────────────────
+function LeadDetailSheet({
+  lead, visible, onClose, onMoveRequest, onViewCRM, onViewPipeline,
+}: {
+  lead: Lead | null;
+  visible: boolean;
+  onClose: () => void;
+  onMoveRequest: () => void;
+  onViewCRM: () => void;
+  onViewPipeline: () => void;
+}) {
+  const colors = useColors();
+  const router = useRouter();
+  const slideY = useRef(new Animated.Value(100)).current;
+  const opacity = useRef(new Animated.Value(0)).current;
+
+  React.useEffect(() => {
+    if (visible) {
+      Animated.parallel([
+        Animated.timing(slideY,  { toValue: 0, duration: 380, easing: Easing.out(Easing.cubic), useNativeDriver: true }),
+        Animated.timing(opacity, { toValue: 1, duration: 280, useNativeDriver: true }),
+      ]).start();
+    } else {
+      slideY.setValue(100);
+      opacity.setValue(0);
+    }
+  }, [visible]);
+
+  const { leadActivities } = useApp();
+  if (!lead) return null;
+
+  const realActivities = leadActivities[lead.id];
+  const history: ContactEntry[] = realActivities && realActivities.length > 0
+    ? realActivities.map((a: LeadActivity) => {
+        const d = new Date(a.created_at);
+        const today = new Date();
+        const yesterday = new Date(); yesterday.setDate(today.getDate() - 1);
+        return {
+          date: d.toDateString() === today.toDateString() ? "Hoje"
+              : d.toDateString() === yesterday.toDateString() ? "Ontem"
+              : d.toLocaleDateString("pt-BR", { day: "2-digit", month: "short" }),
+          time:    d.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }),
+          channel: a.channel as ContactEntry["channel"],
+          agent:   a.agent,
+          note:    a.note,
+        };
+      }).reverse()
+    : (CRM_HISTORY[lead.id] ?? CRM_HISTORY.default);
+
+  const score = getLeadScoreInfo(lead).score;
+  const summaryIndex = Math.abs(parseInt(lead.id.replace(/\D/g, "0"), 10)) % JADE_SUMMARIES.length;
+  const summary = JADE_SUMMARIES[summaryIndex] ?? JADE_SUMMARIES[0]!;
+
+  const nextActions: string[] = lead.column === "novo"
+    ? ["Enviar mensagem de apresentação via WhatsApp", "Qualificar necessidade e orçamento", "Agendar call de 15 min"]
+    : lead.column === "qualificado"
+    ? ["Enviar proposta com cases do segmento", "Follow-up em 2 dias se sem resposta", "Identificar decisor final"]
+    : lead.column === "proposta"
+    ? ["Confirmar recebimento da proposta", "Negociar condições se necessário", "Definir prazo para decisão"]
+    : ["Coletar feedback pós-fechamento", "Solicitar indicações de novos contatos", "Iniciar onboarding"];
+
+  return (
+    <Modal visible={visible} transparent animationType="none" onRequestClose={onClose}>
+      <View style={L.sheetBg}>
+        <TouchableOpacity style={StyleSheet.absoluteFill} activeOpacity={1} onPress={onClose} />
+
+        <Animated.View style={[L.sheet, { backgroundColor: colors.background, opacity, transform: [{ translateY: slideY }] }]}>
+          {/* Handle */}
+          <View style={[L.handle, { backgroundColor: colors.border }]} />
+
+          {/* Header */}
+          <View style={[L.sheetHeader, { borderBottomColor: colors.border }]}>
+            <View style={[L.sheetAvatar, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+              <Text style={[L.sheetAvatarText, { color: colors.mutedForeground }]}>{lead.initials}</Text>
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={[L.sheetName, { color: colors.text }]}>{lead.name}</Text>
+              {lead.company && lead.company !== lead.name && (
+                <Text style={[L.sheetCompany, { color: colors.mutedForeground }]}>{lead.company}</Text>
+              )}
+              <View style={{ flexDirection: "row", alignItems: "center", gap: 8, marginTop: 6 }}>
+                <View style={[L.stagePill, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+                  <Text style={[L.stagePillText, { color: colors.mutedForeground }]}>{colLabel(lead.column)}</Text>
+                </View>
+                {lead.value > 0 && (
+                  <Text style={[L.sheetValue, { color: colors.text }]}>{formatValue(lead.value)}</Text>
+                )}
+              </View>
+            </View>
+            <TouchableOpacity onPress={onClose} hitSlop={{ top: 14, right: 14, bottom: 14, left: 14 }}>
+              <Feather name="x" size={20} color={colors.mutedForeground} />
+            </TouchableOpacity>
+          </View>
+
+          <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 40 }}>
+            {/* CRM / Pipeline view buttons */}
+            <View style={[L.viewBtnRow, { paddingHorizontal: 20, paddingTop: 16 }]}>
+              <TouchableOpacity
+                style={[L.viewBtn, { backgroundColor: colors.card, borderColor: colors.border }]}
+                onPress={onViewCRM}
+                activeOpacity={0.8}
+              >
+                <Feather name="columns" size={14} color={colors.mutedForeground} />
+                <Text style={[L.viewBtnText, { color: colors.text }]}>Ver no CRM</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[L.viewBtn, { backgroundColor: colors.card, borderColor: colors.border }]}
+                onPress={onViewPipeline}
+                activeOpacity={0.8}
+              >
+                <Feather name="bar-chart-2" size={14} color={colors.mutedForeground} />
+                <Text style={[L.viewBtnText, { color: colors.text }]}>Ver no Pipeline</Text>
+              </TouchableOpacity>
+            </View>
+
+            {/* Info pills */}
+            {(lead.phone || cleanTag(lead.tag)) ? (
+              <View style={[L.pillRow, { paddingHorizontal: 20, paddingTop: 12 }]}>
+                {lead.phone ? (
+                  <View style={[L.pill, { backgroundColor: colors.card, borderColor: colors.border }]}>
+                    <Feather name="phone" size={12} color={colors.mutedForeground} />
+                    <Text style={[L.pillText, { color: colors.mutedForeground }]}>{lead.phone}</Text>
+                  </View>
+                ) : null}
+                {cleanTag(lead.tag) ? (
+                  <View style={[L.pill, { backgroundColor: colors.card, borderColor: colors.border }]}>
+                    <Feather name="tag" size={12} color={colors.mutedForeground} />
+                    <Text style={[L.pillText, { color: colors.mutedForeground }]}>{cleanTag(lead.tag)}</Text>
+                  </View>
+                ) : null}
+              </View>
+            ) : null}
+
+            {/* Stats row */}
+            <View style={[L.statsRow, { paddingHorizontal: 20, paddingTop: 16 }]}>
+              {[
+                { label: "Contatos", value: `${history.length}` },
+                { label: "Score",    value: `${score}` },
+                { label: "Resp. IA", value: "3" },
+                { label: "Dias CRM", value: "8" },
+              ].map((s, i) => (
+                <View key={i} style={[L.statCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+                  <Text style={[L.statValue, { color: colors.text }]}>{s.value}</Text>
+                  <Text style={[L.statLabel, { color: colors.mutedForeground }]}>{s.label}</Text>
+                </View>
+              ))}
+            </View>
+
+            {/* JADE Analysis */}
+            <View style={L.sectionBlock}>
+              <Text style={[L.sectionTitle, { color: colors.mutedForeground }]}>ANÁLISE JADE</Text>
+              <View style={[L.aiCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+                <View style={L.aiCardHeader}>
+                  <View style={[L.aiIconWrap, { backgroundColor: colors.surface }]}>
+                    <MaterialCommunityIcons name="robot" size={15} color={colors.mutedForeground} />
+                  </View>
+                  <Text style={[L.aiTitle, { color: colors.text }]}>Análise JADE IA</Text>
+                </View>
+                <Text style={[L.aiText, { color: colors.mutedForeground }]}>{summary}</Text>
+              </View>
+            </View>
+
+            {/* Next actions */}
+            <View style={L.sectionBlock}>
+              <Text style={[L.sectionTitle, { color: colors.mutedForeground }]}>PRÓXIMAS AÇÕES</Text>
+              <View style={[L.actionsCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+                {nextActions.map((action, i) => (
+                  <View
+                    key={i}
+                    style={[L.actionItem, i > 0 && { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: colors.border }]}
+                  >
+                    <View style={[L.actionDot, { backgroundColor: i === 0 ? colors.text : colors.border }]} />
+                    <Text style={[L.actionText, { color: i === 0 ? colors.text : colors.mutedForeground }]}>{action}</Text>
+                  </View>
+                ))}
+              </View>
+            </View>
+
+            {/* Contact history */}
+            <View style={L.sectionBlock}>
+              <Text style={[L.sectionTitle, { color: colors.mutedForeground }]}>HISTÓRICO DE CONTATOS</Text>
+              <View style={[L.timelineCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+                {history.map((entry, i) => (
+                  <View key={i}>
+                    <View style={L.timelineItem}>
+                      <View style={L.timelineLeft}>
+                        <View style={[L.timelineIconWrap, { backgroundColor: colors.surface }]}>
+                          {channelIcon(entry.channel, colors.mutedForeground)}
+                        </View>
+                        {i < history.length - 1 && (
+                          <View style={[L.timelineLine, { backgroundColor: colors.border }]} />
+                        )}
+                      </View>
+                      <View style={{ flex: 1, paddingBottom: 18 }}>
+                        <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
+                          <Text style={[L.timelineChannel, { color: colors.text }]}>{channelLabel(entry.channel)}</Text>
+                          <Text style={[L.timelineDate, { color: colors.mutedForeground }]}>{entry.date} · {entry.time}</Text>
+                        </View>
+                        <Text style={[L.timelineAgent, { color: colors.mutedForeground }]}>{entry.agent}</Text>
+                        <Text style={[L.timelineNote, { color: colors.mutedForeground }]}>{entry.note}</Text>
+                      </View>
+                    </View>
+                  </View>
+                ))}
+              </View>
+            </View>
+          </ScrollView>
+
+          {/* Footer actions */}
+          <View style={[L.sheetFooter, { borderTopColor: colors.border }]}>
+            <TouchableOpacity
+              style={[L.footerBtnSecondary, { backgroundColor: colors.card, borderColor: colors.border }]}
+              onPress={onMoveRequest}
+              activeOpacity={0.8}
+            >
+              <Feather name="move" size={15} color={colors.text} />
+              <Text style={[L.footerBtnText, { color: colors.text }]}>Mover</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[L.footerBtnPrimary, { backgroundColor: colors.surface, borderColor: colors.border }]}
+              onPress={() => { onClose(); router.push("/conversas" as any); }}
+              activeOpacity={0.85}
+            >
+              <MaterialCommunityIcons name="robot" size={15} color={colors.text} />
+              <Text style={[L.footerBtnText, { color: colors.text }]}>Conversar com JADE</Text>
+            </TouchableOpacity>
+          </View>
+        </Animated.View>
+      </View>
+    </Modal>
+  );
+}
+
+// ─── Move modal (monochrome) ───────────────────────────────────────────────────
 function MoveModal({
   lead, visible, onClose, onMove,
 }: { lead: Lead | null; visible: boolean; onClose: () => void; onMove: (col: LeadColumn) => void }) {
@@ -176,20 +367,20 @@ function MoveModal({
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
       <TouchableOpacity style={L.overlay} activeOpacity={1} onPress={onClose}>
         <View style={[L.moveModal, { backgroundColor: colors.card, borderColor: colors.border }]}>
-          <Text style={[L.moveTitle, { color: colors.text }]}>Mover Lead</Text>
+          <Text style={[L.moveTitle, { color: colors.text }]}>Mover lead</Text>
           <Text style={[L.moveSub, { color: colors.mutedForeground }]}>{lead.name}</Text>
-          <View style={[L.divider, { backgroundColor: colors.border }]} />
+          <View style={[L.moveDivider, { backgroundColor: colors.border }]} />
           {COLUMNS.map((col) => (
             <TouchableOpacity
               key={col.key}
-              style={[L.moveOption, lead.column === col.key && { backgroundColor: "rgba(255,255,255,0.08)" }]}
+              style={[L.moveOption, lead.column === col.key && { backgroundColor: colors.surface }]}
               onPress={() => onMove(col.key)}
+              activeOpacity={0.8}
             >
-              <View style={[L.colDot, { backgroundColor: col.color }]} />
-              <Text style={[L.moveOptionText, { color: lead.column === col.key ? col.color : colors.text }]}>
+              <Text style={[L.moveOptionText, { color: lead.column === col.key ? colors.text : colors.mutedForeground }]}>
                 {col.label}
               </Text>
-              {lead.column === col.key && <Feather name="check" size={16} color={col.color} />}
+              {lead.column === col.key && <Feather name="check" size={16} color={colors.text} />}
             </TouchableOpacity>
           ))}
         </View>
@@ -198,241 +389,24 @@ function MoveModal({
   );
 }
 
-// ─── CRM Lead Detail Modal ────────────────────────────────────────────────────
-function LeadDetailModal({
-  lead, visible, onClose, onMoveRequest,
-}: {
-  lead: Lead | null;
-  visible: boolean;
-  onClose: () => void;
-  onMoveRequest: () => void;
-}) {
-  const colors = useColors();
-  const router = useRouter();
-  const slideY = useRef(new Animated.Value(80)).current;
-  const opacity = useRef(new Animated.Value(0)).current;
-
-  React.useEffect(() => {
-    if (visible) {
-      Animated.parallel([
-        Animated.timing(slideY,  { toValue: 0,  duration: 360, easing: Easing.out(Easing.cubic), useNativeDriver: true }),
-        Animated.timing(opacity, { toValue: 1,  duration: 280, useNativeDriver: true }),
-      ]).start();
-    } else {
-      slideY.setValue(80);
-      opacity.setValue(0);
-    }
-  }, [visible]);
-
-  const { leadActivities } = useApp();
-
-  if (!lead) return null;
-
-  const realActivities: LeadActivity[] | undefined = leadActivities[lead.id];
-
-  const history: ContactEntry[] = realActivities && realActivities.length > 0
-    ? realActivities.map((a) => {
-        const d = new Date(a.created_at);
-        const today = new Date();
-        const yesterday = new Date(); yesterday.setDate(today.getDate() - 1);
-        const isToday = d.toDateString() === today.toDateString();
-        const isYesterday = d.toDateString() === yesterday.toDateString();
-        return {
-          date: isToday ? "Hoje" : isYesterday ? "Ontem" : d.toLocaleDateString("pt-BR", { day: "2-digit", month: "short" }),
-          time: d.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }),
-          channel: a.channel as ContactEntry["channel"],
-          agent: a.agent,
-          note: a.note,
-        };
-      }).reverse()
-    : (CRM_HISTORY[lead.id] ?? CRM_HISTORY.default);
-
-  const summaryIndex = parseInt(lead.id, 10) % JADE_SUMMARIES.length;
-  const summary = JADE_SUMMARIES[Math.abs(summaryIndex)] ?? JADE_SUMMARIES[0];
-  const stageCol = COLUMNS.find((c) => c.key === lead.column);
-  const totalContacts = history.length;
-  const daysSinceFirst = 8;
-
-  return (
-    <Modal visible={visible} transparent animationType="none" onRequestClose={onClose}>
-      <View style={L.detailBg}>
-        {/* Tap outside to close */}
-        <TouchableOpacity style={StyleSheet.absoluteFill} activeOpacity={1} onPress={onClose} />
-
-        <Animated.View
-          style={[
-            L.detailSheet,
-            { backgroundColor: colors.background, opacity, transform: [{ translateY: slideY }] },
-          ]}
-        >
-          {/* ── Handle bar ── */}
-          <View style={[L.handle, { backgroundColor: colors.border }]} />
-
-          <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 32 }}>
-            {/* ── Lead header ── */}
-            <View style={L.detailHeader}>
-              <View style={[L.detailAvatar, { backgroundColor: lead.avatarColor }]}>
-                <Text style={L.detailAvatarText}>{lead.initials}</Text>
-              </View>
-              <View style={{ flex: 1, gap: 3 }}>
-                <Text style={[L.detailName, { color: colors.text }]}>{lead.name}</Text>
-                {lead.company !== lead.name && (
-                  <Text style={[L.detailCompany, { color: colors.mutedForeground }]}>{lead.company}</Text>
-                )}
-                <View style={L.detailMeta}>
-                  <View style={[L.stagePill, { backgroundColor: "rgba(255,255,255,0.06)" }]}>
-                    <View style={[L.stageDot, { backgroundColor: stageCol?.color }]} />
-                    <Text style={[L.stagePillText, { color: stageCol?.color }]}>{stageCol?.label}</Text>
-                  </View>
-                  <Text style={[L.detailValue, { color: colors.primary }]}>{formatValue(lead.value)}</Text>
-                </View>
-              </View>
-              <TouchableOpacity onPress={onClose} hitSlop={{ top: 12, right: 12, bottom: 12, left: 12 }}>
-                <Feather name="x" size={22} color={colors.mutedForeground} />
-              </TouchableOpacity>
-            </View>
-
-            {/* ── Info rápida ── */}
-            <View style={[L.infoRow, { marginHorizontal: 20, marginBottom: 16 }]}>
-              {lead.phone ? (
-                <View style={[L.infoPill, { backgroundColor: colors.card, borderColor: colors.border }]}>
-                  <Feather name="phone" size={12} color={colors.mutedForeground} />
-                  <Text style={[L.infoPillText, { color: colors.mutedForeground }]}>{lead.phone}</Text>
-                </View>
-              ) : null}
-              {cleanTag(lead.tag) ? (
-                <View style={[L.infoPill, { backgroundColor: "rgba(132,0,255,0.10)", borderColor: "rgba(132,0,255,0.25)" }]}>
-                  <Feather name="tag" size={12} color="#8400FF" />
-                  <Text style={[L.infoPillText, { color: "#8400FF" }]}>{cleanTag(lead.tag)}</Text>
-                </View>
-              ) : null}
-            </View>
-
-            {/* ── CRM stats row ── */}
-            <View style={L.statsRow}>
-              {[
-                { label: "Contatos",  value: `${totalContacts}` },
-                { label: "Dias CRM",  value: `${daysSinceFirst}` },
-                { label: "Resp. IA",  value: "3" },
-                { label: "Score",     value: `${getLeadScoreInfo(lead).score}` },
-              ].map((s, i) => (
-                <View key={i} style={[L.statCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
-                  <Text style={[L.statValue, { color: colors.text }]}>{s.value}</Text>
-                  <Text style={[L.statLabel, { color: colors.mutedForeground }]}>{s.label}</Text>
-                </View>
-              ))}
-            </View>
-
-            {/* ── JADE AI Summary ── */}
-            <View style={[L.aiCard, { backgroundColor: colors.card, borderColor: colors.primary + "40" }]}>
-              <View style={L.aiCardHeader}>
-                <View style={[L.aiIconWrap, { backgroundColor: colors.primary + "20" }]}>
-                  <MaterialCommunityIcons name="robot" size={16} color={colors.primary} />
-                </View>
-                <Text style={[L.aiTitle, { color: colors.primary }]}>Análise JADE IA</Text>
-                <View style={[L.aiBadge, { backgroundColor: "rgba(255,255,255,0.06)" }]}>
-                  <Text style={{ fontSize: 10, fontFamily: "SpaceGrotesk_600SemiBold", color: "rgba(255,255,255,0.55)" }}>
-                    JADE IA
-                  </Text>
-                </View>
-              </View>
-              <Text style={[L.aiText, { color: colors.mutedForeground }]}>{summary}</Text>
-            </View>
-
-            {/* ── Próximas ações ── */}
-            <Text style={[L.sectionTitle, { color: colors.text }]}>Próximas Ações</Text>
-            <View style={[L.nextActionsCard, { backgroundColor: colors.card, borderColor: colors.border, marginBottom: 20 }]}>
-              {(lead.column === "novo"
-                ? ["Enviar mensagem de apresentação via WhatsApp", "Qualificar necessidade e orçamento disponível", "Agendar call de 15 min"]
-                : lead.column === "qualificado"
-                ? ["Enviar proposta personalizada com cases do segmento", "Follow-up em 2 dias se sem resposta", "Identificar decisor final"]
-                : lead.column === "proposta"
-                ? ["Confirmar recebimento e entendimento da proposta", "Negociar condições se necessário", "Definir prazo para decisão"]
-                : ["Coletar feedback pós-fechamento", "Solicitar indicações de novos contatos", "Iniciar onboarding"]
-              ).map((action, i) => (
-                <View key={i} style={[L.nextActionItem, i > 0 && { borderTopWidth: 1, borderTopColor: colors.border }]}>
-                  <View style={[L.nextActionDot, { backgroundColor: i === 0 ? "#FF0080" : "rgba(255,255,255,0.15)" }]} />
-                  <Text style={[L.nextActionText, { color: i === 0 ? colors.text : colors.mutedForeground }]}>{action}</Text>
-                </View>
-              ))}
-            </View>
-
-            {/* ── Contact history timeline ── */}
-            <Text style={[L.sectionTitle, { color: colors.text }]}>Histórico de Contatos</Text>
-
-            <View style={[L.timelineCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
-              {history.map((entry, i) => {
-                const cc = channelColor(entry.channel);
-                return (
-                  <View key={i}>
-                    <View style={L.timelineItem}>
-                      {/* Left line + icon */}
-                      <View style={L.timelineLeft}>
-                        <View style={[L.timelineIconWrap, { backgroundColor: "rgba(255,255,255,0.06)" }]}>
-                          {channelIcon(entry.channel, cc)}
-                        </View>
-                        {i < history.length - 1 && (
-                          <View style={[L.timelineLine, { backgroundColor: colors.border }]} />
-                        )}
-                      </View>
-                      {/* Right content */}
-                      <View style={{ flex: 1, paddingBottom: 20 }}>
-                        <View style={L.timelineTopRow}>
-                          <Text style={[L.timelineChannel, { color: cc }]}>{channelLabel(entry.channel)}</Text>
-                          <Text style={[L.timelineDate, { color: colors.mutedForeground }]}>
-                            {entry.date} · {entry.time}
-                          </Text>
-                        </View>
-                        <Text style={[L.timelineAgent, { color: colors.text }]}>{entry.agent}</Text>
-                        <Text style={[L.timelineNote, { color: colors.mutedForeground }]}>{entry.note}</Text>
-                      </View>
-                    </View>
-                  </View>
-                );
-              })}
-            </View>
-          </ScrollView>
-
-          {/* ── Action buttons ── */}
-          <View style={[L.detailActions, { borderTopColor: colors.border }]}>
-            <TouchableOpacity
-              style={[L.actionBtn, { backgroundColor: colors.surface, borderColor: colors.border }]}
-              onPress={onMoveRequest}
-              activeOpacity={0.8}
-            >
-              <Feather name="move" size={16} color={colors.text} />
-              <Text style={[L.actionBtnText, { color: colors.text }]}>Mover</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[L.actionBtnPrimary, { backgroundColor: colors.primary }]}
-              onPress={() => { onClose(); router.push("/conversas" as any); }}
-              activeOpacity={0.85}
-            >
-              <MaterialCommunityIcons name="robot" size={16} color="#fff" />
-              <Text style={L.actionBtnPrimaryText}>Conversar com JADE</Text>
-            </TouchableOpacity>
-          </View>
-        </Animated.View>
-      </View>
-    </Modal>
-  );
-}
-
 // ─── Screen ───────────────────────────────────────────────────────────────────
-type LeadsFilter = "all" | "hot";
+type ViewMode   = "crm" | "pipeline";
+type HotFilter  = "all" | "hot";
 
 export default function LeadsScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
+  const router = useRouter();
   const { leads, moveLead } = useApp();
 
-  const [selectedLead, setSelectedLead]   = useState<Lead | null>(null);
+  const [viewMode,      setViewMode]      = useState<ViewMode>("crm");
+  const [hotFilter,     setHotFilter]     = useState<HotFilter>("all");
+  const [selectedLead,  setSelectedLead]  = useState<Lead | null>(null);
   const [detailVisible, setDetailVisible] = useState(false);
   const [moveVisible,   setMoveVisible]   = useState(false);
-  const [filter, setFilter] = useState<LeadsFilter>("all");
 
-  const topPad    = Platform.OS === "web" ? 67  : insets.top;
-  const bottomPad = Platform.OS === "web" ? 84  : insets.bottom + 60;
+  const topPad    = Platform.OS === "web" ? 24 : insets.top + 4;
+  const bottomPad = Platform.OS === "web" ? 84 : insets.bottom + 60;
 
   const openDetail = useCallback((lead: Lead) => {
     setSelectedLead(lead);
@@ -448,101 +422,170 @@ export default function LeadsScreen() {
     setMoveVisible(false);
   }, [selectedLead, moveLead]);
 
-  const filterChips: { key: LeadsFilter; label: string }[] = [
-    { key: "all", label: "Todos" },
-    { key: "hot", label: "🔥 Quentes" },
-  ];
+  const filteredLeads = useMemo(() => {
+    const sorted = [...leads].sort((a, b) => calcLeadScore(b) - calcLeadScore(a));
+    return hotFilter === "hot" ? sorted.filter((l) => calcLeadScore(l) >= 70) : sorted;
+  }, [leads, hotFilter]);
 
   const columnData = useMemo(() =>
-    COLUMNS.map((col) => {
-      const rawLeads = leads.filter((l) => l.column === col.key);
-      const sorted   = [...rawLeads].sort((a, b) => calcLeadScore(b) - calcLeadScore(a));
-      const colLeads = filter === "hot" ? sorted.filter((l) => calcLeadScore(l) >= 70) : sorted;
-      return { col, colLeads };
-    }),
-    [leads, filter]
+    COLUMNS.map((col) => ({
+      col,
+      colLeads: filteredLeads.filter((l) => l.column === col.key),
+    })),
+    [filteredLeads],
+  );
+
+  const pipelineLeads = useMemo(() =>
+    [...filteredLeads].sort((a, b) => b.value - a.value),
+    [filteredLeads],
   );
 
   return (
     <View style={[L.container, { backgroundColor: colors.background }]}>
-      <View style={[L.header, { paddingTop: topPad + 16 }]}>
-        <View>
-          <Text style={[L.headerTitle, { color: colors.text }]}>Leads</Text>
-          <Text style={[L.headerSub, { color: colors.mutedForeground }]}>
-            {leads.length} leads no pipeline
-          </Text>
-        </View>
-        <TouchableOpacity
-          style={[L.addBtn, { backgroundColor: colors.primary }]}
-          activeOpacity={0.8}
-          onPress={() => Alert.alert("Novo Lead", "Peça à JADE na aba principal para prospectar novos leads. Eles aparecerão automaticamente aqui.", [{ text: "OK" }])}
-        >
-          <Feather name="plus" size={20} color="#fff" />
+      {/* Header */}
+      <View style={[L.header, { paddingTop: topPad, borderBottomColor: colors.border }]}>
+        <TouchableOpacity style={L.backBtn} onPress={() => router.back()} activeOpacity={0.7}>
+          <Feather name="chevron-left" size={26} color={colors.text} />
         </TouchableOpacity>
+        <View style={{ flex: 1 }}>
+          <Text style={[L.headerTitle, { color: colors.text }]}>Leads</Text>
+          <Text style={[L.headerSub, { color: colors.mutedForeground }]}>{leads.length} leads</Text>
+        </View>
       </View>
 
-      {/* Filter chips */}
-      <View style={L.filterRow}>
-        {filterChips.map((chip) => {
-          const active = filter === chip.key;
+      {/* View toggle: CRM / Pipeline */}
+      <View style={[L.viewToggleRow, { borderBottomColor: colors.border }]}>
+        {(["crm", "pipeline"] as ViewMode[]).map((mode) => {
+          const active = viewMode === mode;
+          const label = mode === "crm" ? "CRM" : "Pipeline";
+          const icon  = mode === "crm" ? "columns" : "bar-chart-2";
           return (
             <TouchableOpacity
-              key={chip.key}
-              style={[
-                L.filterChip,
-                { backgroundColor: active ? "#FF008022" : colors.card, borderColor: active ? "#FF0080" : colors.border },
-              ]}
-              onPress={() => {
-                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                setFilter(chip.key);
-              }}
-              activeOpacity={0.75}
+              key={mode}
+              style={L.viewToggleBtn}
+              onPress={() => { setViewMode(mode); Haptics.selectionAsync(); }}
+              activeOpacity={0.8}
             >
-              <Text style={[L.filterChipText, { color: active ? "#FF0080" : colors.mutedForeground }]}>
-                {chip.label}
-              </Text>
+              <View style={L.viewToggleInner}>
+                <Feather name={icon} size={14} color={active ? colors.text : colors.mutedForeground} />
+                <Text style={[L.viewToggleText, { color: active ? colors.text : colors.mutedForeground }]}>{label}</Text>
+              </View>
+              {active && <View style={[L.viewUnderline, { backgroundColor: colors.text }]} />}
             </TouchableOpacity>
           );
         })}
+
+        {/* Hot filter — right aligned */}
+        <TouchableOpacity
+          style={[L.hotBtn, {
+            backgroundColor: hotFilter === "hot" ? colors.surface : "transparent",
+            borderColor: hotFilter === "hot" ? colors.border : "transparent",
+          }]}
+          onPress={() => { setHotFilter((v) => v === "hot" ? "all" : "hot"); Haptics.selectionAsync(); }}
+          activeOpacity={0.8}
+        >
+          <Text style={[L.hotBtnText, { color: hotFilter === "hot" ? colors.text : colors.mutedForeground }]}>
+            🔥 Quentes
+          </Text>
+        </TouchableOpacity>
       </View>
 
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        style={{ flex: 1 }}
-        contentContainerStyle={[L.kanban, { paddingBottom: bottomPad, alignItems: "stretch" }]}
-      >
-        {columnData.map(({ col, colLeads }) => (
-          <View key={col.key} style={[L.column, { backgroundColor: colors.card, borderColor: colors.border }]}>
-            <View style={L.colHeader}>
-              <View style={[L.colDot, { backgroundColor: col.color }]} />
-              <Text style={[L.colTitle, { color: colors.text }]}>{col.label}</Text>
-              <View style={[L.colBadge, { backgroundColor: "rgba(255,255,255,0.08)" }]}>
-                <Text style={[L.colBadgeText, { color: col.color }]}>{colLeads.length}</Text>
-              </View>
-            </View>
-            <ScrollView showsVerticalScrollIndicator={false} nestedScrollEnabled>
-              {colLeads.map((lead) => (
-                <LeadCard key={lead.id} lead={lead} onPress={() => openDetail(lead)} />
-              ))}
-              {colLeads.length === 0 && (
-                <View style={L.emptyCol}>
-                  <MaterialCommunityIcons name="inbox-outline" size={28} color={colors.mutedForeground} />
-                  <Text style={[L.emptyColText, { color: colors.mutedForeground }]}>Vazio</Text>
+      {/* Content */}
+      {viewMode === "crm" ? (
+        /* ── CRM Kanban ── */
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={[L.kanbanContent, { paddingBottom: bottomPad }]}
+        >
+          {columnData.map(({ col, colLeads }) => (
+            <View key={col.key} style={[L.column, { backgroundColor: colors.card, borderColor: colors.border }]}>
+              {/* Column header */}
+              <View style={[L.colHeader, { borderBottomColor: colors.border }]}>
+                <Text style={[L.colTitle, { color: colors.text }]}>{col.label}</Text>
+                <View style={[L.colBadge, { backgroundColor: colors.surface }]}>
+                  <Text style={[L.colBadgeText, { color: colors.mutedForeground }]}>{colLeads.length}</Text>
                 </View>
-              )}
-            </ScrollView>
-          </View>
-        ))}
-      </ScrollView>
+              </View>
 
-      <LeadDetailModal
+              <ScrollView showsVerticalScrollIndicator={false} style={{ flex: 1 }}>
+                <View style={{ gap: 8, padding: 10 }}>
+                  {colLeads.map((lead) => (
+                    <LeadCard key={lead.id} lead={lead} onPress={() => openDetail(lead)} />
+                  ))}
+                  {colLeads.length === 0 && (
+                    <View style={L.emptyCol}>
+                      <Feather name="inbox" size={20} color={colors.mutedForeground} />
+                      <Text style={[L.emptyColText, { color: colors.mutedForeground }]}>Vazio</Text>
+                    </View>
+                  )}
+                </View>
+              </ScrollView>
+            </View>
+          ))}
+        </ScrollView>
+      ) : (
+        /* ── Pipeline list ── */
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={[L.pipelineContent, { paddingBottom: bottomPad }]}
+        >
+          {pipelineLeads.length === 0 && (
+            <View style={L.pipelineEmpty}>
+              <Feather name="inbox" size={28} color={colors.mutedForeground} />
+              <Text style={[L.emptyColText, { color: colors.mutedForeground }]}>Nenhum lead</Text>
+            </View>
+          )}
+          {pipelineLeads.map((lead, idx) => {
+            const score = getLeadScoreInfo(lead).score;
+            return (
+              <TouchableOpacity
+                key={lead.id}
+                style={[L.pipelineCard, { backgroundColor: colors.card, borderColor: colors.border }]}
+                onPress={() => openDetail(lead)}
+                activeOpacity={0.75}
+              >
+                {/* Rank + avatar */}
+                <View style={L.pipelineLeft}>
+                  <Text style={[L.pipelineRank, { color: colors.mutedForeground }]}>#{idx + 1}</Text>
+                  <View style={[L.avatar, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+                    <Text style={[L.avatarText, { color: colors.mutedForeground }]}>{lead.initials}</Text>
+                  </View>
+                </View>
+
+                {/* Info */}
+                <View style={{ flex: 1 }}>
+                  <Text style={[L.cardName, { color: colors.text }]} numberOfLines={1}>{lead.name}</Text>
+                  {lead.company && lead.company !== lead.name && (
+                    <Text style={[L.cardCompany, { color: colors.mutedForeground }]} numberOfLines={1}>{lead.company}</Text>
+                  )}
+                  <Text style={[L.cardStage, { color: colors.mutedForeground, marginTop: 4 }]}>{colLabel(lead.column)}</Text>
+                </View>
+
+                {/* Value + score */}
+                <View style={{ alignItems: "flex-end", gap: 4 }}>
+                  {lead.value > 0 && (
+                    <Text style={[L.pipelineValue, { color: colors.text }]}>{formatValue(lead.value)}</Text>
+                  )}
+                  <View style={[L.scoreBadge, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+                    <Text style={[L.scoreNum, { color: score >= 70 ? colors.text : colors.mutedForeground }]}>{score}</Text>
+                  </View>
+                </View>
+              </TouchableOpacity>
+            );
+          })}
+        </ScrollView>
+      )}
+
+      {/* Modals */}
+      <LeadDetailSheet
         lead={selectedLead}
         visible={detailVisible}
         onClose={() => setDetailVisible(false)}
-        onMoveRequest={() => { setDetailVisible(false); setTimeout(() => setMoveVisible(true), 120); }}
+        onMoveRequest={() => { setDetailVisible(false); setMoveVisible(true); }}
+        onViewCRM={() => { setDetailVisible(false); setViewMode("crm"); }}
+        onViewPipeline={() => { setDetailVisible(false); setViewMode("pipeline"); }}
       />
-
       <MoveModal
         lead={selectedLead}
         visible={moveVisible}
@@ -557,130 +600,136 @@ export default function LeadsScreen() {
 const L = StyleSheet.create({
   container: { flex: 1 },
 
+  // Header
   header: {
-    flexDirection: "row", alignItems: "center", justifyContent: "space-between",
-    paddingHorizontal: 20, paddingBottom: 16,
+    flexDirection: "row", alignItems: "center", gap: 8,
+    paddingHorizontal: 16, paddingBottom: 14,
+    borderBottomWidth: StyleSheet.hairlineWidth,
   },
-  headerTitle: { fontSize: 26, fontFamily: "SpaceGrotesk_700Bold" },
-  headerSub:   { fontSize: 13, fontFamily: "SpaceGrotesk_400Regular", marginTop: 2 },
-  addBtn: { width: 40, height: 40, borderRadius: 20, alignItems: "center", justifyContent: "center" },
+  backBtn: { width: 40, height: 40, borderRadius: 20, alignItems: "center", justifyContent: "center", marginLeft: -8 },
+  headerTitle: { fontSize: 24, fontFamily: "SpaceGrotesk_700Bold" },
+  headerSub: { fontSize: 13, fontFamily: "SpaceGrotesk_400Regular", marginTop: 1 },
 
-  kanban: { paddingHorizontal: 16, gap: 12, paddingTop: 4 },
-  column: { width: 240, borderRadius: 16, borderWidth: 1, padding: 12, flex: 1 },
-  colHeader: { flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 12 },
-  colDot:    { width: 8, height: 8, borderRadius: 4 },
-  colTitle:  { flex: 1, fontSize: 14, fontFamily: "SpaceGrotesk_600SemiBold" },
-  colBadge:  { paddingHorizontal: 8, paddingVertical: 2, borderRadius: 10 },
-  colBadgeText: { fontSize: 12, fontFamily: "SpaceGrotesk_600SemiBold" },
+  // View toggle row
+  viewToggleRow: {
+    flexDirection: "row", alignItems: "center",
+    paddingHorizontal: 16, borderBottomWidth: StyleSheet.hairlineWidth,
+  },
+  viewToggleBtn: { paddingVertical: 13, paddingRight: 24, alignItems: "center", position: "relative" },
+  viewToggleInner: { flexDirection: "row", alignItems: "center", gap: 7 },
+  viewToggleText: { fontSize: 14, fontFamily: "SpaceGrotesk_600SemiBold" },
+  viewUnderline: { position: "absolute", bottom: -StyleSheet.hairlineWidth, height: 2, width: "80%", borderRadius: 2, alignSelf: "center" },
+  hotBtn: {
+    marginLeft: "auto", borderRadius: 10, borderWidth: 1,
+    paddingHorizontal: 12, paddingVertical: 6,
+  },
+  hotBtnText: { fontSize: 13, fontFamily: "SpaceGrotesk_500Medium" },
 
-  // Filter chips
-  filterRow:     { flexDirection: "row", gap: 8, paddingHorizontal: 16, paddingBottom: 10 },
-  filterChip:    { paddingHorizontal: 14, paddingVertical: 7, borderRadius: 20, borderWidth: 1 },
-  filterChipText:{ fontSize: 13, fontFamily: "SpaceGrotesk_600SemiBold" },
+  // Kanban
+  kanbanContent: { paddingHorizontal: 12, paddingTop: 14, gap: 10, flexDirection: "row", alignItems: "flex-start" },
+  column: { width: 230, borderRadius: 16, borderWidth: 1, overflow: "hidden", minHeight: 200 },
+  colHeader: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: 14, paddingVertical: 12, borderBottomWidth: StyleSheet.hairlineWidth },
+  colTitle: { fontSize: 15, fontFamily: "SpaceGrotesk_700Bold" },
+  colBadge: { minWidth: 22, height: 22, borderRadius: 11, alignItems: "center", justifyContent: "center", paddingHorizontal: 6 },
+  colBadgeText: { fontSize: 11, fontFamily: "SpaceGrotesk_700Bold" },
+  emptyCol: { alignItems: "center", paddingVertical: 30, gap: 8 },
+  emptyColText: { fontSize: 13, fontFamily: "SpaceGrotesk_400Regular" },
 
-  card: { borderRadius: 12, borderWidth: 1, padding: 12, marginBottom: 8 },
-  cardHeader: { flexDirection: "row", alignItems: "center", gap: 10, marginBottom: 8 },
-  avatar:     { width: 34, height: 34, borderRadius: 17, alignItems: "center", justifyContent: "center" },
-  avatarText: { color: "#fff", fontSize: 13, fontFamily: "SpaceGrotesk_700Bold" },
-  cardName:    { fontSize: 13, fontFamily: "SpaceGrotesk_600SemiBold" },
-  semDot:      { width: 9, height: 9, borderRadius: 4.5 },
+  // Pipeline
+  pipelineContent: { padding: 16, gap: 10 },
+  pipelineEmpty: { alignItems: "center", paddingTop: 60, gap: 10 },
+  pipelineCard: { flexDirection: "row", alignItems: "center", gap: 12, borderRadius: 14, borderWidth: 1, padding: 14 },
+  pipelineLeft: { flexDirection: "row", alignItems: "center", gap: 8 },
+  pipelineRank: { fontSize: 12, fontFamily: "SpaceGrotesk_500Medium", width: 22, textAlign: "right" },
+  pipelineValue: { fontSize: 14, fontFamily: "SpaceGrotesk_700Bold" },
+
+  // Card (shared by both views)
+  card: { borderRadius: 12, borderWidth: 1, padding: 12 },
+  cardRow: { flexDirection: "row", alignItems: "center", gap: 10 },
+  avatar: { width: 38, height: 38, borderRadius: 12, borderWidth: 1, alignItems: "center", justifyContent: "center" },
+  avatarText: { fontSize: 13, fontFamily: "SpaceGrotesk_700Bold" },
+  cardName: { fontSize: 14, fontFamily: "SpaceGrotesk_600SemiBold" },
   cardCompany: { fontSize: 12, fontFamily: "SpaceGrotesk_400Regular", marginTop: 1 },
+  cardTime: { fontSize: 11, fontFamily: "SpaceGrotesk_400Regular" },
+  cardStage: { fontSize: 11, fontFamily: "SpaceGrotesk_500Medium" },
+  scoreBadge: { borderRadius: 7, borderWidth: 1, paddingHorizontal: 7, paddingVertical: 3, alignItems: "center", justifyContent: "center" },
+  scoreNum: { fontSize: 11, fontFamily: "SpaceGrotesk_700Bold" },
 
-  // Score row
-  scoreRow:   { flexDirection: "row", alignItems: "center", gap: 6, marginBottom: 8 },
-  scoreBadge: { flexDirection: "row", alignItems: "center", gap: 4, paddingHorizontal: 6, paddingVertical: 3, borderRadius: 8, borderWidth: 1 },
-  scoreDot:   { width: 6, height: 6, borderRadius: 3 },
-  scoreNum:   { fontSize: 11, fontFamily: "SpaceGrotesk_700Bold" },
-  scoreLabel: { fontSize: 11, fontFamily: "SpaceGrotesk_600SemiBold", minWidth: 38 },
-  scoreTrack: { flex: 1, height: 4, borderRadius: 2, overflow: "hidden" },
-  scoreFill:  { height: 4, borderRadius: 2 },
-
-  cardFooter:  { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
-  cardValue:   { fontSize: 14, fontFamily: "SpaceGrotesk_700Bold" },
-  tag:         { paddingHorizontal: 8, paddingVertical: 3, borderRadius: 8 },
-  tagText:     { fontSize: 10, fontFamily: "SpaceGrotesk_600SemiBold" },
-  cardTime:    { fontSize: 11, fontFamily: "SpaceGrotesk_400Regular", marginTop: 8 },
-  emptyCol:    { alignItems: "center", paddingVertical: 30, gap: 8 },
-  emptyColText:{ fontSize: 13, fontFamily: "SpaceGrotesk_400Regular" },
-
-  // Move modal
-  overlay: { flex: 1, backgroundColor: "rgba(0,0,0,0.75)", alignItems: "center", justifyContent: "center", padding: 24 },
-  moveModal: { width: "100%", maxWidth: 360, borderRadius: 20, borderWidth: 1, padding: 20 },
-  moveTitle: { fontSize: 17, fontFamily: "SpaceGrotesk_700Bold", marginBottom: 4 },
-  moveSub:   { fontSize: 13, fontFamily: "SpaceGrotesk_400Regular" },
-  divider:   { height: 1, marginVertical: 16 },
-  moveOption: { flexDirection: "row", alignItems: "center", gap: 12, paddingVertical: 12, paddingHorizontal: 12, borderRadius: 10, marginBottom: 4 },
-  moveOptionText: { flex: 1, fontSize: 15, fontFamily: "SpaceGrotesk_500Medium" },
-
-  // CRM detail modal
-  detailBg: { flex: 1, backgroundColor: "rgba(0,0,0,0.72)", justifyContent: "flex-end" },
-  detailSheet: {
-    borderTopLeftRadius: 28,
-    borderTopRightRadius: 28,
-    maxHeight: "92%",
-    paddingTop: 12,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: -6 },
-    shadowOpacity: 0.3,
-    shadowRadius: 20,
-    elevation: 20,
+  // Bottom sheet
+  sheetBg: { flex: 1, backgroundColor: "rgba(0,0,0,0.7)", justifyContent: "flex-end" },
+  sheet: { borderTopLeftRadius: 24, borderTopRightRadius: 24, maxHeight: "92%", minHeight: "60%" },
+  handle: { width: 36, height: 4, borderRadius: 2, alignSelf: "center", marginTop: 12, marginBottom: 4 },
+  sheetHeader: {
+    flexDirection: "row", alignItems: "flex-start", gap: 14,
+    padding: 20, paddingTop: 8, borderBottomWidth: StyleSheet.hairlineWidth,
   },
-  handle: { width: 40, height: 4, borderRadius: 2, alignSelf: "center", marginBottom: 16 },
+  sheetAvatar: { width: 48, height: 48, borderRadius: 14, borderWidth: 1, alignItems: "center", justifyContent: "center", marginTop: 4 },
+  sheetAvatarText: { fontSize: 16, fontFamily: "SpaceGrotesk_700Bold" },
+  sheetName: { fontSize: 20, fontFamily: "SpaceGrotesk_700Bold" },
+  sheetCompany: { fontSize: 14, fontFamily: "SpaceGrotesk_400Regular", marginTop: 1 },
+  sheetValue: { fontSize: 15, fontFamily: "SpaceGrotesk_700Bold" },
+  stagePill: { flexDirection: "row", alignItems: "center", borderRadius: 8, paddingHorizontal: 10, paddingVertical: 4, borderWidth: 1 },
+  stagePillText: { fontSize: 12, fontFamily: "SpaceGrotesk_500Medium" },
 
-  detailHeader: { flexDirection: "row", alignItems: "flex-start", gap: 14, paddingHorizontal: 20, paddingBottom: 18 },
-  detailAvatar: { width: 52, height: 52, borderRadius: 26, alignItems: "center", justifyContent: "center" },
-  detailAvatarText: { color: "#fff", fontSize: 18, fontFamily: "SpaceGrotesk_700Bold" },
-  detailName:    { fontSize: 18, fontFamily: "SpaceGrotesk_700Bold" },
-  detailCompany: { fontSize: 13, fontFamily: "SpaceGrotesk_400Regular" },
-  detailMeta:    { flexDirection: "row", alignItems: "center", gap: 10, marginTop: 4 },
-  detailValue:   { fontSize: 15, fontFamily: "SpaceGrotesk_700Bold" },
-  stagePill:  { flexDirection: "row", alignItems: "center", gap: 5, paddingHorizontal: 8, paddingVertical: 3, borderRadius: 20 },
-  stageDot:   { width: 6, height: 6, borderRadius: 3 },
-  stagePillText: { fontSize: 11, fontFamily: "SpaceGrotesk_600SemiBold" },
+  // View buttons (CRM / Pipeline)
+  viewBtnRow: { flexDirection: "row", gap: 10 },
+  viewBtn: { flex: 1, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8, height: 44, borderRadius: 12, borderWidth: 1 },
+  viewBtnText: { fontSize: 14, fontFamily: "SpaceGrotesk_600SemiBold" },
 
-  statsRow: { flexDirection: "row", gap: 8, paddingHorizontal: 20, marginBottom: 16 },
-  statCard:  { flex: 1, borderRadius: 12, borderWidth: 1, paddingVertical: 10, alignItems: "center" },
+  // Pills
+  pillRow: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+  pill: { flexDirection: "row", alignItems: "center", gap: 5, borderRadius: 8, borderWidth: 1, paddingHorizontal: 10, paddingVertical: 6 },
+  pillText: { fontSize: 12, fontFamily: "SpaceGrotesk_400Regular" },
+
+  // Stats
+  statsRow: { flexDirection: "row", gap: 8 },
+  statCard: { flex: 1, borderRadius: 12, borderWidth: 1, padding: 12, alignItems: "center", gap: 3 },
   statValue: { fontSize: 18, fontFamily: "SpaceGrotesk_700Bold" },
-  statLabel: { fontSize: 10, fontFamily: "SpaceGrotesk_400Regular", marginTop: 2 },
+  statLabel: { fontSize: 10, fontFamily: "SpaceGrotesk_500Medium", textAlign: "center" },
 
-  aiCard: { marginHorizontal: 20, marginBottom: 20, borderRadius: 14, borderWidth: 1, padding: 14 },
-  aiCardHeader: { flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 10 },
-  aiIconWrap: { width: 28, height: 28, borderRadius: 8, alignItems: "center", justifyContent: "center" },
-  aiTitle:   { flex: 1, fontSize: 13, fontFamily: "SpaceGrotesk_700Bold" },
-  aiBadge:   { paddingHorizontal: 8, paddingVertical: 3, borderRadius: 20 },
-  aiText:    { fontSize: 13, fontFamily: "SpaceGrotesk_400Regular", lineHeight: 20 },
+  // Section blocks
+  sectionBlock: { paddingHorizontal: 20, paddingTop: 20 },
+  sectionTitle: { fontSize: 10, fontFamily: "SpaceGrotesk_700Bold", letterSpacing: 1.2, marginBottom: 10 },
 
-  sectionTitle: { fontSize: 15, fontFamily: "SpaceGrotesk_700Bold", paddingHorizontal: 20, marginBottom: 12 },
+  // AI card
+  aiCard: { borderRadius: 14, borderWidth: 1, padding: 16, gap: 10 },
+  aiCardHeader: { flexDirection: "row", alignItems: "center", gap: 10 },
+  aiIconWrap: { width: 30, height: 30, borderRadius: 9, alignItems: "center", justifyContent: "center" },
+  aiTitle: { fontSize: 14, fontFamily: "SpaceGrotesk_600SemiBold" },
+  aiText: { fontSize: 13, fontFamily: "SpaceGrotesk_400Regular", lineHeight: 20 },
 
-  infoRow:      { flexDirection: "row", flexWrap: "wrap", gap: 8 },
-  infoPill:     { flexDirection: "row", alignItems: "center", gap: 6, paddingHorizontal: 10, paddingVertical: 5, borderRadius: 20, borderWidth: 1 },
-  infoPillText: { fontSize: 12, fontFamily: "SpaceGrotesk_500Medium" },
+  // Next actions
+  actionsCard: { borderRadius: 14, borderWidth: 1, overflow: "hidden" },
+  actionItem: { flexDirection: "row", alignItems: "flex-start", gap: 10, padding: 13 },
+  actionDot: { width: 6, height: 6, borderRadius: 3, marginTop: 5 },
+  actionText: { flex: 1, fontSize: 13, fontFamily: "SpaceGrotesk_400Regular", lineHeight: 19 },
 
-  nextActionsCard: { marginHorizontal: 20, borderRadius: 14, borderWidth: 1, overflow: "hidden" },
-  nextActionItem:  { flexDirection: "row", alignItems: "flex-start", gap: 10, paddingHorizontal: 14, paddingVertical: 12 },
-  nextActionDot:   { width: 8, height: 8, borderRadius: 4, marginTop: 5, flexShrink: 0 },
-  nextActionText:  { flex: 1, fontSize: 13, fontFamily: "SpaceGrotesk_400Regular", lineHeight: 20 },
-
-  timelineCard: { marginHorizontal: 20, borderRadius: 14, borderWidth: 1, paddingTop: 16, paddingRight: 14, overflow: "hidden" },
-  timelineItem: { flexDirection: "row", gap: 12, paddingLeft: 14 },
-  timelineLeft: { alignItems: "center", width: 32 },
-  timelineIconWrap: { width: 32, height: 32, borderRadius: 10, alignItems: "center", justifyContent: "center" },
+  // Timeline
+  timelineCard: { borderRadius: 14, borderWidth: 1, padding: 16, gap: 0 },
+  timelineItem: { flexDirection: "row", gap: 12 },
+  timelineLeft: { width: 28, alignItems: "center" },
+  timelineIconWrap: { width: 28, height: 28, borderRadius: 8, alignItems: "center", justifyContent: "center" },
   timelineLine: { width: 1, flex: 1, marginTop: 4 },
-  timelineTopRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 2 },
-  timelineChannel: { fontSize: 12, fontFamily: "SpaceGrotesk_700Bold" },
-  timelineDate:    { fontSize: 11, fontFamily: "SpaceGrotesk_400Regular" },
-  timelineAgent:   { fontSize: 13, fontFamily: "SpaceGrotesk_600SemiBold", marginBottom: 3 },
-  timelineNote:    { fontSize: 12, fontFamily: "SpaceGrotesk_400Regular", lineHeight: 18 },
+  timelineChannel: { fontSize: 13, fontFamily: "SpaceGrotesk_600SemiBold" },
+  timelineDate: { fontSize: 11, fontFamily: "SpaceGrotesk_400Regular" },
+  timelineAgent: { fontSize: 12, fontFamily: "SpaceGrotesk_400Regular", marginTop: 2 },
+  timelineNote: { fontSize: 12, fontFamily: "SpaceGrotesk_400Regular", lineHeight: 17, marginTop: 3 },
 
-  detailActions: {
-    flexDirection: "row", gap: 10, padding: 16, paddingBottom: 24,
+  // Sheet footer
+  sheetFooter: {
+    flexDirection: "row", gap: 10, padding: 16,
     borderTopWidth: StyleSheet.hairlineWidth,
   },
-  actionBtn: {
-    flexDirection: "row", alignItems: "center", justifyContent: "center",
-    gap: 7, height: 48, borderRadius: 12, borderWidth: 1, paddingHorizontal: 16,
-  },
-  actionBtnText:      { fontSize: 14, fontFamily: "SpaceGrotesk_600SemiBold" },
-  actionBtnPrimary:   { flex: 1, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 7, height: 48, borderRadius: 12 },
-  actionBtnPrimaryText: { fontSize: 14, fontFamily: "SpaceGrotesk_700Bold", color: "#fff" },
+  footerBtnSecondary: { flex: 1, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8, height: 48, borderRadius: 13, borderWidth: 1 },
+  footerBtnPrimary: { flex: 2, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8, height: 48, borderRadius: 13, borderWidth: 1 },
+  footerBtnText: { fontSize: 14, fontFamily: "SpaceGrotesk_600SemiBold" },
+
+  // Move modal
+  overlay: { flex: 1, backgroundColor: "rgba(0,0,0,0.6)", justifyContent: "center", alignItems: "center", padding: 24 },
+  moveModal: { width: "100%", borderRadius: 18, borderWidth: 1, padding: 20, gap: 0 },
+  moveTitle: { fontSize: 18, fontFamily: "SpaceGrotesk_700Bold", marginBottom: 4 },
+  moveSub: { fontSize: 14, fontFamily: "SpaceGrotesk_400Regular" },
+  moveDivider: { height: StyleSheet.hairlineWidth, marginVertical: 14 },
+  moveOption: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingVertical: 13, paddingHorizontal: 6, borderRadius: 10 },
+  moveOptionText: { fontSize: 15, fontFamily: "SpaceGrotesk_500Medium" },
 });

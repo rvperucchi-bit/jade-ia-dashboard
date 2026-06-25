@@ -233,3 +233,9 @@ id = "uCCJC_in0mYWaDUBx-Xvg"
 uri = "file://exports/ajustes-radar-jade-autonoma.pdf"
 type = "pdf"
 title = "Resumo — Ajustes UI + JADE Prospectora Autônoma"
+
+[[outputs]]
+id = "ZgWpuqVoZiIV7XBMAW2-b"
+uri = "file://exports/redesign-leads-monocromatico.pdf"
+type = "pdf"
+title = "Redesign Leads — CRM/Pipeline + Bottom Sheet"

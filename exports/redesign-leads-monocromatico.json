@@ -1,0 +1,72 @@
+{
+  "title": "Redesign da Tela de Leads",
+  "subtitle": "Novo estilo monocromático com views CRM/Pipeline e detalhe em bottom sheet",
+  "date": "25/06/2026",
+  "output": "redesign-leads-monocromatico.pdf",
+  "sections": [
+    {
+      "heading": "Botão de Voltar",
+      "bullets": [
+        "Adicionado chevron-left no topo esquerdo do header — navegação para a tela anterior via router.back().",
+        "Header agora exibe apenas: seta de voltar + título 'Leads' + contagem total de leads.",
+        "Botão rosa (+) de adicionar lead removido completamente da tela."
+      ]
+    },
+    {
+      "heading": "Toggle CRM / Pipeline",
+      "bullets": [
+        "Dois botões de alternância logo abaixo do header: CRM (ícone de colunas) e Pipeline (ícone de barras).",
+        "CRM: exibe o kanban horizontal com as colunas Novo, Qualificado, Proposta e Fechado.",
+        "Pipeline: exibe lista vertical de todos os leads ordenados por valor decrescente, com ranking (#1, #2...) e badge de score.",
+        "Indicador de seleção: sublinhado fino embaixo da aba ativa — sem cores, sem preenchimento rosa."
+      ]
+    },
+    {
+      "heading": "Filtro Quentes",
+      "bullets": [
+        "Botão '🔥 Quentes' posicionado à direita do toggle CRM/Pipeline.",
+        "Quando ativo, mostra apenas leads com score ≥ 70. Sem cores de destaque — usa a superfície do tema.",
+        "Filtro independente da view — funciona tanto no CRM quanto no Pipeline."
+      ]
+    },
+    {
+      "heading": "Cards Minimalistas",
+      "bullets": [
+        "Avatares: fundo neutro (surface) com iniciais em cor muted — sem cores vibrantes por lead.",
+        "Card exibe: avatar, nome, empresa e horário. Nada mais.",
+        "No modo Pipeline: mostra também o estágio CRM e o valor embaixo do nome.",
+        "Removidos da vista principal: barra de score, tag colorida, valor, ponto semáforo colorido.",
+        "Toda a informação adicional foi movida para o bottom sheet de detalhe."
+      ]
+    },
+    {
+      "heading": "Bottom Sheet de Detalhe",
+      "bullets": [
+        "Abre ao tocar em qualquer lead com animação slide-up suave (360ms).",
+        "Cabeçalho: avatar monocromático, nome, empresa, stage pill neutro, valor.",
+        "Botões 'Ver no CRM' e 'Ver no Pipeline' — permitem navegar para a view correspondente a partir do detalhe.",
+        "Pills de telefone e tag (se existirem) em estilo neutro, sem cor de destaque.",
+        "Linha de stats: Contatos / Score / Resp. IA / Dias CRM — números grandes, fundo card.",
+        "Análise JADE IA: card com ícone de robô e texto gerado automaticamente pela IA.",
+        "Próximas ações: lista com primeiro item destacado, restantes em muted.",
+        "Histórico de contatos: timeline com ícone de canal, agente, data/hora e nota — totalmente monocromático.",
+        "Footer: botão 'Mover' (secundário) + botão 'Conversar com JADE' (primário) — ambos sem rosa."
+      ]
+    },
+    {
+      "heading": "Tema e Paleta",
+      "bullets": [
+        "Nenhuma cor hardcoded (sem #FF0080, sem #8400FF, sem verde). Tudo via useColors().",
+        "Cores utilizadas: colors.text, colors.mutedForeground, colors.card, colors.surface, colors.border, colors.background.",
+        "Divisores via StyleSheet.hairlineWidth — linhas ultra finas, discretas.",
+        "Fontes: SpaceGrotesk em todos os pesos (400, 500, 600, 700)."
+      ]
+    },
+    {
+      "heading": "Validação",
+      "body": [
+        "Typecheck passou sem erros (tsc --noEmit, sem output = sem erros). Workflows api-server e mobile rodando com sucesso."
+      ]
+    }
+  ]
+}
