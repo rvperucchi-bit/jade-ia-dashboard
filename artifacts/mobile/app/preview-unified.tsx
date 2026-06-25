@@ -6,6 +6,7 @@ import {
   Alert,
   Animated,
   Dimensions,
+  PanResponder,
   Switch,
   Easing,
   FlatList,
@@ -25,7 +26,6 @@ import {
 const { width: SCREEN_W } = Dimensions.get("window");
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as Linking from "expo-linking";
-import { useRouter } from "expo-router";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 type Route = "Chat" | "Pipeline" | "Route" | "Prospecting" | "Meeting" | "Farmer" | "Reports" | "Marketing" | "Management" | "Kpis" | "CorporatePortfolio" | "Broadcast" | "Feedbacks" | "TeamPulse" | "PulseCheck";
@@ -1612,27 +1612,33 @@ function PulseCheckView({ onMenu }: { onMenu: () => void }) {
 
 // ─── Root ─────────────────────────────────────────────────────────────────────
 export default function PreviewUnifiedScreen() {
-  const router = useRouter();
-  const insets = useSafeAreaInsets();
   const [route,   setRoute]   = useState<Route>("Chat");
   const [sidebar, setSidebar] = useState(false);
   const openMenu = () => setSidebar(true);
 
-  return (
-    <View style={S.root}>
-      <StatusBar barStyle="light-content" backgroundColor="#090A0F" />
-      <TouchableOpacity style={[S.backAbsolute, { top: insets.top + 8 }]} onPress={() => router.back()} activeOpacity={0.7}>
-        <Text style={{ color: "#8F94A8", fontSize: 12 }}>✕ Voltar</Text>
-      </TouchableOpacity>
+  // Swipe-to-open sidebar: detecta arrasto da borda esquerda (x < 40) para a direita (dx > 60)
+  const swipePan = useRef(
+    PanResponder.create({
+      onMoveShouldSetPanResponder: (evt, gs) =>
+        !sidebar && evt.nativeEvent.pageX < 40 && gs.dx > 10 && Math.abs(gs.dy) < Math.abs(gs.dx),
+      onPanResponderRelease: (_evt, gs) => {
+        if (gs.dx > 60) setSidebar(true);
+      },
+    })
+  ).current;
 
-      {route === "Chat"        && <ChatView        onMenu={openMenu} />}
-      {route === "Pipeline"    && <PipelineView    onMenu={openMenu} />}
-      {route === "Route"       && <RouteView       onMenu={openMenu} />}
-      {route === "Prospecting" && <ProspectingView onMenu={openMenu} />}
-      {route === "Meeting"     && <MeetingView     onMenu={openMenu} />}
-      {route === "Farmer"      && <FarmerView      onMenu={openMenu} />}
-      {route === "Reports"     && <ReportsView     onMenu={openMenu} />}
-      {route === "Marketing"   && <MarketingView   onMenu={openMenu} />}
+  return (
+    <View style={S.root} {...swipePan.panHandlers}>
+      <StatusBar barStyle="light-content" backgroundColor="#090A0F" />
+
+      {route === "Chat"              && <ChatView              onMenu={openMenu} />}
+      {route === "Pipeline"          && <PipelineView          onMenu={openMenu} />}
+      {route === "Route"             && <RouteView             onMenu={openMenu} />}
+      {route === "Prospecting"       && <ProspectingView       onMenu={openMenu} />}
+      {route === "Meeting"           && <MeetingView           onMenu={openMenu} />}
+      {route === "Farmer"            && <FarmerView            onMenu={openMenu} />}
+      {route === "Reports"           && <ReportsView           onMenu={openMenu} />}
+      {route === "Marketing"         && <MarketingView         onMenu={openMenu} />}
       {route === "Management"        && <ManagementView        onMenu={openMenu} />}
       {route === "Kpis"              && <KpisView              onMenu={openMenu} />}
       {route === "CorporatePortfolio"&& <CorporatePortfolioView onMenu={openMenu} />}
@@ -1653,7 +1659,7 @@ const S = StyleSheet.create({
   backAbsolute: { position: "absolute", right: 16, zIndex: 30, backgroundColor: "rgba(255,255,255,0.04)", borderRadius: 10, borderWidth: 1, borderColor: "rgba(255,255,255,0.06)", paddingHorizontal: 12, paddingVertical: 6 },
 
   topBar: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", paddingHorizontal: 16, paddingBottom: 14 },
-  iconBtn: { width: 42, height: 42, borderRadius: 12, backgroundColor: "rgba(255,255,255,0.03)", borderWidth: 1, borderColor: "rgba(255,255,255,0.05)", alignItems: "center", justifyContent: "center" },
+  iconBtn: { width: 42, height: 42, borderRadius: 12, backgroundColor: "transparent", borderWidth: 0, alignItems: "center", justifyContent: "center" },
   topIconText: { color: "#FFFFFF", fontSize: 18 },
   topSubtitle: { fontSize: 11, color: "#8F94A8", fontWeight: "600", letterSpacing: 0.5, textTransform: "uppercase" },
   topTitle: { fontSize: 22, fontWeight: "700", color: "#FFFFFF", letterSpacing: -0.5 },
