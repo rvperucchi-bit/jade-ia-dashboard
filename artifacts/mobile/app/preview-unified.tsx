@@ -28,7 +28,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as Linking from "expo-linking";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
-type Route = "Chat" | "Pipeline" | "Route" | "Prospecting" | "Meeting" | "Farmer" | "Reports" | "Marketing" | "Management" | "Kpis" | "CorporatePortfolio" | "Broadcast" | "Feedbacks" | "TeamPulse" | "PulseCheck" | "AccountSettings" | "Subscription" | "MyProfile" | "MyCompany" | "Usage";
+type Route = "Chat" | "Pipeline" | "Route" | "Prospecting" | "Meeting" | "Farmer" | "Reports" | "Marketing" | "Management" | "Kpis" | "CorporatePortfolio" | "Broadcast" | "Feedbacks" | "TeamPulse" | "PulseCheck" | "AccountSettings" | "Subscription" | "MyProfile" | "MyCompany" | "Usage" | "WhatsApp" | "Shop" | "Help";
 type PipelineLead  = { id: string; name: string; company: string; value: string; stage: string; daysIdle: number; phone: string };
 type AiLead        = { id: string; name: string; segment: string; address: string };
 type HistoryItem   = { id: string; query: string; location: string; date: string; leadsCount: number };
@@ -153,6 +153,9 @@ function Sidebar({ visible, onClose, currentRoute, onNavigate }: {
               <TouchableOpacity style={S.drawerSubItem} onPress={() => go("Chat")} activeOpacity={0.7}>
                 <Text style={S.drawerSubText}>🕒 Histórico de Chats</Text>
               </TouchableOpacity>
+              <TouchableOpacity style={S.drawerSubItem} onPress={() => go("WhatsApp")} activeOpacity={0.7}>
+                <Text style={[S.drawerSubText, currentRoute === "WhatsApp" && S.drawerSubTextActive]}>📱 WhatsApp JADE</Text>
+              </TouchableOpacity>
             </View>
           )}
 
@@ -229,6 +232,12 @@ function Sidebar({ visible, onClose, currentRoute, onNavigate }: {
               </TouchableOpacity>
               <TouchableOpacity style={S.drawerSubItem} onPress={() => go("Usage")} activeOpacity={0.7}>
                 <Text style={[S.drawerSubText, currentRoute === "Usage" && S.drawerSubTextActive]}>📊 Consumo do Plano</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={S.drawerSubItem} onPress={() => go("Shop")} activeOpacity={0.7}>
+                <Text style={[S.drawerSubText, currentRoute === "Shop" && S.drawerSubTextActive]}>🛍️ Loja Sleek</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={S.drawerSubItem} onPress={() => go("Help")} activeOpacity={0.7}>
+                <Text style={[S.drawerSubText, currentRoute === "Help" && S.drawerSubTextActive]}>❓ Central de Ajuda</Text>
               </TouchableOpacity>
             </View>
           )}
@@ -1855,6 +1864,123 @@ function SubscriptionView({ onMenu }: { onMenu: () => void }) {
   );
 }
 
+// ─── Screen: WhatsApp Config ─────────────────────────────────────────────────
+const SHOP_ITEMS = [
+  { id: "1", title: "Pacote 1.000 Mensagens IA",        price: "R$ 89,00",     desc: "Injete mais saldo para conversas autônomas da JADE no WhatsApp." },
+  { id: "2", title: "Módulo Radar Premium +200 Buscas", price: "R$ 149,00",    desc: "Varredura avançada e extração de contatos corporativos no Google Maps." },
+  { id: "3", title: "Agente Extra de Atendimento",      price: "R$ 79,00/mês", desc: "Adicione mais um número de WhatsApp conectado simultaneamente ao CRM." },
+];
+
+function WhatsAppConfigView({ onMenu }: { onMenu: () => void }) {
+  const [autoReply,    setAutoReply]    = useState(true);
+  const [aiNegotiation, setAiNegotiation] = useState(true);
+  const [delayTime,    setDelayTime]    = useState("25");
+  const [welcomeMsg,   setWelcomeMsg]   = useState("Olá! Sou a JADE, assistente virtual da empresa. Identifiquei seu interesse e já estou separando as melhores opções para você. Em que posso ajudar de imediato?");
+
+  return (
+    <View style={{ flex: 1 }}>
+      <TopBar title="WhatsApp JADE" subtitle="✉️ CONVERSAS" onMenu={onMenu} />
+      <ScrollView style={S.form} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
+
+        <View style={[S.insightBox, { marginBottom: 20 }]}>
+          <Text style={[S.insightText, { color: "#00E5FF", marginBottom: 0 }]}>⚙️ Calibre o comportamento dos gatilhos de mensagens e respostas da JADE no WhatsApp.</Text>
+        </View>
+
+        <View style={S.waConfigCard}>
+          <View style={{ flex: 1, marginRight: 12 }}>
+            <Text style={S.waConfigTitle}>Respostas Automáticas</Text>
+            <Text style={S.waConfigSub}>Permitir que a JADE inicie conversas com leads interceptados no Maps</Text>
+          </View>
+          <Switch value={autoReply} onValueChange={setAutoReply} trackColor={{ false: "#242736", true: "#00E5FF" }} thumbColor="#FFFFFF" />
+        </View>
+
+        <View style={S.waConfigCard}>
+          <View style={{ flex: 1, marginRight: 12 }}>
+            <Text style={S.waConfigTitle}>Negociação Avançada com IA</Text>
+            <Text style={S.waConfigSub}>Dar autonomia para a JADE apresentar preços e tentar fechar reuniões</Text>
+          </View>
+          <Switch value={aiNegotiation} onValueChange={setAiNegotiation} trackColor={{ false: "#242736", true: "#00E5FF" }} thumbColor="#FFFFFF" />
+        </View>
+
+        <Text style={S.label}>TEMPO DE ESPERA ANTES DE ENVIAR (SEGUNDOS)</Text>
+        <TextInput style={S.input} value={delayTime} onChangeText={setDelayTime} keyboardType="numeric" placeholder="Ex: 30" placeholderTextColor="#4E5366" />
+        <Text style={S.helperText}>Simula comportamento humano para evitar bloqueios na API do WhatsApp.</Text>
+
+        <Text style={S.label}>MENSAGEM DE SAUDAÇÃO INICIAL</Text>
+        <TextInput style={[S.input, { height: 100, paddingTop: 12, textAlignVertical: "top" }]} value={welcomeMsg} onChangeText={setWelcomeMsg} multiline placeholderTextColor="#4E5366" />
+
+        <TouchableOpacity style={[S.primaryBtn, { marginTop: 8 }]}
+          onPress={() => Alert.alert("Sucesso 🚀", "Configurações de WhatsApp integradas ao cérebro da JADE!")} activeOpacity={0.8}>
+          <Text style={S.primaryBtnText}>Salvar e Sincronizar Instância 🚀</Text>
+        </TouchableOpacity>
+        <View style={{ height: 40 }} />
+      </ScrollView>
+    </View>
+  );
+}
+
+// ─── Screen: Shop ─────────────────────────────────────────────────────────────
+function ShopView({ onMenu }: { onMenu: () => void }) {
+  return (
+    <View style={{ flex: 1 }}>
+      <TopBar title="Loja Sleek" subtitle="⚙️ CONTA" onMenu={onMenu} />
+      <ScrollView style={S.form} showsVerticalScrollIndicator={false}>
+        <Text style={[S.cardSub, { marginBottom: 20 }]}>Adicione recursos avulsos ou expanda os limites da sua operação instantaneamente.</Text>
+
+        {SHOP_ITEMS.map((item) => (
+          <View key={item.id} style={S.shopCard}>
+            <View style={S.shopCardTop}>
+              <Text style={S.shopItemTitle}>{item.title}</Text>
+              <Text style={S.shopItemPrice}>{item.price}</Text>
+            </View>
+            <Text style={S.shopItemDesc}>{item.desc}</Text>
+            <TouchableOpacity style={S.shopBuyBtn}
+              onPress={() => Alert.alert("Pix Gerado ⚡", "Copia e cola o código Pix enviado para o seu e-mail corporativo para liberar o recurso.")}
+              activeOpacity={0.8}>
+              <Text style={S.shopBuyBtnText}>Comprar via Pix Rápido</Text>
+            </TouchableOpacity>
+          </View>
+        ))}
+        <View style={{ height: 40 }} />
+      </ScrollView>
+    </View>
+  );
+}
+
+// ─── Screen: Help ─────────────────────────────────────────────────────────────
+const FAQ_ITEMS = [
+  { q: "Como o robô evita bloqueios no WhatsApp?", a: "A JADE utiliza rotinas nativas de tempo de espera dinâmico (Delay) e variação gramatical nos textos para simular interações 100% humanas." },
+  { q: "O Radar do Maps consome créditos do Google?", a: "Não. Toda a varredura é efetuada através dos servidores dedicados da Sleek IA, protegendo sua operação de custos adicionais de APIs." },
+  { q: "Posso conectar múltiplos números de WhatsApp?", a: "Sim. No plano Pro e Enterprise você pode adicionar agentes extras de atendimento diretamente pela Loja Sleek." },
+];
+
+function HelpView({ onMenu }: { onMenu: () => void }) {
+  return (
+    <View style={{ flex: 1 }}>
+      <TopBar title="Central de Ajuda" subtitle="⚙️ CONTA" onMenu={onMenu} />
+      <ScrollView style={S.form} showsVerticalScrollIndicator={false}>
+
+        <Text style={[S.sectionLabel, { marginBottom: 12 }]}>DÚVIDAS FREQUENTES</Text>
+
+        {FAQ_ITEMS.map((faq, i) => (
+          <View key={i} style={S.faqCard}>
+            <Text style={S.faqQuestion}>{faq.q}</Text>
+            <Text style={S.faqAnswer}>{faq.a}</Text>
+          </View>
+        ))}
+
+        <Text style={[S.sectionLabel, { marginBottom: 12, marginTop: 24 }]}>SUPORTE PRIORITÁRIO</Text>
+        <TouchableOpacity style={S.supportBtn}
+          onPress={() => Alert.alert("Chamado Aberto ✉️", "Nossa equipe técnica entrará em contato via WhatsApp em até 15 minutos.")}
+          activeOpacity={0.8}>
+          <Text style={S.supportBtnText}>Falar com Engenheiro de Suporte</Text>
+        </TouchableOpacity>
+        <View style={{ height: 40 }} />
+      </ScrollView>
+    </View>
+  );
+}
+
 // ─── Screen: Usage & Plan Limits ─────────────────────────────────────────────
 const PLAN_LIMITS_U = {
   start: {
@@ -2157,6 +2283,9 @@ export default function PreviewUnifiedScreen() {
       {route === "MyProfile"         && <MyProfileView         onMenu={openMenu} />}
       {route === "MyCompany"         && <MyCompanyView         onMenu={openMenu} />}
       {route === "Usage"             && <UsageView             onMenu={openMenu} />}
+      {route === "WhatsApp"          && <WhatsAppConfigView    onMenu={openMenu} />}
+      {route === "Shop"              && <ShopView              onMenu={openMenu} />}
+      {route === "Help"              && <HelpView              onMenu={openMenu} />}
 
       <Sidebar visible={sidebar} onClose={() => setSidebar(false)} currentRoute={route} onNavigate={setRoute} />
     </View>
@@ -2430,6 +2559,27 @@ const S = StyleSheet.create({
   mktModalHeader: { flexDirection: "row", alignItems: "center", paddingHorizontal: 16, height: 60, borderBottomWidth: 1, borderColor: "#161822" },
   strategyBox: { backgroundColor: "rgba(0,229,255,0.02)", borderWidth: 1, borderColor: "rgba(0,229,255,0.15)", borderRadius: 16, padding: 18, marginTop: 28 },
   mktOutputText: { fontSize: 13, color: "#8F94A8", lineHeight: 19, marginBottom: 12 },
+
+  // WhatsApp Config screen
+  waConfigCard:    { flexDirection: "row", justifyContent: "space-between", alignItems: "center", backgroundColor: "#161822", padding: 16, borderRadius: 14, borderWidth: 1, borderColor: "#242736", marginBottom: 14 },
+  waConfigTitle:   { color: "#FFFFFF", fontSize: 15, fontWeight: "600", marginBottom: 2 },
+  waConfigSub:     { color: "#8F94A8", fontSize: 12, lineHeight: 16 },
+
+  // Shop screen
+  shopCard:        { backgroundColor: "#161822", borderRadius: 16, padding: 18, borderWidth: 1, borderColor: "#242736", marginBottom: 16 },
+  shopCardTop:     { flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start", borderBottomWidth: 1, borderColor: "#242736", paddingBottom: 12, marginBottom: 12 },
+  shopItemTitle:   { color: "#FFFFFF", fontSize: 15, fontWeight: "700", maxWidth: "65%" },
+  shopItemPrice:   { color: "#00E5FF", fontSize: 15, fontWeight: "700" },
+  shopItemDesc:    { color: "#8F94A8", fontSize: 13, lineHeight: 18, marginBottom: 16 },
+  shopBuyBtn:      { backgroundColor: "#FFFFFF", height: 44, borderRadius: 10, alignItems: "center", justifyContent: "center" },
+  shopBuyBtnText:  { color: "#090A0F", fontWeight: "700", fontSize: 14 },
+
+  // Help screen
+  faqCard:         { backgroundColor: "#161822", borderRadius: 14, padding: 16, borderWidth: 1, borderColor: "#242736", marginBottom: 12 },
+  faqQuestion:     { color: "#FFFFFF", fontSize: 14, fontWeight: "600", marginBottom: 6 },
+  faqAnswer:       { color: "#8F94A8", fontSize: 13, lineHeight: 18 },
+  supportBtn:      { backgroundColor: "#161822", height: 54, borderRadius: 12, alignItems: "center", justifyContent: "center", borderWidth: 1, borderColor: "#00E5FF" },
+  supportBtnText:  { color: "#00E5FF", fontWeight: "600", fontSize: 15 },
 
   // Usage screen
   usagePlanCard:      { backgroundColor: "#161822", borderRadius: 16, padding: 18, borderWidth: 1, borderColor: "#242736", marginBottom: 24, marginTop: 4 },

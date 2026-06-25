@@ -1,0 +1,73 @@
+import React, { useState } from 'react';
+import { StyleSheet, Text, View, ScrollView, TouchableOpacity, SafeAreaView, Switch, TextInput, Alert } from 'react-native';
+
+export default function WhatsAppConfigScreen({ navigation }) {
+  const [autoReply, setAutoReply] = useState(true);
+  const [aiNegotiation, setAiNegotiation] = useState(true);
+  const [delayTime, setDelayTime] = useState('25');
+  const [welcomeMsg, setWelcomeMsg] = useState('Olá! Sou a JADE, assistente virtual da empresa. Identifiquei seu interesse e já estou separando as melhores opções para você. Em que posso ajudar de imediato?');
+
+  return (
+    <SafeAreaView style={styles.container}>
+      {/* HEADER CUSTOMIZADO - CURA COMPLETA DOS ÍCONES COLORIDOS */}
+      <View style={styles.customHeader}>
+        <TouchableOpacity style={styles.transparentBtn} onPress={() => navigation.openDrawer()}>
+          <Text style={styles.headerIconText}>☰</Text>
+        </TouchableOpacity>
+        <Text style={styles.headerTitle}>WhatsApp JADE</Text>
+        <View style={{ width: 40 }} />
+      </View>
+
+      <ScrollView style={styles.scroll} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
+        <Text style={styles.brainNotice}>⚙️ Conexão e Regras do Disparador Autónomo: Calibre o comportamento dos gatilhos de mensagens e respostas da JADE.</Text>
+
+        <View style={styles.configCard}>
+          <View style={styles.configInfo}>
+            <Text style={styles.configTitle}>Respostas Automáticas</Text>
+            <Text style={styles.configSub}>Permitir que a JADE inicie conversas com leads interceptados no Maps</Text>
+          </View>
+          <Switch value={autoReply} onValueChange={setAutoReply} trackColor={{ false: '#161822', true: '#00E5FF' }} thumbColor="#FFFFFF" />
+        </View>
+
+        <View style={styles.configCard}>
+          <View style={styles.configInfo}>
+            <Text style={styles.configTitle}>Negociação Avançada com IA</Text>
+            <Text style={styles.configSub}>Dar autonomia para a JADE apresentar preços de produtos e tentar fechar reuniões</Text>
+          </View>
+          <Switch value={aiNegotiation} onValueChange={setAiNegotiation} trackColor={{ false: '#161822', true: '#00E5FF' }} thumbColor="#FFFFFF" />
+        </View>
+
+        <Text style={styles.inputLabel}>TEMPO DE ESPERA ANTES DE ENVIAR (SEGUNDOS)</Text>
+        <TextInput style={styles.input} value={delayTime} onChangeText={setDelayTime} keyboardType="numeric" placeholder="Ex: 30" placeholderTextColor="#4E5366" />
+        <Text style={styles.helperText}>Simula o comportamento humano digitando para evitar bloqueios na API do WhatsApp.</Text>
+
+        <Text style={styles.inputLabel}>MENSAGEM DE SAUDAÇÃO INICIAL (GATILHO DA IA)</Text>
+        <TextInput style={[styles.input, { height: 100, paddingTop: 12 }]} value={welcomeMsg} onChangeText={setWelcomeMsg} multiline />
+
+        <TouchableOpacity style={styles.saveBtn} onPress={() => Alert.alert('Sucesso', 'Configurações de WhatsApp integradas ao cérebro da JADE!')}>
+          <Text style={styles.saveBtnText}>Salvar e Sincronizar Instância 🚀</Text>
+        </TouchableOpacity>
+        <View style={{ height: 40 }} />
+      </ScrollView>
+    </SafeAreaView>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: { flex: 1, backgroundColor: '#090A0F' },
+  customHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 16, height: 60, marginTop: 10 },
+  transparentBtn: { width: 40, height: 40, alignItems: 'center', justifyContent: 'center', backgroundColor: 'transparent' },
+  headerIconText: { color: '#FFFFFF', fontSize: 22, fontWeight: '300' },
+  headerTitle: { color: '#FFFFFF', fontSize: 16, fontWeight: '700', letterSpacing: -0.3 },
+  scroll: { padding: 20 },
+  brainNotice: { color: '#00E5FF', fontSize: 13, lineHeight: 18, backgroundColor: 'rgba(0, 229, 255, 0.03)', padding: 14, borderRadius: 12, borderWidth: 1, borderColor: 'rgba(0, 229, 255, 0.15)', marginBottom: 20 },
+  configCard: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#161822', padding: 16, borderRadius: 14, borderWidth: 1, borderColor: '#242736', marginBottom: 16 },
+  configInfo: { width: '75%' },
+  configTitle: { color: '#FFFFFF', fontSize: 15, fontWeight: '600' },
+  configSub: { color: '#8F94A8', fontSize: 12, marginTop: 2, lineHeight: 16 },
+  inputLabel: { fontSize: 11, color: '#8F94A8', fontWeight: '700', letterSpacing: 0.8, marginBottom: 8, marginTop: 12 },
+  input: { backgroundColor: '#161822', height: 54, borderRadius: 12, paddingHorizontal: 16, color: '#FFFFFF', fontSize: 15, borderWidth: 1, borderColor: '#242736', marginBottom: 6, textAlignVertical: 'top' },
+  helperText: { color: '#4E5366', fontSize: 11, marginBottom: 14 },
+  saveBtn: { backgroundColor: '#FFFFFF', height: 54, borderRadius: 12, alignItems: 'center', justifyContent: 'center', marginTop: 20 },
+  saveBtnText: { color: '#090A0F', fontWeight: '700', fontSize: 15 }
+});

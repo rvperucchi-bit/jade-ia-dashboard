@@ -1,0 +1,51 @@
+import React from 'react';
+import { StyleSheet, Text, View, ScrollView, TouchableOpacity, SafeAreaView, Alert } from 'react-native';
+
+export default function HelpScreen({ navigation }) {
+  return (
+    <SafeAreaView style={styles.container}>
+      <View style={styles.customHeader}>
+        <TouchableOpacity style={styles.transparentBtn} onPress={() => navigation.openDrawer()}>
+          <Text style={styles.headerIconText}>☰</Text>
+        </TouchableOpacity>
+        <Text style={styles.headerTitle}>Central de Ajuda</Text>
+        <View style={{ width: 40 }} />
+      </View>
+
+      <ScrollView style={styles.scroll} showsVerticalScrollIndicator={false}>
+        <Text style={styles.sectionLabel}>DÚVIDAS FREQUENTES</Text>
+        
+        <View style={styles.faqCard}>
+          <Text style={styles.faqQuestion}>Como o robô evita bloqueios no WhatsApp?</Text>
+          <Text style={styles.faqAnswer}>A JADE utiliza rotinas nativas de tempo de espera dinâmico (Delay) e variação gramatical nos textos para simular interações 100% humanas.</Text>
+        </View>
+
+        <View style={styles.faqCard}>
+          <Text style={styles.faqQuestion}>O Radar do Maps consome créditos do Google?</Text>
+          <Text style={styles.faqAnswer}>Não. Toda a varredura é efetuada através dos servidores dedicados da Sleek IA, protegendo sua operação de custos adicionais de APIs.</Text>
+        </View>
+
+        <Text style={styles.sectionLabel}>SUPORTE PRIORITÁRIO</Text>
+        <TouchableOpacity style={styles.supportBtn} onPress={() => Alert.alert('Chamado Aberto ✉️', 'Nossa equipe técnica entrará em contato com você via WhatsApp em até 15 minutos.')}>
+          <Text style={styles.supportBtnText}>Falar com Engenheiro de Suporte</Text>
+        </TouchableOpacity>
+        <View style={{ height: 40 }} />
+      </ScrollView>
+    </SafeAreaView>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: { flex: 1, backgroundColor: '#090A0F' },
+  customHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 16, height: 60, marginTop: 10 },
+  transparentBtn: { width: 40, height: 40, alignItems: 'center', justifyContent: 'center', backgroundColor: 'transparent' },
+  headerIconText: { color: '#FFFFFF', fontSize: 22, fontWeight: '300' },
+  headerTitle: { color: '#FFFFFF', fontSize: 16, fontWeight: '700' },
+  scroll: { padding: 20 },
+  sectionLabel: { fontSize: 11, color: '#8F94A8', fontWeight: '700', letterSpacing: 0.8, marginBottom: 12, marginTop: 10 },
+  faqCard: { backgroundColor: '#161822', borderRadius: 14, padding: 16, borderWidth: 1, borderColor: '#242736', marginBottom: 12 },
+  faqQuestion: { color: '#FFFFFF', fontSize: 14, fontWeight: '600', marginBottom: 6 },
+  faqAnswer: { color: '#8F94A8', fontSize: 13, lineHeight: 18 },
+  supportBtn: { backgroundColor: '#161822', height: 54, borderRadius: 12, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: '#00E5FF', marginTop: 6 },
+  supportBtnText: { color: '#00E5FF', fontWeight: '600', fontSize: 15 }
+});
