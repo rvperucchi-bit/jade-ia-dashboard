@@ -20,8 +20,12 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { JADE_SEGMENTS } from "@/constants/jade-segments";
+import { useColors } from "@/hooks/useColors";
 
 const CACHE_KEY = "minha_empresa";
+
+const PINK   = "#FF0080";
+const PURPLE = "#8400FF";
 
 const API_BASE =
   Platform.OS === "web"
@@ -29,16 +33,16 @@ const API_BASE =
     : `https://${process.env.EXPO_PUBLIC_DOMAIN ?? ""}`;
 
 const C = {
-  bg: "#0B0814",
-  card: "#111118",
-  border: "#1E1E2E",
-  surface: "#16161F",
-  text: "#FFFFFF",
-  muted: "#7777AA",
-  sub: "#AAAACC",
+  bg:      "#0A0A0F",
+  card:    "#111118",
+  border:  "#252535",
+  surface: "#1A1A26",
+  text:    "#FFFFFF",
+  muted:   "#8A8A9A",
+  sub:     "#8A8A9A",
   primary: "#FF0080",
-  purple: "#8400FF",
-  success: "rgba(255,255,255,0.55)",
+  purple:  "#8400FF",
+  success: "#00D68F",
 };
 
 interface TomCard {
@@ -121,6 +125,7 @@ const DEFAULT: EmpresaConfig = {
 export default function EmpresaScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const colors = useColors();
   const [config, setConfig] = useState<EmpresaConfig>(DEFAULT);
   const [showSegPicker, setShowSegPicker] = useState(false);
   const [showEstadoPicker, setShowEstadoPicker] = useState(false);
@@ -131,7 +136,7 @@ export default function EmpresaScreen() {
   const estadoData = BRAZIL_STATES.find((s) => s.sigla === config.estado || s.nome === config.estado);
   const cidadesDoEstado = estadoData?.cidades ?? [];
 
-  const topPad = Platform.OS === "web" ? 67 : insets.top;
+  const topPad = Platform.OS === "web" ? 24 : insets.top + 4;
 
   useEffect(() => {
     AsyncStorage.getItem(CACHE_KEY).then((raw) => {
@@ -219,10 +224,10 @@ export default function EmpresaScreen() {
   };
 
   return (
-    <View style={[S.root, { backgroundColor: C.bg }]}>
-      <View style={[S.header, { paddingTop: topPad }]}>
-        <TouchableOpacity style={S.backBtn} onPress={() => router.back()} activeOpacity={0.8}>
-          <Feather name="arrow-left" size={22} color={C.text} />
+    <View style={[S.root, { backgroundColor: colors.background }]}>
+      <View style={[S.header, { paddingTop: topPad, borderBottomColor: colors.border }]}>
+        <TouchableOpacity style={[S.backBtn, { backgroundColor: colors.surface }]} onPress={() => router.back()} activeOpacity={0.8}>
+          <Feather name="chevron-left" size={22} color={colors.text} />
         </TouchableOpacity>
         <View style={{ flex: 1 }}>
           <Text style={S.headerTitle}>Minha Empresa</Text>
@@ -575,7 +580,7 @@ export default function EmpresaScreen() {
 
         {/* ── Save button ── */}
         <TouchableOpacity
-          style={[S.saveBtn, saving && { opacity: 0.7 }, saved && { backgroundColor: C.success }]}
+          style={[S.saveBtn, saving && { opacity: 0.7 }, saved && { backgroundColor: "#00D68F" }]}
           onPress={handleSave}
           disabled={saving}
           activeOpacity={0.85}

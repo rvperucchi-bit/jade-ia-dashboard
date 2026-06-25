@@ -14,3 +14,4 @@
 - [JADE AI Engine — OpenAI](jade-ai-engine.md) — lib/ai/ 100% OpenAI; chat=gpt-4.1-mini, ops secundárias=gpt-4o-mini, embed=text-embedding-3-small, transcribe=gpt-4o-transcribe; gemini.ts isolado (não importado pelo engine)
 - [Company Memory Embeddings](company-memory-embeddings.md) — embeddings em data/jade-memory.json (separado do jade-state.json); chave=MD5(nome)[0:12]; refresh automático no POST /empresa + lazy no /jade/chat; cosineSimilarity topK=4 threshold=0.3
 - [Usage Engine](usage-engine.md) — src/lib/usage/ controla limites/custos/ROI; data/jade-usage.json; checkLimit() antes de cada rota IA, recordUsage() após; plano via POST /api/admin/usage/:companyId/plan; 5 endpoints admin
+- [UI Color Migration Pattern](ui-color-migration.md) — padrão correto: useColors() inline dinâmico; valores errados C.bg #0B0814→#0A0A0F, border #1E1E2E→#252535, muted #7777AA→#8A8A9A, surface #16161F→#1A1A26, success #22CC88→#00D68F; topPad=Platform.OS==='web'?24:insets.top+4

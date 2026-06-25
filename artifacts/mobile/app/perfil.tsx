@@ -17,39 +17,36 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useProfile } from "@/context/ProfileContext";
+import { useColors } from "@/hooks/useColors";
 
 const PROFILE_KEY = "@jade_ia:profile";
-const COLORS = {
-  bg: "#0B0814",
-  card: "#111118",
-  border: "#1E1E2E",
-  text: "#FFFFFF",
-  muted: "#7777AA",
-  primary: "#FF0080",
-  surface: "#16161F",
-};
+const PINK = "#FF0080";
 
 interface Profile {
-  nome: string;
-  email: string;
-  cargo: string;
+  nome:    string;
+  email:   string;
+  cargo:   string;
   empresa: string;
 }
 
 const DEFAULT: Profile = {
-  nome: "Rodrigo",
-  email: "rodrigo@jadeia.com.br",
-  cargo: "Fundador",
+  nome:    "Rodrigo",
+  email:   "rodrigo@jadeia.com.br",
+  cargo:   "Fundador",
   empresa: "JÁ Delivery",
 };
 
 export default function PerfilScreen() {
   const router  = useRouter();
   const insets  = useSafeAreaInsets();
+  const colors  = useColors();
   const { photoUri, setPhotoUri, setDisplayName } = useProfile();
   const [profile, setProfile] = useState<Profile>(DEFAULT);
   const [saving,  setSaving]  = useState(false);
   const [saved,   setSaved]   = useState(false);
+
+  const topPad = Platform.OS === "web" ? 24 : insets.top + 4;
+  const botPad = Platform.OS === "web" ? 40 : insets.bottom + 32;
 
   useEffect(() => {
     AsyncStorage.getItem(PROFILE_KEY).then((raw) => {
@@ -107,25 +104,25 @@ export default function PerfilScreen() {
     .join("");
 
   const FIELDS: { label: string; key: keyof Profile; icon: string; keyboard?: any }[] = [
-    { label: "Nome completo", key: "nome", icon: "user" },
-    { label: "E-mail", key: "email", icon: "mail", keyboard: "email-address" },
-    { label: "Cargo", key: "cargo", icon: "briefcase" },
-    { label: "Empresa", key: "empresa", icon: "home" },
+    { label: "Nome completo", key: "nome",    icon: "user" },
+    { label: "E-mail",        key: "email",   icon: "mail",     keyboard: "email-address" },
+    { label: "Cargo",         key: "cargo",   icon: "briefcase" },
+    { label: "Empresa",       key: "empresa", icon: "home" },
   ];
 
   return (
-    <View style={[S.root, { paddingTop: insets.top }]}>
+    <View style={[S.root, { backgroundColor: colors.background }]}>
       {/* Header */}
-      <View style={S.header}>
+      <View style={[S.header, { paddingTop: topPad }]}>
         <TouchableOpacity onPress={() => router.back()} style={S.backBtn} activeOpacity={0.7}>
-          <Feather name="arrow-left" size={22} color={COLORS.text} />
+          <Feather name="chevron-left" size={22} color={colors.text} />
         </TouchableOpacity>
-        <Text style={S.headerTitle}>Meu Perfil</Text>
-        <View style={{ width: 40 }} />
+        <Text style={[S.headerTitle, { color: colors.text }]}>Meu Perfil</Text>
+        <View style={{ width: 36 }} />
       </View>
 
       <ScrollView
-        contentContainerStyle={[S.scroll, { paddingBottom: insets.bottom + 40 }]}
+        contentContainerStyle={[S.scroll, { paddingBottom: botPad }]}
         showsVerticalScrollIndicator={false}
       >
         {/* Avatar */}
@@ -134,16 +131,22 @@ export default function PerfilScreen() {
             {photoUri ? (
               <Image source={{ uri: photoUri }} style={S.avatarImg} />
             ) : (
-              <View style={S.avatar}>
+              <View style={[S.avatar, { backgroundColor: PINK }]}>
                 <Text style={S.avatarText}>{initials || "R"}</Text>
               </View>
             )}
-            <TouchableOpacity style={S.avatarEdit} activeOpacity={0.8} onPress={pickPhoto}>
+            <TouchableOpacity
+              style={[S.avatarEdit, { backgroundColor: PINK, borderColor: colors.background }]}
+              activeOpacity={0.8}
+              onPress={pickPhoto}
+            >
               <Feather name="camera" size={14} color="#fff" />
             </TouchableOpacity>
           </View>
-          <Text style={S.avatarName}>{profile.nome}</Text>
-          <Text style={S.avatarRole}>{profile.cargo} · {profile.empresa}</Text>
+          <Text style={[S.avatarName, { color: colors.text }]}>{profile.nome}</Text>
+          <Text style={[S.avatarRole, { color: colors.mutedForeground }]}>
+            {profile.cargo} · {profile.empresa}
+          </Text>
           {photoUri && (
             <TouchableOpacity onPress={removePhoto} style={{ marginTop: 8 }} activeOpacity={0.7}>
               <Text style={{ fontSize: 13, color: "rgba(255,60,100,0.7)", fontFamily: "SpaceGrotesk_400Regular" }}>
@@ -151,156 +154,105 @@ export default function PerfilScreen() {
               </Text>
             </TouchableOpacity>
           )}
-          <View style={S.proBadge}>
-            <Text style={S.proBadgeText}>✦ Plano Pro</Text>
+          <View style={[S.proBadge, { backgroundColor: PINK + "22" }]}>
+            <Text style={[S.proBadgeText, { color: PINK }]}>✦ Plano Pro</Text>
           </View>
         </View>
 
         {/* Fields */}
-        <View style={S.section}>
-          <Text style={S.sectionTitle}>INFORMAÇÕES PESSOAIS</Text>
-          <View style={S.card}>
+        <View style={{ marginBottom: 24, paddingHorizontal: 16 }}>
+          <Text style={[S.sectionTitle, { color: colors.mutedForeground }]}>INFORMAÇÕES PESSOAIS</Text>
+          <View style={[S.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
             {FIELDS.map((f, i) => (
               <React.Fragment key={f.key}>
                 <View style={S.fieldWrap}>
-                  <Text style={S.fieldLabel}>{f.label}</Text>
+                  <Text style={[S.fieldLabel, { color: colors.mutedForeground }]}>{f.label}</Text>
                   <View style={S.inputRow}>
-                    <Feather name={f.icon as any} size={16} color={COLORS.muted} style={S.inputIcon} />
+                    <Feather name={f.icon as any} size={16} color={colors.mutedForeground} style={S.inputIcon} />
                     <TextInput
-                      style={S.input}
+                      style={[S.input, { color: colors.text }]}
                       value={profile[f.key]}
                       onChangeText={update(f.key)}
                       keyboardType={f.keyboard || "default"}
                       autoCapitalize={f.keyboard === "email-address" ? "none" : "words"}
                       autoCorrect={false}
-                      placeholderTextColor={COLORS.muted}
+                      placeholderTextColor={colors.mutedForeground}
                     />
                   </View>
                 </View>
-                {i < FIELDS.length - 1 && <View style={S.divider} />}
+                {i < FIELDS.length - 1 && (
+                  <View style={[S.divider, { backgroundColor: colors.border }]} />
+                )}
               </React.Fragment>
             ))}
           </View>
         </View>
 
         {/* Save Button */}
-        <TouchableOpacity
-          style={[S.saveBtn, (saving || saved) && S.saveBtnSuccess]}
-          onPress={save}
-          activeOpacity={0.85}
-          disabled={saving || saved}
-        >
-          {saving ? (
-            <ActivityIndicator color="#fff" />
-          ) : saved ? (
-            <>
-              <Feather name="check" size={18} color="#fff" />
-              <Text style={S.saveBtnText}>Salvo!</Text>
-            </>
-          ) : (
-            <Text style={S.saveBtnText}>Salvar alterações</Text>
-          )}
-        </TouchableOpacity>
+        <View style={{ paddingHorizontal: 16 }}>
+          <TouchableOpacity
+            style={[
+              S.saveBtn,
+              { backgroundColor: saved ? "#00D68F" : PINK, shadowColor: PINK },
+            ]}
+            onPress={save}
+            activeOpacity={0.85}
+            disabled={saving || saved}
+          >
+            {saving ? (
+              <ActivityIndicator color="#fff" />
+            ) : saved ? (
+              <>
+                <Feather name="check" size={18} color="#fff" />
+                <Text style={S.saveBtnText}>Salvo!</Text>
+              </>
+            ) : (
+              <Text style={S.saveBtnText}>Salvar alterações</Text>
+            )}
+          </TouchableOpacity>
+        </View>
       </ScrollView>
     </View>
   );
 }
 
 const S = StyleSheet.create({
-  root: { flex: 1, backgroundColor: COLORS.bg },
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: COLORS.border,
-  },
-  backBtn: { width: 44, height: 44, alignItems: "center", justifyContent: "center" },
-  headerTitle: { fontSize: 17, fontFamily: "SpaceGrotesk_700Bold", color: COLORS.text },
-  scroll: { paddingHorizontal: 20, paddingTop: 24 },
+  root:   { flex: 1 },
+  header: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: 16, paddingBottom: 16 },
+  backBtn:    { width: 36, height: 36, alignItems: "center", justifyContent: "center" },
+  headerTitle:{ fontSize: 17, fontFamily: "SpaceGrotesk_700Bold" },
+  scroll: { paddingTop: 24 },
 
-  avatarSection: { alignItems: "center", marginBottom: 32 },
-  avatarWrap: { position: "relative", marginBottom: 14 },
-  avatarImg:  { width: 90, height: 90, borderRadius: 45 },
-  avatar: {
-    width: 90,
-    height: 90,
-    borderRadius: 45,
-    backgroundColor: COLORS.primary,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  avatarText: { color: "#fff", fontSize: 32, fontFamily: "SpaceGrotesk_700Bold" },
-  avatarEdit: {
-    position: "absolute",
-    bottom: 0,
-    right: 0,
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    backgroundColor: COLORS.primary,
-    alignItems: "center",
-    justifyContent: "center",
+  avatarSection: { alignItems: "center", marginBottom: 32, paddingHorizontal: 16 },
+  avatarWrap:    { position: "relative", marginBottom: 14 },
+  avatarImg:     { width: 90, height: 90, borderRadius: 45 },
+  avatar:        { width: 90, height: 90, borderRadius: 45, alignItems: "center", justifyContent: "center" },
+  avatarText:    { color: "#fff", fontSize: 32, fontFamily: "SpaceGrotesk_700Bold" },
+  avatarEdit:    {
+    position: "absolute", bottom: 0, right: 0,
+    width: 28, height: 28, borderRadius: 14,
+    alignItems: "center", justifyContent: "center",
     borderWidth: 2,
-    borderColor: COLORS.bg,
   },
-  avatarName: { fontSize: 20, fontFamily: "SpaceGrotesk_700Bold", color: COLORS.text },
-  avatarRole: { fontSize: 15, fontFamily: "SpaceGrotesk_400Regular", color: COLORS.muted, marginTop: 4 },
-  proBadge: {
-    marginTop: 10,
-    backgroundColor: COLORS.primary + "22",
-    paddingHorizontal: 12,
-    paddingVertical: 4,
-    borderRadius: 20,
-  },
-  proBadgeText: { fontSize: 13, fontFamily: "SpaceGrotesk_600SemiBold", color: COLORS.primary },
+  avatarName:  { fontSize: 20, fontFamily: "SpaceGrotesk_700Bold" },
+  avatarRole:  { fontSize: 13, fontFamily: "SpaceGrotesk_400Regular", marginTop: 4 },
+  proBadge:    { marginTop: 10, paddingHorizontal: 12, paddingVertical: 4, borderRadius: 20 },
+  proBadgeText:{ fontSize: 12, fontFamily: "SpaceGrotesk_600SemiBold" },
 
-  section: { marginBottom: 24 },
-  sectionTitle: {
-    fontSize: 11,
-    fontFamily: "SpaceGrotesk_600SemiBold",
-    color: COLORS.muted,
-    letterSpacing: 1,
-    marginBottom: 10,
-  },
-  card: {
-    backgroundColor: COLORS.card,
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    overflow: "hidden",
-  },
-  fieldWrap: { paddingHorizontal: 16, paddingVertical: 14 },
-  fieldLabel: {
-    fontSize: 11,
-    fontFamily: "SpaceGrotesk_500Medium",
-    color: COLORS.muted,
-    marginBottom: 6,
-    textTransform: "uppercase",
-    letterSpacing: 0.5,
-  },
-  inputRow: { flexDirection: "row", alignItems: "center", gap: 10 },
-  inputIcon: {},
-  input: { flex: 1, fontSize: 15, fontFamily: "SpaceGrotesk_400Regular", color: COLORS.text },
-  divider: { height: StyleSheet.hairlineWidth, backgroundColor: COLORS.border, marginHorizontal: 16 },
+  sectionTitle: { fontSize: 11, fontFamily: "SpaceGrotesk_600SemiBold", letterSpacing: 0.8, marginBottom: 10 },
+  card:         { borderRadius: 14, borderWidth: 1, overflow: "hidden" },
+  fieldWrap:    { paddingHorizontal: 16, paddingVertical: 14 },
+  fieldLabel:   { fontSize: 11, fontFamily: "SpaceGrotesk_500Medium", marginBottom: 6, textTransform: "uppercase", letterSpacing: 0.5 },
+  inputRow:     { flexDirection: "row", alignItems: "center", gap: 10 },
+  inputIcon:    {},
+  input:        { flex: 1, fontSize: 14, fontFamily: "SpaceGrotesk_400Regular" },
+  divider:      { height: StyleSheet.hairlineWidth, marginHorizontal: 16 },
 
   saveBtn: {
-    backgroundColor: COLORS.primary,
-    height: 54,
-    borderRadius: 14,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 8,
-    shadowColor: COLORS.primary,
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.4,
-    shadowRadius: 16,
-    elevation: 8,
+    height: 54, borderRadius: 14,
+    flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8,
+    shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.4, shadowRadius: 16, elevation: 8,
     marginBottom: 12,
   },
-  saveBtnSuccess: { backgroundColor: "rgba(255,255,255,0.55)" },
-  saveBtnText: { fontSize: 16, fontFamily: "SpaceGrotesk_700Bold", color: "#fff" },
+  saveBtnText: { fontSize: 15, fontFamily: "SpaceGrotesk_700Bold", color: "#fff" },
 });

@@ -22,9 +22,9 @@ import { JADE_SEGMENTS } from "@/constants/jade-segments";
 import { BRAZIL_STATES } from "@/constants/brazil-locations";
 
 const PINK   = "#FF0080";
-const BG     = "#0B0814";
+const BG     = "#0A0A0F";
 const CARD   = "#111118";
-const BORDER = "#1E1830";
+const BORDER = "#252535";
 
 // ─── Flat city list ────────────────────────────────────────────────────────────
 const ALL_CITIES: { label: string; city: string; state: string }[] = BRAZIL_STATES.flatMap((s) =>

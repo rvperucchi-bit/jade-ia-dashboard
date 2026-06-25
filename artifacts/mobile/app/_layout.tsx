@@ -198,6 +198,10 @@ function RootLayoutNav() {
         name="uso"
         options={{ headerShown: false, presentation: "card", animation: "slide_from_right" }}
       />
+      <Stack.Screen
+        name="admin-uso"
+        options={{ headerShown: false, presentation: "card", animation: "slide_from_right" }}
+      />
     </Stack>
   );
 }

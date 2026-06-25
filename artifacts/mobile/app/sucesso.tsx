@@ -3,21 +3,14 @@ import { useRouter } from "expo-router";
 import React, { useEffect, useRef } from "react";
 import { Animated, Easing, Platform, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useColors } from "@/hooks/useColors";
 
-const C = {
-  bg:      "#0B0814",
-  card:    "#111118",
-  border:  "#1E1E2E",
-  text:    "#FFFFFF",
-  muted:   "#7777AA",
-  primary: "#FF0080",
-  success: "#FF0080",
-  surface: "#16161F",
-};
+const PINK = "#FF0080";
 
 export default function SucessoScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const colors = useColors();
 
   const scaleAnim   = useRef(new Animated.Value(0)).current;
   const opacityAnim = useRef(new Animated.Value(0)).current;
@@ -56,29 +49,29 @@ export default function SucessoScreen() {
   const topPad = Platform.OS === "web" ? 60 : insets.top + 20;
 
   return (
-    <View style={[S.root, { paddingTop: topPad, paddingBottom: insets.bottom + 32 }]}>
+    <View style={[S.root, { backgroundColor: colors.background, paddingTop: topPad, paddingBottom: insets.bottom + 32 }]}>
       <View style={S.center}>
         <Animated.View style={[S.iconWrap, { transform: [{ scale: scaleAnim }], opacity: opacityAnim }]}>
-          <View style={S.iconRing}>
-            <Feather name="check" size={52} color={C.success} />
+          <View style={[S.iconRing, { backgroundColor: colors.primary + "18", borderColor: colors.primary + "55" }]}>
+            <Feather name="check" size={52} color={colors.primary} />
           </View>
         </Animated.View>
 
         <Animated.View style={{ opacity: opacityAnim, transform: [{ translateY: slideAnim }] }}>
-          <Text style={S.title}>Pagamento confirmado! 🎉</Text>
-          <Text style={S.subtitle}>Seu plano foi ativado.{"\n"}Bora vender!</Text>
+          <Text style={[S.title, { color: colors.text }]}>Pagamento confirmado! 🎉</Text>
+          <Text style={[S.subtitle, { color: colors.mutedForeground }]}>Seu plano foi ativado.{"\n"}Bora vender!</Text>
 
-          <View style={S.card}>
+          <View style={[S.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
             {[
               "IA de vendas liberada",
               "Créditos adicionados à conta",
               "Acesso imediato a todos os recursos",
             ].map((item, i) => (
               <View key={i} style={S.checkRow}>
-                <View style={S.checkDot}>
-                  <Feather name="check" size={12} color={C.success} />
+                <View style={[S.checkDot, { backgroundColor: colors.primary + "22" }]}>
+                  <Feather name="check" size={12} color={colors.primary} />
                 </View>
-                <Text style={S.checkText}>{item}</Text>
+                <Text style={[S.checkText, { color: colors.text }]}>{item}</Text>
               </View>
             ))}
           </View>
@@ -86,7 +79,7 @@ export default function SucessoScreen() {
       </View>
 
       <Animated.View style={{ opacity: opacityAnim }}>
-        <TouchableOpacity style={S.btn} activeOpacity={0.85} onPress={handleGoToApp}>
+        <TouchableOpacity style={[S.btn, { backgroundColor: PINK, shadowColor: PINK }]} activeOpacity={0.85} onPress={handleGoToApp}>
           <Text style={S.btnText}>Ir para o app</Text>
           <Feather name="arrow-right" size={18} color="#fff" />
         </TouchableOpacity>
@@ -98,7 +91,6 @@ export default function SucessoScreen() {
 const S = StyleSheet.create({
   root: {
     flex: 1,
-    backgroundColor: C.bg,
     paddingHorizontal: 28,
     justifyContent: "space-between",
   },
@@ -113,32 +105,26 @@ const S = StyleSheet.create({
     width: 112,
     height: 112,
     borderRadius: 56,
-    backgroundColor: C.success + "18",
     borderWidth: 2,
-    borderColor: C.success + "55",
     alignItems: "center",
     justifyContent: "center",
   },
   title: {
     fontSize: 28,
     fontFamily: "SpaceGrotesk_700Bold",
-    color: C.text,
     textAlign: "center",
     lineHeight: 36,
   },
   subtitle: {
     fontSize: 17,
     fontFamily: "SpaceGrotesk_400Regular",
-    color: C.muted,
     textAlign: "center",
     lineHeight: 26,
     marginTop: 8,
   },
   card: {
-    backgroundColor: C.card,
     borderRadius: 16,
     borderWidth: 1,
-    borderColor: C.border,
     padding: 20,
     gap: 14,
     marginTop: 24,
@@ -152,24 +138,20 @@ const S = StyleSheet.create({
     width: 24,
     height: 24,
     borderRadius: 12,
-    backgroundColor: C.success + "22",
     alignItems: "center",
     justifyContent: "center",
   },
   checkText: {
     fontSize: 14,
     fontFamily: "SpaceGrotesk_500Medium",
-    color: C.text,
   },
   btn: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
     gap: 10,
-    backgroundColor: C.primary,
     borderRadius: 14,
     height: 56,
-    shadowColor: C.primary,
     shadowOffset: { width: 0, height: 6 },
     shadowOpacity: 0.4,
     shadowRadius: 18,

@@ -2,6 +2,7 @@ import { Feather } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import React from "react";
 import {
+  Platform,
   ScrollView,
   StyleSheet,
   Text,
@@ -9,23 +10,11 @@ import {
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useColors } from "@/hooks/useColors";
 
-const C = {
-  bg: "#0B0814",
-  card: "#111118",
-  border: "#1E1E2E",
-  text: "#FFFFFF",
-  muted: "#7777AA",
-  sub: "#AAAACC",
-  primary: "#FF0080",
-};
+const PINK = "#FF0080";
 
-interface Section {
-  title: string;
-  body: string;
-}
-
-const SECTIONS: Section[] = [
+const SECTIONS = [
   {
     title: "1. Coleta de Dados",
     body: "A JADE IA coleta informações necessárias para o funcionamento da plataforma, incluindo:\n\n• Nome completo e e-mail fornecidos no cadastro\n• Número de telefone para comunicações\n• Dados de uso e interações com a plataforma\n• Informações de leads inseridas pelo usuário\n• Logs de acesso e dados de dispositivo\n\nAs informações são coletadas diretamente do usuário no momento do cadastro ou durante o uso da plataforma.",
@@ -57,43 +46,50 @@ const SECTIONS: Section[] = [
 ];
 
 export default function PrivacidadeScreen() {
-  const router = useRouter();
-  const insets = useSafeAreaInsets();
+  const router  = useRouter();
+  const insets  = useSafeAreaInsets();
+  const colors  = useColors();
+
+  const topPad = Platform.OS === "web" ? 24 : insets.top + 4;
+  const botPad = Platform.OS === "web" ? 40 : insets.bottom + 32;
 
   return (
-    <View style={[S.root, { paddingTop: insets.top }]}>
-      <View style={S.header}>
+    <View style={[S.root, { backgroundColor: colors.background }]}>
+      {/* Header */}
+      <View style={[S.header, { paddingTop: topPad }]}>
         <TouchableOpacity onPress={() => router.back()} style={S.backBtn} activeOpacity={0.7}>
-          <Feather name="arrow-left" size={22} color={C.text} />
+          <Feather name="chevron-left" size={22} color={colors.text} />
         </TouchableOpacity>
-        <Text style={S.headerTitle}>Política de Privacidade</Text>
-        <View style={{ width: 40 }} />
+        <Text style={[S.headerTitle, { color: colors.text }]}>Política de Privacidade</Text>
+        <View style={{ width: 36 }} />
       </View>
 
       <ScrollView
-        contentContainerStyle={[S.scroll, { paddingBottom: insets.bottom + 40 }]}
+        contentContainerStyle={[S.scroll, { paddingBottom: botPad }]}
         showsVerticalScrollIndicator={false}
       >
         <View style={S.hero}>
-          <View style={S.heroIcon}>
-            <Feather name="shield" size={28} color={C.primary} />
+          <View style={[S.heroIcon, { backgroundColor: PINK + "18" }]}>
+            <Feather name="shield" size={28} color={PINK} />
           </View>
-          <Text style={S.heroTitle}>Seus dados, protegidos.</Text>
-          <Text style={S.heroSub}>
+          <Text style={[S.heroTitle, { color: colors.text }]}>Seus dados, protegidos.</Text>
+          <Text style={[S.heroSub, { color: colors.mutedForeground }]}>
             A JADE IA leva a privacidade a sério. Veja como tratamos suas informações em conformidade com a LGPD.
           </Text>
-          <Text style={S.heroDate}>Última atualização: 20 de junho de 2026</Text>
+          <Text style={[S.heroDate, { color: colors.mutedForeground }]}>
+            Última atualização: 20 de junho de 2026
+          </Text>
         </View>
 
         {SECTIONS.map((sec, i) => (
-          <View key={i} style={S.section}>
-            <Text style={S.sectionTitle}>{sec.title}</Text>
-            <Text style={S.sectionBody}>{sec.body}</Text>
+          <View key={i} style={[S.section, { backgroundColor: colors.card, borderColor: colors.border }]}>
+            <Text style={[S.sectionTitle, { color: PINK }]}>{sec.title}</Text>
+            <Text style={[S.sectionBody, { color: colors.mutedForeground }]}>{sec.body}</Text>
           </View>
         ))}
 
         <View style={S.footer}>
-          <Text style={S.footerText}>
+          <Text style={[S.footerText, { color: colors.mutedForeground }]}>
             Ao utilizar a JADE IA, você concorda com esta Política de Privacidade.
           </Text>
         </View>
@@ -103,85 +99,22 @@ export default function PrivacidadeScreen() {
 }
 
 const S = StyleSheet.create({
-  root: { flex: 1, backgroundColor: C.bg },
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: C.border,
-  },
-  backBtn: { width: 44, height: 44, alignItems: "center", justifyContent: "center" },
-  headerTitle: { fontSize: 17, fontFamily: "SpaceGrotesk_700Bold", color: C.text },
-  scroll: { paddingHorizontal: 20, paddingTop: 8 },
+  root:   { flex: 1 },
+  header: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: 16, paddingBottom: 16 },
+  backBtn:     { width: 36, height: 36, alignItems: "center", justifyContent: "center" },
+  headerTitle: { fontSize: 17, fontFamily: "SpaceGrotesk_700Bold" },
+  scroll:      { paddingHorizontal: 16, paddingTop: 8 },
 
-  hero: {
-    alignItems: "center",
-    paddingVertical: 32,
-    gap: 10,
-  },
-  heroIcon: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
-    backgroundColor: C.primary + "18",
-    alignItems: "center",
-    justifyContent: "center",
-    marginBottom: 4,
-  },
-  heroTitle: {
-    fontSize: 22,
-    fontFamily: "SpaceGrotesk_700Bold",
-    color: C.text,
-    textAlign: "center",
-  },
-  heroSub: {
-    fontSize: 14,
-    fontFamily: "SpaceGrotesk_400Regular",
-    color: C.sub,
-    textAlign: "center",
-    lineHeight: 22,
-  },
-  heroDate: {
-    fontSize: 12,
-    fontFamily: "SpaceGrotesk_400Regular",
-    color: C.muted,
-    marginTop: 4,
-  },
+  hero:      { alignItems: "center", paddingVertical: 32, gap: 10 },
+  heroIcon:  { width: 64, height: 64, borderRadius: 32, alignItems: "center", justifyContent: "center", marginBottom: 4 },
+  heroTitle: { fontSize: 20, fontFamily: "SpaceGrotesk_700Bold", textAlign: "center" },
+  heroSub:   { fontSize: 13, fontFamily: "SpaceGrotesk_400Regular", textAlign: "center", lineHeight: 20 },
+  heroDate:  { fontSize: 12, fontFamily: "SpaceGrotesk_400Regular", marginTop: 4 },
 
-  section: {
-    backgroundColor: C.card,
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: C.border,
-    padding: 20,
-    marginBottom: 12,
-    gap: 10,
-  },
-  sectionTitle: {
-    fontSize: 15,
-    fontFamily: "SpaceGrotesk_700Bold",
-    color: C.primary,
-  },
-  sectionBody: {
-    fontSize: 14,
-    fontFamily: "SpaceGrotesk_400Regular",
-    color: C.sub,
-    lineHeight: 22,
-  },
+  section:      { borderRadius: 14, borderWidth: 1, padding: 18, marginBottom: 10, gap: 10 },
+  sectionTitle: { fontSize: 14, fontFamily: "SpaceGrotesk_700Bold" },
+  sectionBody:  { fontSize: 13, fontFamily: "SpaceGrotesk_400Regular", lineHeight: 20 },
 
-  footer: {
-    marginTop: 8,
-    padding: 20,
-    alignItems: "center",
-  },
-  footerText: {
-    fontSize: 13,
-    fontFamily: "SpaceGrotesk_400Regular",
-    color: C.muted,
-    textAlign: "center",
-    lineHeight: 20,
-  },
+  footer:     { marginTop: 8, padding: 20, alignItems: "center" },
+  footerText: { fontSize: 12, fontFamily: "SpaceGrotesk_400Regular", textAlign: "center", lineHeight: 18 },
 });

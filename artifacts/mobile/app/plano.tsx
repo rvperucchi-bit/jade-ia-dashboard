@@ -14,19 +14,10 @@ import {
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useColors } from "@/hooks/useColors";
 
-const C = {
-  bg:      "#0B0814",
-  card:    "#111118",
-  border:  "#1E1E2E",
-  text:    "#FFFFFF",
-  muted:   "#7777AA",
-  sub:     "#AAAACC",
-  primary: "#FF0080",
-  surface: "#16161F",
-  success: "#FF0080",
-  warning: "#8400FF",
-};
+const PINK    = "#FF0080";
+const SUCCESS = "#00D68F";
 
 const API_BASE =
   Platform.OS === "web"
@@ -38,16 +29,16 @@ const LIMIT = 1000;
 const PCT   = USED / LIMIT;
 
 interface Plan {
-  id: string;
-  name: string;
-  price: string;
-  period: string;
-  tag?: string;
-  current?: boolean;
+  id:         string;
+  name:       string;
+  price:      string;
+  period:     string;
+  tag?:       string;
+  current?:   boolean;
   highlight?: boolean;
-  features: string[];
-  credits: string;
-  users: string;
+  features:   string[];
+  credits:    string;
+  users:      string;
   canUpgrade?: boolean;
 }
 
@@ -106,75 +97,72 @@ const PLANS: Plan[] = [
 ];
 
 function PlanCard({
-  plan,
-  loadingPlano,
-  onUpgrade,
+  plan, loadingPlano, onUpgrade,
 }: {
-  plan: Plan;
-  loadingPlano: string | null;
-  onUpgrade: (plano: string) => void;
+  plan: Plan; loadingPlano: string | null; onUpgrade: (plano: string) => void;
 }) {
+  const colors    = useColors();
   const isLoading = loadingPlano === plan.id;
 
   return (
-    <View style={[S.planCard, plan.highlight && S.planCardHighlight]}>
+    <View style={[
+      S.planCard,
+      { backgroundColor: colors.card, borderColor: colors.border },
+      plan.highlight && { borderColor: PINK + "88", backgroundColor: PINK + "08" },
+    ]}>
       {plan.tag && (
-        <View style={S.currentBadge}>
+        <View style={[S.currentBadge, { backgroundColor: PINK }]}>
           <Text style={S.currentBadgeText}>{plan.tag}</Text>
         </View>
       )}
 
       <View style={S.planCardHeader}>
-        <Text style={[S.planName, plan.highlight && S.planNameHighlight]}>
+        <Text style={[S.planName, { color: plan.highlight ? colors.text : colors.mutedForeground }]}>
           {plan.name}
         </Text>
         <View style={S.planPriceRow}>
-          <Text style={S.planPrice}>{plan.price}</Text>
-          <Text style={S.planPeriod}>{plan.period}</Text>
+          <Text style={[S.planPrice, { color: colors.text }]}>{plan.price}</Text>
+          <Text style={[S.planPeriod, { color: colors.mutedForeground }]}>{plan.period}</Text>
         </View>
       </View>
 
-      <View style={[S.divider, plan.highlight && S.dividerHighlight]} />
+      <View style={[S.divider, { backgroundColor: plan.highlight ? PINK + "44" : colors.border }]} />
 
       <View style={S.featureList}>
         {plan.features.map((f, i) => (
           <View key={i} style={S.featureRow}>
-            <Feather
-              name="check"
-              size={14}
-              color={plan.highlight ? C.primary : C.success}
-            />
-            <Text style={S.featureText}>{f}</Text>
+            <Feather name="check" size={14} color={PINK} />
+            <Text style={[S.featureText, { color: colors.mutedForeground }]}>{f}</Text>
           </View>
         ))}
       </View>
 
       <View style={S.planMeta}>
-        <View style={S.metaChip}>
-          <Feather name="zap" size={12} color={C.muted} />
-          <Text style={S.metaText}>{plan.credits}</Text>
+        <View style={[S.metaChip, { backgroundColor: colors.surface }]}>
+          <Feather name="zap" size={12} color={colors.mutedForeground} />
+          <Text style={[S.metaText, { color: colors.mutedForeground }]}>{plan.credits}</Text>
         </View>
-        <View style={S.metaChip}>
-          <Feather name="users" size={12} color={C.muted} />
-          <Text style={S.metaText}>{plan.users}</Text>
+        <View style={[S.metaChip, { backgroundColor: colors.surface }]}>
+          <Feather name="users" size={12} color={colors.mutedForeground} />
+          <Text style={[S.metaText, { color: colors.mutedForeground }]}>{plan.users}</Text>
         </View>
       </View>
 
       {plan.canUpgrade && (
         <TouchableOpacity
-          style={[S.upgradeBtn, isLoading && { opacity: 0.7 }]}
+          style={[S.upgradeBtn, { borderColor: PINK }, isLoading && { opacity: 0.7 }]}
           activeOpacity={0.85}
           onPress={() => onUpgrade(plan.id)}
           disabled={!!loadingPlano}
         >
           {isLoading ? (
-            <ActivityIndicator size="small" color={C.primary} />
+            <ActivityIndicator size="small" color={PINK} />
           ) : (
             <>
-              <Text style={S.upgradeBtnText}>
+              <Text style={[S.upgradeBtnText, { color: PINK }]}>
                 {plan.id === "start" ? "Fazer downgrade" : "Fazer upgrade"}
               </Text>
-              <Feather name="arrow-right" size={14} color={C.primary} />
+              <Feather name="arrow-right" size={14} color={PINK} />
             </>
           )}
         </TouchableOpacity>
@@ -186,7 +174,11 @@ function PlanCard({
 export default function PlanoScreen() {
   const router  = useRouter();
   const insets  = useSafeAreaInsets();
+  const colors  = useColors();
   const [loadingPlano, setLoadingPlano] = useState<string | null>(null);
+
+  const topPad = Platform.OS === "web" ? 24 : insets.top + 4;
+  const botPad = Platform.OS === "web" ? 40 : insets.bottom + 32;
 
   const fazerUpgrade = async (plano: string) => {
     setLoadingPlano(plano);
@@ -194,10 +186,7 @@ export default function PlanoScreen() {
       const res = await fetch(`${API_BASE}/api/stripe/create-checkout`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          plano,
-          email: "contato@jadeia.com.br",
-        }),
+        body: JSON.stringify({ plano, email: "contato@jadeia.com.br" }),
       });
 
       if (!res.ok) {
@@ -205,15 +194,15 @@ export default function PlanoScreen() {
         throw new Error((err as any).error ?? "Erro desconhecido");
       }
 
-      const data = await res.json() as { url?: string; sessionId?: string };
+      const data = await res.json() as { url?: string };
 
       if (data.url) {
         if (Platform.OS === "web") {
           await Linking.openURL(data.url);
         } else {
           await WebBrowser.openBrowserAsync(data.url, {
-            toolbarColor: "#0B0814",
-            controlsColor: "#FF0080",
+            toolbarColor: colors.background,
+            controlsColor: PINK,
             showTitle: false,
             enableBarCollapsing: true,
           });
@@ -230,48 +219,51 @@ export default function PlanoScreen() {
   };
 
   return (
-    <View style={[S.root, { paddingTop: insets.top }]}>
-      <View style={S.header}>
+    <View style={[S.root, { backgroundColor: colors.background }]}>
+      {/* Header */}
+      <View style={[S.header, { paddingTop: topPad }]}>
         <TouchableOpacity onPress={() => router.back()} style={S.backBtn} activeOpacity={0.7}>
-          <Feather name="arrow-left" size={22} color={C.text} />
+          <Feather name="chevron-left" size={22} color={colors.text} />
         </TouchableOpacity>
-        <Text style={S.headerTitle}>Meu Plano</Text>
-        <View style={{ width: 40 }} />
+        <Text style={[S.headerTitle, { color: colors.text }]}>Meu Plano</Text>
+        <View style={{ width: 36 }} />
       </View>
 
       <ScrollView
-        contentContainerStyle={[S.scroll, { paddingBottom: insets.bottom + 40 }]}
+        contentContainerStyle={[S.scroll, { paddingBottom: botPad }]}
         showsVerticalScrollIndicator={false}
       >
-        {/* Plano atual em destaque */}
-        <View style={S.activePlan}>
+        {/* Plano atual */}
+        <View style={[S.activePlan, { backgroundColor: PINK + "18", borderColor: PINK + "55" }]}>
           <View style={S.activePlanLeft}>
-            <Text style={S.activePlanBadge}>✦ PLANO PRO ATIVO</Text>
-            <Text style={S.activePlanPrice}>
-              R$247<Text style={S.activePlanSub}>/mês</Text>
+            <Text style={[S.activePlanBadge, { color: PINK }]}>✦ PLANO PRO ATIVO</Text>
+            <Text style={[S.activePlanPrice, { color: colors.text }]}>
+              R$247<Text style={[S.activePlanSub, { color: colors.mutedForeground }]}>/mês</Text>
             </Text>
-            <Text style={S.activePlanRenewal}>Próxima renovação: 20 de julho de 2026</Text>
+            <Text style={[S.activePlanRenewal, { color: colors.mutedForeground }]}>
+              Próxima renovação: 20 de julho de 2026
+            </Text>
           </View>
-          <View style={S.activeChip}>
-            <View style={S.activeDot} />
-            <Text style={S.activeText}>Ativo</Text>
+          <View style={[S.activeChip, { backgroundColor: SUCCESS + "22" }]}>
+            <View style={[S.activeDot, { backgroundColor: SUCCESS }]} />
+            <Text style={[S.activeText, { color: SUCCESS }]}>Ativo</Text>
           </View>
         </View>
 
         {/* Créditos */}
         <View style={S.section}>
-          <Text style={S.sectionTitle}>CRÉDITOS DE IA</Text>
-          <View style={S.creditsCard}>
+          <Text style={[S.sectionTitle, { color: colors.mutedForeground }]}>CRÉDITOS DE IA</Text>
+          <View style={[S.creditsCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
             <View style={S.creditsRow}>
-              <Text style={S.creditsLabel}>Usados este mês</Text>
-              <Text style={S.creditsValue}>
+              <Text style={[S.creditsLabel, { color: colors.text }]}>Usados este mês</Text>
+              <Text style={[S.creditsValue, { color: PINK }]}>
                 {USED.toLocaleString("pt-BR")} / {LIMIT.toLocaleString("pt-BR")}
               </Text>
             </View>
-            <View style={S.barTrack}>
-              <View style={[S.barFill, { width: `${PCT * 100}%` as any }]} />
+            <View style={[S.barTrack, { backgroundColor: colors.surface }]}>
+              <View style={[S.barFill, { width: `${PCT * 100}%` as any, backgroundColor: PINK }]} />
             </View>
-            <Text style={S.creditsHint}>
+            <Text style={[S.creditsHint, { color: colors.mutedForeground }]}>
               {Math.round((1 - PCT) * LIMIT)} créditos restantes · renova em 30 dias
             </Text>
           </View>
@@ -279,7 +271,7 @@ export default function PlanoScreen() {
 
         {/* Planos */}
         <View style={S.section}>
-          <Text style={S.sectionTitle}>PLANOS DISPONÍVEIS</Text>
+          <Text style={[S.sectionTitle, { color: colors.mutedForeground }]}>PLANOS DISPONÍVEIS</Text>
           {PLANS.map((plan) => (
             <PlanCard
               key={plan.id}
@@ -290,9 +282,9 @@ export default function PlanoScreen() {
           ))}
         </View>
 
-        {/* CTA hero */}
+        {/* CTA */}
         <TouchableOpacity
-          style={[S.upgradeHero, !!loadingPlano && { opacity: 0.7 }]}
+          style={[S.upgradeHero, { backgroundColor: PINK, shadowColor: PINK }, !!loadingPlano && { opacity: 0.7 }]}
           activeOpacity={0.85}
           disabled={!!loadingPlano}
           onPress={() => fazerUpgrade("enterprise")}
@@ -313,108 +305,55 @@ export default function PlanoScreen() {
 }
 
 const S = StyleSheet.create({
-  root:   { flex: 1, backgroundColor: C.bg },
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: C.border,
-  },
-  backBtn:     { width: 40, height: 40, alignItems: "center", justifyContent: "center" },
-  headerTitle: { fontSize: 17, fontFamily: "SpaceGrotesk_700Bold", color: C.text },
-  scroll:      { paddingHorizontal: 20, paddingTop: 24 },
+  root:   { flex: 1 },
+  header: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: 16, paddingBottom: 16 },
+  backBtn:     { width: 36, height: 36, alignItems: "center", justifyContent: "center" },
+  headerTitle: { fontSize: 17, fontFamily: "SpaceGrotesk_700Bold" },
+  scroll:      { paddingHorizontal: 16, paddingTop: 20 },
 
-  activePlan: {
-    flexDirection: "row",
-    alignItems: "flex-start",
-    justifyContent: "space-between",
-    backgroundColor: C.primary + "18",
-    borderWidth: 1,
-    borderColor: C.primary + "55",
-    borderRadius: 18,
-    padding: 20,
-    marginBottom: 28,
-  },
-  activePlanLeft:    { gap: 4 },
-  activePlanBadge:   { fontSize: 11, fontFamily: "SpaceGrotesk_700Bold", color: C.primary, letterSpacing: 1 },
-  activePlanPrice:   { fontSize: 36, fontFamily: "SpaceGrotesk_700Bold", color: C.text, marginTop: 4 },
-  activePlanSub:     { fontSize: 16, fontFamily: "SpaceGrotesk_400Regular", color: C.muted },
-  activePlanRenewal: { fontSize: 15, fontFamily: "SpaceGrotesk_400Regular", color: C.muted, marginTop: 4 },
-  activeChip:        { flexDirection: "row", alignItems: "center", gap: 6, backgroundColor: C.success + "22", paddingHorizontal: 10, paddingVertical: 5, borderRadius: 20 },
-  activeDot:         { width: 7, height: 7, borderRadius: 4, backgroundColor: C.success },
-  activeText:        { fontSize: 13, fontFamily: "SpaceGrotesk_600SemiBold", color: C.success },
+  activePlan:      { flexDirection: "row", alignItems: "flex-start", justifyContent: "space-between", borderWidth: 1, borderRadius: 18, padding: 20, marginBottom: 28 },
+  activePlanLeft:  { gap: 4 },
+  activePlanBadge: { fontSize: 11, fontFamily: "SpaceGrotesk_700Bold", letterSpacing: 1 },
+  activePlanPrice: { fontSize: 34, fontFamily: "SpaceGrotesk_700Bold", marginTop: 4 },
+  activePlanSub:   { fontSize: 15, fontFamily: "SpaceGrotesk_400Regular" },
+  activePlanRenewal:{ fontSize: 13, fontFamily: "SpaceGrotesk_400Regular", marginTop: 4 },
+  activeChip:      { flexDirection: "row", alignItems: "center", gap: 6, paddingHorizontal: 10, paddingVertical: 5, borderRadius: 20 },
+  activeDot:       { width: 7, height: 7, borderRadius: 4 },
+  activeText:      { fontSize: 12, fontFamily: "SpaceGrotesk_600SemiBold" },
 
   section:      { marginBottom: 24 },
-  sectionTitle: { fontSize: 11, fontFamily: "SpaceGrotesk_600SemiBold", color: C.muted, letterSpacing: 1, marginBottom: 14 },
+  sectionTitle: { fontSize: 11, fontFamily: "SpaceGrotesk_600SemiBold", letterSpacing: 0.8, marginBottom: 14 },
 
-  creditsCard: { backgroundColor: C.card, borderRadius: 16, borderWidth: 1, borderColor: C.border },
-  creditsRow:  { flexDirection: "row", justifyContent: "space-between", alignItems: "center", padding: 16, paddingBottom: 10 },
-  creditsLabel: { fontSize: 16, fontFamily: "SpaceGrotesk_500Medium", color: C.text },
-  creditsValue: { fontSize: 16, fontFamily: "SpaceGrotesk_700Bold", color: C.primary },
-  barTrack:     { height: 8, backgroundColor: C.surface, marginHorizontal: 16, borderRadius: 4 },
-  barFill:      { height: 8, backgroundColor: C.primary, borderRadius: 4 },
-  creditsHint:  { fontSize: 13, fontFamily: "SpaceGrotesk_400Regular", color: C.muted, padding: 12, paddingTop: 8 },
+  creditsCard:  { borderRadius: 14, borderWidth: 1 },
+  creditsRow:   { flexDirection: "row", justifyContent: "space-between", alignItems: "center", padding: 16, paddingBottom: 10 },
+  creditsLabel: { fontSize: 14, fontFamily: "SpaceGrotesk_500Medium" },
+  creditsValue: { fontSize: 14, fontFamily: "SpaceGrotesk_700Bold" },
+  barTrack:     { height: 8, marginHorizontal: 16, borderRadius: 4 },
+  barFill:      { height: 8, borderRadius: 4 },
+  creditsHint:  { fontSize: 12, fontFamily: "SpaceGrotesk_400Regular", padding: 12, paddingTop: 8 },
 
-  planCard: {
-    backgroundColor: C.card,
-    borderRadius: 18,
-    borderWidth: 1,
-    borderColor: C.border,
-    padding: 20,
-    marginBottom: 14,
-    position: "relative",
-  },
-  planCardHighlight: { borderColor: C.primary + "88", backgroundColor: C.primary + "08" },
-  currentBadge:      { position: "absolute", top: -1, right: 20, backgroundColor: C.primary, paddingHorizontal: 12, paddingVertical: 5, borderBottomLeftRadius: 10, borderBottomRightRadius: 10 },
+  planCard:          { borderRadius: 16, borderWidth: 1, padding: 20, marginBottom: 12, position: "relative" },
+  currentBadge:      { position: "absolute", top: -1, right: 20, paddingHorizontal: 12, paddingVertical: 5, borderBottomLeftRadius: 10, borderBottomRightRadius: 10 },
   currentBadgeText:  { fontSize: 10, fontFamily: "SpaceGrotesk_700Bold", color: "#fff", letterSpacing: 1 },
   planCardHeader:    { marginBottom: 16 },
-  planName:          { fontSize: 22, fontFamily: "SpaceGrotesk_700Bold", color: C.sub, marginBottom: 4 },
-  planNameHighlight: { color: C.text },
+  planName:          { fontSize: 20, fontFamily: "SpaceGrotesk_700Bold", marginBottom: 4 },
   planPriceRow:      { flexDirection: "row", alignItems: "flex-end", gap: 2 },
-  planPrice:         { fontSize: 32, fontFamily: "SpaceGrotesk_700Bold", color: C.text },
-  planPeriod:        { fontSize: 15, fontFamily: "SpaceGrotesk_400Regular", color: C.muted, marginBottom: 5 },
-
-  divider:          { height: StyleSheet.hairlineWidth, backgroundColor: C.border, marginBottom: 16 },
-  dividerHighlight: { backgroundColor: C.primary + "44" },
-
-  featureList: { gap: 10, marginBottom: 16 },
-  featureRow:  { flexDirection: "row", alignItems: "flex-start", gap: 10 },
-  featureText: { flex: 1, fontSize: 16, fontFamily: "SpaceGrotesk_400Regular", color: C.sub, lineHeight: 20 },
-
-  planMeta: { flexDirection: "row", gap: 10, flexWrap: "wrap", marginBottom: 4 },
-  metaChip: { flexDirection: "row", alignItems: "center", gap: 5, backgroundColor: C.surface, paddingHorizontal: 10, paddingVertical: 5, borderRadius: 20 },
-  metaText: { fontSize: 13, fontFamily: "SpaceGrotesk_500Medium", color: C.muted },
-
-  upgradeBtn: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 8,
-    borderWidth: 1.5,
-    borderColor: C.primary,
-    borderRadius: 12,
-    height: 44,
-    marginTop: 14,
-  },
-  upgradeBtnText: { fontSize: 16, fontFamily: "SpaceGrotesk_700Bold", color: C.primary },
+  planPrice:         { fontSize: 30, fontFamily: "SpaceGrotesk_700Bold" },
+  planPeriod:        { fontSize: 14, fontFamily: "SpaceGrotesk_400Regular", marginBottom: 5 },
+  divider:           { height: StyleSheet.hairlineWidth, marginBottom: 16 },
+  featureList:       { gap: 10, marginBottom: 16 },
+  featureRow:        { flexDirection: "row", alignItems: "flex-start", gap: 10 },
+  featureText:       { flex: 1, fontSize: 14, fontFamily: "SpaceGrotesk_400Regular", lineHeight: 20 },
+  planMeta:          { flexDirection: "row", gap: 10, flexWrap: "wrap", marginBottom: 4 },
+  metaChip:          { flexDirection: "row", alignItems: "center", gap: 5, paddingHorizontal: 10, paddingVertical: 5, borderRadius: 20 },
+  metaText:          { fontSize: 12, fontFamily: "SpaceGrotesk_500Medium" },
+  upgradeBtn:        { flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8, borderWidth: 1.5, borderRadius: 12, height: 44, marginTop: 14 },
+  upgradeBtnText:    { fontSize: 14, fontFamily: "SpaceGrotesk_700Bold" },
 
   upgradeHero: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 8,
-    backgroundColor: C.primary,
-    borderRadius: 14,
-    height: 52,
-    marginBottom: 28,
-    shadowColor: C.primary,
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.4,
-    shadowRadius: 18,
-    elevation: 10,
+    flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8,
+    borderRadius: 14, height: 52, marginBottom: 28,
+    shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.4, shadowRadius: 18, elevation: 10,
   },
-  upgradeHeroText: { fontSize: 16, fontFamily: "SpaceGrotesk_700Bold", color: "#fff" },
+  upgradeHeroText: { fontSize: 15, fontFamily: "SpaceGrotesk_700Bold", color: "#fff" },
 });

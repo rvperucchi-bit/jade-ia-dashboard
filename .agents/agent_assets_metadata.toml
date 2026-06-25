@@ -209,3 +209,9 @@ id = "aOnrPw5hqPizRYWVozCaf"
 uri = "file://exports/usage-engine.pdf"
 type = "pdf"
 title = "JADE IA — Usage Engine completo"
+
+[[outputs]]
+id = "bJKxjspVm7773cMLn75O1"
+uri = "file://exports/relatorio-revisao-ui-jade-2026-06-25.pdf"
+type = "pdf"
+title = "Relatório — Revisão Completa de UI JADE IA (25/06/2026)"

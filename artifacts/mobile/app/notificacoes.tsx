@@ -2,6 +2,7 @@ import { Feather } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import React from "react";
 import {
+  Platform,
   ScrollView,
   StyleSheet,
   Text,
@@ -10,79 +11,83 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useNotifications, type AppNotification } from "@/context/NotificationsContext";
+import { useColors } from "@/hooks/useColors";
 
-const C = {
-  bg: "#0B0814",
-  card: "#111118",
-  border: "#1E1E2E",
-  text: "#FFFFFF",
-  muted: "#7777AA",
-  sub: "#AAAACC",
-  primary: "#FF0080",
-  surface: "#16161F",
-  success: "#22CC88",
-  warning: "#FF8800",
-};
+const PINK    = "#FF0080";
+const SUCCESS = "#00D68F";
+const WARNING = "#FFB300";
 
 const ICON_MAP: Record<AppNotification["type"], { name: string; color: string; bg: string }> = {
-  jade:      { name: "cpu",        color: C.primary,  bg: C.primary + "18" },
-  lead:      { name: "user-plus",  color: C.success,  bg: C.success + "18" },
-  plano:     { name: "star",       color: C.warning,  bg: C.warning + "18" },
-  relatorio: { name: "bar-chart-2",color: "#8400FF",  bg: "rgba(132,0,255,0.08)" },
+  jade:      { name: "cpu",         color: PINK,    bg: PINK    + "18" },
+  lead:      { name: "user-plus",   color: SUCCESS, bg: SUCCESS + "18" },
+  plano:     { name: "star",        color: WARNING, bg: WARNING + "18" },
+  relatorio: { name: "bar-chart-2", color: "#8400FF", bg: "rgba(132,0,255,0.08)" },
 };
 
 export default function NotificacoesScreen() {
   const router  = useRouter();
   const insets  = useSafeAreaInsets();
+  const colors  = useColors();
   const { notifications, unreadCount, markAsRead, markAllAsRead } = useNotifications();
 
+  const topPad = Platform.OS === "web" ? 24 : insets.top + 4;
+  const botPad = Platform.OS === "web" ? 40 : insets.bottom + 32;
+
   return (
-    <View style={[S.root, { paddingTop: insets.top }]}>
-      <View style={S.header}>
+    <View style={[S.root, { backgroundColor: colors.background }]}>
+      {/* Header */}
+      <View style={[S.header, { paddingTop: topPad }]}>
         <TouchableOpacity onPress={() => router.back()} style={S.backBtn} activeOpacity={0.7}>
-          <Feather name="arrow-left" size={22} color={C.text} />
+          <Feather name="chevron-left" size={22} color={colors.text} />
         </TouchableOpacity>
-        <Text style={S.headerTitle}>Notificações</Text>
+        <Text style={[S.headerTitle, { color: colors.text }]}>Notificações</Text>
         {unreadCount > 0 ? (
           <View style={S.headerBadge}>
             <Text style={S.headerBadgeText}>{unreadCount}</Text>
           </View>
         ) : (
-          <View style={{ width: 40 }} />
+          <View style={{ width: 36 }} />
         )}
       </View>
 
       <ScrollView
-        contentContainerStyle={[S.scroll, { paddingBottom: insets.bottom + 40 }]}
+        contentContainerStyle={[S.scroll, { paddingBottom: botPad }]}
         showsVerticalScrollIndicator={false}
       >
         {unreadCount > 0 && (
-          <View style={S.unreadBanner}>
-            <Feather name="bell" size={14} color={C.primary} />
-            <Text style={S.unreadText}>{unreadCount} notificações não lidas</Text>
+          <View style={[S.unreadBanner, { backgroundColor: PINK + "12", borderColor: PINK + "30" }]}>
+            <Feather name="bell" size={14} color={PINK} />
+            <Text style={[S.unreadText, { color: PINK }]}>
+              {unreadCount} {unreadCount === 1 ? "notificação não lida" : "notificações não lidas"}
+            </Text>
           </View>
         )}
 
         {notifications.length === 0 && (
           <View style={S.empty}>
-            <View style={[S.emptyIcon, { backgroundColor: C.primary + "18" }]}>
-              <Feather name="bell-off" size={32} color={C.primary} />
+            <View style={[S.emptyIcon, { backgroundColor: PINK + "18" }]}>
+              <Feather name="bell-off" size={32} color={PINK} />
             </View>
-            <Text style={S.emptyTitle}>Nenhuma notificação ainda</Text>
-            <Text style={S.emptyText}>
+            <Text style={[S.emptyTitle, { color: colors.text }]}>Nenhuma notificação ainda</Text>
+            <Text style={[S.emptyText, { color: colors.mutedForeground }]}>
               Notificações de leads abordados, CRM e follow-ups aparecerão aqui.
             </Text>
           </View>
         )}
 
         {notifications.length > 0 && (
-          <View style={S.list}>
-            {notifications.map((notif) => {
+          <View style={[S.list, { backgroundColor: colors.card, borderColor: colors.border }]}>
+            {notifications.map((notif, idx) => {
               const ic = ICON_MAP[notif.type] ?? ICON_MAP.jade;
               return (
                 <TouchableOpacity
                   key={notif.id}
-                  style={[S.item, notif.unread && S.itemUnread]}
+                  style={[
+                    S.item,
+                    { borderBottomColor: colors.border },
+                    notif.unread && { backgroundColor: colors.surface },
+                    idx === notifications.length - 1 && { borderBottomWidth: 0 },
+                  ]}
                   activeOpacity={0.75}
                   onPress={() => markAsRead(notif.id)}
                 >
@@ -91,11 +96,15 @@ export default function NotificacoesScreen() {
                   </View>
                   <View style={S.itemContent}>
                     <View style={S.itemTop}>
-                      <Text style={S.itemTitle} numberOfLines={1}>{notif.title}</Text>
-                      {notif.unread && <View style={S.dot} />}
+                      <Text style={[S.itemTitle, { color: colors.text }]} numberOfLines={1}>
+                        {notif.title}
+                      </Text>
+                      {notif.unread && <View style={[S.dot, { backgroundColor: PINK }]} />}
                     </View>
-                    <Text style={S.itemBody} numberOfLines={2}>{notif.body}</Text>
-                    <Text style={S.itemTime}>{notif.time}</Text>
+                    <Text style={[S.itemBody, { color: colors.mutedForeground }]} numberOfLines={2}>
+                      {notif.body}
+                    </Text>
+                    <Text style={[S.itemTime, { color: colors.mutedForeground }]}>{notif.time}</Text>
                   </View>
                 </TouchableOpacity>
               );
@@ -105,7 +114,7 @@ export default function NotificacoesScreen() {
 
         {notifications.length > 0 && (
           <TouchableOpacity style={S.clearBtn} activeOpacity={0.7} onPress={markAllAsRead}>
-            <Text style={S.clearText}>Marcar todas como lidas</Text>
+            <Text style={[S.clearText, { color: colors.mutedForeground }]}>Marcar todas como lidas</Text>
           </TouchableOpacity>
         )}
       </ScrollView>
@@ -114,51 +123,40 @@ export default function NotificacoesScreen() {
 }
 
 const S = StyleSheet.create({
-  root: { flex: 1, backgroundColor: C.bg },
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: C.border,
-  },
-  backBtn: { width: 44, height: 44, alignItems: "center", justifyContent: "center" },
-  headerTitle: { fontSize: 17, fontFamily: "SpaceGrotesk_700Bold", color: C.text },
+  root:   { flex: 1 },
+  header: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: 16, paddingBottom: 16 },
+  backBtn:{ width: 36, height: 36, alignItems: "center", justifyContent: "center" },
+  headerTitle: { fontSize: 17, fontFamily: "SpaceGrotesk_700Bold" },
   headerBadge: {
     width: 28, height: 28, borderRadius: 14,
-    backgroundColor: C.primary, alignItems: "center", justifyContent: "center",
+    backgroundColor: PINK, alignItems: "center", justifyContent: "center",
   },
-  headerBadgeText: { fontSize: 15, fontFamily: "SpaceGrotesk_700Bold", color: "#fff" },
+  headerBadgeText: { fontSize: 13, fontFamily: "SpaceGrotesk_700Bold", color: "#fff" },
+
   scroll: { paddingHorizontal: 16, paddingTop: 16 },
+
   unreadBanner: {
     flexDirection: "row", alignItems: "center", gap: 8,
-    backgroundColor: C.primary + "12", borderRadius: 10,
-    paddingHorizontal: 14, paddingVertical: 10, marginBottom: 16,
-    borderWidth: 1, borderColor: C.primary + "30",
+    borderRadius: 10, paddingHorizontal: 14, paddingVertical: 10,
+    marginBottom: 16, borderWidth: 1,
   },
-  unreadText: { fontSize: 15, fontFamily: "SpaceGrotesk_600SemiBold", color: C.primary },
-  list: {
-    backgroundColor: C.card, borderRadius: 16,
-    borderWidth: 1, borderColor: C.border, overflow: "hidden",
-  },
-  item: {
-    flexDirection: "row", gap: 14, padding: 16,
-    borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: C.border,
-  },
-  itemUnread: { backgroundColor: C.surface },
+  unreadText: { fontSize: 13, fontFamily: "SpaceGrotesk_600SemiBold" },
+
+  list:    { borderRadius: 14, borderWidth: 1, overflow: "hidden", marginBottom: 12 },
+  item:    { flexDirection: "row", gap: 14, padding: 16, borderBottomWidth: StyleSheet.hairlineWidth },
   iconBox: { width: 44, height: 44, borderRadius: 22, alignItems: "center", justifyContent: "center", flexShrink: 0 },
   itemContent: { flex: 1, gap: 3 },
-  itemTop: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 8 },
-  itemTitle: { flex: 1, fontSize: 16, fontFamily: "SpaceGrotesk_600SemiBold", color: C.text },
-  dot: { width: 8, height: 8, borderRadius: 4, backgroundColor: C.primary },
-  itemBody: { fontSize: 15, fontFamily: "SpaceGrotesk_400Regular", color: C.sub, lineHeight: 18 },
-  itemTime: { fontSize: 13, fontFamily: "SpaceGrotesk_400Regular", color: C.muted, marginTop: 2 },
-  clearBtn: { alignItems: "center", paddingVertical: 20 },
-  clearText: { fontSize: 16, fontFamily: "SpaceGrotesk_500Medium", color: C.muted },
-  empty: { alignItems: "center", gap: 12, paddingTop: 80, paddingHorizontal: 32 },
-  emptyIcon: { width: 72, height: 72, borderRadius: 36, alignItems: "center", justifyContent: "center" },
-  emptyTitle: { fontSize: 18, fontFamily: "SpaceGrotesk_700Bold", color: C.text },
-  emptyText: { fontSize: 14, fontFamily: "SpaceGrotesk_400Regular", color: C.sub, textAlign: "center", lineHeight: 21 },
+  itemTop:     { flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 8 },
+  itemTitle:   { flex: 1, fontSize: 14, fontFamily: "SpaceGrotesk_600SemiBold" },
+  dot:         { width: 8, height: 8, borderRadius: 4 },
+  itemBody:    { fontSize: 13, fontFamily: "SpaceGrotesk_400Regular", lineHeight: 18 },
+  itemTime:    { fontSize: 11, fontFamily: "SpaceGrotesk_400Regular", marginTop: 2 },
+
+  clearBtn:  { alignItems: "center", paddingVertical: 20 },
+  clearText: { fontSize: 14, fontFamily: "SpaceGrotesk_500Medium" },
+
+  empty:      { alignItems: "center", gap: 12, paddingTop: 80, paddingHorizontal: 32 },
+  emptyIcon:  { width: 72, height: 72, borderRadius: 36, alignItems: "center", justifyContent: "center" },
+  emptyTitle: { fontSize: 17, fontFamily: "SpaceGrotesk_700Bold" },
+  emptyText:  { fontSize: 13, fontFamily: "SpaceGrotesk_400Regular", textAlign: "center", lineHeight: 20 },
 });

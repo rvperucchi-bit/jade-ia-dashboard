@@ -19,19 +19,20 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useCredits } from "@/context/CreditsContext";
 import { usePlan } from "@/context/PlanContext";
 import { useRadarSearches } from "@/hooks/useRadarSearches";
+import { useColors } from "@/hooks/useColors";
 
 const PINK   = "#FF0080";
 const PURPLE = "#8400FF";
 const GOLD   = "#F59E0B";
 
 const C = {
-  bg:      "#0B0814",
+  bg:      "#0A0A0F",
   card:    "#111118",
-  border:  "#1E1E2E",
+  border:  "#252535",
   text:    "#FFFFFF",
-  muted:   "#7777AA",
-  sub:     "#AAAACC",
-  surface: "#16161F",
+  muted:   "#8A8A9A",
+  sub:     "#8A8A9A",
+  surface: "#1A1A26",
 };
 
 const API_BASE =
@@ -136,6 +137,8 @@ function BalanceCard({ remaining, used, total, icon, label }: {
 export default function LojaScreen() {
   const router  = useRouter();
   const insets  = useSafeAreaInsets();
+  const colors  = useColors();
+  const topPad  = Platform.OS === "web" ? 24 : insets.top + 4;
   const params  = useLocalSearchParams<{ tab?: string }>();
   const credits = useCredits();
   const radar   = useRadarSearches();
@@ -204,11 +207,11 @@ export default function LojaScreen() {
   };
 
   return (
-    <View style={[S.root, { paddingTop: insets.top }]}>
+    <View style={[S.root, { backgroundColor: colors.background }]}>
       {/* ── Header ── */}
-      <View style={S.header}>
+      <View style={[S.header, { paddingTop: topPad }]}>
         <TouchableOpacity onPress={() => router.back()} style={S.backBtn} activeOpacity={0.7}>
-          <Feather name="arrow-left" size={22} color={C.text} />
+          <Feather name="chevron-left" size={22} color={C.text} />
         </TouchableOpacity>
         <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
           <Feather name="shopping-cart" size={18} color={PINK} />
