@@ -145,29 +145,23 @@ export default function LoginScreen() {
 
           {/* ── Social: lado a lado ── */}
           <View style={S.socialRow}>
-            <View style={{ flex: 1, gap: 4 }}>
-              <TouchableOpacity
-                style={[S.socialBtn, { opacity: 0.42 }]}
-                activeOpacity={0.6}
-                onPress={() => Alert.alert("Google", "Login com Google estará disponível em breve.", [{ text: "OK" }])}
-              >
-                <FontAwesome name="google" size={20} color="#EA4335" />
-                <Text style={S.socialText}>Google</Text>
-              </TouchableOpacity>
-              <Text style={S.soonTag}>Em breve</Text>
-            </View>
+            <TouchableOpacity
+              style={S.socialBtn}
+              activeOpacity={0.7}
+              onPress={() => Alert.alert("Google", "Login com Google em breve.", [{ text: "OK" }])}
+            >
+              <FontAwesome name="google" size={20} color="#EA4335" />
+              <Text style={S.socialText}>Google</Text>
+            </TouchableOpacity>
 
-            <View style={{ flex: 1, gap: 4 }}>
-              <TouchableOpacity
-                style={[S.socialBtn, { opacity: 0.42 }]}
-                activeOpacity={0.6}
-                onPress={() => Alert.alert("Apple", "Login com Apple estará disponível em breve.", [{ text: "OK" }])}
-              >
-                <FontAwesome name="apple" size={22} color="#fff" />
-                <Text style={S.socialText}>Apple</Text>
-              </TouchableOpacity>
-              <Text style={S.soonTag}>Em breve</Text>
-            </View>
+            <TouchableOpacity
+              style={S.socialBtn}
+              activeOpacity={0.7}
+              onPress={() => Alert.alert("Apple", "Login com Apple em breve.", [{ text: "OK" }])}
+            >
+              <FontAwesome name="apple" size={22} color="#fff" />
+              <Text style={S.socialText}>Apple</Text>
+            </TouchableOpacity>
           </View>
 
           {/* ── Criar conta ── */}
@@ -239,8 +233,6 @@ const S = StyleSheet.create({
     height: 46, borderWidth: 1, borderColor: "#2A2A2A",
   },
   socialText: { fontSize: 14, fontFamily: "SpaceGrotesk_500Medium", color: "#ccc" },
-
-  soonTag:    { fontSize: 10, fontFamily: "SpaceGrotesk_500Medium", color: "#444", textAlign: "center" },
 
   footer:     { flexDirection: "row", justifyContent: "center", alignItems: "center", marginTop: 4 },
   footerText: { fontSize: 13, fontFamily: "SpaceGrotesk_400Regular", color: "#555" },

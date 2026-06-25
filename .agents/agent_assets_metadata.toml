@@ -179,3 +179,9 @@ id = "AzvH3EAaXlmKP5aU5KYaU"
 uri = "file://exports/auditoria-performance-jade-2026-06-25.pdf"
 type = "pdf"
 title = "Auditoria de Performance — JADE IA Mobile"
+
+[[outputs]]
+id = "4ReO6dybt_rr2ibOiYTbY"
+uri = "file://exports/limpeza-jade-2026-06-25.pdf"
+type = "pdf"
+title = "Limpeza & Padronização — JADE IA Mobile"

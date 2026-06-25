@@ -715,25 +715,8 @@ const SEED_POSTS: ScheduledPost[] = [
 const API_BASE_MKT = Platform.OS === "web" ? "" : `https://${process.env.EXPO_PUBLIC_DOMAIN ?? ""}`;
 
 function AgendaTab({ colors }: { colors: any }) {
-  return (
-    <View style={{ position: "relative" }}>
-      <AgendaTabInner colors={colors} />
-      <View style={EM.overlay} pointerEvents="box-only">
-        <View style={EM.badge}>
-          <Feather name="clock" size={16} color="rgba(255,255,255,0.6)" />
-          <Text style={EM.badgeText}>Em breve</Text>
-        </View>
-        <Text style={EM.hint}>Integração com redes sociais em desenvolvimento</Text>
-      </View>
-    </View>
-  );
+  return <AgendaTabInner colors={colors} />;
 }
-const EM = StyleSheet.create({
-  overlay:   { ...StyleSheet.absoluteFillObject, backgroundColor: "rgba(11,8,20,0.88)", alignItems: "center", justifyContent: "center", gap: 12, zIndex: 10 },
-  badge:     { flexDirection: "row", alignItems: "center", gap: 8, backgroundColor: SURF, borderWidth: 1, borderColor: BORD, paddingHorizontal: 18, paddingVertical: 10, borderRadius: 16 },
-  badgeText: { fontSize: 16, fontFamily: "SpaceGrotesk_700Bold", color: "#fff" },
-  hint:      { fontSize: 13, fontFamily: "SpaceGrotesk_400Regular", color: MUTED, textAlign: "center", paddingHorizontal: 32 },
-});
 
 function AgendaTabInner({ colors }: { colors: any }) {
   const [posts, setPosts]         = useState<ScheduledPost[]>(SEED_POSTS);

@@ -1270,6 +1270,25 @@
   ],
   "activity_events": [
     {
+      "id": "fb1ea53c48dd2d3a",
+      "type": "message",
+      "text": "JADE respondeu: \"Oi\"",
+      "icon": "robot",
+      "color": "#FF0080",
+      "created_at": "2026-06-25T05:11:48.618Z"
+    },
+    {
+      "id": "c93be2aa74275e94",
+      "type": "message",
+      "text": "JADE respondeu a uma mensagem",
+      "icon": "robot",
+      "color": "#FF0080",
+      "metadata": {
+        "session_id": "66078e58665c8f3a"
+      },
+      "created_at": "2026-06-25T05:11:48.255Z"
+    },
+    {
       "id": "5949f1b69e8e8545",
       "type": "message",
       "text": "JADE respondeu a uma mensagem",
@@ -3199,26 +3218,6 @@
         "active": true
       },
       "created_at": "2026-06-23T20:30:21.690Z"
-    },
-    {
-      "id": "d8e8fbe548184acd",
-      "type": "module",
-      "text": "Scanner Radar desativado",
-      "icon": "crosshair",
-      "color": "#6C63FF",
-      "metadata": {
-        "module": "scanner",
-        "active": false
-      },
-      "created_at": "2026-06-23T02:48:08.800Z"
-    },
-    {
-      "id": "0f12712ee2a400bd",
-      "type": "message",
-      "text": "JADE respondeu: \"Pode me resumir o que você pod…\"",
-      "icon": "robot",
-      "color": "#FF0080",
-      "created_at": "2026-06-23T02:14:38.988Z"
     }
   ],
   "marketing_campaigns": [
@@ -3254,6 +3253,24 @@
     }
   ],
   "jade_sessions": [
+    {
+      "id": "66078e58665c8f3a",
+      "title": "Nova conversa",
+      "messages": [
+        {
+          "role": "user",
+          "content": "Oi",
+          "time": "2026-06-25T05:11:48.029Z"
+        },
+        {
+          "role": "model",
+          "content": "Vamos lá. O que você precisa?",
+          "time": "2026-06-25T05:11:48.035Z"
+        }
+      ],
+      "created_at": "2026-06-25T05:11:46.090Z",
+      "updated_at": "2026-06-25T05:11:48.035Z"
+    },
     {
       "id": "8752ed39f1d794eb",
       "title": "Preciso de leads",
