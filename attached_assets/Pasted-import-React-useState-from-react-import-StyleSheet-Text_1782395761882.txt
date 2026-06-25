@@ -1,0 +1,102 @@
+import React, { useState } from 'react';
+import { StyleSheet, Text, View, ScrollView, TouchableOpacity, SafeAreaView, TextInput, Alert, ActivityIndicator } from 'react-native';
+
+export default function MyCompanyScreen() {
+  const [isSaving, setIsSaving] = useState(false);
+  const [companyName, setCompanyName] = useState('Sleek Automações');
+  const [segment, setSegment] = useState('Tecnologia B2B');
+  const [cnpj, setCnpj] = useState('00.000.000/0001-00');
+  const [activeCampaign, setActiveCampaign] = useState('Desconto de 15% para fechamentos até sexta-feira.');
+  
+  // Localização
+  const [city, setCity] = useState('Criciúma');
+  const [neighborhood, setNeighborhood] = useState('Centro');
+  const [state, setState] = useState('SC');
+  const [address, setAddress] = useState('Av. Centenário, 1500');
+
+  // Portfólio de Produtos do Cérebro
+  const [products, setProducts] = useState([
+    { id: 1, name: 'Licença Software CRM', value: '299' },
+    { id: 2, name: 'Setup + Treinamento', value: '1500' }
+  ]);
+  const [newProductName, setNewProductName] = useState('');
+  const [newProductValue, setNewProductValue] = useState('');
+
+  const handleAddProduct = () => {
+    if (!newProductName || !newProductValue) return;
+    setProducts([...products, { id: products.length + 1, name: newProductName, value: newProductValue }]);
+    setNewProductName('');
+    setNewProductValue('');
+  };
+
+  return (
+    <SafeAreaView style={styles.container}>
+      <ScrollView style={styles.scroll} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
+        <Text style={styles.title}>Minha Empresa</Text>
+        <Text style={styles.brainNotice}>🧠 Cérebro da JADE: As informações abaixo alimentam o conhecimento contextual do robô para negociar com leads no WhatsApp.</Text>
+
+        <Text style={styles.inputLabel}>NOME INSTITUCIONAL</Text>
+        <TextInput style={styles.inputStyle} value={companyName} onChangeText={setCompanyName} />
+
+        <Text style={styles.inputLabel}>CNPJ (OPCIONAL)</Text>
+        <TextInput style={styles.inputStyle} value={cnpj} onChangeText={setCnpj} placeholder="00.000.000/0000-00" placeholderTextColor="#4E5366" />
+
+        <Text style={styles.inputLabel}>SEGUIMENTO MERCADOLÓGICO</Text>
+        <TextInput style={styles.inputStyle} value={segment} onChangeText={setSegment} />
+
+        {/* LISTAGEM ENQUADRADA DE PRODUTOS */}
+        <Text style={styles.inputLabel}>PRODUTOS E PREÇOS ATIVOS</Text>
+        <View style={styles.productsList}>
+          {products.map((p) => (
+            <View key={p.id} style={styles.productRowItem}>
+              <Text style={styles.productNameText}>• {p.name}</Text>
+              <Text style={styles.productValueText}>R$ {p.value}</Text>
+            </View>
+          ))}
+        </View>
+
+        {/* FORMULÁRIO DE ADIÇÃO EM LINHA RESPIROU */}
+        <View style={styles.addProductBox}>
+          <TextInput style={[styles.inputStyle, { flex: 2, marginRight: 8, marginBottom: 0 }]} placeholder="Novo Produto" placeholderTextColor="#4E5366" value={newProductName} onChangeText={setNewProductName} />
+          <TextInput style={[styles.inputStyle, { flex: 1, marginRight: 8, marginBottom: 0 }]} placeholder="Valor" placeholderTextColor="#4E5366" keyboardType="numeric" value={newProductValue} onChangeText={setNewProductValue} />
+          <TouchableOpacity style={styles.miniAddBtn} onPress={handleAddProduct} activeOpacity={0.7}><Text style={styles.miniAddBtnText}>＋</Text></TouchableOpacity>
+        </View>
+
+        <Text style={styles.inputLabel}>CAMPANHA / GATILHO DO PRODUTO ATUAL</Text>
+        <TextInput style={[styles.inputStyle, { height: 75, paddingTop: 12 }]} value={activeCampaign} onChangeText={setActiveCampaign} multiline />
+
+        <Text style={styles.inputLabel}>LOGRADOURO DA SEDE</Text>
+        <TextInput style={styles.inputStyle} value={address} onChangeText={setAddress} placeholder="Rua, Número" placeholderTextColor="#4E5366" />
+
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+          <TextInput style={[styles.inputStyle, { flex: 2, marginRight: 8 }]} value={city} onChangeText={setCity} placeholder="Cidade" />
+          <TextInput style={[styles.inputStyle, { flex: 2, marginRight: 8 }]} value={neighborhood} onChangeText={setNeighborhood} placeholder="Bairro" />
+          <TextInput style={[styles.inputStyle, { flex: 1 }]} value={state} onChangeText={setState} placeholder="UF" maxLength={2} />
+        </View>
+
+        <TouchableOpacity style={styles.saveButton} onPress={() => { setIsSaving(true); setTimeout(() => setIsSaving(false), 1500); }} activeOpacity={0.8} disabled={isSaving}>
+          {isSaving ? <ActivityIndicator color="#090A0F" /> : <Text style={styles.saveButtonText}>Sincronizar Cérebro da JADE 🚀</Text>}
+        </TouchableOpacity>
+        <View style={{ height: 40 }} />
+      </ScrollView>
+    </SafeAreaView>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: { flex: 1, backgroundColor: '#090A0F' },
+  scroll: { padding: 20 },
+  title: { fontSize: 24, fontWeight: '700', color: '#FFFFFF', marginBottom: 12 },
+  brainNotice: { color: '#00E5FF', fontSize: 13, lineHeight: 18, backgroundColor: 'rgba(0, 229, 255, 0.03)', padding: 14, borderRadius: 12, borderWidth: 1, borderColor: 'rgba(0, 229, 255, 0.15)', marginBottom: 20 },
+  inputLabel: { fontSize: 11, color: '#8F94A8', fontWeight: '700', letterSpacing: 0.8, marginBottom: 8, marginTop: 18 },
+  inputStyle: { backgroundColor: '#161822', height: 54, borderRadius: 12, paddingHorizontal: 16, color: '#FFFFFF', fontSize: 15, borderWidth: 1, borderColor: '#242736', marginBottom: 4 },
+  productsList: { backgroundColor: '#161822', borderRadius: 12, padding: 14, borderWidth: 1, borderColor: '#242736', marginTop: 4, marginBottom: 10 },
+  productRowItem: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 6 },
+  productNameText: { color: '#FFFFFF', fontSize: 14 },
+  productValueText: { color: '#8F94A8', fontSize: 14, fontWeight: '600' },
+  addProductBox: { flexDirection: 'row', alignItems: 'center', marginTop: 4, marginBottom: 16 },
+  miniAddBtn: { backgroundColor: '#161822', width: 54, height: 54, borderRadius: 12, borderWidth: 1, borderColor: '#00E5FF', justifyContent: 'center', alignItems: 'center' },
+  miniAddBtnText: { color: '#00E5FF', fontSize: 20, fontWeight: '600' },
+  saveButton: { backgroundColor: '#FFFFFF', height: 54, borderRadius: 12, alignItems: 'center', justifyContent: 'center', marginTop: 28 },
+  saveButtonText: { color: '#090A0F', fontWeight: '700', fontSize: 15 }
+});

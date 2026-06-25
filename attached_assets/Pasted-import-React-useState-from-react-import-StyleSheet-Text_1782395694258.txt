@@ -1,0 +1,76 @@
+import React, { useState } from 'react';
+import { StyleSheet, Text, View, ScrollView, TouchableOpacity, SafeAreaView, TextInput, Image, Alert } from 'react-native';
+import * as ImagePicker from 'expo-image-picker';
+
+export default function MyProfileScreen() {
+  const [name, setName] = useState('Alexandre Silveira');
+  const [email, setEmail] = useState('alexandre@sleekia.com.br');
+  const [phone, setPhone] = useState('(48) 99999-9999');
+  const [role, setRole] = useState('Diretor Comercial');
+  const [avatar, setAvatar] = useState('https://unsplash.com');
+
+  // Função Nativa para Escolher a Foto de Perfil do Executivo
+  const handlePickImage = async () => {
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect:,
+      quality: 0.8,
+    });
+
+    if (!result.canceled) {
+      setAvatar(result.assets[0].uri);
+    }
+  };
+
+  return (
+    <SafeAreaView style={styles.container}>
+      <ScrollView style={styles.scroll} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
+        <Text style={styles.title}>Meu Perfil</Text>
+        
+        {/* SEÇÃO DE UPLOAD DA FOTO DE PERFIL */}
+        <View style={styles.avatarUploadContainer}>
+          <Image source={{ uri: avatar }} style={styles.profileImage} />
+          <TouchableOpacity style={styles.uploadBtn} onPress={handlePickImage} activeOpacity={0.7}>
+            <Text style={styles.uploadBtnText}>Alterar Foto de Perfil 📸</Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* FORMULÁRIO COMPLETO E ESPAÇADO */}
+        <View style={styles.formGroup}>
+          <Text style={styles.inputLabel}>NOME COMPLETO</Text>
+          <TextInput style={styles.inputStyle} value={name} onChangeText={setName} placeholder="Seu nome" placeholderTextColor="#4E5366" />
+
+          <Text style={styles.inputLabel}>E-MAIL CORPORATIVO</Text>
+          <TextInput style={styles.inputStyle} value={email} onChangeText={setEmail} placeholder="seu@email.com" placeholderTextColor="#4E5366" keyboardType="email-address" />
+
+          <Text style={styles.inputLabel}>TELEFONE / WHATSAPP</Text>
+          <TextInput style={styles.inputStyle} value={phone} onChangeText={setPhone} placeholder="(00) 00000-0000" placeholderTextColor="#4E5366" keyboardType="phone-pad" />
+
+          <Text style={styles.inputLabel}>CARGO / FUNÇÃO</Text>
+          <TextInput style={styles.inputStyle} value={role} onChangeText={setRole} placeholder="Ex: Gestor, Diretor" placeholderTextColor="#4E5366" />
+        </View>
+
+        <TouchableOpacity style={styles.saveButton} onPress={() => Alert.alert('Sucesso', 'Perfil atualizado!')} activeOpacity={0.8}>
+          <Text style={styles.saveButtonText}>Salvar Alterações</Text>
+        </TouchableOpacity>
+        <View style={{ height: 40 }} />
+      </ScrollView>
+    </SafeAreaView>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: { flex: 1, backgroundColor: '#090A0F' },
+  scroll: { padding: 20 },
+  title: { fontSize: 24, fontWeight: '700', color: '#FFFFFF', marginBottom: 24 },
+  avatarUploadContainer: { alignItems: 'center', marginBottom: 24, paddingBottom: 15, borderBottomWidth: 1, borderColor: '#161822' },
+  profileImage: { width: 90, height: 90, borderRadius: 45, borderWidth: 2, borderColor: '#00E5FF', marginBottom: 12 },
+  uploadBtn: { backgroundColor: 'rgba(255, 255, 255, 0.03)', paddingHorizontal: 16, paddingVertical: 8, borderRadius: 20, borderWidth: 1, borderColor: '#242736' },
+  uploadBtnText: { color: '#00E5FF', fontSize: 13, fontWeight: '600' },
+  formGroup: { marginTop: 10 },
+  inputLabel: { fontSize: 11, color: '#8F94A8', fontWeight: '700', letterSpacing: 0.8, marginBottom: 8, marginTop: 16 }, // Aumentado marginTop para dar respiro
+  inputStyle: { backgroundColor: '#161822', height: 54, borderRadius: 12, paddingHorizontal: 16, color: '#FFFFFF', fontSize: 15, borderWidth: 1, borderColor: '#242736', marginBottom: 6 },
+  saveButton: { backgroundColor: '#FFFFFF', height: 54, borderRadius: 12, alignItems: 'center', justifyContent: 'center', marginTop: 32 },
+  saveButtonText: { color: '#090A0F', fontWeight: '700', fontSize: 15 }
+});

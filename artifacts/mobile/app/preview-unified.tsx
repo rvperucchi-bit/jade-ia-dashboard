@@ -28,7 +28,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as Linking from "expo-linking";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
-type Route = "Chat" | "Pipeline" | "Route" | "Prospecting" | "Meeting" | "Farmer" | "Reports" | "Marketing" | "Management" | "Kpis" | "CorporatePortfolio" | "Broadcast" | "Feedbacks" | "TeamPulse" | "PulseCheck" | "AccountSettings" | "Subscription";
+type Route = "Chat" | "Pipeline" | "Route" | "Prospecting" | "Meeting" | "Farmer" | "Reports" | "Marketing" | "Management" | "Kpis" | "CorporatePortfolio" | "Broadcast" | "Feedbacks" | "TeamPulse" | "PulseCheck" | "AccountSettings" | "Subscription" | "MyProfile";
 type PipelineLead  = { id: string; name: string; company: string; value: string; stage: string; daysIdle: number; phone: string };
 type AiLead        = { id: string; name: string; segment: string; address: string };
 type HistoryItem   = { id: string; query: string; location: string; date: string; leadsCount: number };
@@ -218,8 +218,11 @@ function Sidebar({ visible, onClose, currentRoute, onNavigate }: {
 
           {contaOpen && (
             <View style={S.drawerSubMenu}>
+              <TouchableOpacity style={S.drawerSubItem} onPress={() => go("MyProfile")} activeOpacity={0.7}>
+                <Text style={[S.drawerSubText, currentRoute === "MyProfile" && S.drawerSubTextActive]}>👤 Meu Perfil</Text>
+              </TouchableOpacity>
               <TouchableOpacity style={S.drawerSubItem} onPress={() => go("AccountSettings")} activeOpacity={0.7}>
-                <Text style={[S.drawerSubText, currentRoute === "AccountSettings" && S.drawerSubTextActive]}>🧠 Meu Perfil & Cérebro IA</Text>
+                <Text style={[S.drawerSubText, currentRoute === "AccountSettings" && S.drawerSubTextActive]}>🧠 Cérebro da IA (Empresa)</Text>
               </TouchableOpacity>
               <TouchableOpacity style={S.drawerSubItem} onPress={() => go("Subscription")} activeOpacity={0.7}>
                 <Text style={[S.drawerSubText, currentRoute === "Subscription" && S.drawerSubTextActive]}>💳 Planos de Assinatura</Text>
@@ -1849,6 +1852,76 @@ function SubscriptionView({ onMenu }: { onMenu: () => void }) {
   );
 }
 
+// ─── Screen: My Profile ──────────────────────────────────────────────────────
+function MyProfileView({ onMenu }: { onMenu: () => void }) {
+  const [name,   setName]   = useState("Alexandre Silveira");
+  const [email,  setEmail]  = useState("alexandre@sleekia.com.br");
+  const [phone,  setPhone]  = useState("(48) 99999-9999");
+  const [role,   setRole]   = useState("Diretor Comercial");
+  const [avatar, setAvatar] = useState<string | null>(null);
+
+  const pickAvatar = async () => {
+    const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!perm.granted) { Alert.alert("Permissão necessária", "Permita acesso à galeria."); return; }
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.8,
+    });
+    if (!result.canceled) setAvatar(result.assets[0].uri);
+  };
+
+  return (
+    <View style={{ flex: 1 }}>
+      <TopBar title="Meu Perfil" subtitle="⚙️ CONTA" onMenu={onMenu} />
+      <ScrollView style={S.form} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
+
+        {/* Avatar */}
+        <View style={S.profileAvatarBox}>
+          <View style={S.profileAvatarRing}>
+            {avatar ? (
+              <ProfileImage uri={avatar} />
+            ) : (
+              <View style={S.profileAvatarPlaceholder}>
+                <Text style={{ fontSize: 36 }}>👤</Text>
+              </View>
+            )}
+          </View>
+          <TouchableOpacity style={S.profileUploadBtn} onPress={pickAvatar} activeOpacity={0.7}>
+            <Text style={S.profileUploadBtnText}>Alterar Foto de Perfil 📸</Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* Campos */}
+        <Text style={S.label}>NOME COMPLETO</Text>
+        <TextInput style={S.input} value={name}  onChangeText={setName}  placeholder="Seu nome"          placeholderTextColor="#4E5366" />
+        <Text style={S.label}>E-MAIL CORPORATIVO</Text>
+        <TextInput style={S.input} value={email} onChangeText={setEmail} placeholder="seu@email.com"     placeholderTextColor="#4E5366" keyboardType="email-address" />
+        <Text style={S.label}>TELEFONE / WHATSAPP</Text>
+        <TextInput style={S.input} value={phone} onChangeText={setPhone} placeholder="(00) 00000-0000"   placeholderTextColor="#4E5366" keyboardType="phone-pad" />
+        <Text style={S.label}>CARGO / FUNÇÃO</Text>
+        <TextInput style={S.input} value={role}  onChangeText={setRole}  placeholder="Ex: Gestor, Diretor" placeholderTextColor="#4E5366" />
+
+        <TouchableOpacity
+          style={[S.primaryBtn, { marginTop: 32 }]}
+          onPress={() => Alert.alert("Sucesso", "Perfil atualizado!")}
+          activeOpacity={0.8}
+        >
+          <Text style={S.primaryBtnText}>Salvar Alterações</Text>
+        </TouchableOpacity>
+        <View style={{ height: 40 }} />
+      </ScrollView>
+    </View>
+  );
+}
+
+// Helper para exibir a imagem de avatar (evita import de Image no topo se não existir)
+function ProfileImage({ uri }: { uri: string }) {
+  const RNImage = require("react-native").Image;
+  return <RNImage source={{ uri }} style={S.profileAvatarImg} />;
+}
+
 // ─── Root ─────────────────────────────────────────────────────────────────────
 export default function PreviewUnifiedScreen() {
   const [route,   setRoute]   = useState<Route>("Chat");
@@ -1887,6 +1960,7 @@ export default function PreviewUnifiedScreen() {
       {route === "PulseCheck"        && <PulseCheckView        onMenu={openMenu} />}
       {route === "AccountSettings"   && <AccountSettingsView   onMenu={openMenu} />}
       {route === "Subscription"      && <SubscriptionView      onMenu={openMenu} />}
+      {route === "MyProfile"         && <MyProfileView         onMenu={openMenu} />}
 
       <Sidebar visible={sidebar} onClose={() => setSidebar(false)} currentRoute={route} onNavigate={setRoute} />
     </View>
@@ -2088,6 +2162,14 @@ const S = StyleSheet.create({
   // Corporate Portfolio screen
   corpMacroRow:  { flexDirection: "row", paddingHorizontal: 20, justifyContent: "space-between", marginBottom: 20, gap: 8 },
   corpMacroCard: { flex: 1, backgroundColor: "#161822", borderRadius: 12, padding: 12, borderWidth: 1, borderColor: "#242736" },
+
+  // My Profile screen
+  profileAvatarBox:         { alignItems: "center", marginBottom: 28, paddingBottom: 20, borderBottomWidth: 1, borderColor: "#161822" },
+  profileAvatarRing:        { width: 96, height: 96, borderRadius: 48, borderWidth: 2, borderColor: "#00E5FF", overflow: "hidden", marginBottom: 14, alignItems: "center", justifyContent: "center" },
+  profileAvatarPlaceholder: { width: 96, height: 96, borderRadius: 48, backgroundColor: "#161822", alignItems: "center", justifyContent: "center" },
+  profileAvatarImg:         { width: 96, height: 96, borderRadius: 48 },
+  profileUploadBtn:         { backgroundColor: "rgba(255,255,255,0.03)", paddingHorizontal: 16, paddingVertical: 8, borderRadius: 20, borderWidth: 1, borderColor: "#242736" },
+  profileUploadBtnText:     { color: "#00E5FF", fontSize: 13, fontWeight: "600" },
 
   // Account Settings screen
   acctSecBtn:        { backgroundColor: "#161822", height: 54, borderRadius: 12, alignItems: "center", justifyContent: "center", borderWidth: 1, borderColor: "#242736", marginTop: 12 },
