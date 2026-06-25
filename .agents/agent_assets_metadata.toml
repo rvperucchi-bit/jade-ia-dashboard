@@ -305,3 +305,9 @@ id = "aZSAtKBcTauVk_ieK55yX"
 uri = "file://exports/revisao-cores-sidebar-2025-06-25.pdf"
 type = "pdf"
 title = "Revisão — Cores + Sidebar Fix"
+
+[[outputs]]
+id = "UT5pAj4UJgqV8haQu1X5a"
+uri = "file://exports/diagnostico-renderizacao-2025-06-25.pdf"
+type = "pdf"
+title = "Diagnóstico de Renderização — JADE IA"
