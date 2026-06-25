@@ -1,4 +1,5 @@
 import React, { useRef, useState, useEffect } from "react";
+import { Ionicons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
 import { Audio } from "expo-av";
 import {
@@ -108,6 +109,13 @@ function Sidebar({ visible, onClose, currentRoute, onNavigate }: {
   const [gestaoOpen,    setGestaoOpen]    = useState(false);
   const [contaOpen,     setContaOpen]     = useState(false);
 
+  const swipePan = useRef(
+    PanResponder.create({
+      onMoveShouldSetPanResponder: (_, g) => Math.abs(g.dx) > 10 && Math.abs(g.dx) > Math.abs(g.dy),
+      onPanResponderRelease: (_, g) => { if (g.dx < -40) onClose(); },
+    })
+  ).current;
+
   React.useEffect(() => {
     Animated.timing(slideX, {
       toValue: visible ? 0 : -SCREEN_W,
@@ -124,21 +132,21 @@ function Sidebar({ visible, onClose, currentRoute, onNavigate }: {
       {/* Tap-outside to close */}
       <TouchableOpacity style={S.sidebarOverlay} activeOpacity={1} onPress={onClose} />
 
-      <Animated.View style={[S.sidebar, { paddingTop: insets.top + 20, width: SCREEN_W, transform: [{ translateX: slideX }] }]}>
+      <Animated.View {...swipePan.panHandlers} style={[S.sidebar, { paddingTop: insets.top + 20, width: SCREEN_W, transform: [{ translateX: slideX }] }]}>
         {/* Header */}
         <View style={S.drawerHeader}>
           <Text style={S.drawerBrand}>JADE</Text>
           <View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
             <TouchableOpacity activeOpacity={0.6} style={S.drawerNotifBtn}>
-              <Text style={{ fontSize: 16, color: "#8F94A8" }}>○</Text>
+              <Ionicons name="notifications-outline" size={22} color="rgba(255,255,255,0.45)" />
             </TouchableOpacity>
             <View style={S.drawerAvatar}>
-              <Text style={{ fontSize: 14, color: "#8F94A8", fontWeight: "600" }}>A</Text>
+              <Text style={{ fontSize: 16, color: "#8F94A8", fontWeight: "600" }}>A</Text>
             </View>
           </View>
         </View>
 
-        <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false} keyboardDismissMode="on-drag" contentContainerStyle={{ paddingBottom: 60 }}>
+        <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false} keyboardDismissMode="on-drag" contentContainerStyle={{ paddingBottom: 32 }}>
           {/* ── Conversas ── */}
           <TouchableOpacity style={S.drawerSection} onPress={() => setConversasOpen((v) => !v)} activeOpacity={0.7}>
             <Text style={S.drawerSectionTitle}>Conversas</Text>
@@ -244,15 +252,18 @@ function Sidebar({ visible, onClose, currentRoute, onNavigate }: {
               </TouchableOpacity>
             </View>
           )}
-        </ScrollView>
 
-        {/* ── Botão Sair fixado na base ── */}
-        <View style={S.drawerFooter}>
-          <TouchableOpacity style={S.logoutBtn} onPress={() => { onClose(); onNavigate("Chat"); }}
-            activeOpacity={0.7}>
-            <Text style={S.logoutBtnText}>Sair da Conta</Text>
-          </TouchableOpacity>
-        </View>
+          {/* ── Botão Sair (dentro do scroll) ── */}
+          <View style={{ paddingTop: 24, paddingBottom: 8 }}>
+            <TouchableOpacity
+              style={S.logoutBtn}
+              onPress={() => { onClose(); onNavigate("Chat"); }}
+              activeOpacity={0.7}
+            >
+              <Text style={S.logoutBtnText}>Sair da Conta</Text>
+            </TouchableOpacity>
+          </View>
+        </ScrollView>
 
       </Animated.View>
     </Modal>
@@ -2506,7 +2517,7 @@ const S = StyleSheet.create({
   sidebar: { position: "absolute", top: 0, left: 0, bottom: 0, backgroundColor: "#090A0F", paddingHorizontal: 20, zIndex: 20 },
   drawerHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", paddingBottom: 24, borderBottomWidth: 1, borderColor: "#161822", marginBottom: 20 },
   drawerBrand: { color: "#FFFFFF", fontSize: 24, fontWeight: "800", letterSpacing: 1 },
-  drawerAvatar: { width: 44, height: 44, borderRadius: 22, borderWidth: 1.5, borderColor: "#242736", backgroundColor: "#161822", alignItems: "center", justifyContent: "center" },
+  drawerAvatar: { width: 51, height: 51, borderRadius: 26, borderWidth: 1.5, borderColor: "#242736", backgroundColor: "#161822", alignItems: "center", justifyContent: "center" },
   drawerSection: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", paddingVertical: 14, borderRadius: 10 },
   drawerSectionTitle: { color: "#FFFFFF", fontSize: 16, fontWeight: "600", letterSpacing: -0.2 },
   drawerArrow: { color: "#4E5366", fontSize: 12 },
@@ -2517,7 +2528,7 @@ const S = StyleSheet.create({
   drawerDivider: { height: 1, backgroundColor: "#161822", marginVertical: 10 },
   drawerCloseBtn: { width: 36, height: 36, borderRadius: 10, backgroundColor: "rgba(255,255,255,0.04)", borderWidth: 1, borderColor: "rgba(255,255,255,0.06)", alignItems: "center", justifyContent: "center" },
   drawerCloseBtnText: { color: "#8F94A8", fontSize: 14, fontWeight: "600" },
-  drawerNotifBtn: { width: 36, height: 36, borderRadius: 10, backgroundColor: "transparent", alignItems: "center", justifyContent: "center" },
+  drawerNotifBtn: { width: 38, height: 38, borderRadius: 12, backgroundColor: "rgba(255,255,255,0.07)", borderWidth: 1, borderColor: "rgba(255,255,255,0.10)", alignItems: "center", justifyContent: "center" },
 
   // Reports screen
   reportBox: { backgroundColor: "#161822", borderRadius: 16, padding: 18, borderWidth: 1, borderColor: "#242736", marginBottom: 28 },
@@ -2646,8 +2657,17 @@ const S = StyleSheet.create({
 
   // Sidebar logout footer
   drawerFooter:   { borderTopWidth: 1, borderColor: "#161822", paddingVertical: 16 },
-  logoutBtn:      { paddingHorizontal: 4, paddingVertical: 8, backgroundColor: "transparent" },
-  logoutBtnText:  { color: "#E93E3E", fontSize: 15, fontWeight: "600" },
+  logoutBtn: {
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.22)",
+    backgroundColor: "rgba(255,255,255,0.13)",
+    paddingVertical: 14,
+    alignItems: "center",
+    justifyContent: "center",
+    ...Platform.select({ web: { backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)" } as any, default: {} }),
+  } as any,
+  logoutBtnText:  { color: "#FFFFFF", fontSize: 15, fontWeight: "600" },
 
   // WhatsApp Config screen
   waConfigCard:    { flexDirection: "row", justifyContent: "space-between", alignItems: "center", backgroundColor: "#161822", padding: 16, borderRadius: 14, borderWidth: 1, borderColor: "#242736", marginBottom: 14 },

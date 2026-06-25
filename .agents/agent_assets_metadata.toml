@@ -287,3 +287,9 @@ id = "RFyGbfJdjnMPy1DVNp5Jj"
 uri = "file://exports/marketing-ia-logica-2025-06-25.pdf"
 type = "pdf"
 title = "Resumo — Marketing IA: Lógica Injetada"
+
+[[outputs]]
+id = "SWW96yEuL2zBqYlM06Tp7"
+uri = "file://exports/sidebar-melhorias-2025-06-25.pdf"
+type = "pdf"
+title = "Resumo — Sidebar: 5 Melhorias"
