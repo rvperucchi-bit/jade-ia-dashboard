@@ -266,7 +266,7 @@ function Sidebar({ visible, onClose, currentRoute, onNavigate, onLogout }: {
             onPress={() => { onClose(); onLogout(); }}
             activeOpacity={0.7}
           >
-            <Ionicons name="log-out-outline" size={20} color="rgba(255,255,255,0.4)" />
+            <Ionicons name="log-out-outline" size={22} color="rgba(255,255,255,0.4)" />
           </TouchableOpacity>
         </View>
 
