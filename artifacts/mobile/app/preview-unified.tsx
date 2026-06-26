@@ -328,7 +328,7 @@ function ChatView({ onMenu, onBack }: { onMenu: () => void; onBack?: () => void 
           "Authorization": `Bearer ${OPENAI_API_KEY}`,
         },
         body: JSON.stringify({
-          model: "gpt-4o-mini",
+          model: "gpt-5.4-mini",
           messages: [
             { role: "system", content: "Você é JADE, assistente comercial especializada em vendas B2B. Responda de forma objetiva e estratégica em português." },
             { role: "user", content: userMessage },
